@@ -1,39 +1,40 @@
 # Current Work
 
-**Last Updated**: 2024-11-14 (Task 5 complete)
+**Last Updated**: 2024-11-14 (Task 6 complete)
 
 ---
 
 ## Right Now
-**Task 5 COMPLETE** ✅ - stratified_ate implemented with 91.94% coverage, 8 tests passing, 45 minutes actual.
+**Task 6 COMPLETE** ✅ - regression_adjusted_ate implemented with 96.61% coverage, 13 tests passing, 50 minutes actual.
 
 ## Why
 Building comprehensive RCT toolkit with both practical skills (Python libraries) and deep theoretical understanding (Julia from-scratch) for Google L5 interview preparation and research mastery.
 
 ## Next Step
-**Task 6**: Implement regression_adjusted_ate (ANCOVA approach) - 45 minutes estimated.
+**Task 7**: Implement permutation_test (Fisher exact test) - 45 minutes estimated.
 
-**Or**: Take a break and resume later. Tasks 1-5 complete, 14 tasks remaining.
+**Or**: Take a break and resume later. Tasks 1-6 complete, 13 tasks remaining.
 
 ## Context When I Return
-- Phase 1, Tasks 1-5 COMPLETE ✅:
+- Phase 1, Tasks 1-6 COMPLETE ✅:
   - Infrastructure (pyproject.toml, pre-commit, tests)
   - simple_ate (100% coverage, 18 tests)
   - stratified_ate (91.94% coverage, 8 tests)
-- **Next**: Task 6 - regression_adjusted_ate (covariate adjustment)
+  - regression_adjusted_ate (96.61% coverage, 13 tests)
+- **Next**: Task 7 - permutation_test (randomization inference)
 - **Plan refined** with library-first approach:
-  - Tasks 6-8: Remaining Python implementations (regression, permutation, IPW)
+  - Tasks 7-8: Remaining Python implementations (permutation, IPW)
   - Task 9: Golden results capture for Julia benchmarking
   - Tasks 10-15: Julia from-scratch implementations of all 5 estimators
   - Tasks 16-19: Cross-validation + Monte Carlo + documentation
-- Estimated remaining: ~11 hours
-- Total RCT coverage: 95.05% across 26 tests
+- Estimated remaining: ~10 hours
+- Total RCT coverage: 95.60% across 39 tests
 
 ---
 
 ## Phase 1 Progress (Refined)
 
-**Current Task**: Task 6 - regression_adjusted_ate
+**Current Task**: Task 7 - permutation_test
 
 **Completed**:
 - ✅ Task 1: Quality Infrastructure
@@ -42,9 +43,9 @@ Building comprehensive RCT toolkit with both practical skills (Python libraries)
 - ✅ Task 4: simple_ate Implementation (100% coverage)
 - ✅ **Planning refinement**: ROADMAP + Phase 1 plan updated
 - ✅ Task 5: stratified_ate Implementation (91.94% coverage, 8 tests)
+- ✅ Task 6: regression_adjusted_ate Implementation (96.61% coverage, 13 tests)
 
 **Next** (Python Library Phase):
-- Task 6: regression_adjusted_ate (45 min)
 - Task 7: permutation_test (45 min)
 - Task 8: ipw_ate (45 min)
 - Task 9: Golden results capture (30 min)
@@ -58,6 +59,17 @@ Building comprehensive RCT toolkit with both practical skills (Python libraries)
 ---
 
 ## Session Notes
+
+**2024-11-14 (Task 6 complete)** - regression_adjusted_ate implementation
+- Implemented manual OLS regression for ANCOVA
+- HC3 heteroskedasticity-robust standard errors with leverage adjustment
+- 13 comprehensive tests: known-answer, error-handling, properties
+- 96.61% coverage on regression module (exceeds 90% target)
+- All tests pass, including variance reduction and efficiency gain validation
+- Hand-calculated tests validate exact ATE recovery (tau = 5.0)
+- Supports single or multiple covariates (1D or 2D arrays)
+- 50 minutes actual (5 min over estimate, within tolerance)
+- Full RCT suite: 39 tests, 95.60% coverage
 
 **2024-11-14 (Task 5 complete)** - stratified_ate implementation
 - Implemented manual stratified estimation using pandas for grouping
