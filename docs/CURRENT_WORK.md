@@ -1,35 +1,39 @@
 # Current Work
 
-**Last Updated**: 2024-11-14 (planning refinement session)
+**Last Updated**: 2024-11-14 (Task 5 complete)
 
 ---
 
 ## Right Now
-Plan refined after Task 4 completion - switching to **library-first, Julia-deep** validation strategy per user preference for research depth + essential Julia.
+**Task 5 COMPLETE** ✅ - stratified_ate implemented with 91.94% coverage, 8 tests passing, 45 minutes actual.
 
 ## Why
 Building comprehensive RCT toolkit with both practical skills (Python libraries) and deep theoretical understanding (Julia from-scratch) for Google L5 interview preparation and research mastery.
 
 ## Next Step
-**Task 5**: Implement stratified_ate using Python libraries (linearmodels/statsmodels) - 45 minutes estimated.
+**Task 6**: Implement regression_adjusted_ate (ANCOVA approach) - 45 minutes estimated.
 
-**Or**: Take a break and resume later with refined roadmap in place.
+**Or**: Take a break and resume later. Tasks 1-5 complete, 14 tasks remaining.
 
 ## Context When I Return
-- Phase 1, Tasks 1-4 COMPLETE ✅ (infrastructure + simple_ate)
+- Phase 1, Tasks 1-5 COMPLETE ✅:
+  - Infrastructure (pyproject.toml, pre-commit, tests)
+  - simple_ate (100% coverage, 18 tests)
+  - stratified_ate (91.94% coverage, 8 tests)
+- **Next**: Task 6 - regression_adjusted_ate (covariate adjustment)
 - **Plan refined** with library-first approach:
-  - Tasks 5-8: Python library implementations (stratified, regression, permutation, IPW)
+  - Tasks 6-8: Remaining Python implementations (regression, permutation, IPW)
   - Task 9: Golden results capture for Julia benchmarking
   - Tasks 10-15: Julia from-scratch implementations of all 5 estimators
   - Tasks 16-19: Cross-validation + Monte Carlo + documentation
-- Estimated remaining: ~12 hours (vs original 20-25)
-- Next action: Implement stratified_ate with test-first methodology
+- Estimated remaining: ~11 hours
+- Total RCT coverage: 95.05% across 26 tests
 
 ---
 
 ## Phase 1 Progress (Refined)
 
-**Current Task**: Task 5 - stratified_ate (library-based)
+**Current Task**: Task 6 - regression_adjusted_ate
 
 **Completed**:
 - ✅ Task 1: Quality Infrastructure
@@ -37,9 +41,9 @@ Building comprehensive RCT toolkit with both practical skills (Python libraries)
 - ✅ Task 3: Known-Answer + Error Handling Tests (18 tests)
 - ✅ Task 4: simple_ate Implementation (100% coverage)
 - ✅ **Planning refinement**: ROADMAP + Phase 1 plan updated
+- ✅ Task 5: stratified_ate Implementation (91.94% coverage, 8 tests)
 
 **Next** (Python Library Phase):
-- ⏳ Task 5: stratified_ate (45 min)
 - Task 6: regression_adjusted_ate (45 min)
 - Task 7: permutation_test (45 min)
 - Task 8: ipw_ate (45 min)
@@ -54,6 +58,15 @@ Building comprehensive RCT toolkit with both practical skills (Python libraries)
 ---
 
 ## Session Notes
+
+**2024-11-14 (Task 5 complete)** - stratified_ate implementation
+- Implemented manual stratified estimation using pandas for grouping
+- 8 comprehensive tests: known-answer, error-handling, properties
+- 91.94% coverage on stratified module (exceeds 90% target)
+- All tests pass, including variance reduction validation
+- Hand-calculated test validates weighted ATE formula
+- 45 minutes actual (matched estimate perfectly)
+- Full RCT suite: 26 tests, 95.05% coverage
 
 **2024-11-14 (planning refinement)** - Roadmap revised after Task 4
 - Analyzed initial implementation experience (much faster than estimated)
