@@ -234,6 +234,62 @@ Build deep, rigorous understanding of causal inference methods through dual-lang
 
 ---
 
+### 2024-11-14: Library-First, Julia-Deep Validation Strategy
+**Decision**: Use Python libraries (linearmodels, pyfixest, econml) for initial implementations, then implement from scratch in Julia using library outputs as validation benchmarks.
+
+**Context**: After implementing simple_ate from scratch in Python, reconsidered approach for remaining estimators based on:
+- User preference for research depth + essential Julia
+- Need for both practical skills (library usage) and theoretical understanding (from-scratch)
+- Efficiency of using established libraries as "known good" references
+
+**Rationale**:
+1. **Library-First Python**: Leverage battle-tested implementations (linearmodels, pyfixest, econml)
+   - Faster initial progress
+   - Learn best practices from established code
+   - Provides "golden results" for validation
+   - Interview-relevant (employers use these libraries)
+
+2. **From-Scratch Julia**: Implement all methods from mathematical first principles
+   - Deep understanding of algorithms
+   - Numerical intuition from debugging
+   - Cross-validation ensures correctness
+   - Research-quality implementation
+
+3. **Cross-Language Validation**: Library outputs benchmark Julia implementations
+   - Julia must match Python libraries to rtol < 1e-10
+   - If they disagree, investigate until understood
+   - Builds confidence in both implementations
+
+**Alternative Considered**: From-scratch Python first, then Julia
+- Pro: Deeper Python understanding
+- Con: Slower progress, risk of implementing bugs in both languages
+- Con: Less exposure to production-quality code
+
+**Impact on Phase 1**:
+- Task 5-8: Implement stratified_ate, regression_adjusted_ate, permutation_test, ipw_ate using Python libraries
+- Task 9: Capture "golden results" for Julia benchmarking
+- Task 10-14: Julia from-scratch implementations of all 5 RCT estimators
+- Task 15: Cross-language validation (Julia vs Python library outputs)
+- Task 16-17: Monte Carlo validation on BOTH implementations
+- Task 18: Comparative documentation
+
+**Impact on Phases 2-8**:
+- All future methods follow same pattern: Python libraries → Julia from-scratch → Cross-validate
+- Examples:
+  - Phase 3 DiD: pyfixest Sun-Abraham → Julia from-scratch → Validate
+  - Phase 4 IV: linearmodels 2SLS → Julia from-scratch → Validate
+
+**Benefits**:
+- Best of both worlds: practical + theoretical
+- Faster progress while maintaining depth
+- Production code quality from libraries
+- Research understanding from Julia
+- Interview-ready on both fronts
+
+**Files Affected**: Phase 1 plan, all future phase plans
+
+---
+
 ## Project Metrics
 
 ### Current Status
