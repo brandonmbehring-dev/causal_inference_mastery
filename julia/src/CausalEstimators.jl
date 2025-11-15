@@ -97,6 +97,7 @@ include("rdd/sensitivity.jl")
 
 # IV types (Phase 4)
 include("iv/types.jl")
+include("iv/diagnostics.jl")
 
 # Exports
 
@@ -138,5 +139,9 @@ export nearest_neighbor_match, compute_ate_from_matches
 export abadie_imbens_variance, pairs_bootstrap_variance
 export compute_standardized_mean_difference, compute_variance_ratio
 export check_covariate_balance, balance_summary
+
+## IV diagnostics
+export first_stage_fstat, cragg_donald_stat
+export stock_yogo_critical_value, weak_iv_warning
 
 end # module CausalEstimators

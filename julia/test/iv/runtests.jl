@@ -33,7 +33,7 @@ const FULL_MODE = !QUICK_MODE
     # =========================================================================
     @testset "Unit Tests" begin
         include("test_types.jl")  # Phase 4.1
-        # TODO: Add test_diagnostics.jl (Phase 4.2)
+        include("test_diagnostics.jl")  # Phase 4.2
         # TODO: Add test_tsls.jl (Phase 4.3)
         # TODO: Add test_liml.jl (Phase 4.4)
         # TODO: Add test_gmm.jl (Phase 4.5)
