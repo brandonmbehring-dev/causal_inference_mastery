@@ -38,7 +38,7 @@ const FULL_MODE = !QUICK_MODE
     # =========================================================================
     if FULL_MODE
         @testset "Adversarial Tests" begin
-            # TODO: Add test_sharp_rdd_adversarial.jl (Phase 3.9)
+            include("test_sharp_rdd_adversarial.jl")  # Phase 3.9
         end
     end
 
