@@ -95,6 +95,9 @@ include("rdd/types.jl")
 include("rdd/sharp_rdd.jl")
 include("rdd/sensitivity.jl")
 
+# IV types (Phase 4)
+include("iv/types.jl")
+
 # Exports
 
 ## Abstract types
@@ -102,9 +105,10 @@ export AbstractCausalProblem, AbstractCausalEstimator, AbstractCausalSolution
 export AbstractRCTProblem, AbstractRCTEstimator, AbstractRCTSolution
 export AbstractPSMProblem, AbstractPSMEstimator, AbstractPSMSolution
 export AbstractRDDProblem, AbstractRDDEstimator, AbstractRDDSolution
+export AbstractIVProblem, AbstractIVEstimator, AbstractIVSolution
 
 ## Problem types
-export RCTProblem, PSMProblem, RDDProblem
+export RCTProblem, PSMProblem, RDDProblem, IVProblem
 
 ## Estimator types
 export SimpleATE, StratifiedATE, RegressionATE, PermutationTest, IPWATE
@@ -112,7 +116,7 @@ export NearestNeighborPSM
 export SharpRDD
 
 ## Solution types
-export RCTSolution, PSMSolution, RDDSolution
+export RCTSolution, PSMSolution, RDDSolution, IVSolution
 
 ## RDD utilities
 export AbstractBandwidthSelector, IKBandwidth, CCTBandwidth
