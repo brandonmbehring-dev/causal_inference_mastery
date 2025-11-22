@@ -53,12 +53,24 @@ from .bandwidth import (
     cct_bandwidth,
     cross_validation_bandwidth,
 )
+from .rdd_diagnostics import (
+    mccrary_density_test,
+    covariate_balance_test,
+    bandwidth_sensitivity_analysis,
+    polynomial_order_sensitivity,
+    donut_hole_rdd,
+)
 
 __all__ = [
     "SharpRDD",
     "imbens_kalyanaraman_bandwidth",
     "cct_bandwidth",
     "cross_validation_bandwidth",
+    "mccrary_density_test",
+    "covariate_balance_test",
+    "bandwidth_sensitivity_analysis",
+    "polynomial_order_sensitivity",
+    "donut_hole_rdd",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"

@@ -366,3 +366,100 @@ def sharp_rdd_boundary_cutoff_dgp():
     Y = X + 2.0 * D + np.random.normal(0, 1, n)
 
     return Y, X, 5.0, 2.0
+
+
+@pytest.fixture
+def rdd_bunching_dgp():
+    """
+    DGP with bunching at cutoff (manipulation).
+
+    Running variable has excess mass right at cutoff (X=0).
+    McCrary test should detect this (p < 0.05).
+    """
+    np.random.seed(333)
+    n = 800
+
+    # Base distribution: uniform
+    X_base = np.random.uniform(-5, 5, int(n * 0.9))
+
+    # Add bunching at cutoff (10% of observations)
+    X_bunched = np.random.normal(0, 0.05, int(n * 0.1))  # Tight cluster at 0
+
+    X = np.concatenate([X_base, X_bunched])
+    D = (X >= 0).astype(float)
+    Y = X + 2.0 * D + np.random.normal(0, 1, len(X))
+
+    return Y, X, 0.0, 2.0
+
+
+@pytest.fixture
+def rdd_with_covariates_dgp():
+    """
+    Valid RDD with balanced pre-treatment covariates.
+
+    Covariates (age, gender) have no discontinuity at cutoff.
+    Balance tests should pass (p > 0.05).
+    """
+    np.random.seed(444)
+    n = 1000
+
+    X = np.random.uniform(-5, 5, n)
+    D = (X >= 0).astype(float)
+
+    # Pre-treatment covariates (no relationship to cutoff)
+    age = 30 + 10 * np.random.normal(0, 1, n)
+    gender = np.random.binomial(1, 0.5, n).astype(float)
+    W = np.column_stack([age, gender])
+
+    # Outcome depends on covariates AND treatment
+    Y = 0.5 * age + 2.0 * gender + 3.0 * D + np.random.normal(0, 1, n)
+
+    return Y, X, 0.0, 3.0, W
+
+
+@pytest.fixture
+def rdd_sorted_on_covariate_dgp():
+    """
+    Invalid RDD with sorting on covariates.
+
+    Units with high income sort to right of cutoff.
+    Balance test should detect this (p < 0.05).
+    """
+    np.random.seed(555)
+    n = 1000
+
+    X = np.random.uniform(-5, 5, n)
+
+    # Income is higher on right side (sorting)
+    income_baseline = 50 + 10 * np.random.normal(0, 1, n)
+    income_boost = 15 * (X >= 0)  # Discontinuity in covariate!
+    income = income_baseline + income_boost
+
+    W = income.reshape(-1, 1)
+
+    # Outcome
+    D = (X >= 0).astype(float)
+    Y = 0.3 * income + 2.0 * D + np.random.normal(0, 1, n)
+
+    return Y, X, 0.0, 2.0, W
+
+
+@pytest.fixture
+def rdd_nonlinear_dgp():
+    """
+    Nonlinear DGP (cubic) for polynomial sensitivity testing.
+
+    Y = X³ + τ*(X >= 0) + ε
+
+    Local linear may have bias, but local cubic should work well.
+    """
+    np.random.seed(666)
+    n = 1200
+
+    X = np.random.uniform(-3, 3, n)
+    D = (X >= 0).astype(float)
+
+    # Cubic relationship
+    Y = X**3 + 4.0 * D + np.random.normal(0, 1.5, n)
+
+    return Y, X, 0.0, 4.0
