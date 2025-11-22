@@ -40,11 +40,13 @@ from .diagnostics import (
 )
 from .liml import LIML
 from .fuller import Fuller
+from .gmm import GMM
 
 __all__ = [
     "TwoStageLeastSquares",
     "LIML",
     "Fuller",
+    "GMM",
     "FirstStage",
     "ReducedForm",
     "SecondStage",
@@ -55,4 +57,4 @@ __all__ = [
     "STOCK_YOGO_CRITICAL_VALUES",
 ]
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"

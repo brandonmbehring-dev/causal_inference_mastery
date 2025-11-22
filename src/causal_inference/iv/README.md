@@ -44,6 +44,12 @@ print(f"First-stage F-statistic: {iv.first_stage_f_stat_:.2f}")
   - Fuller-4 (α=4): More conservative
   - Better finite-sample properties than LIML
 
+- **GMM**: Generalized Method of Moments
+  - One-step GMM (equivalent to 2SLS)
+  - Two-step efficient GMM with optimal weighting
+  - Hansen J-test for overidentifying restrictions
+  - Optimal for many instruments (q >> p)
+
 ### Educational Components
 
 - **FirstStage**: Examine first-stage strength (F-stat, partial R²)
@@ -225,6 +231,46 @@ fuller4.fit(Y, D, Z, X)
 print(f"Fuller-4 estimate: {fuller4.coef_[0]:.3f}")
 ```
 
+### 9. GMM with Overidentification Test
+
+```python
+from causal_inference.iv import GMM
+
+# When you have many instruments (q > p)
+# GMM is asymptotically more efficient than 2SLS
+
+np.random.seed(42)
+n = 1000
+Z1 = np.random.normal(0, 1, n)
+Z2 = np.random.normal(0, 1, n)
+Z3 = np.random.normal(0, 1, n)
+Z = np.column_stack([Z1, Z2, Z3])  # 3 instruments
+
+D = 2*Z1 + 1.5*Z2 + Z3 + np.random.normal(0, 1, n)
+Y = 0.5*D + np.random.normal(0, 1, n)
+
+# Fit two-step GMM (efficient)
+gmm = GMM(steps='two', inference='robust')
+gmm.fit(Y, D, Z)
+
+print(f"GMM estimate: {gmm.coef_[0]:.3f}")
+print(f"Hansen J-statistic: {gmm.j_statistic_:.3f}")
+print(f"J-test p-value: {gmm.j_pvalue_:.3f}")
+
+# Interpret J-test
+if gmm.j_pvalue_ > 0.05:
+    print("✓ Overidentifying restrictions valid (instruments OK)")
+else:
+    print("✗ J-test rejects - some instruments may be invalid")
+
+# Compare one-step vs two-step
+gmm_one = GMM(steps='one', inference='robust')
+gmm_one.fit(Y, D, Z)
+print(f"One-step: {gmm_one.coef_[0]:.3f} (SE: {gmm_one.se_[0]:.3f})")
+print(f"Two-step: {gmm.coef_[0]:.3f} (SE: {gmm.se_[0]:.3f})")
+# Two-step is asymptotically more efficient
+```
+
 ## When to Use Which Estimator
 
 ### Use 2SLS When:
@@ -244,6 +290,12 @@ print(f"Fuller-4 estimate: {fuller4.coef_[0]:.3f}")
 - ✅ **Best all-around choice**: Balances bias and variance
 - ✅ **F between 10-20**: Fuller often outperforms both 2SLS and LIML
 - ✅ **Conservative inference**: Use Fuller-4
+
+### Use GMM When:
+- ✅ **Many instruments (q >> p)**: GMM is asymptotically efficient
+- ✅ **Want to test overidentifying restrictions**: Hansen J-test
+- ✅ **Two-step for efficiency**: Optimal weighting matrix accounts for heteroskedasticity
+- ✅ **Large sample (n > 500)**: GMM asymptotic properties hold
 
 ### Consider Alternatives When:
 - ⚠️ **Very weak instruments (F < 5)**: Use Anderson-Rubin CI or find better instruments
@@ -394,12 +446,13 @@ See `examples/iv/` for complete worked examples:
 
 ## Version
 
-**Current version**: 0.2.0 (Session 12: LIML + Fuller + Comprehensive Tests)
+**Current version**: 0.3.0 (Session 13: GMM Estimator + Hansen J-Test)
 
 **Session 11** (0.1.0): Core 2SLS, three stages, weak instrument diagnostics
 **Session 12** (0.2.0): LIML, Fuller, 99 comprehensive tests
+**Session 13** (0.3.0): GMM (one-step + two-step), Hansen J-test, 116 comprehensive tests
 
-Next planned features (Session 13):
-- GMM (Generalized Method of Moments) estimator
-- AR test for over-identified case
-- Additional Layer 1 unit tests (if needed)
+Next planned features (Session 14):
+- AR test for over-identified case (q>1)
+- Multivariate IV (p>1)
+- Additional enhancements
