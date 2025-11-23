@@ -161,16 +161,22 @@ using Distributions
             # Remove some observations to create unbalanced panel
             keep_idx = 1:(length(data.outcomes)-10)
 
+            # Get unique units remaining after dropping observations
+            units_remaining = unique(data.unit_id[keep_idx])
+            # Trim treatment_time to match remaining units (unit IDs are 0-indexed)
+            treatment_time_trimmed = data.treatment_time[units_remaining .+ 1]
+
             problem = StaggeredDiDProblem(
                 data.outcomes[keep_idx],
                 data.treatment[keep_idx],
                 data.time[keep_idx],
                 data.unit_id[keep_idx],
-                data.treatment_time,
+                treatment_time_trimmed,
                 (alpha = 0.05,)
             )
 
             @test length(problem.outcomes) == length(keep_idx)
+            @test length(problem.treatment_time) == length(units_remaining)
         end
 
         @testset "Different Alpha Levels" begin
@@ -298,19 +304,19 @@ using Distributions
             result = solve(problem, StaggeredTWFE(cluster_se=true))
 
             # Check all expected fields exist
-            @test haskey(result, :estimate)
-            @test haskey(result, :se)
-            @test haskey(result, :t_stat)
-            @test haskey(result, :p_value)
-            @test haskey(result, :ci_lower)
-            @test haskey(result, :ci_upper)
-            @test haskey(result, :n_obs)
-            @test haskey(result, :n_treated)
-            @test haskey(result, :n_control)
-            @test haskey(result, :n_periods)
-            @test haskey(result, :n_units)
-            @test haskey(result, :n_cohorts)
-            @test haskey(result, :retcode)
+            @test hasfield(typeof(result), :estimate)
+            @test hasfield(typeof(result), :se)
+            @test hasfield(typeof(result), :t_stat)
+            @test hasfield(typeof(result), :p_value)
+            @test hasfield(typeof(result), :ci_lower)
+            @test hasfield(typeof(result), :ci_upper)
+            @test hasfield(typeof(result), :n_obs)
+            @test hasfield(typeof(result), :n_treated)
+            @test hasfield(typeof(result), :n_control)
+            @test hasfield(typeof(result), :n_periods)
+            @test hasfield(typeof(result), :n_units)
+            @test hasfield(typeof(result), :n_cohorts)
+            @test hasfield(typeof(result), :retcode)
         end
     end
 
@@ -799,20 +805,20 @@ using Distributions
             estimator = SunAbraham(alpha=0.05, cluster_se=true)
             result = solve(problem, estimator)
 
-            @test haskey(result, :att)
-            @test haskey(result, :se)
-            @test haskey(result, :t_stat)
-            @test haskey(result, :p_value)
-            @test haskey(result, :ci_lower)
-            @test haskey(result, :ci_upper)
-            @test haskey(result, :cohort_effects)
-            @test haskey(result, :weights)
-            @test haskey(result, :n_obs)
-            @test haskey(result, :n_treated)
-            @test haskey(result, :n_control)
-            @test haskey(result, :n_cohorts)
-            @test haskey(result, :cluster_se_used)
-            @test haskey(result, :retcode)
+            @test hasfield(typeof(result), :att)
+            @test hasfield(typeof(result), :se)
+            @test hasfield(typeof(result), :t_stat)
+            @test hasfield(typeof(result), :p_value)
+            @test hasfield(typeof(result), :ci_lower)
+            @test hasfield(typeof(result), :ci_upper)
+            @test hasfield(typeof(result), :cohort_effects)
+            @test hasfield(typeof(result), :weights)
+            @test hasfield(typeof(result), :n_obs)
+            @test hasfield(typeof(result), :n_treated)
+            @test hasfield(typeof(result), :n_control)
+            @test hasfield(typeof(result), :n_cohorts)
+            @test hasfield(typeof(result), :cluster_se_used)
+            @test hasfield(typeof(result), :retcode)
         end
     end
 

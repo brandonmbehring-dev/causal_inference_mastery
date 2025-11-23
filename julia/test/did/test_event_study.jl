@@ -104,8 +104,8 @@ end
             @test solution.retcode in [:Success, :Warning]
             @test !isnan(solution.estimate)
             @test solution.se > 0
-            @test haskey(solution.parallel_trends_test, :coefficients_pre)
-            @test haskey(solution.parallel_trends_test, :coefficients_post)
+            @test hasfield(typeof(solution.parallel_trends_test), :coefficients_pre)
+            @test hasfield(typeof(solution.parallel_trends_test), :coefficients_post)
         end
 
         @testset "Event Time Computation - Correct Relative Periods" begin
@@ -125,8 +125,8 @@ end
             solution = solve(problem, EventStudy())
 
             # Should have leads: -2, -1 (omitted) and lags: 0, 1
-            @test haskey(solution.parallel_trends_test, :event_times_pre)
-            @test haskey(solution.parallel_trends_test, :event_times_post)
+            @test hasfield(typeof(solution.parallel_trends_test), :event_times_pre)
+            @test hasfield(typeof(solution.parallel_trends_test), :event_times_post)
         end
 
         @testset "Auto-Detect Leads and Lags" begin

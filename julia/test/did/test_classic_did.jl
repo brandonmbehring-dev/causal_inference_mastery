@@ -239,7 +239,7 @@ end
             solution = solve(problem, ClassicDiD(test_parallel_trends=true))
 
             @test isnothing(solution.parallel_trends_test) == false
-            @test haskey(solution.parallel_trends_test, :message)
+            @test hasfield(typeof(solution.parallel_trends_test), :message)
             @test occursin("No time variable", solution.parallel_trends_test.message)
         end
 
@@ -278,8 +278,8 @@ end
             solution = solve(problem, ClassicDiD(test_parallel_trends=true))
 
             @test isnothing(solution.parallel_trends_test) == false
-            @test haskey(solution.parallel_trends_test, :p_value)
-            @test haskey(solution.parallel_trends_test, :passes)
+            @test hasfield(typeof(solution.parallel_trends_test), :p_value)
+            @test hasfield(typeof(solution.parallel_trends_test), :passes)
             @test solution.parallel_trends_test.n_pre_periods == 3
         end
 
