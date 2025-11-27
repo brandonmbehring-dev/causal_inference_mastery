@@ -1,24 +1,22 @@
 # Current Work
 
-**Last Updated**: 2025-11-27 [Session 21 - Phase 2 IV Monte Carlo COMPLETE]
+**Last Updated**: 2025-11-27 [Session 21 - Phase 2 IV+RDD Monte Carlo COMPLETE]
 
 ---
 
 ## Right Now
 
-✅ **COMPLETE**: Phase 2 IV Monte Carlo Validation
+✅ **COMPLETE**: Phase 2 Monte Carlo Validation (IV + RDD)
 
-**Status**: All IV Monte Carlo tests implemented (50 tests, 2,756 lines). Ready for RDD Monte Carlo.
+**Status**: All Phase 2 Monte Carlo tests implemented. IV (50 tests, 2,756 lines) + RDD (22 tests, 1,871 lines).
 
-**Just Completed (Session 21)**:
-- ✅ Phase 2 IV: DGP generators (8 generators in dgp_iv.py)
-- ✅ Phase 2 IV: 2SLS tests (bias, coverage, SE accuracy, weak IV)
-- ✅ Phase 2 IV: LIML tests (median-unbiased, kappa, weak IV robustness)
-- ✅ Phase 2 IV: Fuller tests (MSE, Fuller-1 vs Fuller-4 vs LIML)
-- ✅ Phase 2 IV: GMM tests (efficiency, Hansen J-test size/power)
-- ✅ Phase 2 IV: Diagnostics tests (Anderson-Rubin CI, Stock-Yogo)
+**Session 21 Summary**:
+- ✅ Phase 2 IV: 50 tests (2SLS, LIML, Fuller, GMM, AR CI, Stock-Yogo)
+- ✅ Phase 2 RDD: 22 tests (Sharp RDD bias/coverage/SE, diagnostics)
+- ✅ DGP generators: dgp_iv.py (8 generators), dgp_rdd.py (10 generators)
+- Note: McCrary test xfail (CONCERN-22: inflated Type I error)
 
-**Next**: Phase 2 Monte Carlo - RDD (8-12 hours)
+**Next**: Phase 3 Code Quality (refactoring) or additional test coverage
 
 ---
 
@@ -65,10 +63,10 @@
 | Method | Tests | Simulations | Status |
 |--------|-------|-------------|--------|
 | DiD | 37 | 150,000+ runs | ✅ **COMPLETE** |
-| IV | 20 | 100,000 runs | Next |
-| RDD | 12 | 36,000 runs | Pending |
+| IV | 50 | 100,000+ runs | ✅ **COMPLETE** |
+| RDD | 22 | 50,000+ runs | ✅ **COMPLETE** |
 
-**DiD Complete**: 37 tests in 5 files, 2,852 lines, all diagnostic tests pass
+**Phase 2 Complete**: 109 Monte Carlo tests, 7,479 lines total
 
 ### Future Phases
 
