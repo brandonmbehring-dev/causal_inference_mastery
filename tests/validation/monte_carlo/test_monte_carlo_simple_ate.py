@@ -23,7 +23,7 @@ class TestSimpleATEMonteCarloHomoskedastic:
 
     def test_simple_rct_n100(self):
         """Validate simple_ate on homoskedastic RCT (n=100, 1000 runs)."""
-        n_runs = 1000
+        n_runs = 5000
         true_ate = 2.0
 
         estimates = []
@@ -57,7 +57,7 @@ class TestSimpleATEMonteCarloHeteroskedastic:
 
     def test_heteroskedastic_rct_n200(self):
         """Validate simple_ate handles heteroskedasticity (Neyman variance)."""
-        n_runs = 1000
+        n_runs = 5000
         true_ate = 2.0
 
         estimates = []
@@ -90,7 +90,7 @@ class TestSimpleATEMonteCarloSmallSample:
 
     def test_small_sample_n20(self):
         """Validate simple_ate with small sample (n=20) uses t-distribution correctly."""
-        n_runs = 1000
+        n_runs = 5000
         true_ate = 2.0
 
         estimates = []

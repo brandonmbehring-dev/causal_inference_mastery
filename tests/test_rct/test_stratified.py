@@ -104,6 +104,62 @@ class TestStratifiedATEKnownAnswers:
         # Should be identical
         assert np.isclose(simple_result["estimate"], stratified_result["estimate"])
 
+    def test_heterogeneous_effects_across_strata(self):
+        """
+        Test stratified estimator with different treatment effects per stratum.
+
+        Setup:
+        - Stratum 1: ATE = 10.0
+        - Stratum 2: ATE = 20.0
+        - Equal sizes (n=4 each)
+        - Overall weighted ATE = (4*10 + 4*20) / 8 = 15.0
+        """
+        strata = np.array([1, 1, 1, 1, 2, 2, 2, 2])
+        treatment = np.array([1, 1, 0, 0, 1, 1, 0, 0])
+
+        # Stratum 1: Treated [15, 13], Control [5, 3] → ATE = 14-4 = 10
+        # Stratum 2: Treated [30, 28], Control [10, 8] → ATE = 29-9 = 20
+        outcomes = np.array([15.0, 13.0, 5.0, 3.0, 30.0, 28.0, 10.0, 8.0])
+
+        result = stratified_ate(outcomes, treatment, strata)
+
+        # Weighted average: (4*10 + 4*20) / 8 = 15.0
+        expected_ate = 15.0
+        assert np.isclose(result["estimate"], expected_ate), \
+            f"Expected ATE={expected_ate}, got {result['estimate']}"
+
+        # Check stratum-specific estimates
+        assert "stratum_estimates" in result
+        assert np.isclose(result["stratum_estimates"][0], 10.0)
+        assert np.isclose(result["stratum_estimates"][1], 20.0)
+
+    def test_many_strata(self):
+        """
+        Test stratified estimator with many strata (5 strata).
+
+        Each stratum has constant ATE = 5, so overall ATE = 5.
+        """
+        n_strata = 5
+        n_per_stratum = 4  # 2 treated, 2 control per stratum
+
+        strata = np.repeat(np.arange(1, n_strata + 1), n_per_stratum)
+        treatment = np.tile([1, 1, 0, 0], n_strata)
+
+        # Each stratum has different baseline but same treatment effect = 5
+        baselines = np.array([10, 20, 30, 40, 50])
+        outcomes = np.repeat(baselines, n_per_stratum) + treatment * 5 + np.random.normal(0, 0.1, len(strata))
+
+        result = stratified_ate(outcomes, treatment, strata)
+
+        # Should recover ATE ≈ 5 (constant across strata)
+        expected_ate = 5.0
+        assert np.isclose(result["estimate"], expected_ate, atol=0.5), \
+            f"Expected ATE={expected_ate}, got {result['estimate']}"
+
+        # Should have 5 stratum-specific estimates
+        assert "stratum_estimates" in result
+        assert len(result["stratum_estimates"]) == n_strata
+
 
 class TestStratifiedATEErrorHandling:
     """Test error handling for stratified_ate."""

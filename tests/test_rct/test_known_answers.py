@@ -15,7 +15,7 @@ from src.causal_inference.rct.estimators import simple_ate
 class TestSimpleATEKnownAnswers:
     """Test simple_ate with hand-calculated expected values."""
 
-    def test_simple_ate_basic_case(self, simple_rct_data):
+    def test_simple_ate_basic_case(self):
         """
         Test ATE calculation with simplest possible data.
 
@@ -33,10 +33,11 @@ class TestSimpleATEKnownAnswers:
         - n_treated = 2
         - n_control = 2
         """
-        result = simple_ate(
-            outcomes=simple_rct_data["outcomes"],
-            treatment=simple_rct_data["treatment"]
-        )
+        # Inline deterministic data matching docstring (known-answer test)
+        treatment = np.array([1, 1, 0, 0])
+        outcomes = np.array([7.0, 5.0, 3.0, 1.0])
+
+        result = simple_ate(outcomes=outcomes, treatment=treatment)
 
         # Check point estimate
         assert np.isclose(result["estimate"], 4.0), \
@@ -78,10 +79,13 @@ class TestSimpleATEKnownAnswers:
         Using simple_rct_data:
         - ATE = 4.0
         - SE = (to be calculated from data)
-        - 95% CI: ATE ± 1.96 * SE
+        - n=4 (2 treated, 2 control), df=2
+        - 95% CI: ATE ± t_0.025,df=2 * SE (uses t-distribution, not z)
 
-        Validates that CI is correctly constructed.
+        Validates that CI is correctly constructed using t-distribution.
         """
+        from scipy import stats
+
         result = simple_ate(
             outcomes=simple_rct_data["outcomes"],
             treatment=simple_rct_data["treatment"],
@@ -97,8 +101,17 @@ class TestSimpleATEKnownAnswers:
         # Check symmetry
         assert np.isclose(estimate - ci_lower, ci_upper - estimate, rtol=1e-6)
 
-        # Check width (should be 2 * 1.96 * SE)
-        expected_width = 2 * 1.96 * se
+        # Calculate degrees of freedom (Satterthwaite)
+        # For n1=2, n0=2: df ≈ 2 (conservative)
+        n1 = np.sum(simple_rct_data["treatment"] == 1)
+        n0 = np.sum(simple_rct_data["treatment"] == 0)
+        df = n1 + n0 - 2  # Conservative df for small sample
+
+        # Get t critical value for 95% CI
+        t_crit = stats.t.ppf(1 - alpha_standard / 2, df)
+
+        # Check width (should be 2 * t_crit * SE, not 1.96 * SE)
+        expected_width = 2 * t_crit * se
         actual_width = ci_upper - ci_lower
         assert np.isclose(actual_width, expected_width, rtol=1e-4)
 

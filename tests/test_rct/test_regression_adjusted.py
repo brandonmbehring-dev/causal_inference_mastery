@@ -124,6 +124,27 @@ class TestRegressionAdjustedKnownAnswers:
         assert "CRITICAL ERROR" in error_msg
         assert "singular" in error_msg.lower() or "collinearity" in error_msg.lower()
 
+    def test_zero_treatment_effect_recovery(self):
+        """
+        Test that regression adjustment recovers zero ATE when tau = 0.
+
+        Setup: Y = 2 + 0*T + 3*X (no treatment effect)
+        Should recover tau = 0 exactly.
+        """
+        X = np.array([1.0, 2.0, 3.0, 4.0, 1.0, 2.0, 3.0, 4.0])
+        treatment = np.array([1, 1, 1, 1, 0, 0, 0, 0])
+        outcomes = 2 + 0 * treatment + 3 * X  # tau = 0
+
+        result = regression_adjusted_ate(outcomes, treatment, X)
+
+        # Should recover exact ATE = 0
+        assert np.isclose(result["estimate"], 0.0, atol=1e-10), \
+            f"Expected ATE=0.0, got {result['estimate']}"
+
+        # Should have coefficient for X
+        assert "covariate_coef" in result
+        assert np.isclose(result["covariate_coef"], 3.0, atol=1e-10)
+
 
 class TestRegressionAdjustedErrorHandling:
     """Test error handling for regression_adjusted_ate."""

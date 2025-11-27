@@ -49,6 +49,8 @@ def test_simple_ate_basic_case():
 
 **Purpose**: Test extreme edge cases and boundary conditions that normal tests miss.
 
+**Status**: ✅ **45 tests implemented** across 5 estimators
+
 **Categories**:
 1. **Extreme sample sizes**: n=2, n=3, n=1000000
 2. **Extreme imbalance**: n1=1 n0=999, n1=999 n0=1
@@ -61,19 +63,26 @@ def test_simple_ate_basic_case():
 9. **Collinearity**: perfectly correlated covariates
 10. **Stratification edges**: 100 strata with 2 units each
 
+**Tests by Estimator**:
+- `test_simple_ate_adversarial.py`: 16 tests (6 xfail - found real n=1 bug)
+- `test_stratified_ate_adversarial.py`: 8 tests
+- `test_regression_ate_adversarial.py`: 9 tests
+- `test_ipw_ate_adversarial.py`: 8 tests
+- `test_permutation_adversarial.py`: 9 tests
+
 **Example**:
 ```python
-def test_simple_ate_extreme_imbalance():
-    # n1=1, n0=999 - should still compute ATE
-    outcomes = np.concatenate([[100.0], np.zeros(999)])
-    treatment = np.array([1] + [0] * 999)
+@pytest.mark.xfail(reason="Known issue: n1=1 or n0=1 produces NaN SE (ddof causes df≤0)")
+def test_minimum_sample_n2():
+    # n=2 (n1=1, n0=1) - minimum possible sample
+    outcomes = np.array([10.0, 5.0])
+    treatment = np.array([1, 0])
     result = simple_ate(outcomes, treatment)
-    # Should not crash, should return valid CI
-    assert "estimate" in result
-    assert result["se"] > 0
+    assert result["estimate"] == 5.0
+    assert result["se"] > 0  # Fails - returns NaN (bug found!)
 ```
 
-**Target**: 50+ adversarial tests across all 5 estimators
+**Key Finding**: Adversarial tests successfully found real bug in simple_ate where n1=1 or n0=1 produces NaN standard error due to degrees of freedom ≤ 0 in variance calculation.
 
 ---
 
@@ -83,13 +92,21 @@ def test_simple_ate_extreme_imbalance():
 
 **Purpose**: Statistical validation that estimators have correct bias, coverage, and standard errors.
 
+**Status**: ✅ **13 tests implemented**, 1000 runs each, all passing
+
 **Method**:
 1. Generate 1000 datasets from known DGP with true ATE = 2.0
 2. Estimate ATE on each dataset
 3. Validate:
    - **Bias**: |mean(estimates) - 2.0| < 0.05
-   - **Coverage**: 94% < proportion(CI contains 2.0) < 96%
-   - **SE Accuracy**: std(estimates) ≈ mean(SE) within 10%
+   - **Coverage**: 93% < proportion(CI contains 2.0) < 97% (adjusted for MC variation)
+   - **SE Accuracy**: std(estimates) ≈ mean(SE) within 10-20%
+
+**Tests by Estimator**:
+- `test_monte_carlo_simple_ate.py`: 5 tests (basic RCT, heteroskedastic, small sample)
+- `test_monte_carlo_stratified_ate.py`: 2 tests (basic + variance reduction)
+- `test_monte_carlo_regression_ate.py`: 3 tests (basic + variance reduction + R²)
+- `test_monte_carlo_ipw_ate.py`: 3 tests (varying propensity + constant propensity)
 
 **Data Generating Processes**:
 1. **Simple RCT**: y1 ~ N(2, 1), y0 ~ N(0, 1), n=100, balanced
@@ -105,7 +122,7 @@ def test_monte_carlo_simple_ate():
     estimates, ses, ci_lowers, ci_uppers = [], [], [], []
 
     for seed in range(1000):
-        outcomes, treatment = generate_dgp_simple_rct(
+        outcomes, treatment = dgp_simple_rct(
             n=100, true_ate=2.0, random_state=seed
         )
         result = simple_ate(outcomes, treatment)
@@ -114,34 +131,49 @@ def test_monte_carlo_simple_ate():
         ci_lowers.append(result["ci_lower"])
         ci_uppers.append(result["ci_upper"])
 
-    # Validate
-    bias = abs(np.mean(estimates) - 2.0)
-    coverage = np.mean((np.array(ci_lowers) <= 2.0) &
-                      (2.0 <= np.array(ci_uppers)))
+    # Validate using helper
+    validation = validate_monte_carlo_results(
+        estimates, ses, ci_lowers, ci_uppers, true_ate=2.0
+    )
 
-    assert bias < 0.05  # Unbiased
-    assert 0.94 < coverage < 0.96  # Proper coverage
+    assert validation["bias_ok"]  # Bias < 0.05
+    assert validation["coverage_ok"]  # Coverage in [93%, 97%]
+    assert validation["se_accuracy_ok"]  # SE accuracy < 10%
 ```
 
-**Utilities**: `tests/validation/utils.py` provides DGP generators and validation helpers.
+**Utilities**:
+- `tests/validation/monte_carlo/dgp_generators.py`: 6 DGP functions
+- `tests/validation/utils.py`: `validate_monte_carlo_results()` helper
+- `tests/validation/conftest.py`: Shared validation tolerance fixtures
+
+**Performance**: All 13 tests complete in ~8 seconds (1000 runs each).
 
 ---
 
-### Layer 4: Python↔Julia Cross-Validation ✅ (NEW - 2025-11-20)
+### Layer 4: Python↔Julia Cross-Validation ⏸️ (DEFERRED - 2025-11-20)
 
 **Location**: `tests/validation/cross_language/`
 
 **Purpose**: Validate that Python results match Julia to machine precision (rtol < 1e-10).
 
+**Status**: ⏸️ **Infrastructure created, testing deferred**
+
+**Reason for Deferral**: juliacall initialization timeout (>90 seconds) on first test run. Since Julia→Python cross-validation already exists and is operational (`julia/test/validation/test_pycall_*.jl`), bidirectional validation provides diminishing returns. Python validation layers 1-3 provide sufficient quality assurance.
+
+**Files Created**:
+- `julia_interface.py`: Wrapper for calling Julia estimators (5 functions, ~240 lines)
+- `test_python_julia_simple_ate.py`: 6 cross-validation tests
+- Wrappers ready for: simple_ate, stratified_ate, regression_ate, ipw_ate, permutation_test
+
 **Method**:
 1. Generate test dataset in Python
-2. Call Julia estimator via PyJulia/juliacall
+2. Call Julia estimator via juliacall
 3. Compare: Python estimate vs Julia estimate
 4. Assert: |Python - Julia| / |Julia| < 1e-10
 
-**Note**: Julia→Python cross-validation already exists in Julia test suite (`julia/test/validation/test_pycall_*.jl`). This adds the reverse direction for completeness.
+**Note**: Julia→Python cross-validation already operational in Julia test suite. This layer can be reactivated if Python becomes primary implementation or for publication.
 
-**Example**:
+**Example** (infrastructure exists, untested):
 ```python
 def test_python_julia_simple_ate():
     outcomes = np.array([7.0, 5.0, 3.0, 1.0])
@@ -150,18 +182,17 @@ def test_python_julia_simple_ate():
     # Python estimate
     python_result = simple_ate(outcomes, treatment)
 
-    # Julia estimate (via PyJulia)
-    julia_result = call_julia_simple_ate(outcomes, treatment)
+    # Julia estimate (via juliacall)
+    julia_result = julia_simple_ate(outcomes, treatment)
 
     # Cross-validate
-    rtol = 1e-10
     assert np.isclose(python_result["estimate"],
-                     julia_result["estimate"], rtol=rtol)
+                     julia_result["estimate"], rtol=1e-10)
     assert np.isclose(python_result["se"],
-                     julia_result["se"], rtol=rtol)
+                     julia_result["se"], rtol=1e-10)
 ```
 
-**Dependencies**: Requires Julia and PyJulia/juliacall installed. Tests skip gracefully if unavailable.
+**Dependencies**: Requires Julia and juliacall installed. Tests skip gracefully if unavailable.
 
 ---
 

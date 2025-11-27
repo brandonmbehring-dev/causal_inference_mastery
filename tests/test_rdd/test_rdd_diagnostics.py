@@ -152,15 +152,26 @@ class TestPolynomialOrderSensitivity:
     """Test polynomial order sensitivity."""
 
     def test_polynomial_order_stability(self, sharp_rdd_linear_dgp):
-        """Test that different polynomial orders give similar results for linear DGP."""
+        """Test that local linear (p>=1) recovers effect for linear DGP with slope.
+
+        Note: Local constant (p=0) IS biased when the DGP has a slope (Y = X + tau*D + eps).
+        This is expected behavior: p=0 doesn't account for the slope, leading to bias.
+        Only p>=1 should be approximately unbiased for linear DGP.
+        """
         Y, X, cutoff, true_tau = sharp_rdd_linear_dgp
 
         results = polynomial_order_sensitivity(Y, X, cutoff, bandwidth=1.5, max_order=3)
 
-        # All orders should recover effect (linear DGP)
-        estimates = results["estimate"].values
-        assert all(np.abs(est - true_tau) < 0.6 for est in estimates), \
-            "All polynomial orders should recover linear effect"
+        # p=0 (local constant) IS biased for linear DGP with slope - this is correct behavior
+        # Only p>=1 should recover the effect
+        estimates_p1_plus = results[results["order"] >= 1]["estimate"].values
+        assert all(np.abs(est - true_tau) < 0.6 for est in estimates_p1_plus), \
+            "Local linear (p>=1) should recover effect for linear DGP"
+
+        # p=0 should show bias (demonstrating that it doesn't work for DGP with slope)
+        est_p0 = results[results["order"] == 0]["estimate"].values[0]
+        assert np.abs(est_p0 - true_tau) > 0.5, \
+            "Local constant (p=0) should be biased when DGP has slope"
 
     def test_polynomial_order_0_to_3(self, sharp_rdd_quadratic_dgp):
         """Test that orders 0-3 all produce finite estimates."""

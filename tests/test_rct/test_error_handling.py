@@ -195,19 +195,20 @@ class TestSimpleATEErrorHandling:
 class TestInputValidation:
     """Test that inputs are validated before computation."""
 
-    def test_treatment_converted_to_array(self, simple_rct_data):
+    def test_treatment_converted_to_array(self):
         """
         Test that list inputs are converted to numpy arrays.
 
         Should accept list but internally convert to numpy array.
         """
-        # Pass lists instead of arrays
-        result = simple_ate(
-            outcomes=simple_rct_data["outcomes"].tolist(),
-            treatment=simple_rct_data["treatment"].tolist()
-        )
+        # Inline deterministic data as lists (not arrays)
+        outcomes = [7.0, 5.0, 3.0, 1.0]
+        treatment = [1, 1, 0, 0]
 
-        # Should still work
+        result = simple_ate(outcomes=outcomes, treatment=treatment)
+
+        # Should compute correct result after conversion
+        # Hand-calculated: (7+5)/2 - (3+1)/2 = 6.0 - 2.0 = 4.0
         assert np.isclose(result["estimate"], 4.0)
 
     def test_boolean_treatment_accepted(self):

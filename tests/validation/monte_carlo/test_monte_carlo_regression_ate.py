@@ -15,7 +15,7 @@ class TestRegressionATEMonteCarlo:
 
     def test_regression_rct(self):
         """Validate regression_adjusted_ate (n=100, 1000 runs)."""
-        n_runs = 1000
+        n_runs = 5000
         true_ate = 2.0
 
         estimates = []

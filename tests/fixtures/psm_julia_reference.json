@@ -1,0 +1,11 @@
+{
+  "description": "Golden reference PSM test cases from Julia implementation",
+  "version": "1.0",
+  "test_cases": [],
+  "notes": [
+    "This file will be populated with 20 golden reference test cases",
+    "Generated from Julia PSM implementation to cross-validate Python",
+    "Each case includes: outcomes, treatment, covariates, ate, se, propensity, matches",
+    "Status: Empty - populate during Session 3 after PSM implementation complete"
+  ]
+}

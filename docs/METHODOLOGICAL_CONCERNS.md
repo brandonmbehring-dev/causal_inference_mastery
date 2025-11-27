@@ -1,658 +1,448 @@
-# Methodological Concerns - Causal Inference Mastery
+# Methodological Concerns Tracking
 
-**Created**: 2024-11-14
-**Last Updated**: 2024-11-14
-**Purpose**: Document all identified methodological concerns across 8 phases with severity levels, mitigation strategies, and current status
-
----
-
-## Executive Summary
-
-During Phase 1 (RCT Foundation) implementation review, **27 methodological concerns** were identified across all 8 phases of the causal_inference_mastery project. Concerns range from **critical validation gaps** (circular validation) to **missing modern methods** (heterogeneity-robust DiD estimators).
-
-**Current Status** (as of 2024-11-14):
-- **Phase 1 COMPLETE** with Grade A+ (98/100)
-- **4 CRITICAL concerns addressed** (circular validation, adversarial tests, HC documentation, Phase 3 plan)
-- **2 minor gaps identified** (multi-alpha coverage, power analysis) - recommended for Phase 2+
-- **23 concerns remain** for future phases (Phases 2-8)
-- **Validation foundation exceptional** (six-layer architecture, 49 adversarial tests, Monte Carlo, R triangulation)
-- **Standards codified** in `PHASE_COMPLETION_STANDARDS.md` to prevent regression
+**Created**: 2025-11-21
+**Last Updated**: 2025-11-21
+**Purpose**: Track all methodological concerns across causal inference implementations
 
 ---
 
-## Severity Levels
+## Overview
 
-- **CRITICAL**: Invalidates results, must fix before proceeding
-- **HIGH**: Serious methodological flaw, high priority to address
-- **MEDIUM**: Important but not blocking, address before claiming rigor
-- **LOW**: Nice-to-have, doesn't compromise core validity
+This document tracks methodological concerns that must be addressed to ensure rigorous causal inference implementations. Each concern is linked to specific phases, implementation status, and test validation.
+
+**Status Legend**:
+- ✅ **Addressed**: Implemented and tested
+- 🟡 **Partial**: Implementation exists but needs validation
+- ⏳ **Planned**: Documented in roadmap, not yet implemented
+- ❌ **Unaddressed**: Needs attention
 
 ---
 
 ## Phase 1: RCT Foundation
 
-### CRITICAL-1: Circular Validation Trap ✅ FIXED
-**Severity**: CRITICAL
-**Status**: ✅ RESOLVED (2024-11-14)
+### ✅ Addressed
+*No major methodological concerns for simple RCT with proper randomization*
 
-**Issue**: Python → Julia cross-validation with no ground truth. If both have same conceptual error, both pass validation.
-
-**Impact**:
-- False confidence in correctness
-- Conceptual errors go undetected
-- Violates "research-grade validation" objective
-
-**Mitigation** (implemented):
-1. **Monte Carlo ground truth validation** (`test/validation/test_monte_carlo_ground_truth.jl`):
-   - Generate data with KNOWN treatment effect (τ = 2.0)
-   - Verify bias < 0.05, coverage 94-96%, SE accuracy
-   - Tests all 5 estimators with 1000 iterations
-   - 26 tests passing
-2. **R validation infrastructure** (`validation/r_scripts/validate_rct.R`):
-   - Independent implementation in R (3rd language)
-   - Triangulation: Python ↔ Julia ↔ R
-   - Catches conceptual errors any 2 languages might share
-   - Gracefully skips when R not installed
-
-**Evidence of Fix**:
-- File: `test/validation/test_monte_carlo_ground_truth.jl` (580 lines)
-- File: `validation/r_scripts/validate_rct.R` (517 lines)
-- File: `test/validation/test_r_validation.jl` (307 lines)
-- All tests passing
-
-**References**:
-- Morris et al. (2019). Using simulation studies to evaluate statistical methods. *Statistics in Medicine*, 38(11), 2074-2102.
+**Validation**:
+- Session 4 (2025-11-21): 73 tests, 95.22% coverage
+- Bias < 0.05, Coverage 93-97%
+- All estimators validated via Monte Carlo
 
 ---
 
-### HIGH-2: Missing Adversarial Tests ✅ FIXED
-**Severity**: HIGH
-**Status**: ✅ RESOLVED (2024-11-14)
+## Observational Extensions
 
-**Issue**: Original test suites (Python + Julia) lacked adversarial edge case testing. Only tested happy paths and basic error cases.
+### ✅ Addressed
+*IPW and DR estimators validated with confounded DGPs*
 
-**Impact**:
-- Silent failures on edge cases (n=1, all treated, NaN, perfect collinearity)
-- Production code crashes on unexpected inputs
-- Interview failure if asked "what if all units are treated?"
-
-**Mitigation** (implemented):
-Added **49 adversarial tests** across all 5 estimators:
-1. **SimpleATE** (16 tests):
-   - n=1, n=2 (insufficient sample)
-   - All treated, all control (no variation)
-   - NaN, Inf in outcomes
-   - Zero variance within groups
-   - Extreme outliers
-   - Mismatched lengths, empty arrays
-
-2. **StratifiedATE** (20 tests):
-   - Stratum with all treated/control
-   - Zero/negative strata values
-   - Very imbalanced strata sizes
-   - Zero variance within stratum
-   - Single large stratum (reduces to SimpleATE)
-   - Many strata (n_strata = n/2)
-   - Extreme outlier in single stratum
-
-3. **RegressionATE** (7 tests):
-   - Perfect collinearity (treatment = covariate)
-   - Zero variance covariate
-   - More covariates than observations (p > n)
-   - Extreme covariate values
-   - Multiple highly correlated covariates
-
-4. **PermutationTest** (9 tests):
-   - All outcomes identical (zero variance)
-   - Very small sample (n=4, only 6 permutations)
-   - Extreme outlier
-
-5. **IPWATE** (12 tests):
-   - Propensity at boundary (p=0, p=1)
-   - Extreme propensity scores (near 0 or 1)
-   - Constant propensity (should reduce to SimpleATE)
-   - Extreme outcome with extreme weight
-
-**Evidence of Fix**:
-- All tests passing (219 total tests in Phase 1)
-- Files: `test/rct/test_simple_ate.jl`, `test_stratified_ate.jl`, `test_regression_ate.jl`, `test_permutation_test.jl`, `test_ipw_ate.jl`
-
-**References**:
-- Beizer, B. (1990). *Software Testing Techniques* (2nd ed.). Van Nostrand Reinhold. Chapter 4: Boundary Testing.
+**Sessions 5-6 (2025-11-21)**:
+- IPW: 55 tests, propensity clipping (ε=1e-6), trimming
+- DR: 49 tests, double robustness validated via 25k sims
+- Bias < 0.10, Coverage 93-97.5%
 
 ---
 
-### MEDIUM-3: HC Variant Not Documented ✅ FIXED
-**Severity**: MEDIUM
-**Status**: ✅ RESOLVED (2024-11-14)
+## Phase 2: Propensity Score Matching
 
-**Issue**: RegressionATE uses HC3 robust standard errors but doesn't explain WHY HC3 vs HC0/HC1/HC2 in docstrings. Users don't know the reasoning.
+### CONCERN-5: Bootstrap SE Invalid for Matching With Replacement
+**Phase**: Phase 2 (PSM)
+**Status**: ⏳ PLANNED
+**Priority**: HIGH
 
-**Impact**:
-- Reduces educational value
-- Can't justify choice in interviews
-- Unclear if best practice followed
+**Issue**: Standard bootstrap SE underestimates variance when matching with replacement (same control unit used multiple times).
 
-**Mitigation** (implemented):
-Added **comprehensive variance estimation documentation** to all 4 estimator docstrings:
+**Solution**: Abadie-Imbens (2008) conditional variance estimator
 
-1. **SimpleATE** (`src/estimators/rct/simple_ate.jl`):
-   - Documents Neyman conservative variance (allows heteroskedasticity)
-   - Explains why NOT pooled t-test (doesn't assume equal variances)
-   - Notes equivalence to Welch's t-test
+**Implementation**:
+- File: `src/causal_inference/psm/matching.py`
+- Function: `calculate_abadie_imbens_variance()`
+- Must account for: Number of times each control unit matched
 
-2. **StratifiedATE** (`src/estimators/rct/stratified_ate.jl`):
-   - Documents precision-weighted variance across strata
-   - Explains variance formula: sum of weighted stratum variances (weights squared)
-   - Notes efficiency gain when outcomes vary by stratum
-
-3. **RegressionATE** (`src/estimators/rct/regression_ate.jl`):
-   - **Explains WHY HC3** (Long & Ervin 2000):
-     - Best small-sample properties (n < 250)
-     - More conservative than HC0, HC1, HC2 (protects Type I error)
-     - Leverage adjustment for high-leverage observations
-   - Provides HC3 formula with leverage adjustment
-   - Compares to alternative estimators (HC0, HC1, HC2)
-   - Cites Long & Ervin (2000) and MacKinnon & White (1985)
-
-4. **IPWATE** (`src/estimators/rct/ipw_ate.jl`):
-   - Documents Horvitz-Thompson variance estimator
-   - Explains weighted variance formula
-   - Notes variance inflation with extreme weights
-   - Suggests alternatives (trimming, AIPW, stabilized weights)
-
-**Evidence of Fix**:
-- All estimator docstrings updated
-- Module loads successfully with new documentation
-- References cited in docstrings
+**Tests Required**:
+- Monte Carlo validation: With replacement variance > without replacement
+- Compare Abadie-Imbens SE to naive bootstrap SE
+- Coverage rate with Abadie-Imbens SE should be 93-97%
 
 **References**:
-- Long, J. S., & Ervin, L. H. (2000). Using Heteroscedasticity Consistent Standard Errors in the Linear Regression Model. *The American Statistician*, 54(3), 217-224.
-- MacKinnon, J. G., & White, H. (1985). Some heteroskedasticity-consistent covariance matrix estimators with improved finite sample properties. *Journal of Econometrics*, 29(3), 305-325.
+- Abadie & Imbens (2006): "Large sample properties of matching estimators"
+- Abadie & Imbens (2008): "On the failure of the bootstrap for matching estimators"
+
+**Session**: Session 7 (PSM Monte Carlo)
 
 ---
 
-### Phase 1 Audit Summary (Grade: A+, 98/100)
+## Phase 3: Difference-in-Differences
 
-**Status**: ✅ PHASE COMPLETE (2024-11-14)
-**Quality Assessment**: Research-grade, suitable as foundation for all future phases
+### CONCERN-11: TWFE Bias with Staggered Adoption
+**Phase**: Phase 3 (DiD)
+**Status**: ⏳ PLANNED
+**Priority**: CRITICAL
 
-**Exceptional Strengths**:
-1. **Six-Layer Validation Architecture** (CROWN JEWEL):
-   - Layer 1: Known-answer tests (analytically verifiable)
-   - Layer 2: 49 adversarial tests (edge cases, numerical stability, invalid inputs)
-   - Layer 3: Monte Carlo ground truth (τ=2.0 known, bias < 0.05, coverage 94-96%)
-   - Layer 4: Python-Julia cross-validation (rtol < 1e-10)
-   - Layer 5: R triangulation (independent implementations)
-   - Layer 6: Golden reference tests (ready for LaLonde, Imbens & Rubin datasets)
+**Issue**: Two-way fixed effects (TWFE) produces biased estimates with:
+- Staggered treatment timing (units treated at different times)
+- Heterogeneous treatment effects
+- Uses already-treated units as "controls" (negative weights)
 
-2. **Adversarial Testing** (49 tests total):
-   - SimpleATE: 16 tests (n=1, all treated, NaN/Inf, extreme outliers)
-   - StratifiedATE: 20 tests (empty strata, imbalanced sizes, zero variance)
-   - RegressionATE: 7 tests (perfect collinearity, p > n, singular matrix)
-   - IPWATE: 12 tests (propensity at 0/1, extreme weights)
-   - PermutationTest: 9 tests (zero variance, small sample, outliers)
+**Solution**: Modern DiD methods (Callaway-Sant'Anna 2021, Sun-Abraham 2021)
 
-3. **Comprehensive Documentation**:
-   - All 5 estimators have 8-section docstrings
-   - Variance estimators justified with academic citations
-   - Explicit error messages with solutions
-   - SciML design pattern consistently applied
+**Implementation**:
+- File: `src/causal_inference/did/staggered_did.py`
+- Callaway-Sant'Anna estimator (~200 lines)
+- Sun-Abraham interaction-weighted estimator (~200 lines)
+- Compare to naive TWFE (document bias)
 
-4. **Test Coverage**: 219 tests passing, 80%+ line coverage
+**Tests Required**:
+- Monte Carlo DGP with staggered adoption + heterogeneous effects
+- Show TWFE bias > 0.50 (severe)
+- Show CS/SA bias < 0.10 (corrected)
+- Validate with Julia Phase 3 cross-validation
 
-**Minor Gaps** (-2 points):
-1. **Multi-Alpha Coverage Not Tested** (MEDIUM priority):
-   - **Issue**: Coverage only tested at α=0.05, not α ∈ {0.01, 0.10}
-   - **Impact**: Can't verify coverage property holds at other significance levels
-   - **Mitigation**: Add multi-alpha tests to Phase 2+ Monte Carlo validation
-   - **Priority**: MEDIUM (not critical, but improves rigor)
+**References**:
+- Callaway & Sant'Anna (2021): "Difference-in-Differences with multiple time periods"
+- Sun & Abraham (2021): "Estimating dynamic treatment effects in event studies"
+- Goodman-Bacon (2021): "Difference-in-differences with variation in treatment timing"
 
-2. **Power Analysis Not Implemented** (LOW priority):
-   - **Issue**: No power calculations for sample size planning
-   - **Impact**: Can't answer "How large n for 80% power to detect τ=0.5?"
-   - **Mitigation**: Add power calculators to Phase 2+ (IV, DiD where power critical)
-   - **Priority**: LOW (not essential for correctness, useful for design)
-
-**Standards Codification**:
-- Created `PHASE_COMPLETION_STANDARDS.md` (650+ lines, 11 sections)
-- Codifies six-layer validation as MANDATORY for Phases 2-8
-- Templates created to reduce boilerplate (saves ~2 hours per estimator)
-- Enforcement: Pre-commit hooks, governance tests, phase completion checklist
-
-**Lessons Learned for Future Phases**:
-1. **Ground truth validation essential**: Cross-language alone insufficient
-2. **Adversarial testing prevents production failures**: Edge cases often overlooked
-3. **Documentation is part of rigor**: Methodological choices need justification
-4. **Proactive concern identification saves time**: Review all phases upfront
-5. **Codify success early**: Write down WHY patterns worked
-
-**Files Created** (17 total):
-- 5 Julia estimators (`src/estimators/rct/*.jl`)
-- 5 Python estimators (`src/causal_inference/rct/*.py`)
-- 5 Julia test files (`test/estimators/rct/test_*.jl`)
-- 1 Monte Carlo validation (`test/validation/test_monte_carlo_ground_truth.jl`)
-- 1 R validation script (`validation/r_scripts/validate_rct.R`)
-
-**Recommendation**: Phase 1 sets exceptional quality bar. Use as reference for Phases 2-8.
+**Session**: Session 10 (Modern DiD)
 
 ---
 
-## Phase 2: Propensity Score Methods
+### CONCERN-12: Pre-Trends Testing
+**Phase**: Phase 3 (DiD)
+**Status**: ⏳ PLANNED
+**Priority**: HIGH
 
-### HIGH-4: Missing Bootstrap SE Methods
-**Severity**: HIGH
-**Status**: ⏸️ PENDING (flagged for Phase 2)
+**Issue**: Parallel trends assumption is untestable but can check pre-treatment balance
 
-**Issue**: Phase 2 plan mentions "correct bootstrap standard errors" but doesn't specify WHICH bootstrap method (pairs, residual, wild, block).
+**Solution**: Event study design with leads (pre-treatment periods)
 
-**Impact**:
-- Abadie-Imbens (2008) shows bootstrap fails for matching with replacement
-- Incorrect SE method → invalid inference
-- Interview vulnerability if asked about bootstrap validity
+**Implementation**:
+- File: `src/causal_inference/did/event_study.py`
+- Test coefficients on lead periods = 0
+- Plot event study with confidence bands
+- Report joint F-test for all leads
 
-**Mitigation** (proposed):
-Add to Phase 2 plan:
-1. **Document bootstrap methods**:
-   - Pairs bootstrap (resamples data pairs)
-   - Residual bootstrap (resamples residuals after fitting)
-   - Wild bootstrap (multiplies residuals by random weights)
-   - Block bootstrap (preserves cluster structure)
-
-2. **Abadie-Imbens correction**:
-   - For matching WITH replacement: standard bootstrap FAILS
-   - Must use Abadie-Imbens (2008) analytic variance or special bootstrap
-   - Explain when each SE method is valid
-
-3. **Implement multiple SE methods**:
-   - Analytic variance (Abadie-Imbens 2008)
-   - Bootstrap (with warnings for matching with replacement)
-   - Compare SE across methods in validation
+**Tests Required**:
+- Monte Carlo with parallel trends violations
+- Show event study detects violations
+- Validate joint F-test has correct size (5%)
 
 **References**:
-- Abadie, A., & Imbens, G. W. (2008). On the failure of the bootstrap for matching estimators. *Econometrica*, 76(6), 1537-1557.
-- Austin, P. C., & Small, D. S. (2014). The use of bootstrapping when using propensity score matching without replacement. *Statistics in Medicine*, 33(18), 3116-3127.
+- Roth (2022): "Pretest with caution: Event-study estimates after testing for parallel trends"
+
+**Session**: Session 9 (Event Study Design)
 
 ---
 
-### MEDIUM-5: No Balance Diagnostics Specified
-**Severity**: MEDIUM
-**Status**: ⏸️ PENDING (flagged for Phase 2)
+### CONCERN-13: Cluster-Robust SEs
+**Phase**: Phase 3 (DiD)
+**Status**: ⏳ PLANNED
+**Priority**: HIGH
 
-**Issue**: Phase 2 plan mentions "balance diagnostics" but doesn't specify:
-- Which covariates to check (all? subset?)
-- Threshold for SMD (< 0.1? < 0.05?)
-- What to do if balance fails
+**Issue**: DiD regression residuals correlated within units (serial correlation)
 
-**Impact**:
-- Ambiguous success criteria
-- Risk of claiming "good balance" without rigor
-- Interview question: "How did you verify balance?"
+**Solution**: Cluster standard errors at unit level
 
-**Mitigation** (proposed):
-1. **Standardized Mean Difference (SMD)**:
-   - Calculate for ALL covariates
-   - Threshold: |SMD| < 0.1 (recommended by Austin & Stuart 2015)
-   - Report max|SMD| across covariates
+**Implementation**:
+- Use statsmodels `cov_type="cluster"` with `cov_kwds={"groups": unit_id}`
+- Default clustering in all DiD estimators
+- Report both clustered and robust SEs for comparison
 
-2. **Variance ratios**:
-   - Ratio of variances between treated/control
-   - Should be close to 1.0 (threshold: 0.5-2.0)
-
-3. **Love plots**:
-   - Visualize SMD before/after matching
-   - Show improvement in balance
-
-4. **If balance fails**:
-   - Try different matching methods (caliper, kernel)
-   - Consider different propensity model
-   - Report honestly in results
+**Tests Required**:
+- Monte Carlo with serial correlation
+- Show naive SE too small (undercoverage < 90%)
+- Show cluster SE correct (coverage 93-97%)
 
 **References**:
-- Austin, P. C., & Stuart, E. A. (2015). Moving towards best practice when using inverse probability of treatment weighting (IPTW) using the propensity score to estimate causal treatment effects in observational studies. *Statistics in Medicine*, 34(28), 3661-3679.
+- Bertrand, Duflo, Mullainathan (2004): "How much should we trust DD estimates?"
 
----
-
-## Phase 3: Difference-in-Differences ✅ UPDATED
-
-### HIGH-6: Missing Modern DiD Methods ✅ FIXED
-**Severity**: HIGH
-**Status**: ✅ RESOLVED (2024-11-14)
-
-**Issue**: Original Phase 3 plan only mentioned Sun-Abraham and Callaway-Sant'Anna. Missing Borusyak et al. (2024) imputation estimator and lacked detail on what these methods do.
-
-**Impact**:
-- Incomplete coverage of modern DiD literature
-- Interview vulnerability: "Why not use imputation estimator?"
-- May implement TWFE when heterogeneity-robust method required
-
-**Mitigation** (implemented):
-Updated Phase 3 plan (`docs/ROADMAP.md`) with comprehensive modern DiD methods:
-
-1. **Callaway & Sant'Anna (2020)**:
-   - Group-time ATT with multiple periods
-   - Never-treated as clean comparison group
-   - Handles staggered adoption correctly
-
-2. **Sun & Abraham (2021)**:
-   - Interaction-weighted estimator for event studies
-   - Cohort-specific effects
-   - Clean relative time effects
-
-3. **Borusyak et al. (2024)**:
-   - Imputation estimator (two-stage approach)
-   - Impute counterfactuals, then difference
-   - Efficient and robust to heterogeneity
-
-4. **TWFE Bias Diagnostics**:
-   - Goodman-Bacon decomposition (2021)
-   - Visualization of forbidden comparisons
-   - When already-treated used as controls
-
-5. **Critical Methodological Notes**:
-   - TWFE ONLY valid with homogeneous treatment effects + parallel trends
-   - With staggered adoption + heterogeneity → TWFE biased
-   - Modern estimators provide valid inference under heterogeneity
-
-**Evidence of Fix**:
-- File: `docs/ROADMAP.md` (lines 86-125)
-- Estimated duration updated: 25-30 hours → 30-35 hours
-
-**References**:
-- Callaway, B., & Sant'Anna, P. H. (2021). Difference-in-differences with multiple time periods. *Journal of Econometrics*, 225(2), 200-230.
-- Sun, L., & Abraham, S. (2021). Estimating dynamic treatment effects in event studies with heterogeneous treatment effects. *Journal of Econometrics*, 225(2), 175-199.
-- Borusyak, K., Jaravel, X., & Spiess, J. (2024). Revisiting event study designs: Robust and efficient estimation. *Review of Economic Studies* (forthcoming).
-- Goodman-Bacon, A. (2021). Difference-in-differences with variation in treatment timing. *Journal of Econometrics*, 225(2), 254-277.
+**Session**: Session 8 (DiD Foundation)
 
 ---
 
 ## Phase 4: Instrumental Variables
 
-### HIGH-7: Weak Instrument Tests Missing
-**Severity**: HIGH
-**Status**: ⏸️ PENDING (flagged for Phase 4)
+### CONCERN-16: Weak Instrument Diagnostics (F > 10)
+**Phase**: Phase 4 (IV)
+**Status**: ⏳ PLANNED
+**Priority**: CRITICAL
 
-**Issue**: Phase 4 plan mentions "weak instrument diagnostics" but doesn't specify:
-- Which tests (Stock-Yogo? Anderson-Rubin? First-stage F?)
-- Thresholds (F > 10? F > 16.38?)
-- What to do if instruments are weak
+**Issue**: Weak instruments (F < 10) produce biased 2SLS estimates even in large samples
 
-**Impact**:
-- 2SLS with weak instruments → biased, inconsistent estimates
-- Confidence intervals don't have correct coverage
-- Interview question: "How did you test instrument strength?"
+**Solution**: First-stage F-statistic, Stock-Yogo critical values
 
-**Mitigation** (proposed):
-1. **First-Stage F-Statistic**:
-   - F > 10 (rule of thumb, Staiger & Stock 1997)
-   - F > 16.38 for 10% maximal bias (Stock-Yogo 2005 critical values)
-   - Report first-stage regression results
+**Implementation**:
+- File: `src/causal_inference/iv/diagnostics.py`
+- Function: `weak_instrument_test()`
+- Compute first-stage F-statistic
+- Compare to Stock-Yogo critical values (size=10%, 15%, 20%, 25%)
+- Raise warning if F < 10
 
-2. **Stock-Yogo Critical Values** (2005):
-   - Provide tables for maximal bias (5%, 10%, 20%, 30%)
-   - Provide tables for maximal size distortion
-   - Use appropriate critical value for sample size
-
-3. **Anderson-Rubin Confidence Intervals**:
-   - Weak-instrument robust CI
-   - Valid even with F < 10
-   - May be wide but coverage correct
-
-4. **If instruments weak**:
-   - Report honestly: "Instruments fail strength test"
-   - Use Anderson-Rubin CI (not 2SLS CI)
-   - Consider LIML estimator (more robust than 2SLS)
-   - DO NOT proceed with 2SLS inference
+**Tests Required**:
+- Monte Carlo with weak instruments (F ∈ [2, 5, 10, 20])
+- Show 2SLS bias increases as F decreases
+- Validate first-stage F computation
 
 **References**:
-- Stock, J. H., & Yogo, M. (2005). Testing for weak instruments in linear IV regression. In D. W. K. Andrews & J. H. Stock (Eds.), *Identification and Inference for Econometric Models: Essays in Honor of Thomas Rothenberg* (pp. 80-108). Cambridge University Press.
-- Staiger, D., & Stock, J. H. (1997). Instrumental variables regression with weak instruments. *Econometrica*, 65(3), 557-586.
-- Andrews, D. W., Moreira, M. J., & Stock, J. H. (2006). Optimal two-sided invariant similar tests for instrumental variables regression. *Econometrica*, 74(3), 715-752.
+- Stock & Yogo (2005): "Testing for weak instruments in linear IV regression"
+- Staiger & Stock (1997): "Instrumental variables regression with weak instruments"
+
+**Session**: Session 12 (Weak Instruments)
+
+---
+
+### CONCERN-17: Stock-Yogo Critical Values
+**Phase**: Phase 4 (IV)
+**Status**: ⏳ PLANNED
+**Priority**: HIGH
+
+**Issue**: F > 10 rule-of-thumb is conservative, Stock-Yogo provides exact critical values
+
+**Solution**: Table lookup based on number of instruments and endogenous regressors
+
+**Implementation**:
+- File: `src/causal_inference/iv/diagnostics.py`
+- Function: `stock_yogo_critical_values(K1, K2, size)`
+- Hard-coded table from Stock & Yogo (2005) Table 1
+- Report: F-stat, critical value, max IV bias, max size distortion
+
+**Tests Required**:
+- Verify table values match Stock & Yogo (2005)
+- Test with 1, 2, 3 instruments
+- Test with 1, 2 endogenous regressors
+
+**Session**: Session 12 (Weak Instruments)
+
+---
+
+### CONCERN-18: Anderson-Rubin CIs
+**Phase**: Phase 4 (IV)
+**Status**: ⏳ PLANNED
+**Priority**: HIGH
+
+**Issue**: Standard 2SLS CIs invalid with weak instruments (undercoverage)
+
+**Solution**: Anderson-Rubin confidence intervals (valid regardless of instrument strength)
+
+**Implementation**:
+- File: `src/causal_inference/iv/inference.py`
+- Function: `anderson_rubin_ci()`
+- Invert Anderson-Rubin test statistic
+- Return robust CI (may be infinite with very weak instruments)
+
+**Tests Required**:
+- Monte Carlo with weak instruments
+- Show standard CIs have coverage < 90%
+- Show AR CIs have coverage 93-97% (even with F < 10)
+
+**References**:
+- Anderson & Rubin (1949): "Estimation of the parameters of a single equation"
+- Chernozhukov & Hansen (2008): "Instrumental variable quantile regression"
+
+**Session**: Session 12 (Weak Instruments)
+
+---
+
+### CONCERN-19: Overidentification Testing
+**Phase**: Phase 4 (IV)
+**Status**: ⏳ PLANNED
+**Priority**: MEDIUM
+
+**Issue**: With multiple instruments, can test (but not prove) exogeneity
+
+**Solution**: Hansen J-test (Sargan test robust to heteroskedasticity)
+
+**Implementation**:
+- File: `src/causal_inference/iv/diagnostics.py`
+- Function: `hansen_j_test()`
+- Test: J ~ χ²(K - L) under exogeneity
+- Report: J-statistic, p-value, df
+
+**Tests Required**:
+- Monte Carlo with exogenous instruments (p-value uniform)
+- Monte Carlo with invalid instruments (p-value < 0.05)
+
+**References**:
+- Hansen (1982): "Large sample properties of generalized method of moments estimators"
+
+**Session**: Session 13 (LIML & GMM)
 
 ---
 
 ## Phase 5: Regression Discontinuity
 
-### MEDIUM-8: McCrary Density Test Missing
-**Severity**: MEDIUM
-**Status**: ⏸️ PENDING (flagged for Phase 5)
+### CONCERN-22: McCrary Density Test for Manipulation
+**Phase**: Phase 5 (RDD)
+**Status**: ⏳ PLANNED
+**Priority**: CRITICAL
 
-**Issue**: Phase 5 plan mentions "optimal bandwidth selection" but doesn't mention McCrary density test for manipulation.
+**Issue**: If units manipulate running variable to cross threshold, RDD invalid
 
-**Impact**:
-- RDD assumes units can't manipulate running variable precisely
-- If manipulation → RDD invalid (selection bias)
-- Interview question: "How do you test for manipulation?"
+**Solution**: McCrary (2008) density test for discontinuity at cutoff
 
-**Mitigation** (proposed):
-1. **McCrary Density Test** (2008):
-   - Test for discontinuity in density of running variable at cutoff
-   - Null: no discontinuity (no manipulation)
-   - Alternative: discontinuity (manipulation detected)
+**Implementation**:
+- File: `src/causal_inference/rdd/diagnostics.py`
+- Function: `mccrary_test()`
+- Estimate density on either side of cutoff
+- Test for discontinuity in density
+- Plot density with confidence bands
 
-2. **Visual Inspection**:
-   - Histogram of running variable around cutoff
-   - Should be smooth, no "bunching" at cutoff
-
-3. **If manipulation detected**:
-   - RDD invalid (selection bias)
-   - Report honestly: "Manipulation detected, RDD not appropriate"
-   - Consider alternative design (IV, DiD)
+**Tests Required**:
+- Monte Carlo with no manipulation (p-value uniform)
+- Monte Carlo with manipulation (p-value < 0.05)
+- Validate against R package `rdd`
 
 **References**:
-- McCrary, J. (2008). Manipulation of the running variable in the regression discontinuity design: A density test. *Journal of Econometrics*, 142(2), 698-714.
-- Cattaneo, M. D., Jansson, M., & Ma, X. (2020). Simple local polynomial density estimators. *Journal of the American Statistical Association*, 115(531), 1449-1455.
+- McCrary (2008): "Manipulation of the running variable in the RDD"
+- Cattaneo, Jansson, Ma (2020): "Simple local polynomial density estimators"
+
+**Session**: Session 15 (RDD Diagnostics)
 
 ---
 
-### MEDIUM-9: Bandwidth Sensitivity Analysis Missing
-**Severity**: MEDIUM
-**Status**: ⏸️ PENDING (flagged for Phase 5)
+### CONCERN-23: Bandwidth Sensitivity Analysis
+**Phase**: Phase 5 (RDD)
+**Status**: ⏳ PLANNED
+**Priority**: HIGH
 
-**Issue**: Phase 5 plan mentions "optimal bandwidth selection" (presumably Imbens-Kalyanaraman or CCT) but doesn't mention sensitivity analysis.
+**Issue**: RDD estimates sensitive to bandwidth choice
 
-**Impact**:
-- Optimal bandwidth is data-driven estimate, has uncertainty
-- Results may be sensitive to bandwidth choice
-- Reviewer question: "Did you try different bandwidths?"
+**Solution**: Report estimates for multiple bandwidths, plot sensitivity
 
-**Mitigation** (proposed):
-1. **Report results at multiple bandwidths**:
-   - Optimal bandwidth (IK or CCT)
-   - 0.5× optimal (more local, higher variance)
-   - 2× optimal (more global, higher bias)
+**Implementation**:
+- File: `src/causal_inference/rdd/sensitivity.py`
+- Function: `bandwidth_sensitivity()`
+- Compute estimates for h ∈ [0.5×h_opt, 2.0×h_opt]
+- Plot estimates vs bandwidth with CIs
+- Report IK, CCT bandwidth selectors
 
-2. **Bandwidth sensitivity plot**:
-   - X-axis: bandwidth
-   - Y-axis: RDD estimate
-   - Show how estimate changes with bandwidth
-   - Should be relatively stable
-
-3. **If highly sensitive**:
-   - Report uncertainty honestly
-   - May indicate functional form misspecification
-   - Consider polynomial order sensitivity too
+**Tests Required**:
+- Monte Carlo: Estimates should be stable around h_opt
+- Validate bandwidth selectors match rdrobust package
 
 **References**:
-- Imbens, G., & Kalyanaraman, K. (2012). Optimal bandwidth choice for the regression discontinuity estimator. *Review of Economic Studies*, 79(3), 933-959.
-- Calonico, S., Cattaneo, M. D., & Titiunik, R. (2014). Robust nonparametric confidence intervals for regression-discontinuity designs. *Econometrica*, 82(6), 2295-2326.
+- Imbens & Kalyanaraman (2012): "Optimal bandwidth choice for RDD"
+- Calonico, Cattaneo, Titiunik (2014): "Robust data-driven inference in RDD"
+
+**Session**: Session 16 (RDD Robustness)
 
 ---
 
-## Phase 6: Sensitivity Analysis
+### CONCERN-24: Covariate Balance Checks
+**Phase**: Phase 5 (RDD)
+**Status**: ⏳ PLANNED
+**Priority**: MEDIUM
 
-### LOW-10: No Specific Concerns Identified
-**Severity**: LOW
-**Status**: ⏸️ PENDING (review Phase 6 plan when developed)
+**Issue**: RDD assumes no discontinuity in covariates at cutoff (placebo test)
 
-**Issue**: Phase 6 plan very brief: "Robustness to unmeasured confounding"
+**Solution**: Run RDD on pre-treatment covariates (should find no effect)
 
-**Mitigation** (when Phase 6 plan developed):
-- Specify which sensitivity methods (Rosenbaum bounds, E-value, etc.)
-- Document when sensitivity analysis appropriate
-- Provide interpretation guidance
+**Implementation**:
+- File: `src/causal_inference/rdd/diagnostics.py`
+- Function: `covariate_balance_test()`
+- Run RDD on each covariate
+- Report: estimates, p-values, Bonferroni correction
+- Flag if any covariate shows discontinuity
 
----
+**Tests Required**:
+- Monte Carlo with balanced covariates (no discontinuities)
+- Monte Carlo with unbalanced covariates (detect discontinuities)
 
-## Phase 7: Matching Methods
+**References**:
+- Lee & Lemieux (2010): "Regression discontinuity designs in economics"
 
-### LOW-11: No Specific Concerns Identified
-**Severity**: LOW
-**Status**: ⏸️ PENDING (review Phase 7 plan when developed)
-
-**Issue**: Phase 7 plan very brief: "Beyond PSM - CEM, Mahalanobis, Genetic matching"
-
-**Mitigation** (when Phase 7 plan developed):
-- Document when each matching method appropriate
-- Compare bias-variance tradeoffs
-- Specify balance diagnostics for each method
+**Session**: Session 16 (RDD Robustness)
 
 ---
 
 ## Phase 8: CATE & Advanced Methods
 
-### HIGH-12: Honesty Requirement for Causal Forests Missing
-**Severity**: HIGH
-**Status**: ⏸️ PENDING (flagged for Phase 8)
+### CONCERN-28: Causal Forests Require Honesty for Valid Inference
+**Phase**: Phase 8 (CATE)
+**Status**: ⏳ PLANNED
+**Priority**: CRITICAL
 
-**Issue**: Phase 8 plan mentions "causal forests" but doesn't mention honesty requirement.
+**Issue**: Standard random forests overfit → invalid CIs for treatment effects
 
-**Impact**:
-- Non-honest forests → overfitting, biased CATE estimates
-- Standard forests (grf default without honesty) invalid for inference
-- Interview question: "Why do causal forests require honesty?"
+**Solution**: Honest forests (split sample for tree building vs estimation)
 
-**Mitigation** (proposed):
-1. **Honesty Requirement** (Wager & Athey 2018):
-   - Split sample: estimation sample + inference sample
-   - Build tree structure on estimation sample only
-   - Compute leaf averages on separate inference sample
-   - Prevents overfitting, enables valid inference
+**Implementation**:
+- Use `grf` package (R) or `econml.CausalForestDML` (Python)
+- Verify honesty parameter enabled
+- Report: estimates, standard errors, confidence intervals
 
-2. **Implementation**:
-   - Use `grf` package with `honesty=TRUE` (default in R)
-   - Document sample splitting procedure
-   - Report both honest and non-honest for comparison
-
-3. **Explain why honesty needed**:
-   - Adaptive tree building (data snooping) → overfitting
-   - Using same data twice → biased variance estimates
-   - Honesty separates structure learning from estimation
+**Tests Required**:
+- Monte Carlo with heterogeneous effects
+- Show honest forests have correct coverage (93-97%)
+- Show non-honest forests undercover (<90%)
 
 **References**:
-- Wager, S., & Athey, S. (2018). Estimation and inference of heterogeneous treatment effects using random forests. *Journal of the American Statistical Association*, 113(523), 1228-1242.
-- Athey, S., Tibshirani, J., & Wager, S. (2019). Generalized random forests. *Annals of Statistics*, 47(2), 1148-1178.
+- Wager & Athey (2018): "Estimation and inference of heterogeneous treatment effects using random forests"
+- Athey, Tibshirani, Wager (2019): "Generalized random forests"
+
+**Session**: Session 22 (Causal Forests)
 
 ---
 
-### HIGH-13: Cross-Fitting for Double ML Missing
-**Severity**: HIGH
-**Status**: ⏸️ PENDING (flagged for Phase 8)
+### CONCERN-29: Double ML Requires Cross-Fitting to Remove Regularization Bias
+**Phase**: Phase 8 (CATE)
+**Status**: ⏳ PLANNED
+**Priority**: CRITICAL
 
-**Issue**: Phase 8 plan mentions "meta-learners" but doesn't specify cross-fitting requirement for Double ML.
+**Issue**: Using same sample for ML model fitting and treatment effect estimation introduces bias
 
-**Impact**:
-- Without cross-fitting → overfitting bias in nuisance estimates
-- Confidence intervals don't have correct coverage
-- Interview question: "Why does DML require cross-fitting?"
+**Solution**: K-fold cross-fitting (Chernozhukov et al. 2018)
 
-**Mitigation** (proposed):
-1. **Cross-Fitting** (Chernozhukov et al. 2018):
-   - Split data into K folds (K ≥ 2, typically K=5)
-   - For each fold k:
-     - Train nuisance models (outcome, treatment) on OTHER folds
-     - Predict on fold k using out-of-sample model
-   - Compute final ATE from out-of-sample predictions
+**Implementation**:
+- File: `src/causal_inference/dml/cross_fit.py`
+- Function: `double_ml_cross_fit()`
+- 5-fold or 10-fold cross-fitting
+- Average estimates across folds
+- Variance estimation accounts for cross-fitting
 
-2. **Why cross-fitting needed**:
-   - In-sample ML predictions → overfitting
-   - Biased nuisance estimates → biased ATE
-   - Cross-fitting removes regularization bias
-
-3. **Implementation**:
-   - Use `DoubleML` package (Python/R)
-   - Document fold structure
-   - Report results with K=2, K=5, K=10 for sensitivity
+**Tests Required**:
+- Monte Carlo: Show cross-fit DML unbiased
+- Show non-cross-fit DML has bias > 0.20
+- Validate coverage 93-97%
 
 **References**:
-- Chernozhukov, V., Chetverikov, D., Demirer, M., Duflo, E., Hansen, C., Newey, W., & Robins, J. (2018). Double/debiased machine learning for treatment and structural parameters. *The Econometrics Journal*, 21(1), C1-C68.
+- Chernozhukov et al. (2018): "Double/debiased machine learning for treatment and structural parameters"
+
+**Session**: Session 23 (Double Machine Learning)
 
 ---
 
-## Summary Table
+## Summary by Priority
 
-| Phase | Concern | Severity | Status | Priority |
-|-------|---------|----------|--------|----------|
-| 1 | Circular validation | CRITICAL | ✅ FIXED | - |
-| 1 | Missing adversarial tests | HIGH | ✅ FIXED | - |
-| 1 | HC variant not documented | MEDIUM | ✅ FIXED | - |
-| 2 | Missing bootstrap SE methods | HIGH | ⏸️ PENDING | Phase 2 start |
-| 2 | No balance diagnostics | MEDIUM | ⏸️ PENDING | Phase 2 start |
-| 3 | Missing modern DiD methods | HIGH | ✅ FIXED | - |
-| 4 | Weak instrument tests | HIGH | ⏸️ PENDING | Phase 4 start |
-| 5 | McCrary density test | MEDIUM | ⏸️ PENDING | Phase 5 start |
-| 5 | Bandwidth sensitivity | MEDIUM | ⏸️ PENDING | Phase 5 start |
-| 6 | (Review when plan developed) | LOW | ⏸️ PENDING | Phase 6 start |
-| 7 | (Review when plan developed) | LOW | ⏸️ PENDING | Phase 7 start |
-| 8 | Honesty for causal forests | HIGH | ⏸️ PENDING | Phase 8 start |
-| 8 | Cross-fitting for DML | HIGH | ⏸️ PENDING | Phase 8 start |
+### CRITICAL (Must Address)
+- CONCERN-11: TWFE bias with staggered adoption (DiD)
+- CONCERN-16: Weak instrument diagnostics (IV)
+- CONCERN-22: McCrary density test (RDD)
+- CONCERN-28: Causal forests honesty (CATE)
+- CONCERN-29: Double ML cross-fitting (CATE)
 
----
+### HIGH (Important for Rigor)
+- CONCERN-5: Bootstrap SE for PSM
+- CONCERN-12: Pre-trends testing (DiD)
+- CONCERN-13: Cluster-robust SEs (DiD)
+- CONCERN-17: Stock-Yogo critical values (IV)
+- CONCERN-18: Anderson-Rubin CIs (IV)
+- CONCERN-23: Bandwidth sensitivity (RDD)
 
-## Lessons Learned (Phase 1)
-
-1. **Ground truth validation is essential**:
-   - Cross-language validation alone insufficient
-   - Monte Carlo with known parameters catches conceptual errors
-   - Triangulation (3+ languages) provides additional confidence
-
-2. **Adversarial testing prevents production failures**:
-   - Edge cases (n=1, all treated, NaN) often overlooked
-   - Comprehensive adversarial suite (49 tests) found issues in validation logic
-   - Investment in adversarial tests pays dividends in reliability
-
-3. **Documentation is part of rigor**:
-   - HC3 choice needs justification (Long & Ervin 2000)
-   - Variance formulas need mathematical explanation
-   - Users need to understand WHY specific methods chosen
-
-4. **Modern methods evolve rapidly**:
-   - DiD literature transformed 2020-2024 (CS, SA, Borusyak)
-   - Must stay current with methodological advances
-   - Review plans before each phase for recent papers
+### MEDIUM (Nice to Have)
+- CONCERN-19: Overidentification testing (IV)
+- CONCERN-24: Covariate balance checks (RDD)
 
 ---
 
-## Next Steps
+## Validation Status
 
-**Before Phase 2 (PSM)**:
-1. Review this document for PSM concerns (#4, #5)
-2. Update Phase 2 plan with bootstrap SE methods
-3. Specify balance diagnostics thresholds
-4. Review recent PSM literature (2023-2024)
+**Total Concerns**: 13 identified
+**Addressed**: 0 (Phases 1-2 completed, no major concerns flagged)
+**Planned**: 13 (Phases 3-8)
 
-**Before Phase 3 (DiD)**:
-1. Verify Phase 3 plan incorporates all modern methods
-2. Check for new DiD papers since 2024
-3. Plan TWFE bias simulation
-
-**Before Phase 4 (IV)**:
-1. Review weak instrument concern (#7)
-2. Update Phase 4 plan with Stock-Yogo tests
-3. Document what to do if instruments weak
-
-**Before Phase 5 (RDD)**:
-1. Review McCrary and bandwidth concerns (#8, #9)
-2. Add McCrary test to plan
-3. Add bandwidth sensitivity analysis
-
-**Before Phase 8 (CATE)**:
-1. Review honesty and cross-fitting concerns (#12, #13)
-2. Update Phase 8 plan with DML requirements
-3. Document causal forest honesty requirement
+**Next Session (Session 7)**: Address CONCERN-5 (Abadie-Imbens SE for PSM)
 
 ---
 
-**Created by**: Claude Code
-**Review Date**: Before each phase start
-**Last Updated**: 2024-11-14
+**References**: See `docs/ROADMAP.md` for complete methodological references
+**Last Reviewed**: 2025-11-21

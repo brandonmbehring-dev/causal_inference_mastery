@@ -15,7 +15,7 @@ class TestIPWATEMonteCarlo:
 
     def test_ipw_rct(self):
         """Validate ipw_ate with varying propensity scores (1000 runs)."""
-        n_runs = 1000
+        n_runs = 5000
         true_ate = 2.0
 
         estimates = []

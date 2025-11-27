@@ -15,7 +15,7 @@ class TestStratifiedATEMonteCarlo:
 
     def test_stratified_rct(self):
         """Validate stratified_ate on stratified RCT (3 strata, 1000 runs)."""
-        n_runs = 1000
+        n_runs = 5000
         true_ate = 2.0
 
         estimates = []

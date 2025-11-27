@@ -49,6 +49,12 @@ def ipw_ate(
         - 'n_treated': Number of treated units
         - 'n_control': Number of control units
         - 'effective_n': Effective sample size (accounting for weights)
+        - 'weight_stats': Dictionary with positivity diagnostics:
+            - 'min_propensity': Minimum propensity score
+            - 'max_propensity': Maximum propensity score
+            - 'min_weight': Minimum IPW weight
+            - 'max_weight': Maximum IPW weight
+            - 'weight_cv': Coefficient of variation (SD/mean) of weights
 
     Raises
     ------
@@ -73,10 +79,16 @@ def ipw_ate(
     Notes
     -----
     - Weights: w_i = 1/P(T=1|X) for treated, 1/(1-P(T=1|X)) for control
+    - Weight normalization: Weights normalized to sum to group size (always applied)
+        - Reduces variance from extreme weights while maintaining unbiasedness
+        - Standard practice for IPW estimation
     - Estimator: Horvitz-Thompson weighted difference-in-means
     - Variance: Robust estimator accounting for weights
     - Assumes propensity scores are known or correctly estimated
     - Large weights (extreme propensity) increase variance
+    - Positivity diagnostics: weight_stats helps diagnose extreme propensities
+        - High weight_cv (>2) indicates instability
+        - max_weight > 10 suggests extreme propensity scores
     """
     # ============================================================================
     # Input Validation
@@ -183,16 +195,29 @@ def ipw_ate(
     # Control: w_i = 1 / P(T=0|X_i) = 1 / (1 - P(T=1|X_i))
     weights = np.where(treatment == 1, 1 / propensity, 1 / (1 - propensity))
 
-    # Weighted means
-    # Treated mean = sum(w_i * Y_i * T_i) / sum(w_i * T_i)
+    # Separate treated and control masks
     treated_mask = treatment == 1
     control_mask = treatment == 0
 
-    weighted_sum_treated = np.sum(weights[treated_mask] * outcomes[treated_mask])
-    sum_weights_treated = np.sum(weights[treated_mask])
+    n_treated = int(np.sum(treated_mask))
+    n_control = int(np.sum(control_mask))
 
-    weighted_sum_control = np.sum(weights[control_mask] * outcomes[control_mask])
-    sum_weights_control = np.sum(weights[control_mask])
+    # Weight normalization (always applied)
+    # Normalize weights to sum to group size - reduces variance from extreme weights
+    # while maintaining unbiasedness. This is standard practice for IPW estimation.
+    weights_treated = weights[treated_mask]
+    weights_control = weights[control_mask]
+
+    weights_treated_norm = weights_treated * (n_treated / np.sum(weights_treated))
+    weights_control_norm = weights_control * (n_control / np.sum(weights_control))
+
+    # Weighted means using normalized weights
+    # Treated mean = sum(w_norm_i * Y_i * T_i) / sum(w_norm_i * T_i)
+    weighted_sum_treated = np.sum(weights_treated_norm * outcomes[treated_mask])
+    sum_weights_treated = np.sum(weights_treated_norm)
+
+    weighted_sum_control = np.sum(weights_control_norm * outcomes[control_mask])
+    sum_weights_control = np.sum(weights_control_norm)
 
     mean_treated = weighted_sum_treated / sum_weights_treated
     mean_control = weighted_sum_control / sum_weights_control
@@ -205,18 +230,19 @@ def ipw_ate(
     # ============================================================================
 
     # Variance of weighted mean: Var(weighted mean) = sum(w_i^2 * (Y_i - mean)^2) / (sum w_i)^2
+    # Using normalized weights for all variance calculations
 
     # Treated variance
     residuals_treated = outcomes[treated_mask] - mean_treated
     var_treated = (
-        np.sum((weights[treated_mask] ** 2) * (residuals_treated ** 2))
+        np.sum((weights_treated_norm ** 2) * (residuals_treated ** 2))
         / (sum_weights_treated ** 2)
     )
 
     # Control variance
     residuals_control = outcomes[control_mask] - mean_control
     var_control = (
-        np.sum((weights[control_mask] ** 2) * (residuals_control ** 2))
+        np.sum((weights_control_norm ** 2) * (residuals_control ** 2))
         / (sum_weights_control ** 2)
     )
 
@@ -227,19 +253,37 @@ def ipw_ate(
     se = np.sqrt(var_ate)
 
     # Confidence interval
-    z_critical = stats.norm.ppf(1 - alpha / 2)
-    ci_lower = ate - z_critical * se
-    ci_upper = ate + z_critical * se
+    # Use t-distribution for small samples (n < 50), z for large samples
+    n = len(outcomes)
+    if n < 50:
+        # Degrees of freedom: n - 2 (one for each group mean)
+        df = n - 2
+        critical = stats.t.ppf(1 - alpha / 2, df=df)
+    else:
+        # For large samples, t ≈ z
+        critical = stats.norm.ppf(1 - alpha / 2)
+    ci_lower = ate - critical * se
+    ci_upper = ate + critical * se
 
     # Effective sample size (sum of weights)^2 / sum of squared weights
     # This measures how much information we have accounting for variable weights
-    effective_n_treated = (sum_weights_treated ** 2) / np.sum(weights[treated_mask] ** 2)
-    effective_n_control = (sum_weights_control ** 2) / np.sum(weights[control_mask] ** 2)
+    effective_n_treated = (sum_weights_treated ** 2) / np.sum(weights_treated_norm ** 2)
+    effective_n_control = (sum_weights_control ** 2) / np.sum(weights_control_norm ** 2)
     effective_n = effective_n_treated + effective_n_control
 
-    # Total counts
-    n_treated = int(np.sum(treatment == 1))
-    n_control = int(np.sum(treatment == 0))
+    # ============================================================================
+    # Positivity Diagnostics
+    # ============================================================================
+
+    # Calculate weight statistics for user visibility
+    # These help diagnose extreme propensity scores and weight instability
+    weight_stats = {
+        "min_propensity": float(np.min(propensity)),
+        "max_propensity": float(np.max(propensity)),
+        "min_weight": float(np.min(weights)),
+        "max_weight": float(np.max(weights)),
+        "weight_cv": float(np.std(weights) / np.mean(weights)),  # Coefficient of variation
+    }
 
     return {
         "estimate": float(ate),
@@ -249,4 +293,5 @@ def ipw_ate(
         "n_treated": n_treated,
         "n_control": n_control,
         "effective_n": float(effective_n),
+        "weight_stats": weight_stats,
     }

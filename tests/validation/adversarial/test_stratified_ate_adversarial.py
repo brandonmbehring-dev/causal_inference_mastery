@@ -91,9 +91,8 @@ class TestStratifiedATEStratumEdgeCases:
         # SE should be dominated by high-variance stratum
         assert result["se"] > 5.0
 
-    @pytest.mark.xfail(reason="Known issue: n1=1 or n0=1 in stratum produces NaN variance")
     def test_single_observation_per_group_per_stratum(self):
-        """n1=1, n0=1 in each stratum."""
+        """n1=1, n0=1 in each stratum (bug was fixed!)."""
         outcomes = np.array([10.0, 5.0, 20.0, 15.0, 30.0, 25.0])
         treatment = np.array([1, 0, 1, 0, 1, 0])
         strata = np.array([0, 0, 1, 1, 2, 2])
@@ -107,17 +106,24 @@ class TestStratifiedATEStratumEdgeCases:
         assert result["se"] < 1e-10
 
     def test_perfect_stratification(self):
-        """All outcomes identical within strata."""
-        outcomes = np.array([10.0] * 20 + [5.0] * 20 + [20.0] * 20 + [15.0] * 20)
-        treatment = np.array([1] * 10 + [0] * 10 + [1] * 10 + [0] * 10 +
-                           [1] * 10 + [0] * 10 + [1] * 10 + [0] * 10)
-        strata = np.array([0] * 20 + [0] * 20 + [1] * 20 + [1] * 20)
+        """All outcomes identical within treatment-stratum groups."""
+        # Stratum 0: 20 units (10 treated with Y=10, 10 control with Y=5)
+        # Stratum 1: 20 units (10 treated with Y=20, 10 control with Y=15)
+        outcomes = np.array(
+            [10.0] * 10 + [5.0] * 10 +  # Stratum 0
+            [20.0] * 10 + [15.0] * 10    # Stratum 1
+        )
+        treatment = np.array(
+            [1] * 10 + [0] * 10 +  # Stratum 0
+            [1] * 10 + [0] * 10    # Stratum 1
+        )
+        strata = np.array([0] * 20 + [1] * 20)
 
         result = stratified_ate(outcomes, treatment, strata)
 
-        # ATE = 5 in both strata
+        # ATE = 5 in both strata: (10-5)=5 in s0, (20-15)=5 in s1
         assert result["estimate"] == 5.0
-        # Zero variance within groups
+        # Zero variance within treatment-stratum groups
         assert result["se"] < 1e-10
 
 
@@ -162,3 +168,33 @@ class TestStratifiedATEMissingStrata:
         """All strata should have both treated and control."""
         # This should raise an error - tested in main test suite
         pass  # Covered by error handling tests
+
+
+class TestStratifiedATENumericalStability:
+    """Test stratified_ate with numerically challenging scenarios."""
+
+    def test_extremely_large_number_of_strata(self):
+        """
+        Test with 500 strata (near-continuous stratification).
+
+        Each stratum has n=2 (1 treated, 1 control).
+        """
+        np.random.seed(42)
+        n_strata = 500
+        outcomes = []
+        treatment = []
+        strata = []
+
+        for s in range(n_strata):
+            # Each stratum: 1 treated (Y=2), 1 control (Y=0) → ATE=2
+            outcomes.extend([2.0, 0.0])
+            treatment.extend([1, 0])
+            strata.extend([s, s])
+
+        result = stratified_ate(np.array(outcomes), np.array(treatment), np.array(strata))
+
+        # Should compute ATE = 2.0
+        assert np.isclose(result["estimate"], 2.0)
+        assert result["n_strata"] == 500
+        # SE should be zero (no variance within strata)
+        assert result["se"] < 1e-10

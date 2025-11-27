@@ -25,6 +25,112 @@ from scipy import stats
 from .sharp_rdd import SharpRDD
 
 
+def _local_polynomial_regression(
+    Y: np.ndarray,
+    X: np.ndarray,
+    cutoff: float,
+    bandwidth: float,
+    order: int,
+    kernel: str = "triangular",
+) -> tuple[float, float]:
+    """
+    Fit local polynomial regression on each side of cutoff.
+
+    Parameters
+    ----------
+    Y : array-like, shape (n,)
+        Outcome variable
+    X : array-like, shape (n,)
+        Running variable
+    cutoff : float
+        RDD cutoff value
+    bandwidth : float
+        Bandwidth for kernel weighting
+    order : int
+        Polynomial order (0=constant, 1=linear, 2=quadratic, etc.)
+    kernel : str, default='triangular'
+        Kernel function ('triangular' or 'rectangular')
+
+    Returns
+    -------
+    estimate : float
+        Treatment effect at cutoff (jump in fitted polynomial)
+    se : float
+        Robust standard error of the estimate
+    """
+    Y = np.asarray(Y).flatten()
+    X = np.asarray(X).flatten()
+
+    def kernel_weight(u: np.ndarray, kernel: str) -> np.ndarray:
+        """Compute kernel weights."""
+        if kernel == "triangular":
+            return np.maximum(1 - np.abs(u), 0)
+        else:  # rectangular
+            return (np.abs(u) <= 1).astype(float)
+
+    def fit_side(Y_side: np.ndarray, X_side: np.ndarray, bw: float) -> tuple[float, float]:
+        """Fit polynomial on one side, return intercept and its variance."""
+        if len(X_side) == 0:
+            return np.nan, np.nan
+
+        X_centered = X_side - cutoff
+        u = X_centered / bw
+        weights = kernel_weight(u, kernel)
+
+        # Only use observations with positive weight
+        pos_weight = weights > 0
+        if np.sum(pos_weight) < order + 1:
+            return np.nan, np.nan
+
+        X_c = X_centered[pos_weight]
+        Y_s = Y_side[pos_weight]
+        W = weights[pos_weight]
+
+        # Build design matrix for polynomial of given order
+        # [1, X, X^2, ..., X^order]
+        design = np.column_stack([X_c**p for p in range(order + 1)])
+
+        # Weighted least squares
+        W_diag = np.diag(W)
+        XtWX = design.T @ W_diag @ design
+        XtWY = design.T @ W_diag @ Y_s
+
+        try:
+            coefs = np.linalg.solve(XtWX, XtWY)
+        except np.linalg.LinAlgError:
+            return np.nan, np.nan
+
+        # Intercept is the value at cutoff (X_centered = 0)
+        alpha = coefs[0]
+
+        # Robust variance (sandwich estimator)
+        residuals = Y_s - design @ coefs
+        meat = design.T @ W_diag @ np.diag(residuals**2) @ W_diag @ design
+        try:
+            XtWX_inv = np.linalg.inv(XtWX)
+        except np.linalg.LinAlgError:
+            XtWX_inv = np.linalg.pinv(XtWX)
+
+        var_matrix = XtWX_inv @ meat @ XtWX_inv
+        variance = var_matrix[0, 0]
+
+        return alpha, variance
+
+    # Fit left side (X < cutoff)
+    left_mask = X < cutoff
+    alpha_left, var_left = fit_side(Y[left_mask], X[left_mask], bandwidth)
+
+    # Fit right side (X >= cutoff)
+    right_mask = X >= cutoff
+    alpha_right, var_right = fit_side(Y[right_mask], X[right_mask], bandwidth)
+
+    # Treatment effect: jump at cutoff
+    estimate = alpha_right - alpha_left
+    se = np.sqrt(var_left + var_right)
+
+    return estimate, se
+
+
 def mccrary_density_test(
     X: np.ndarray,
     cutoff: float,
@@ -450,43 +556,27 @@ def polynomial_order_sensitivity(
 
     results = []
     for order in range(max_order + 1):
-        # Fit weighted polynomial regression on each side
-        # This is a simplified implementation - full version would use
-        # kernel-weighted polynomial regression
+        # Fit local polynomial regression of given order
+        estimate, se = _local_polynomial_regression(
+            Y, X, cutoff=cutoff, bandwidth=bandwidth, order=order
+        )
 
-        # For now, use SharpRDD (which is p=1) as reference
-        # and note that full implementation would fit different orders
-        if order == 1:
-            # Use SharpRDD (local linear)
-            rdd = SharpRDD(cutoff=cutoff, bandwidth=bandwidth, inference="robust")
-            rdd.fit(Y, X)
+        # Compute CI using t-distribution
+        # df approximation: effective n on each side minus parameters
+        in_band = np.abs(X - cutoff) <= bandwidth
+        n_eff = np.sum(in_band)
+        df = max(n_eff - 2 * (order + 1), 1)
+        t_crit = stats.t.ppf(0.975, df=df)
 
-            results.append(
-                {
-                    "order": order,
-                    "estimate": rdd.coef_,
-                    "se": rdd.se_,
-                    "ci_lower": rdd.ci_[0],
-                    "ci_upper": rdd.ci_[1],
-                }
-            )
-        else:
-            # Placeholder: Full implementation would fit order-p polynomial
-            # For now, use SharpRDD estimate with slightly perturbed values
-            rdd = SharpRDD(cutoff=cutoff, bandwidth=bandwidth, inference="robust")
-            rdd.fit(Y, X)
-
-            # Simplified: just return RDD estimate
-            # (Full version would implement polynomial regression)
-            results.append(
-                {
-                    "order": order,
-                    "estimate": rdd.coef_,
-                    "se": rdd.se_,
-                    "ci_lower": rdd.ci_[0],
-                    "ci_upper": rdd.ci_[1],
-                }
-            )
+        results.append(
+            {
+                "order": order,
+                "estimate": estimate,
+                "se": se,
+                "ci_lower": estimate - t_crit * se,
+                "ci_upper": estimate + t_crit * se,
+            }
+        )
 
     return pd.DataFrame(results)
 

@@ -87,6 +87,44 @@ class TestIPWKnownAnswers:
         # SE will be large due to extreme weights
         assert result["se"] > 0
 
+    def test_ipw_zero_treatment_effect(self):
+        """
+        Test IPW recovers zero ATE when there is no treatment effect.
+
+        Setup: Y is independent of T, only depends on propensity-related covariate.
+        IPW should recover ATE ≈ 0.
+        """
+        treatment = np.array([1, 1, 1, 1, 0, 0, 0, 0])
+        # No treatment effect: same outcomes regardless of treatment
+        outcomes = np.array([5.0, 6.0, 7.0, 8.0, 5.0, 6.0, 7.0, 8.0])
+        propensity = np.array([0.6, 0.7, 0.8, 0.5, 0.4, 0.3, 0.2, 0.5])
+
+        result = ipw_ate(outcomes, treatment, propensity)
+
+        # Should estimate ATE ≈ 0 (no treatment effect)
+        expected_ate = 0.0
+        assert np.isclose(result["estimate"], expected_ate, atol=0.5)
+
+    def test_ipw_negative_treatment_effect(self):
+        """
+        Test IPW with negative treatment effect (treatment harms).
+
+        Setup: Treatment reduces outcomes by 3.0
+        IPW should recover ATE = -3.0
+        """
+        treatment = np.array([1, 1, 1, 0, 0, 0])
+        # Treated group outcomes lower than control
+        outcomes = np.array([5.0, 6.0, 7.0, 8.0, 9.0, 10.0])
+        propensity = np.array([0.6, 0.7, 0.5, 0.4, 0.3, 0.5])
+
+        result = ipw_ate(outcomes, treatment, propensity)
+
+        # Treated mean ≈ 6, Control mean ≈ 9, ATE ≈ -3
+        expected_ate = -3.0
+
+        # With small n and varying propensities, allow generous tolerance
+        assert np.isclose(result["estimate"], expected_ate, atol=2.0)
+
 
 class TestIPWErrorHandling:
     """Test error handling for ipw_ate."""
