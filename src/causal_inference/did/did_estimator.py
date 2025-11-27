@@ -14,6 +14,7 @@ from scipy import stats
 import warnings
 
 from src.causal_inference.did.wild_bootstrap import wild_cluster_bootstrap_se
+from src.causal_inference.utils.validation import validate_did_inputs
 
 
 def did_2x2(
@@ -113,42 +114,14 @@ def did_2x2(
     >>> result = did_2x2(outcomes, treatment, post, unit_id)
     >>> print(f"DiD estimate: {result['estimate']:.3f} (SE: {result['se']:.3f})")
     """
-    # Input validation
-    if not (len(outcomes) == len(treatment) == len(post) == len(unit_id)):
-        raise ValueError(
-            f"All inputs must have same length. Got: outcomes={len(outcomes)}, "
-            f"treatment={len(treatment)}, post={len(post)}, unit_id={len(unit_id)}"
-        )
-    
-    if len(outcomes) == 0:
-        raise ValueError("Inputs cannot be empty")
+    # Input validation (using shared validation utilities)
+    validate_did_inputs(outcomes, treatment, post, unit_id)
 
     # Check alpha
     if not (0 < alpha < 1):
         raise ValueError(f"alpha must be between 0 and 1. Got: {alpha}")
 
-    # Check for NaN/inf
-    if np.any(~np.isfinite(outcomes)):
-        raise ValueError("outcomes contains NaN or inf values")
-    if np.any(~np.isfinite(treatment)):
-        raise ValueError("treatment contains NaN or inf values")
-    if np.any(~np.isfinite(post)):
-        raise ValueError("post contains NaN or inf values")
-    
-    # Check treatment is binary
-    unique_treatment = np.unique(treatment)
-    if not np.array_equal(unique_treatment, [0, 1]):
-        raise ValueError(
-            f"treatment must be binary (0, 1). Got unique values: {unique_treatment}"
-        )
-    
-    # Check post is binary
-    unique_post = np.unique(post)
-    if not np.array_equal(unique_post, [0, 1]):
-        raise ValueError(
-            f"post must be binary (0, 1). Got unique values: {unique_post}"
-        )
-    
+    # DiD-specific validations
     # Check treatment is unit-level (constant within units)
     df = pd.DataFrame({"unit_id": unit_id, "treatment": treatment})
     treatment_varies = df.groupby("unit_id")["treatment"].nunique()
@@ -157,26 +130,16 @@ def did_2x2(
             "treatment must be constant within units (unit-level treatment). "
             "Found units with time-varying treatment. Use staggered DiD for time-varying treatment."
         )
-    
-    # Check we have both treated and control units
+
+    # Count treated/control units
     units_treated = df.groupby("unit_id")["treatment"].first()
     n_treated = (units_treated == 1).sum()
     n_control = (units_treated == 0).sum()
-    
-    if n_treated == 0:
-        raise ValueError("No treated units found (all treatment=0)")
-    if n_control == 0:
-        raise ValueError("No control units found (all treatment=1)")
-    
+
     # Count periods
     n_pre = (post == 0).sum() // len(np.unique(unit_id))
     n_post = (post == 1).sum() // len(np.unique(unit_id))
-    
-    if n_pre == 0:
-        raise ValueError("No pre-treatment periods found (all post=1)")
-    if n_post == 0:
-        raise ValueError("No post-treatment periods found (all post=0)")
-    
+
     # Create interaction term
     treat_post = treatment * post
 

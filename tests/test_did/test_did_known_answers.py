@@ -301,7 +301,7 @@ class TestDiDInputValidation:
         post = np.array([0, 0, 1, 1])
         unit_id = np.array([0, 1, 0, 1])
 
-        with pytest.raises(ValueError, match="contains NaN or inf"):
+        with pytest.raises(ValueError, match="non-finite"):
             did_2x2(outcomes, treatment, post, unit_id)
 
     def test_time_varying_treatment(self):
@@ -322,8 +322,7 @@ class TestDiDInputValidation:
         post = np.array([0, 1, 0, 1])
         unit_id = np.array([0, 0, 1, 1])
 
-        # Binary check fails first when all units have same treatment
-        with pytest.raises(ValueError, match="treatment must be binary"):
+        with pytest.raises(ValueError, match="No control units"):
             did_2x2(outcomes, treatment, post, unit_id)
 
     def test_all_control_units(self):
@@ -333,8 +332,7 @@ class TestDiDInputValidation:
         post = np.array([0, 1, 0, 1])
         unit_id = np.array([0, 0, 1, 1])
 
-        # Binary check fails first when all units have same treatment
-        with pytest.raises(ValueError, match="treatment must be binary"):
+        with pytest.raises(ValueError, match="No treated units"):
             did_2x2(outcomes, treatment, post, unit_id)
 
     def test_invalid_alpha(self):
