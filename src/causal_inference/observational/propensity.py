@@ -10,6 +10,14 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
 from typing import Dict, Any, Tuple, Union
 
+from src.causal_inference.utils.validation import (
+    validate_arrays_same_length,
+    validate_finite,
+    validate_binary,
+    validate_not_empty,
+    validate_has_variation,
+)
+
 
 def estimate_propensity(
     treatment: Union[np.ndarray, list],
@@ -76,7 +84,7 @@ def estimate_propensity(
     - Non-convergence raises error (NEVER FAIL SILENTLY)
     """
     # ============================================================================
-    # Input Validation
+    # Input Validation (using shared utilities)
     # ============================================================================
 
     # Convert to numpy arrays
@@ -89,72 +97,22 @@ def estimate_propensity(
 
     n, p = covariates.shape
 
-    # Check lengths match
-    if len(treatment) != n:
-        raise ValueError(
-            f"CRITICAL ERROR: Treatment and covariates have different lengths.\n"
-            f"Function: estimate_propensity\n"
-            f"Expected: len(treatment) == n_samples\n"
-            f"Got: len(treatment)={len(treatment)}, n_samples={n}"
-        )
+    # Shared validations
+    validate_not_empty(treatment, "treatment")
+    validate_finite(treatment, "treatment")
+    validate_finite(covariates, "covariates")
+    validate_binary(treatment, "treatment")
+    validate_arrays_same_length(treatment=treatment, covariates=covariates[:, 0])
+    validate_has_variation(covariates, "covariates", axis=0)
 
-    # Check for empty
-    if n == 0:
-        raise ValueError(
-            f"CRITICAL ERROR: Empty input arrays.\n"
-            f"Function: estimate_propensity\n"
-            f"Expected: Non-empty arrays"
-        )
-
-    # Check for NaN
-    if np.any(np.isnan(treatment)) or np.any(np.isnan(covariates)):
-        raise ValueError(
-            f"CRITICAL ERROR: NaN values detected in input.\n"
-            f"Function: estimate_propensity\n"
-            f"NaN indicates data quality issues that must be addressed.\n"
-            f"Got: {np.sum(np.isnan(treatment))} NaN in treatment, "
-            f"{np.sum(np.isnan(covariates))} NaN in covariates"
-        )
-
-    # Check for infinite values
-    if np.any(np.isinf(treatment)) or np.any(np.isinf(covariates)):
-        raise ValueError(
-            f"CRITICAL ERROR: Infinite values detected in input.\n"
-            f"Function: estimate_propensity\n"
-            f"Got: {np.sum(np.isinf(treatment))} inf in treatment, "
-            f"{np.sum(np.isinf(covariates))} inf in covariates"
-        )
-
-    # Check treatment is binary
-    unique_treatment = np.unique(treatment)
-    if not np.all(np.isin(unique_treatment, [0, 1])):
-        raise ValueError(
-            f"CRITICAL ERROR: Treatment must be binary (0 or 1).\n"
-            f"Function: estimate_propensity\n"
-            f"Expected: Treatment values in {{0, 1}}\n"
-            f"Got: Unique treatment values = {unique_treatment}"
-        )
-
-    # Check for variation in treatment (need both treated and control)
+    # Propensity-specific: Check both treated and control groups present
     n_treated = np.sum(treatment == 1)
     n_control = np.sum(treatment == 0)
     if n_treated == 0 or n_control == 0:
         raise ValueError(
-            f"CRITICAL ERROR: Treatment has no variation.\n"
-            f"Function: estimate_propensity\n"
-            f"Expected: Both treated and control units\n"
+            f"Treatment has no variation. "
+            f"Need both treated and control units. "
             f"Got: n_treated={n_treated}, n_control={n_control}"
-        )
-
-    # Check for covariate variation
-    covariate_stds = np.std(covariates, axis=0)
-    constant_covariates = np.where(covariate_stds < 1e-10)[0]
-    if len(constant_covariates) > 0:
-        raise ValueError(
-            f"CRITICAL ERROR: Constant covariates detected (no variation).\n"
-            f"Function: estimate_propensity\n"
-            f"Constant covariates cause singular matrix in logistic regression.\n"
-            f"Got: Covariates {constant_covariates} have std < 1e-10"
         )
 
     # ============================================================================

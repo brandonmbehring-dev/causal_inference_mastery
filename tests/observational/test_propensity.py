@@ -130,8 +130,7 @@ class TestEstimatePropensityErrors:
             estimate_propensity(T, X)
 
         error_msg = str(exc_info.value)
-        assert "CRITICAL ERROR" in error_msg
-        assert "Empty" in error_msg
+        assert "empty" in error_msg.lower()
 
     def test_mismatched_lengths_fails_fast(self):
         """Test that mismatched lengths raise ValueError."""
@@ -142,8 +141,7 @@ class TestEstimatePropensityErrors:
             estimate_propensity(T, X)
 
         error_msg = str(exc_info.value)
-        assert "CRITICAL ERROR" in error_msg
-        assert "different lengths" in error_msg
+        assert "same length" in error_msg.lower()
 
     def test_nan_in_treatment_fails_fast(self):
         """Test that NaN in treatment raises ValueError."""
@@ -154,8 +152,7 @@ class TestEstimatePropensityErrors:
             estimate_propensity(T, X)
 
         error_msg = str(exc_info.value)
-        assert "CRITICAL ERROR" in error_msg
-        assert "NaN" in error_msg
+        assert "nan" in error_msg.lower() or "non-finite" in error_msg.lower()
 
     def test_nan_in_covariates_fails_fast(self):
         """Test that NaN in covariates raises ValueError."""
@@ -167,8 +164,7 @@ class TestEstimatePropensityErrors:
             estimate_propensity(T, X)
 
         error_msg = str(exc_info.value)
-        assert "CRITICAL ERROR" in error_msg
-        assert "NaN" in error_msg
+        assert "nan" in error_msg.lower() or "non-finite" in error_msg.lower()
 
     def test_non_binary_treatment_fails_fast(self):
         """Test that non-binary treatment raises ValueError."""
@@ -179,8 +175,7 @@ class TestEstimatePropensityErrors:
             estimate_propensity(T, X)
 
         error_msg = str(exc_info.value)
-        assert "CRITICAL ERROR" in error_msg
-        assert "binary" in error_msg
+        assert "binary" in error_msg.lower()
 
     def test_no_treatment_variation_fails_fast(self):
         """Test that all treated or all control raises ValueError."""
@@ -191,8 +186,7 @@ class TestEstimatePropensityErrors:
             estimate_propensity(T, X)
 
         error_msg = str(exc_info.value)
-        assert "CRITICAL ERROR" in error_msg
-        assert "no variation" in error_msg
+        assert "variation" in error_msg.lower()
 
     def test_constant_covariate_fails_fast(self):
         """Test that constant covariate raises ValueError."""
@@ -203,8 +197,7 @@ class TestEstimatePropensityErrors:
             estimate_propensity(T, X)
 
         error_msg = str(exc_info.value)
-        assert "CRITICAL ERROR" in error_msg
-        assert "Constant covariates" in error_msg
+        assert "constant" in error_msg.lower() or "variation" in error_msg.lower()
 
 
 class TestTrimPropensity:
