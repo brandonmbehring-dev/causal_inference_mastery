@@ -20,6 +20,44 @@ from scipy import stats
 from .staggered import StaggeredData
 
 
+def _aggregate_by_method(
+    att_gt_df: pd.DataFrame,
+    aggregation: str,
+) -> tuple[float, Dict[str, float]]:
+    """
+    Aggregate ATT(g,t) using specified method.
+
+    Parameters
+    ----------
+    att_gt_df : pd.DataFrame
+        DataFrame with ATT(g,t) estimates
+    aggregation : str
+        Aggregation method: 'simple', 'dynamic', or 'group'
+
+    Returns
+    -------
+    tuple
+        (overall_att, aggregated_dict)
+        - overall_att: Scalar ATT estimate
+        - aggregated_dict: For simple, {"att": float}
+                          For dynamic, {event_time: att_k}
+                          For group, {cohort: att_g}
+    """
+    if aggregation == "simple":
+        att, _ = _aggregate_simple(att_gt_df)
+        aggregated = {"att": float(att)}
+    elif aggregation == "dynamic":
+        att_dynamic, att, _ = _aggregate_dynamic(att_gt_df)
+        aggregated = {int(k): float(v) for k, v in att_dynamic.items()}
+    elif aggregation == "group":
+        att_group, att, _ = _aggregate_group(att_gt_df)
+        aggregated = {int(k): float(v) for k, v in att_group.items()}
+    else:
+        raise ValueError(f"Unknown aggregation method: {aggregation}")
+
+    return att, aggregated
+
+
 def callaway_santanna_ate(
     data: StaggeredData,
     aggregation: Literal["simple", "dynamic", "group"] = "simple",
@@ -122,15 +160,7 @@ def callaway_santanna_ate(
     att_gt_df = _compute_att_gt(data, control_group)
 
     # Step 2: Aggregate ATT(g,t)
-    if aggregation == "simple":
-        att, weights_used = _aggregate_simple(att_gt_df)
-        aggregated = {"att": float(att)}
-    elif aggregation == "dynamic":
-        att_dynamic, att, weights_used = _aggregate_dynamic(att_gt_df)
-        aggregated = {int(k): float(v) for k, v in att_dynamic.items()}
-    elif aggregation == "group":
-        att_group, att, weights_used = _aggregate_group(att_gt_df)
-        aggregated = {int(k): float(v) for k, v in att_group.items()}
+    att, aggregated = _aggregate_by_method(att_gt_df, aggregation)
 
     # Step 3: Bootstrap standard errors
     bootstrap_estimates = []
@@ -143,12 +173,7 @@ def callaway_santanna_ate(
             boot_att_gt = _compute_att_gt(boot_data, control_group)
 
             # Aggregate bootstrap ATT(g,t) the same way
-            if aggregation == "simple":
-                boot_att, _ = _aggregate_simple(boot_att_gt)
-            elif aggregation == "dynamic":
-                _, boot_att, _ = _aggregate_dynamic(boot_att_gt)
-            elif aggregation == "group":
-                _, boot_att, _ = _aggregate_group(boot_att_gt)
+            boot_att, _ = _aggregate_by_method(boot_att_gt, aggregation)
 
             bootstrap_estimates.append(boot_att)
         except Exception:
