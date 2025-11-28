@@ -18,6 +18,12 @@ from typing import Optional, Tuple, Literal
 import numpy as np
 from scipy import stats
 
+from src.causal_inference.utils.validation import (
+    validate_arrays_same_length,
+    validate_finite,
+    validate_not_empty,
+)
+
 
 class SharpRDD:
     """
@@ -155,15 +161,11 @@ class SharpRDD:
         Y = np.asarray(Y).flatten()
         X = np.asarray(X).flatten()
 
-        # Validation
-        if len(Y) != len(X):
-            raise ValueError(f"Y and X must have same length, got {len(Y)} and {len(X)}")
-        if len(Y) == 0:
-            raise ValueError("Y and X must not be empty")
-        if np.any(np.isnan(Y)) or np.any(np.isinf(Y)):
-            raise ValueError("Y contains NaN or inf values")
-        if np.any(np.isnan(X)) or np.any(np.isinf(X)):
-            raise ValueError("X contains NaN or inf values")
+        # Validation (using shared utilities)
+        validate_not_empty(Y, "Y")
+        validate_finite(Y, "Y")
+        validate_finite(X, "X")
+        validate_arrays_same_length(Y=Y, X=X)
 
         # Check observations on both sides of cutoff
         n_left = np.sum(X < self.cutoff)

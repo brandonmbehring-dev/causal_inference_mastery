@@ -364,7 +364,7 @@ class TestFuzzyRDDAdversarial:
         # Inf values
         Y_inf = Y.copy()
         Y_inf[0] = np.inf
-        with pytest.raises(ValueError, match="infinite"):
+        with pytest.raises(ValueError, match="non-finite|Inf"):
             fuzzy.fit(Y_inf, X, D)
 
 

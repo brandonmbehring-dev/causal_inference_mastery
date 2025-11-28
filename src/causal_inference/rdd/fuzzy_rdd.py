@@ -22,6 +22,10 @@ from scipy import stats
 
 from ..iv.two_stage_least_squares import TwoStageLeastSquares
 from .bandwidth import imbens_kalyanaraman_bandwidth, cct_bandwidth
+from src.causal_inference.utils.validation import (
+    validate_arrays_same_length,
+    validate_finite,
+)
 
 
 class FuzzyRDD:
@@ -196,13 +200,11 @@ class FuzzyRDD:
         X = np.asarray(X).flatten()
         D = np.asarray(D).flatten()
 
-        # Input validation
-        if len(Y) != len(X) or len(Y) != len(D):
-            raise ValueError("Y, X, and D must have the same length")
-        if np.any(np.isnan(Y)) or np.any(np.isnan(X)) or np.any(np.isnan(D)):
-            raise ValueError("Y, X, and D must not contain NaN values")
-        if np.any(np.isinf(Y)) or np.any(np.isinf(X)) or np.any(np.isinf(D)):
-            raise ValueError("Y, X, and D must not contain infinite values")
+        # Input validation (using shared utilities)
+        validate_finite(Y, "Y")
+        validate_finite(X, "X")
+        validate_finite(D, "D")
+        validate_arrays_same_length(Y=Y, X=X, D=D)
 
         # Check for observations on both sides
         n_left_total = np.sum(X < self.cutoff)
