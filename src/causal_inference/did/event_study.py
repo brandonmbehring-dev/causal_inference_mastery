@@ -8,12 +8,41 @@ This module implements event study estimation with:
 - Event study plots with confidence intervals
 """
 
-from typing import Dict, Optional, Any, Tuple
+from typing import Dict, Optional, Any, Tuple, TypedDict
 import numpy as np
 import pandas as pd
 from scipy import stats
 import warnings
 import statsmodels.api as sm
+
+
+class EventStudyCoefficient(TypedDict):
+    """Coefficient information for a single event time period."""
+
+    estimate: float
+    se: float
+    t_stat: float
+    p_value: float
+    ci_lower: float
+    ci_upper: float
+
+
+class EventStudyResult(TypedDict):
+    """Return type for event_study() estimator."""
+
+    leads: Dict[int, EventStudyCoefficient]
+    lags: Dict[int, EventStudyCoefficient]
+    joint_pretrends_pvalue: float
+    parallel_trends_plausible: bool
+    omitted_period: int
+    n_leads: int
+    n_lags: int
+    n_obs: int
+    n_treated: int
+    n_control: int
+    n_clusters: int
+    df: int
+    cluster_se_used: bool
 
 
 def event_study(
@@ -27,7 +56,7 @@ def event_study(
     alpha: float = 0.05,
     cluster_se: bool = True,
     omit_period: int = -1,
-) -> Dict[str, Any]:
+) -> EventStudyResult:
     """
     Event study design for DiD with dynamic treatment effects.
 

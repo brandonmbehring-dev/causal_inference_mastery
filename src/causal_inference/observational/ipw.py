@@ -6,13 +6,38 @@ propensity score estimation from covariates, weight trimming, and stabilization.
 
 import warnings
 import numpy as np
-from typing import Dict, Any, Tuple, Union, Optional
+from typing import Dict, Any, Tuple, Union, Optional, TypedDict
 from src.causal_inference.rct.estimators_ipw import ipw_ate
 from src.causal_inference.observational.propensity import (
     estimate_propensity,
     trim_propensity,
     stabilize_weights,
 )
+
+
+class PropensitySummary(TypedDict):
+    """Summary statistics for propensity scores."""
+
+    min: float
+    max: float
+    mean: float
+    median: float
+    std: float
+
+
+class IPWResult(TypedDict):
+    """Return type for ipw_ate_observational() estimator."""
+
+    estimate: float
+    se: float
+    ci_lower: float
+    ci_upper: float
+    n_treated: int
+    n_control: int
+    n_trimmed: int
+    n_propensity_clipped: int
+    propensity_diagnostics: Dict[str, Any]
+    propensity_summary: PropensitySummary
 
 
 def ipw_ate_observational(
@@ -23,7 +48,7 @@ def ipw_ate_observational(
     trim_at: Optional[Tuple[float, float]] = None,
     stabilize: bool = False,
     alpha: float = 0.05,
-) -> Dict[str, Any]:
+) -> IPWResult:
     """
     IPW ATE estimator for observational data with confounding.
 

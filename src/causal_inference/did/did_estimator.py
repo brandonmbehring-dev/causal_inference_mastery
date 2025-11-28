@@ -7,7 +7,7 @@ This module implements classic 2×2 DiD estimation with:
 - Comprehensive diagnostics
 """
 
-from typing import Dict, Optional, Any, Literal
+from typing import Dict, Optional, Any, Literal, TypedDict
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -16,6 +16,39 @@ import statsmodels.api as sm
 
 from src.causal_inference.did.wild_bootstrap import wild_cluster_bootstrap_se
 from src.causal_inference.utils.validation import validate_did_inputs
+
+
+class DiD2x2Result(TypedDict):
+    """Return type for did_2x2() estimator."""
+
+    estimate: float
+    se: float
+    t_stat: float
+    p_value: float
+    ci_lower: float
+    ci_upper: float
+    n_treated: int
+    n_control: int
+    n_pre: int
+    n_post: int
+    n_obs: int
+    n_clusters: int
+    cluster_se_used: bool
+    se_method: str
+    df: int
+
+
+class ParallelTrendsTestResult(TypedDict):
+    """Return type for check_parallel_trends() test."""
+
+    pre_trend_diff: float
+    se: float
+    t_stat: float
+    p_value: float
+    parallel_trends_plausible: bool
+    n_pre_periods: int
+    n_obs: int
+    warning: Optional[str]
 
 
 # ============================================================================
@@ -200,7 +233,7 @@ def did_2x2(
     cluster_se: bool = True,
     se_method: Optional[Literal["cluster", "wild_bootstrap", "naive"]] = None,
     n_bootstrap: int = 999,
-) -> Dict[str, Any]:
+) -> DiD2x2Result:
     """
     2×2 Difference-in-Differences estimator with cluster-robust standard errors.
     
@@ -376,7 +409,7 @@ def check_parallel_trends(
     unit_id: np.ndarray,
     treatment_time: int,
     alpha: float = 0.05,
-) -> Dict[str, Any]:
+) -> ParallelTrendsTestResult:
     """
     Test parallel trends assumption using pre-treatment periods.
     

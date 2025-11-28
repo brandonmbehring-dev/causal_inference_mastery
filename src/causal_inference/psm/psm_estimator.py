@@ -8,7 +8,7 @@ Author: Brandon Behring
 Date: 2025-11-21
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, TypedDict, List
 import warnings
 import numpy as np
 from scipy import stats
@@ -17,6 +17,42 @@ from .propensity import PropensityScoreEstimator
 from .matching import NearestNeighborMatcher
 from .variance import abadie_imbens_variance
 from .balance import check_covariate_balance, balance_summary
+
+
+class BalanceMetrics(TypedDict):
+    """Balance diagnostics for PSM."""
+
+    balanced: bool
+    smd_after: np.ndarray
+    vr_after: np.ndarray
+    smd_before: np.ndarray
+    vr_before: np.ndarray
+    summary: Dict[str, float]
+
+
+class ConvergenceStatus(TypedDict):
+    """Propensity model convergence status."""
+
+    propensity_converged: bool
+    has_common_support: bool
+    support_region: tuple
+    n_outside_support: int
+
+
+class PSMResult(TypedDict):
+    """Return type for psm_ate() estimator."""
+
+    estimate: float
+    se: float
+    ci_lower: float
+    ci_upper: float
+    n_treated: int
+    n_control: int
+    n_matched: int
+    propensity_scores: np.ndarray
+    matches: List[np.ndarray]
+    balance_metrics: BalanceMetrics
+    convergence_status: ConvergenceStatus
 
 
 def psm_ate(
@@ -28,7 +64,7 @@ def psm_ate(
     caliper: float = np.inf,
     alpha: float = 0.05,
     variance_method: str = "abadie_imbens",
-) -> Dict[str, Any]:
+) -> PSMResult:
     """
     Estimate average treatment effect using propensity score matching.
 

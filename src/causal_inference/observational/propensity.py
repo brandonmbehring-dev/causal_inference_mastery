@@ -8,7 +8,7 @@ import warnings
 import numpy as np
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import roc_auc_score
-from typing import Dict, Any, Tuple, Union, Optional
+from typing import Dict, Any, Tuple, Union, Optional, TypedDict
 
 from src.causal_inference.utils.validation import (
     validate_arrays_same_length,
@@ -17,6 +17,25 @@ from src.causal_inference.utils.validation import (
     validate_not_empty,
     validate_has_variation,
 )
+
+
+class PropensityDiagnostics(TypedDict):
+    """Diagnostic statistics for propensity score model."""
+
+    auc: float
+    pseudo_r2: float
+    converged: bool
+    n_iter: int
+    coef: np.ndarray
+    intercept: float
+
+
+class PropensityResult(TypedDict):
+    """Return type for estimate_propensity() function."""
+
+    propensity: np.ndarray
+    model: LogisticRegression
+    diagnostics: PropensityDiagnostics
 
 
 # ============================================================================
@@ -192,7 +211,7 @@ def estimate_propensity(
     method: str = "logistic",
     max_iter: int = 1000,
     random_state: int = None,
-) -> Dict[str, Any]:
+) -> PropensityResult:
     """
     Estimate propensity scores P(T=1|X) using logistic regression.
 

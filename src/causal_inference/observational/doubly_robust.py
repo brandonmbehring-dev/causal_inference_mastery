@@ -13,10 +13,28 @@ Key property: Double robustness
 
 import numpy as np
 from scipy import stats
-from typing import Dict, Any, Optional, Union, Tuple
+from typing import Dict, Any, Optional, Union, Tuple, TypedDict
 
 from .propensity import estimate_propensity, trim_propensity
 from .outcome_regression import fit_outcome_models
+
+
+class DRResult(TypedDict):
+    """Return type for dr_ate() doubly robust estimator."""
+
+    estimate: float
+    se: float
+    ci_lower: float
+    ci_upper: float
+    n: int
+    n_treated: int
+    n_control: int
+    n_trimmed: int
+    propensity_diagnostics: Dict[str, Any]
+    outcome_diagnostics: Dict[str, Any]
+    propensity: np.ndarray
+    mu0_predictions: np.ndarray
+    mu1_predictions: np.ndarray
 
 
 def dr_ate(
@@ -27,7 +45,7 @@ def dr_ate(
     outcome_models: Optional[Dict[str, Any]] = None,
     trim_at: Optional[Tuple[float, float]] = None,
     alpha: float = 0.05,
-) -> Dict[str, Any]:
+) -> DRResult:
     """
     Doubly robust ATE estimator combining IPW with outcome regression.
 
