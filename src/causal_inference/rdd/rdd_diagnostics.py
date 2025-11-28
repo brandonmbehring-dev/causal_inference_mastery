@@ -25,6 +25,55 @@ from scipy import stats
 from .sharp_rdd import SharpRDD
 
 
+def _estimate_density_at_cutoff(
+    bin_centers: np.ndarray,
+    log_density: np.ndarray,
+    cutoff: float,
+    bandwidth: float,
+) -> float:
+    """
+    Estimate density at cutoff using weighted quadratic regression on log densities.
+
+    Fits quadratic polynomial to log density values weighted by distance from cutoff,
+    then extrapolates to cutoff and exponentiates to get density estimate.
+
+    Parameters
+    ----------
+    bin_centers : np.ndarray
+        Bin center points
+    log_density : np.ndarray
+        Log of bin densities
+    cutoff : float
+        RDD cutoff value
+    bandwidth : float
+        Bandwidth for triangular kernel weights
+
+    Returns
+    -------
+    float
+        Estimated density at cutoff
+
+    Notes
+    -----
+    Uses triangular kernel: w = max(1 - |x-c|/h, 0)
+    Fallback to mean density if polynomial fit fails
+    """
+    # Compute triangular kernel weights
+    dist = np.abs(bin_centers - cutoff)
+    weights = np.maximum(1 - dist / bandwidth, 0)
+    weights = weights / weights.sum() if weights.sum() > 0 else weights
+
+    # Fit weighted quadratic polynomial
+    try:
+        poly = np.polyfit(bin_centers - cutoff, log_density, deg=2, w=weights)
+        density_at_cutoff = np.exp(np.polyval(poly, 0.0))
+    except (np.linalg.LinAlgError, RuntimeWarning):
+        # Fallback to mean if fit fails
+        density_at_cutoff = np.exp(np.mean(log_density))
+
+    return float(density_at_cutoff)
+
+
 def _local_polynomial_regression(
     Y: np.ndarray,
     X: np.ndarray,
@@ -248,35 +297,9 @@ def mccrary_density_test(
     log_left_density = np.log(left_density + eps)
     log_right_density = np.log(right_density + eps)
 
-    # Fit quadratic on left side
-    left_dist = np.abs(left_centers - cutoff)
-    left_weights = np.maximum(1 - left_dist / bandwidth, 0)
-    left_weights = left_weights / left_weights.sum() if left_weights.sum() > 0 else left_weights
-
-    try:
-        left_poly = np.polyfit(
-            left_centers - cutoff, log_left_density, deg=2, w=left_weights
-        )
-        f_left_at_cutoff = np.exp(np.polyval(left_poly, 0.0))
-    except (np.linalg.LinAlgError, RuntimeWarning):
-        f_left_at_cutoff = np.mean(left_density)
-
-    # Fit quadratic on right side
-    right_dist = np.abs(right_centers - cutoff)
-    right_weights = np.maximum(1 - right_dist / bandwidth, 0)
-    right_weights = (
-        right_weights / right_weights.sum()
-        if right_weights.sum() > 0
-        else right_weights
-    )
-
-    try:
-        right_poly = np.polyfit(
-            right_centers - cutoff, log_right_density, deg=2, w=right_weights
-        )
-        f_right_at_cutoff = np.exp(np.polyval(right_poly, 0.0))
-    except (np.linalg.LinAlgError, RuntimeWarning):
-        f_right_at_cutoff = np.mean(right_density)
+    # Estimate density at cutoff from both sides
+    f_left_at_cutoff = _estimate_density_at_cutoff(left_centers, log_left_density, cutoff, bandwidth)
+    f_right_at_cutoff = _estimate_density_at_cutoff(right_centers, log_right_density, cutoff, bandwidth)
 
     # Test statistic: log difference
     theta = np.log(f_right_at_cutoff / f_left_at_cutoff)
