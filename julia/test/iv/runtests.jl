@@ -60,7 +60,16 @@ const FULL_MODE = !QUICK_MODE
     end
 
     # =========================================================================
-    # Layer 4: R Cross-Validation (Requires R - full mode only)
+    # Layer 4: Python Cross-Validation (Requires PyCall - full mode only)
+    # =========================================================================
+    if FULL_MODE
+        @testset "Python Cross-Validation" begin
+            include("test_pycall_validation.jl")
+        end
+    end
+
+    # =========================================================================
+    # Layer 5: R Cross-Validation (Requires R - full mode only)
     # =========================================================================
     if FULL_MODE
         @testset "R Cross-Validation" begin

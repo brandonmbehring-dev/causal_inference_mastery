@@ -52,12 +52,11 @@ const FULL_MODE = !QUICK_MODE
     end
 
     # =========================================================================
-    # Layer 4: Python Cross-Validation (If available)
+    # Layer 4: Python Cross-Validation (Requires PyCall - full mode only)
     # =========================================================================
     if FULL_MODE
         @testset "Python Cross-Validation" begin
-            # TODO: Check if Python RDD implementation exists (Phase 3.8)
-            # Most likely no mature Python RDD, so this may be skipped
+            include("test_pycall_validation.jl")
         end
     end
 
