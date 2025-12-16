@@ -1,30 +1,46 @@
 # Current Work
 
-**Last Updated**: 2025-12-16 [Session 37 - Test Suite Health Check]
+**Last Updated**: 2025-12-16 [Session 37.5 - Context Engineering & Documentation Overhaul]
 
 ---
 
 ## Right Now
 
-✅ **COMPLETE**: Session 37 - Test Suite Stabilization
+✅ **COMPLETE**: Session 37.5 - Context Engineering & Documentation Overhaul
 
-**Status**: All tests passing. Project in healthy state.
+**Status**: Documentation reorganized. 53→57 docs (new files created), docs/ root now clean with 5 core files.
 
-**Session 37 Summary**:
+**Session 37.5 Summary**:
+- ✅ Fixed CLAUDE.md stale info (status, session history, roadmap refs)
+- ✅ Consolidated roadmaps (ROADMAP_REFINED archived)
+- ✅ Created docs/INDEX.md (navigation hub)
+- ✅ Created docs/QUICK_REFERENCE.md (copy/paste commands)
+- ✅ Created docs/patterns/ (validation.md, testing.md, session_workflow.md)
+- ✅ Archived 18 SESSION files to docs/archive/sessions/
+- ✅ Archived 7 validation docs to docs/archive/validation/
+- ✅ Created docs/KNOWN_LIMITATIONS.md (xfails, edge cases)
+- ✅ Moved Julia docs to julia/docs/
+
+**Docs Structure**:
+| Location | Files | Purpose |
+|----------|-------|---------|
+| docs/ root | 5 | Core docs (INDEX, ROADMAP, etc.) |
+| docs/patterns/ | 3 | Reusable patterns |
+| docs/archive/ | 30+ | Historical sessions/plans |
+
+**Next**: Session 38 - Code TODO cleanup or advanced features
+
+---
+
+## Session 37 Summary (2025-12-16)
+
+**Test Suite Stabilization - COMPLETE**
+
 - ✅ Fixed IPW adversarial tests for perfect separation (expects ValueError)
 - ✅ Fixed high-dimensional test (reduced p/n to avoid overfitting separation)
 - ✅ Python: 806/806 non-Monte Carlo tests pass
 - ✅ Julia: 355/356 pass (1 flaky Monte Carlo test - known issue)
 - ✅ Cross-language: 79 tests pass
-
-**Test Health**:
-| Suite | Pass | Fail | Notes |
-|-------|------|------|-------|
-| Python (non-MC) | 806 | 0 | 6 xfailed expected |
-| Python Cross-Lang | 79 | 0 | 1 skipped |
-| Julia | 355 | 1 | Type I Error MC (flaky) |
-
-**Next**: Session 38+ - Advanced features or new development
 
 ---
 

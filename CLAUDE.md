@@ -32,8 +32,8 @@ Dual-language causal inference implementation for deep methodological understand
 - **Goal**: Cross-language validation to 10 decimal places
 
 ### Current Status
-- **Python**: Phases 1-2 COMPLETE (RCT, IPW, DR, PSM), Phases 3-5 in progress (DiD, IV, RDD)
-- **Julia**: Phases 1-4 COMPLETE (RCT, PSM, RDD, IV)
+- **Python**: Phases 1-5 COMPLETE (RCT, IPW, DR, PSM, DiD, IV, RDD)
+- **Julia**: Phases 1-5 COMPLETE (RCT, PSM, DiD, IV, RDD)
 - **Tests**: 2,420+ across both languages
 - **Coverage**: 90%+ (Python), 99.6% pass rate (Julia)
 
@@ -88,7 +88,7 @@ causal_inference_mastery/
 │       ├── monte_carlo/            # Statistical simulations
 │       ├── adversarial/            # Edge case tests
 │       └── cross_language/         # Python ↔ Julia parity
-└── docs/                           # Documentation (52 files)
+└── docs/                           # Documentation (53 files)
     ├── plans/active/               # Current session plans
     ├── plans/implemented/          # Completed sessions
     └── SESSION_*.md                # Session documentation
@@ -131,7 +131,7 @@ causal_inference_mastery/
 | Document | Purpose |
 |----------|---------|
 | `CURRENT_WORK.md` | 30-second context resume (session tracking) |
-| `docs/ROADMAP_REFINED_2025-11-23.md` | Master plan, phase tracking |
+| `docs/ROADMAP.md` | Master plan, phase tracking |
 | `docs/METHODOLOGICAL_CONCERNS.md` | 13 tracked concerns (CRITICAL → MEDIUM) |
 | `docs/SESSION_*.md` | Per-session documentation |
 | `docs/plans/active/` | In-progress phase plans |
@@ -279,7 +279,7 @@ julia --project -e "using Pkg; Pkg.instantiate()"
 | File | Purpose |
 |------|---------|
 | `CURRENT_WORK.md` | 30-second context resume |
-| `docs/ROADMAP_REFINED_2025-11-23.md` | Master plan (630 lines) |
+| `docs/ROADMAP.md` | Master plan (761 lines) |
 | `docs/METHODOLOGICAL_CONCERNS.md` | 13 concerns tracked |
 | `pyproject.toml` | Python config (Black, Ruff, Mypy, pytest) |
 | `julia/Project.toml` | Julia dependencies |
@@ -300,13 +300,12 @@ julia --project -e "using Pkg; Pkg.instantiate()"
 
 | Session | Focus | Status |
 |---------|-------|--------|
-| 19 | RDD test fixes, 99.6% Julia pass rate | ✅ Complete |
-| 18 | Julia staggered DiD PyCall validation | ✅ Complete |
-| 17 | Julia DiD Phase 1 | ✅ Complete |
-| 10 | Modern DiD (CS, SA vs TWFE) | ✅ Complete |
-| 7 | PSM Monte Carlo validation | ✅ Complete |
-| 6 | Doubly Robust estimation | ✅ Complete |
-| 5 | Observational IPW | ✅ Complete |
-| 4 | RCT validation (73 tests) | ✅ Complete |
+| 37 | Test suite stabilization (IPW adversarial fixes) | ✅ Complete |
+| 36 | SimpleATE cross-language CI parity | ✅ Complete |
+| 35 | DiD Event Study & TWFE cross-language validation | ✅ Complete |
+| 34 | Observational cross-language validation (IPW, DR) | ✅ Complete |
+| 22 | Project audit & documentation cleanup | ✅ Complete |
+| 21 | Phase 2 Monte Carlo validation (IV, RDD) | ✅ Complete |
+| 20 | Phase 0/0.5/1 Statistical correctness | ✅ Complete |
 
-**Next**: Session 20 - Continue Python-Julia parity (DiD, IV, RDD)
+**Current**: Session 37.5 - Context engineering & documentation overhaul
