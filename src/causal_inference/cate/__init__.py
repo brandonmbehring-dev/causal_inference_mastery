@@ -5,6 +5,7 @@ This module implements meta-learners for heterogeneous treatment effect estimati
 - T-Learner: Two separate models approach (intuitive, extrapolation issues)
 - X-Learner: Cross-learner with propensity weighting (handles imbalanced groups)
 - R-Learner: Robinson transformation (doubly robust, orthogonal)
+- Double ML: Cross-fitted Robinson transformation (eliminates regularization bias)
 
 References
 ----------
@@ -12,10 +13,13 @@ References
   using machine learning." PNAS 116(10): 4156-4165.
 - Nie & Wager (2021). "Quasi-oracle estimation of heterogeneous treatment effects."
   Biometrika 108(2): 299-319.
+- Chernozhukov et al. (2018). "Double/debiased machine learning for treatment
+  and structural parameters." The Econometrics Journal 21(1): C1-C68.
 """
 
 from .base import CATEResult
 from .meta_learners import s_learner, t_learner, x_learner, r_learner
+from .dml import double_ml
 
 __all__ = [
     "CATEResult",
@@ -23,4 +27,5 @@ __all__ = [
     "t_learner",
     "x_learner",
     "r_learner",
+    "double_ml",
 ]

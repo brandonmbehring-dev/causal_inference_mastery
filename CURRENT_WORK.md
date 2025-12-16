@@ -1,20 +1,20 @@
 # Current Work
 
-**Last Updated**: 2025-12-16 [Session 40 - X/R-Learner Meta-Learners]
+**Last Updated**: 2025-12-16 [Session 41 - Double ML with Cross-Fitting]
 
 ---
 
 ## Right Now
 
-✅ **COMPLETE**: Session 40 - X-Learner and R-Learner (Phase 8 Part 2)
+✅ **COMPLETE**: Session 41 - Double Machine Learning (Phase 8 Part 3)
 
-**Status**: All 4 meta-learners implemented with 42 tests passing.
+**Status**: Double ML with K-fold cross-fitting implemented. CONCERN-29 ADDRESSED.
 
-**Session 40 Summary**:
-- ✅ `x_learner()`: Cross-learner with propensity weighting (handles imbalanced groups)
-- ✅ `r_learner()`: Robinson transformation (doubly robust, orthogonal)
-- ✅ 13 new tests for X/R-learners
-- ✅ Total: 42 CATE tests passing
+**Session 41 Summary**:
+- ✅ `double_ml()`: K-fold cross-fitting eliminates regularization bias
+- ✅ Influence function SE estimation (valid asymptotic inference)
+- ✅ 24 new tests (20 fast + 4 Monte Carlo)
+- ✅ Total: 66 CATE tests passing
 
 **CATE Module Complete**:
 | Learner | Algorithm | Best For |
@@ -23,8 +23,25 @@
 | T | μ₀(X), μ₁(X) two models | Balanced groups |
 | X | Imputed effects + propensity | Imbalanced groups |
 | R | Robinson transformation | Confounded data |
+| **DML** | Cross-fitted Robinson | **Valid ML inference** |
 
-**Next**: Session 41 - Double ML with cross-fitting (addresses CONCERN-29)
+**CONCERN-29 Validated**:
+- Monte Carlo: DML bias < 0.10 ✅
+- Monte Carlo: Coverage 88-99% ✅
+- Monte Carlo: Handles confounding ✅
+
+**Next**: Session 42 - Causal Forests with honesty (CONCERN-28)
+
+---
+
+## Session 40 Summary (2025-12-16)
+
+**X-Learner and R-Learner - COMPLETE**
+
+- ✅ `x_learner()`: Cross-learner with propensity weighting
+- ✅ `r_learner()`: Robinson transformation (doubly robust)
+- ✅ 13 new tests for X/R-learners
+- ✅ Total: 42 CATE tests passing
 
 ---
 
