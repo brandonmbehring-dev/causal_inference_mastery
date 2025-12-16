@@ -1,22 +1,50 @@
 # Current Work
 
-**Last Updated**: 2025-12-15 [Session 22 - Comprehensive Project Audit & Cleanup]
+**Last Updated**: 2025-12-15 [Sessions 26-27 - Fuzzy RDD Julia Implementation]
 
 ---
 
 ## Right Now
 
-✅ **COMPLETE**: Session 22 - Project Audit & Documentation Cleanup
+✅ **COMPLETE**: Sessions 26-27 - Fuzzy RDD Julia Implementation & Tests
 
-**Status**: Comprehensive audit completed. Documentation now reflects actual implementation status.
+**Status**: Fuzzy RDD fully implemented in Julia with 48 unit tests and cross-language validation.
 
-**Session 22 Summary**:
-- ✅ Updated METHODOLOGICAL_CONCERNS.md: 11/13 concerns addressed (was showing 0)
-- ✅ Deleted stale files: docs/CURRENT_WORK.md, old SESSION_7, 1-year-old RCT plan
-- ✅ Archived 10 completed plans from active/ to implemented/
-- ✅ Added academic references to ipw.py and doubly_robust.py
+**Sessions 26-27 Summary**:
+- ✅ `FuzzyRDD` estimator type with 2SLS-based solver
+- ✅ `FuzzyRDDSolution` with first-stage diagnostics (F-stat, compliance rate)
+- ✅ Local linear controls (separate slopes left/right of cutoff)
+- ✅ Weak instrument detection (F < 10)
+- ✅ 48 unit tests in `test_fuzzy_rdd.jl`
+- ✅ Julia→Python PyCall validation tests (5 tests)
+- ✅ Python→Julia parity tests (6 tests)
+- ✅ All 243 Julia RDD tests pass
+
+**Also Committed**:
+- ✅ IPW stabilized weights implementation (previously uncommitted)
+
+**Next**: Additional cross-language validation or new method implementation
+
+---
+
+## Session 24-25 Summary (2025-12-15)
+
+**Cross-Language Validation (IV + RDD) - COMPLETE**
+
+- ✅ IV: TSLS, LIML, GMM wrappers in julia_interface.py
+- ✅ RDD: Sharp RDD, bandwidth selection wrappers
+- ✅ Python→Julia tests: 21 tests
+- ✅ Julia→Python PyCall tests: 37 tests
+
+---
+
+## Session 22 Summary (2025-12-15)
+
+**Project Audit & Documentation Cleanup - COMPLETE**
+
+- ✅ Updated METHODOLOGICAL_CONCERNS.md: 11/13 concerns addressed
+- ✅ Archived completed plans, deleted stale files
 - ✅ Created comprehensive audit: docs/PHASE0-3_AUDIT.md
-- ✅ Added references.bib for academic citations
 
 **Key Finding**: Implementation is ~99% complete for Phases 1-5. Documentation was behind.
 
