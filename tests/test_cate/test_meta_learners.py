@@ -1,4 +1,4 @@
-"""Tests for S-Learner and T-Learner meta-learners.
+"""Tests for meta-learners (S, T, X, R-Learner).
 
 Test Layers:
 - Layer 1 (Known-Answer): Tests with deterministic/expected results
@@ -10,7 +10,7 @@ import pytest
 import numpy as np
 from scipy import stats
 
-from src.causal_inference.cate import s_learner, t_learner, CATEResult
+from src.causal_inference.cate import s_learner, t_learner, x_learner, r_learner, CATEResult
 from .conftest import generate_cate_dgp
 
 
@@ -421,3 +421,265 @@ class TestMonteCarlo:
 
         # Should have positive correlation with true CATE
         assert mean_corr > 0.2, f"Mean CATE correlation {mean_corr:.3f} too low"
+
+
+# ============================================================================
+# X-Learner Tests
+# ============================================================================
+
+
+class TestXLearnerKnownAnswer:
+    """Known-answer tests for X-Learner."""
+
+    def test_constant_effect_ate_recovery(self, constant_effect_data):
+        """X-learner recovers ATE within tolerance for constant effect."""
+        Y, T, X, true_cate = constant_effect_data
+        true_ate = np.mean(true_cate)
+
+        result = x_learner(Y, T, X)
+
+        # ATE should be close to true value
+        assert abs(result["ate"] - true_ate) < 0.5, (
+            f"ATE {result['ate']:.3f} too far from true {true_ate:.3f}"
+        )
+
+    def test_cate_shape_and_method(self, constant_effect_data):
+        """X-learner returns correct shape and method."""
+        Y, T, X, _ = constant_effect_data
+
+        result = x_learner(Y, T, X)
+
+        assert result["cate"].shape == (len(Y),)
+        assert result["method"] == "x_learner"
+
+    def test_heterogeneous_effect_correlation(self, linear_heterogeneous_data):
+        """X-learner captures heterogeneous effects."""
+        Y, T, X, true_cate = linear_heterogeneous_data
+
+        result = x_learner(Y, T, X, model="random_forest")
+
+        # X-learner should capture heterogeneity
+        correlation = np.corrcoef(result["cate"], true_cate)[0, 1]
+        assert correlation > 0.2, (
+            f"CATE correlation {correlation:.3f} too low (expected > 0.2)"
+        )
+
+    def test_imbalanced_treatment_groups(self):
+        """X-learner handles imbalanced treatment well."""
+        np.random.seed(42)
+        n = 500
+        X = np.random.randn(n, 2)
+        # Imbalanced: only 20% treated
+        T = np.random.binomial(1, 0.2, n).astype(float)
+        true_ate = 2.0
+        Y = 1 + 0.5 * X[:, 0] + true_ate * T + np.random.randn(n)
+
+        result = x_learner(Y, T, X)
+
+        # Should still recover ATE reasonably
+        assert abs(result["ate"] - true_ate) < 0.6, (
+            f"ATE {result['ate']:.3f} too far from true {true_ate:.3f}"
+        )
+
+
+class TestXLearnerAdversarial:
+    """Adversarial tests for X-Learner."""
+
+    def test_propensity_edge_cases(self):
+        """X-learner handles varying propensity gracefully."""
+        np.random.seed(42)
+        n = 300
+        X = np.random.randn(n, 2)
+        # Propensity depends on X
+        propensity = 1 / (1 + np.exp(-X[:, 0]))
+        T = np.random.binomial(1, propensity, n).astype(float)
+        Y = 1 + X[:, 0] + 2 * T + np.random.randn(n)
+
+        # Should not crash
+        result = x_learner(Y, T, X)
+        assert np.isfinite(result["ate"])
+        assert np.all(np.isfinite(result["cate"]))
+
+    def test_with_linear_model(self, constant_effect_data):
+        """X-learner works with linear base model."""
+        Y, T, X, true_cate = constant_effect_data
+        true_ate = np.mean(true_cate)
+
+        result = x_learner(Y, T, X, model="linear")
+
+        # Should recover ATE
+        assert abs(result["ate"] - true_ate) < 0.5
+
+
+# ============================================================================
+# R-Learner Tests
+# ============================================================================
+
+
+class TestRLearnerKnownAnswer:
+    """Known-answer tests for R-Learner."""
+
+    def test_constant_effect_ate_recovery(self, constant_effect_data):
+        """R-learner recovers ATE within tolerance for constant effect."""
+        Y, T, X, true_cate = constant_effect_data
+        true_ate = np.mean(true_cate)
+
+        result = r_learner(Y, T, X)
+
+        # R-learner may have more variance but should be close
+        assert abs(result["ate"] - true_ate) < 0.6, (
+            f"ATE {result['ate']:.3f} too far from true {true_ate:.3f}"
+        )
+
+    def test_cate_shape_and_method(self, constant_effect_data):
+        """R-learner returns correct shape and method."""
+        Y, T, X, _ = constant_effect_data
+
+        result = r_learner(Y, T, X)
+
+        assert result["cate"].shape == (len(Y),)
+        assert result["method"] == "r_learner"
+
+    def test_confounded_dgp(self):
+        """R-learner handles confounding (selection on observables)."""
+        np.random.seed(42)
+        n = 500
+        X = np.random.randn(n, 2)
+        # Confounded treatment: propensity depends on X
+        propensity = 1 / (1 + np.exp(-0.5 * X[:, 0]))
+        T = np.random.binomial(1, propensity, n).astype(float)
+        true_ate = 2.0
+        # Outcome also depends on X (confounder)
+        Y = 1 + 0.5 * X[:, 0] + true_ate * T + np.random.randn(n)
+
+        result = r_learner(Y, T, X)
+
+        # R-learner should handle confounding via Robinson transformation
+        assert abs(result["ate"] - true_ate) < 0.8, (
+            f"ATE {result['ate']:.3f} too far from true {true_ate:.3f}"
+        )
+
+
+class TestRLearnerAdversarial:
+    """Adversarial tests for R-Learner."""
+
+    def test_balanced_propensity(self):
+        """R-learner works when propensity near 0.5 everywhere."""
+        np.random.seed(42)
+        n = 300
+        X = np.random.randn(n, 2)
+        T = np.random.binomial(1, 0.5, n).astype(float)  # Balanced
+        Y = 1 + X[:, 0] + 2 * T + np.random.randn(n)
+
+        result = r_learner(Y, T, X)
+        assert np.isfinite(result["ate"])
+        assert np.all(np.isfinite(result["cate"]))
+
+    def test_high_dimensional(self, high_dimensional_data):
+        """R-learner works with high-dimensional covariates."""
+        Y, T, X, true_cate = high_dimensional_data
+        true_ate = np.mean(true_cate)
+
+        result = r_learner(Y, T, X)
+
+        # May be less precise but should be finite
+        assert np.isfinite(result["ate"])
+        assert abs(result["ate"] - true_ate) < 1.0
+
+
+# ============================================================================
+# Comparison Tests
+# ============================================================================
+
+
+class TestMetaLearnerComparison:
+    """Comparative tests between all meta-learners."""
+
+    def test_all_learners_recover_constant_ate(self, constant_effect_data):
+        """All four learners recover ATE for constant effect."""
+        Y, T, X, true_cate = constant_effect_data
+        true_ate = np.mean(true_cate)
+
+        s_result = s_learner(Y, T, X)
+        t_result = t_learner(Y, T, X)
+        x_result = x_learner(Y, T, X)
+        r_result = r_learner(Y, T, X)
+
+        # All should be reasonably close to true ATE
+        for name, result in [("S", s_result), ("T", t_result),
+                              ("X", x_result), ("R", r_result)]:
+            assert abs(result["ate"] - true_ate) < 0.6, (
+                f"{name}-learner ATE {result['ate']:.3f} too far from {true_ate:.3f}"
+            )
+
+    def test_all_learners_return_valid_ci(self, constant_effect_data):
+        """All learners return valid confidence intervals."""
+        Y, T, X, _ = constant_effect_data
+
+        for learner, name in [(s_learner, "S"), (t_learner, "T"),
+                               (x_learner, "X"), (r_learner, "R")]:
+            result = learner(Y, T, X)
+            assert result["ci_lower"] < result["ci_upper"], (
+                f"{name}-learner CI invalid: [{result['ci_lower']}, {result['ci_upper']}]"
+            )
+            assert result["ate_se"] > 0, f"{name}-learner SE not positive"
+
+
+# ============================================================================
+# X/R-Learner Monte Carlo Tests
+# ============================================================================
+
+
+class TestXRLearnerMonteCarlo:
+    """Monte Carlo tests for X and R learners."""
+
+    @pytest.mark.slow
+    def test_x_learner_imbalanced_performance(self):
+        """X-learner performs well on imbalanced data."""
+        n_simulations = 200
+        true_ate = 2.0
+        x_ates = []
+        t_ates = []
+
+        for seed in range(n_simulations):
+            np.random.seed(seed)
+            n = 400
+            X = np.random.randn(n, 2)
+            # Imbalanced: 25% treated
+            T = np.random.binomial(1, 0.25, n).astype(float)
+            Y = 1 + 0.5 * X[:, 0] + true_ate * T + np.random.randn(n)
+
+            x_result = x_learner(Y, T, X)
+            t_result = t_learner(Y, T, X)
+
+            x_ates.append(x_result["ate"])
+            t_ates.append(t_result["ate"])
+
+        # X-learner should have lower MSE on imbalanced data
+        x_mse = np.mean((np.array(x_ates) - true_ate) ** 2)
+        t_mse = np.mean((np.array(t_ates) - true_ate) ** 2)
+
+        # X-learner should not be significantly worse
+        assert x_mse < t_mse * 2, (
+            f"X-learner MSE {x_mse:.4f} much worse than T-learner {t_mse:.4f}"
+        )
+
+    @pytest.mark.slow
+    def test_r_learner_ate_unbiased(self):
+        """R-learner ATE is approximately unbiased."""
+        n_simulations = 300
+        true_ate = 2.0
+        ates = []
+
+        for seed in range(n_simulations):
+            Y, T, X, _ = generate_cate_dgp(
+                n=300, effect_type="constant", true_ate=true_ate, seed=seed
+            )
+            result = r_learner(Y, T, X)
+            ates.append(result["ate"])
+
+        mean_ate = np.mean(ates)
+        bias = mean_ate - true_ate
+
+        # R-learner should have low bias
+        assert abs(bias) < 0.2, f"R-learner bias {bias:.4f} exceeds threshold 0.2"

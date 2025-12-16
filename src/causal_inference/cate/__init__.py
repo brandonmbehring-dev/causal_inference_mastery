@@ -1,10 +1,10 @@
 """CATE (Conditional Average Treatment Effect) estimation module.
 
 This module implements meta-learners for heterogeneous treatment effect estimation:
-- S-Learner: Single model approach
-- T-Learner: Two separate models approach
-- X-Learner: Cross-learner (planned)
-- R-Learner: Robinson transformation (planned)
+- S-Learner: Single model approach (simple, biased toward 0)
+- T-Learner: Two separate models approach (intuitive, extrapolation issues)
+- X-Learner: Cross-learner with propensity weighting (handles imbalanced groups)
+- R-Learner: Robinson transformation (doubly robust, orthogonal)
 
 References
 ----------
@@ -15,10 +15,12 @@ References
 """
 
 from .base import CATEResult
-from .meta_learners import s_learner, t_learner
+from .meta_learners import s_learner, t_learner, x_learner, r_learner
 
 __all__ = [
     "CATEResult",
     "s_learner",
     "t_learner",
+    "x_learner",
+    "r_learner",
 ]
