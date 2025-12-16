@@ -1,21 +1,39 @@
 # Current Work
 
-**Last Updated**: 2025-12-16 [Session 38 - Code TODO Cleanup]
+**Last Updated**: 2025-12-16 [Session 39 - CATE Meta-Learners]
 
 ---
 
 ## Right Now
 
-✅ **COMPLETE**: Session 38 - Code TODO Cleanup
+✅ **COMPLETE**: Session 39 - CATE Meta-Learners (Phase 8 Part 1)
 
-**Status**: 2 stale TODOs fixed, all tests pass.
+**Status**: S-Learner and T-Learner implemented with 29 tests passing.
 
-**Session 38 Summary**:
-- ✅ `psm_estimator.py:100`: Removed stale "(TODO: Session 3)" - balance_metrics is implemented
-- ✅ `wild_bootstrap.py:226`: Converted TODO to LIMITATION note (WCU vs WCR)
-- ✅ 175 PSM+DiD tests pass
+**Session 39 Summary**:
+- ✅ Created `src/causal_inference/cate/` module (3 files, 330 lines)
+- ✅ `s_learner()`: Single model approach (augmented [X|T] features)
+- ✅ `t_learner()`: Two-model approach (separate μ₀, μ₁)
+- ✅ Support for linear, ridge, random_forest base learners
+- ✅ 29 tests: known-answer, adversarial, Monte Carlo
 
-**Next**: Session 39 - Advanced features (Phases 8-10) or additional improvements
+**Key Files**:
+- `src/causal_inference/cate/meta_learners.py` - S/T-learner implementations
+- `src/causal_inference/cate/base.py` - CATEResult, validation
+- `tests/test_cate/test_meta_learners.py` - 29 tests
+
+**Known Limitation**: S-learner with linear model cannot capture heterogeneous effects (no X*T interactions). Use `model="random_forest"` for effect heterogeneity.
+
+**Next**: Session 40 - X-Learner and R-Learner (Phase 8 Part 2)
+
+---
+
+## Session 38 Summary (2025-12-16)
+
+**Code TODO Cleanup - COMPLETE**
+
+- ✅ `psm_estimator.py:100`: Removed stale "(TODO: Session 3)"
+- ✅ `wild_bootstrap.py:226`: Converted TODO to LIMITATION note
 
 ---
 
