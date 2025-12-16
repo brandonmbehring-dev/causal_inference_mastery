@@ -1,16 +1,28 @@
 # Current Work
 
-**Last Updated**: 2025-12-16 [Session 37.5 - Context Engineering & Documentation Overhaul]
+**Last Updated**: 2025-12-16 [Session 38 - Code TODO Cleanup]
 
 ---
 
 ## Right Now
 
-✅ **COMPLETE**: Session 37.5 - Context Engineering & Documentation Overhaul
+✅ **COMPLETE**: Session 38 - Code TODO Cleanup
 
-**Status**: Documentation reorganized. 53→57 docs (new files created), docs/ root now clean with 5 core files.
+**Status**: 2 stale TODOs fixed, all tests pass.
 
-**Session 37.5 Summary**:
+**Session 38 Summary**:
+- ✅ `psm_estimator.py:100`: Removed stale "(TODO: Session 3)" - balance_metrics is implemented
+- ✅ `wild_bootstrap.py:226`: Converted TODO to LIMITATION note (WCU vs WCR)
+- ✅ 175 PSM+DiD tests pass
+
+**Next**: Session 39 - Advanced features (Phases 8-10) or additional improvements
+
+---
+
+## Session 37.5 Summary (2025-12-16)
+
+**Context Engineering & Documentation Overhaul - COMPLETE**
+
 - ✅ Fixed CLAUDE.md stale info (status, session history, roadmap refs)
 - ✅ Consolidated roadmaps (ROADMAP_REFINED archived)
 - ✅ Created docs/INDEX.md (navigation hub)
@@ -27,8 +39,6 @@
 | docs/ root | 5 | Core docs (INDEX, ROADMAP, etc.) |
 | docs/patterns/ | 3 | Reusable patterns |
 | docs/archive/ | 30+ | Historical sessions/plans |
-
-**Next**: Session 38 - Code TODO cleanup or advanced features
 
 ---
 
