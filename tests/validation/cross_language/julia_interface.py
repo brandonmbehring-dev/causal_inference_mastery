@@ -709,3 +709,116 @@ def julia_rdd_bandwidth_cct(
     h_bias = float(result[1])
 
     return (h_main, h_bias)
+
+
+def julia_fuzzy_rdd(
+    outcomes: np.ndarray,
+    running_var: np.ndarray,
+    treatment: np.ndarray,
+    cutoff: float,
+    bandwidth: Union[float, str] = "cct",
+    kernel: str = "triangular",
+    alpha: float = 0.05,
+    run_density_test: bool = False,
+) -> Dict[str, Union[float, int, bool, None]]:
+    """
+    Call Julia FuzzyRDD via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n,)
+    running_var : np.ndarray
+        Running variable X (n,)
+    treatment : np.ndarray
+        Actual treatment received D (n,) - may differ from eligibility Z
+    cutoff : float
+        Cutoff threshold
+    bandwidth : float or str, default="cct"
+        Bandwidth: "ik", "cct", or numeric value
+    kernel : str, default="triangular"
+        Kernel function: "triangular", "uniform", or "rectangular" (mapped to uniform)
+    alpha : float, default=0.05
+        Significance level
+    run_density_test : bool, default=False
+        Run McCrary density test (disabled for cross-validation to avoid warnings)
+
+    Returns
+    -------
+    dict
+        Julia result with estimate, se, ci, p_value, first_stage_fstat, compliance_rate, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert numpy arrays to Julia arrays
+    jl_outcomes = jl.collect(outcomes)
+    jl_running_var = jl.collect(running_var)
+    jl_treatment = jl.collect(treatment.astype(np.float64))  # Fuzzy RDD needs Float64 treatment
+
+    # Create RDDProblem
+    problem = jl.RDDProblem(
+        jl_outcomes,
+        jl_running_var,
+        jl_treatment,
+        float(cutoff),
+        jl.seval("nothing"),  # No covariates
+        jl.seval(f"(alpha={alpha},)")
+    )
+
+    # Map kernel name: Python "rectangular" -> Julia "uniform"
+    kernel_map = {
+        "triangular": "TriangularKernel()",
+        "uniform": "UniformKernel()",
+        "rectangular": "UniformKernel()",  # Python name for uniform
+    }
+    jl_kernel = jl.seval(kernel_map.get(kernel, "TriangularKernel()"))
+
+    # Map bandwidth method
+    if isinstance(bandwidth, str):
+        if bandwidth.lower() == "ik":
+            jl_bandwidth_method = jl.IKBandwidth()
+        elif bandwidth.lower() == "cct":
+            jl_bandwidth_method = jl.CCTBandwidth()
+        else:
+            raise ValueError(f"Unknown bandwidth method: {bandwidth}")
+
+        # Solve with automatic bandwidth
+        solution = jl.solve(
+            problem,
+            jl.FuzzyRDD(
+                bandwidth_method=jl_bandwidth_method,
+                kernel=jl_kernel,
+                run_density_test=run_density_test
+            )
+        )
+    else:
+        # Fixed bandwidth - use IK for now (bandwidth selection happens internally)
+        jl_bandwidth_method = jl.IKBandwidth()
+        solution = jl.solve(
+            problem,
+            jl.FuzzyRDD(
+                bandwidth_method=jl_bandwidth_method,
+                kernel=jl_kernel,
+                run_density_test=run_density_test
+            )
+        )
+
+    # Extract results
+    result = {
+        "estimate": float(solution.estimate),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "p_value": float(solution.p_value),
+        "bandwidth": float(solution.bandwidth),
+        "kernel": str(solution.kernel),
+        "n_eff_left": int(solution.n_eff_left),
+        "n_eff_right": int(solution.n_eff_right),
+        "first_stage_fstat": float(solution.first_stage_fstat),
+        "compliance_rate": float(solution.compliance_rate),
+        "weak_instrument_warning": bool(solution.weak_instrument_warning),
+        "retcode": str(solution.retcode),
+    }
+
+    return result

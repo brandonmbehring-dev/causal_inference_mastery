@@ -351,3 +351,199 @@ class TestRDDEffectiveSampleSize:
 
         assert py_n_eff <= 500
         assert jl_n_eff <= 500
+
+
+# =============================================================================
+# Fuzzy RDD Tests
+# =============================================================================
+
+
+def generate_fuzzy_rdd_data(
+    n: int, cutoff: float, tau: float, p_comply_above: float = 0.8,
+    p_comply_below: float = 0.2, seed: int = 42
+):
+    """
+    Generate Fuzzy RDD data.
+
+    DGP: Y = 1.0 + 0.5 * X + tau * D + eps
+         D ~ Bernoulli(p) where p depends on Z = 1{X >= cutoff}
+    """
+    np.random.seed(seed)
+    X = np.random.uniform(cutoff - 2, cutoff + 2, n)
+    Z = (X >= cutoff)
+
+    # Treatment with imperfect compliance
+    D = np.zeros(n)
+    for i in range(n):
+        if Z[i]:
+            D[i] = 1.0 if np.random.random() < p_comply_above else 0.0
+        else:
+            D[i] = 1.0 if np.random.random() < p_comply_below else 0.0
+
+    eps = np.random.normal(0, 0.5, n)
+    Y = 1.0 + 0.5 * X + tau * D + eps
+    return Y, X, D
+
+
+class TestFuzzyRDDParity:
+    """Cross-validate Python FuzzyRDD vs Julia FuzzyRDD."""
+
+    def test_high_compliance_recovers_late(self):
+        """High compliance scenario (compliance ≈ 0.8)."""
+        from src.causal_inference.rdd.fuzzy_rdd import FuzzyRDD
+        from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
+
+        Y, X, D = generate_fuzzy_rdd_data(
+            n=500, cutoff=0.0, tau=2.0,
+            p_comply_above=0.9, p_comply_below=0.1, seed=42
+        )
+
+        # Python
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model.fit(Y, X, D)
+
+        # Julia
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+
+        # Both should recover LATE
+        assert abs(py_model.coef_ - 2.0) < 0.6, f"Python: {py_model.coef_}"
+        assert abs(jl_result["estimate"] - 2.0) < 0.6, f"Julia: {jl_result['estimate']}"
+
+        # Estimates should be similar
+        rel_diff = abs(py_model.coef_ - jl_result["estimate"]) / abs(py_model.coef_)
+        assert rel_diff < 0.3, f"Relative difference: {rel_diff}"
+
+    def test_moderate_compliance_recovers_late(self):
+        """Moderate compliance scenario (compliance ≈ 0.5)."""
+        from src.causal_inference.rdd.fuzzy_rdd import FuzzyRDD
+        from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
+
+        Y, X, D = generate_fuzzy_rdd_data(
+            n=500, cutoff=0.0, tau=1.5,
+            p_comply_above=0.75, p_comply_below=0.25, seed=123
+        )
+
+        # Python
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model.fit(Y, X, D)
+
+        # Julia
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+
+        # Both should recover LATE (relaxed tolerance)
+        assert abs(py_model.coef_ - 1.5) < 0.8, f"Python: {py_model.coef_}"
+        assert abs(jl_result["estimate"] - 1.5) < 0.8, f"Julia: {jl_result['estimate']}"
+
+    def test_first_stage_diagnostics(self):
+        """First-stage F-stat and compliance rate comparison."""
+        from src.causal_inference.rdd.fuzzy_rdd import FuzzyRDD
+        from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
+
+        Y, X, D = generate_fuzzy_rdd_data(
+            n=500, cutoff=0.0, tau=2.0,
+            p_comply_above=0.9, p_comply_below=0.1, seed=456
+        )
+
+        # Python
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model.fit(Y, X, D)
+
+        # Julia
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+
+        # Both should have strong first stage (F > 20)
+        assert py_model.first_stage_f_stat_ > 20, f"Python F: {py_model.first_stage_f_stat_}"
+        assert jl_result["first_stage_fstat"] > 20, f"Julia F: {jl_result['first_stage_fstat']}"
+
+        # Both should have high compliance rate (> 0.6)
+        assert py_model.compliance_rate_ > 0.6, f"Python compliance: {py_model.compliance_rate_}"
+        assert jl_result["compliance_rate"] > 0.6, f"Julia compliance: {jl_result['compliance_rate']}"
+
+        # Neither should warn about weak instrument
+        assert not py_model.weak_instrument_warning_
+        assert not jl_result["weak_instrument_warning"]
+
+    def test_compliance_rate_comparison(self):
+        """Compliance rates should be similar between implementations."""
+        from src.causal_inference.rdd.fuzzy_rdd import FuzzyRDD
+        from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
+
+        Y, X, D = generate_fuzzy_rdd_data(
+            n=500, cutoff=0.0, tau=2.0,
+            p_comply_above=0.85, p_comply_below=0.15, seed=789
+        )
+        expected_compliance = 0.85 - 0.15  # 0.7
+
+        # Python
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model.fit(Y, X, D)
+
+        # Julia
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+
+        # Both should be close to expected compliance
+        assert abs(py_model.compliance_rate_ - expected_compliance) < 0.2
+        assert abs(jl_result["compliance_rate"] - expected_compliance) < 0.2
+
+        # Compliance rates should be similar
+        assert abs(py_model.compliance_rate_ - jl_result["compliance_rate"]) < 0.15
+
+    def test_perfect_compliance_matches_sharp(self):
+        """Perfect compliance should give results close to Sharp RDD."""
+        from src.causal_inference.rdd.fuzzy_rdd import FuzzyRDD
+        from src.causal_inference.rdd.sharp_rdd import SharpRDD
+        from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd, julia_sharp_rdd
+
+        Y, X, D = generate_fuzzy_rdd_data(
+            n=500, cutoff=0.0, tau=2.0,
+            p_comply_above=1.0, p_comply_below=0.0, seed=101
+        )
+
+        # Python Fuzzy
+        py_fuzzy = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_fuzzy.fit(Y, X, D)
+
+        # Python Sharp
+        py_sharp = SharpRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_sharp.fit(Y, X)
+
+        # Julia Fuzzy
+        jl_fuzzy = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+
+        # Julia Sharp
+        jl_sharp = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', kernel='triangular')
+
+        # With perfect compliance, Fuzzy should match Sharp closely
+        assert abs(py_fuzzy.coef_ - py_sharp.coef_) < 0.1, \
+            f"Python: Fuzzy={py_fuzzy.coef_}, Sharp={py_sharp.coef_}"
+        assert abs(jl_fuzzy["estimate"] - jl_sharp["estimate"]) < 0.1, \
+            f"Julia: Fuzzy={jl_fuzzy['estimate']}, Sharp={jl_sharp['estimate']}"
+
+        # Compliance should be ~1.0
+        assert py_fuzzy.compliance_rate_ > 0.95
+        assert jl_fuzzy["compliance_rate"] > 0.95
+
+    def test_negative_treatment_effect(self):
+        """Test with negative treatment effect."""
+        from src.causal_inference.rdd.fuzzy_rdd import FuzzyRDD
+        from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
+
+        Y, X, D = generate_fuzzy_rdd_data(
+            n=500, cutoff=0.0, tau=-1.5,
+            p_comply_above=0.85, p_comply_below=0.15, seed=202
+        )
+
+        # Python
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model.fit(Y, X, D)
+
+        # Julia
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+
+        # Both should detect negative effect
+        assert py_model.coef_ < 0
+        assert jl_result["estimate"] < 0
+
+        # Should be close to true value
+        assert abs(py_model.coef_ - (-1.5)) < 0.6
+        assert abs(jl_result["estimate"] - (-1.5)) < 0.6

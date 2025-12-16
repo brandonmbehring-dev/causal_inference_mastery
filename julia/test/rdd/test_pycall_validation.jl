@@ -352,4 +352,210 @@ end
         @test py_n_eff <= 500
     end
 
+    # =========================================================================
+    # Fuzzy RDD Tests
+    # =========================================================================
+
+    @testset "Fuzzy RDD - High Compliance" begin
+        Random.seed!(1001)
+        n = 500
+        cutoff = 0.0
+        tau = 2.0
+
+        # Running variable
+        X = rand(n) .* 4 .- 2  # X in [-2, 2]
+        Z = X .>= cutoff
+
+        # Treatment with high compliance (P(D=1|Z=1)=0.9, P(D=1|Z=0)=0.1)
+        D = zeros(Float64, n)
+        for i in 1:n
+            D[i] = Z[i] ? (rand() < 0.9 ? 1.0 : 0.0) : (rand() < 0.1 ? 1.0 : 0.0)
+        end
+
+        # Outcome
+        eps = randn(n) .* 0.5
+        Y = 1.0 .+ 0.5 .* X .+ tau .* D .+ eps
+
+        # Julia Fuzzy RDD
+        problem_jl = RDDProblem(Y, X, D, cutoff, nothing, (alpha=0.05,))
+        solution_jl = solve(problem_jl, FuzzyRDD(
+            bandwidth_method=IKBandwidth(),
+            kernel=TriangularKernel(),
+            run_density_test=false
+        ))
+
+        # Python Fuzzy RDD
+        fuzzy_rdd_py = pyimport("src.causal_inference.rdd.fuzzy_rdd")
+        py_model = fuzzy_rdd_py.FuzzyRDD(cutoff=cutoff, bandwidth="ik", kernel="triangular")
+        py_model.fit(Y, X, D)
+
+        # Both should recover LATE
+        @test abs(solution_jl.estimate - tau) < 0.6
+        @test abs(py_model.coef_ - tau) < 0.6
+
+        # Estimates should be similar
+        rel_diff = abs(solution_jl.estimate - py_model.coef_) / abs(solution_jl.estimate)
+        @test rel_diff < 0.3
+    end
+
+    @testset "Fuzzy RDD - Moderate Compliance" begin
+        Random.seed!(1002)
+        n = 500
+        cutoff = 0.0
+        tau = 1.5
+
+        X = rand(n) .* 4 .- 2
+        Z = X .>= cutoff
+
+        # Moderate compliance (P(D=1|Z=1)=0.75, P(D=1|Z=0)=0.25)
+        D = zeros(Float64, n)
+        for i in 1:n
+            D[i] = Z[i] ? (rand() < 0.75 ? 1.0 : 0.0) : (rand() < 0.25 ? 1.0 : 0.0)
+        end
+
+        eps = randn(n) .* 0.5
+        Y = 1.0 .+ 0.5 .* X .+ tau .* D .+ eps
+
+        # Julia
+        problem_jl = RDDProblem(Y, X, D, cutoff, nothing, (alpha=0.05,))
+        solution_jl = solve(problem_jl, FuzzyRDD(
+            bandwidth_method=IKBandwidth(),
+            kernel=TriangularKernel(),
+            run_density_test=false
+        ))
+
+        # Python
+        fuzzy_rdd_py = pyimport("src.causal_inference.rdd.fuzzy_rdd")
+        py_model = fuzzy_rdd_py.FuzzyRDD(cutoff=cutoff, bandwidth="ik", kernel="triangular")
+        py_model.fit(Y, X, D)
+
+        # Both should recover LATE (relaxed tolerance for moderate compliance)
+        @test abs(solution_jl.estimate - tau) < 0.8
+        @test abs(py_model.coef_ - tau) < 0.8
+    end
+
+    @testset "Fuzzy RDD - First Stage Diagnostics" begin
+        Random.seed!(1003)
+        n = 500
+        cutoff = 0.0
+        tau = 2.0
+
+        X = rand(n) .* 4 .- 2
+        Z = X .>= cutoff
+
+        # High compliance for strong first stage
+        D = zeros(Float64, n)
+        for i in 1:n
+            D[i] = Z[i] ? (rand() < 0.9 ? 1.0 : 0.0) : (rand() < 0.1 ? 1.0 : 0.0)
+        end
+
+        eps = randn(n) .* 0.5
+        Y = 1.0 .+ 0.5 .* X .+ tau .* D .+ eps
+
+        # Julia
+        problem_jl = RDDProblem(Y, X, D, cutoff, nothing, (alpha=0.05,))
+        solution_jl = solve(problem_jl, FuzzyRDD(
+            bandwidth_method=IKBandwidth(),
+            kernel=TriangularKernel(),
+            run_density_test=false
+        ))
+
+        # Python
+        fuzzy_rdd_py = pyimport("src.causal_inference.rdd.fuzzy_rdd")
+        py_model = fuzzy_rdd_py.FuzzyRDD(cutoff=cutoff, bandwidth="ik", kernel="triangular")
+        py_model.fit(Y, X, D)
+
+        # Both should have strong first stage (F > 20)
+        @test solution_jl.first_stage_fstat > 20
+        @test py_model.first_stage_f_stat_ > 20
+
+        # Both should have high compliance rate (> 0.6)
+        @test solution_jl.compliance_rate > 0.6
+        @test py_model.compliance_rate_ > 0.6
+
+        # Neither should warn about weak instrument
+        @test !solution_jl.weak_instrument_warning
+        @test !py_model.weak_instrument_warning_
+    end
+
+    @testset "Fuzzy RDD - Compliance Rate Comparison" begin
+        Random.seed!(1004)
+        n = 500
+        cutoff = 0.0
+
+        X = rand(n) .* 4 .- 2
+        Z = X .>= cutoff
+
+        # Known compliance probabilities
+        p_above = 0.85
+        p_below = 0.15
+        expected_compliance = p_above - p_below  # 0.7
+
+        D = zeros(Float64, n)
+        for i in 1:n
+            D[i] = Z[i] ? (rand() < p_above ? 1.0 : 0.0) : (rand() < p_below ? 1.0 : 0.0)
+        end
+
+        eps = randn(n) .* 0.5
+        Y = 1.0 .+ 0.5 .* X .+ 2.0 .* D .+ eps
+
+        # Julia
+        problem_jl = RDDProblem(Y, X, D, cutoff, nothing, (alpha=0.05,))
+        solution_jl = solve(problem_jl, FuzzyRDD(
+            bandwidth_method=IKBandwidth(),
+            kernel=TriangularKernel(),
+            run_density_test=false
+        ))
+
+        # Python
+        fuzzy_rdd_py = pyimport("src.causal_inference.rdd.fuzzy_rdd")
+        py_model = fuzzy_rdd_py.FuzzyRDD(cutoff=cutoff, bandwidth="ik", kernel="triangular")
+        py_model.fit(Y, X, D)
+
+        # Both compliance rates should be close to expected
+        @test abs(solution_jl.compliance_rate - expected_compliance) < 0.2
+        @test abs(py_model.compliance_rate_ - expected_compliance) < 0.2
+
+        # Compliance rates should be similar between implementations
+        @test abs(solution_jl.compliance_rate - py_model.compliance_rate_) < 0.15
+    end
+
+    @testset "Fuzzy RDD - Perfect Compliance Matches Sharp" begin
+        Random.seed!(1005)
+        n = 500
+        cutoff = 0.0
+        tau = 2.0
+
+        X = rand(n) .* 4 .- 2
+        Z = X .>= cutoff
+
+        # Perfect compliance: D = Z
+        D = Float64.(Z)
+
+        eps = randn(n) .* 0.5
+        Y = 1.0 .+ 0.5 .* X .+ tau .* D .+ eps
+
+        # Julia Fuzzy RDD
+        problem_fuzzy = RDDProblem(Y, X, D, cutoff, nothing, (alpha=0.05,))
+        solution_fuzzy = solve(problem_fuzzy, FuzzyRDD(
+            bandwidth_method=IKBandwidth(),
+            kernel=TriangularKernel(),
+            run_density_test=false
+        ))
+
+        # Julia Sharp RDD
+        problem_sharp = RDDProblem(Y, X, Z, cutoff, nothing, (alpha=0.05,))
+        solution_sharp = solve(problem_sharp, SharpRDD(
+            bandwidth_method=IKBandwidth(),
+            kernel=TriangularKernel(),
+            run_density_test=false
+        ))
+
+        # With perfect compliance, Fuzzy should match Sharp
+        @test abs(solution_fuzzy.estimate - solution_sharp.estimate) < 0.1
+
+        # Compliance should be ~1.0
+        @test solution_fuzzy.compliance_rate > 0.95
+    end
+
 end  # @testset "PyCall RDD Validation"
