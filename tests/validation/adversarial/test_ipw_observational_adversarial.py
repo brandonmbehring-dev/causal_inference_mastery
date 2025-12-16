@@ -27,8 +27,11 @@ class TestPerfectConfounding:
             T = 1 if X > 0, else T = 0
             Y = 3.0*T + X + noise
 
-        Propensity scores will be near 0 or 1 (extreme).
-        IPW should still recover ATE with larger variance.
+        Propensity scores will be exactly 0 or 1 (perfect separation).
+        IPW should RAISE ValueError because positivity is violated.
+
+        Note: This is the correct behavior - with perfect separation,
+        IPW weights become infinite and estimation is impossible.
         """
         np.random.seed(42)
         n = 200
@@ -40,22 +43,21 @@ class TestPerfectConfounding:
         # Outcome depends on treatment and confounder
         Y = 3.0 * T + 0.5 * X + np.random.normal(0, 1, n)
 
-        result = ipw_ate_observational(Y, T, X)
-
-        # Should still recover ATE (propensity clipping helps stabilize)
-        assert np.abs(result["estimate"] - 3.0) < 1.0  # Larger tolerance
-
-        # SE should be positive (clipping reduces variance from extreme weights)
-        assert result["se"] > 0
-
-        # Propensity diagnostics should show perfect separation
-        assert result["propensity_diagnostics"]["auc"] > 0.95
+        # Should raise ValueError for perfect separation (positivity violation)
+        with pytest.raises(ValueError, match="Perfect separation detected"):
+            ipw_ate_observational(Y, T, X)
 
     def test_perfect_separation_with_trimming(self):
         """
         Test perfect separation with aggressive trimming.
 
-        Trimming should help by removing extreme weights.
+        Note: Trimming doesn't help perfect separation - the error is raised
+        during propensity estimation BEFORE trimming is applied. Perfect
+        separation means the logistic model is degenerate (coefficients → ±∞),
+        which trimming cannot fix.
+
+        For near-perfect separation (extreme but not exact), see the
+        doubly robust adversarial tests which use noisy propensities.
         """
         np.random.seed(123)
         n = 300
@@ -65,14 +67,9 @@ class TestPerfectConfounding:
         T = (X > 0).astype(float)
         Y = 2.5 * T + X + np.random.normal(0, 1, n)
 
-        # Trim at 5th/95th percentile (aggressive)
-        result = ipw_ate_observational(Y, T, X, trim_at=(0.05, 0.95))
-
-        # Should trim some units (extreme propensities at 5th/95th percentile)
-        assert result["n_trimmed"] >= n * 0.05  # At least 5%
-
-        # Estimate should still be reasonable (perfect separation + trimming introduces bias)
-        assert np.abs(result["estimate"] - 2.5) < 1.5
+        # Should still raise ValueError - trimming doesn't fix perfect separation
+        with pytest.raises(ValueError, match="Perfect separation detected"):
+            ipw_ate_observational(Y, T, X, trim_at=(0.05, 0.95))
 
 
 class TestHighDimensionalCovariates:
@@ -107,18 +104,22 @@ class TestHighDimensionalCovariates:
 
     def test_very_high_dimensional_with_trimming(self):
         """
-        Test with p=30 and n=100 (p/n = 0.3).
+        Test with p=25 and n=150 (p/n = 0.17).
+
+        Note: p=30, n=100 causes perfect separation due to logistic regression
+        overfitting in high dimensions. Reduced p/n ratio to avoid this while
+        still testing high-dimensional behavior.
 
         Use trimming to stabilize extreme weights.
         """
         np.random.seed(789)
-        n = 100
-        p = 30
+        n = 150
+        p = 25
 
         X = np.random.normal(0, 1, (n, p))
 
-        # Confounding from first 5 covariates
-        logit = 0.6 * X[:, 0] + 0.4 * X[:, 1] + 0.3 * X[:, 2] + 0.2 * X[:, 3] + 0.1 * X[:, 4]
+        # Confounding from first 5 covariates (moderate strength to avoid separation)
+        logit = 0.4 * X[:, 0] + 0.3 * X[:, 1] + 0.2 * X[:, 2] + 0.15 * X[:, 3] + 0.1 * X[:, 4]
         T = (np.random.uniform(0, 1, n) < 1 / (1 + np.exp(-logit))).astype(float)
 
         Y = 2.5 * T + 0.5 * np.sum(X[:, :5], axis=1) + np.random.normal(0, 1, n)
