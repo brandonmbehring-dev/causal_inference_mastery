@@ -95,6 +95,7 @@ include("rdd/types.jl")
 include("rdd/sharp_rdd.jl")
 include("rdd/fuzzy_rdd.jl")
 include("rdd/sensitivity.jl")
+include("rdd/mccrary.jl")   # Session 57: CJM (2020) proper variance
 
 # IV types (Phase 4)
 include("iv/types.jl")
@@ -103,6 +104,8 @@ include("iv/tsls.jl")
 include("iv/liml.jl")
 include("iv/gmm.jl")
 include("iv/weak_iv_robust.jl")
+include("iv/vcov.jl")      # Session 56: Variance-covariance estimators
+include("iv/stages.jl")    # Session 56: First/Reduced/Second stage decomposition
 
 # DiD types (Phase 5 - Sessions 15-17)
 include("did/types.jl")
@@ -160,12 +163,13 @@ export SCMProblem
 export ObservationalProblem
 export CATEProblem
 export EValueProblem, RosenbaumProblem
+export FirstStageProblem, ReducedFormProblem, SecondStageProblem  # Session 56
 
 ## Estimator types
 export SimpleATE, StratifiedATE, RegressionATE, PermutationTest, IPWATE
 export NearestNeighborPSM
 export SharpRDD, FuzzyRDD
-export TSLS, LIML, GMM, AndersonRubin, ConditionalLR
+export TSLS, LIML, GMM, AndersonRubin, ConditionalLR, OLS
 export ClassicDiD, EventStudy, StaggeredTWFE, CallawaySantAnna, SunAbraham
 export ObservationalIPW, DoublyRobust
 export SLearner, TLearner, XLearner, RLearner, DoubleMachineLearning
@@ -179,6 +183,7 @@ export CATESolution
 export SCMSolution
 export EValueSolution, RosenbaumSolution
 export EffectType, RR, OR, HR, SMD, ATE, effect_type_from_symbol
+export FirstStageSolution, ReducedFormSolution, SecondStageSolution  # Session 56
 
 ## RDD utilities
 export AbstractBandwidthSelector, IKBandwidth, CCTBandwidth
@@ -187,6 +192,9 @@ export kernel_function
 export McCraryTest
 export select_bandwidth, mccrary_test
 export bandwidth_sensitivity, placebo_test, balance_test, donut_rdd, permutation_test
+
+## McCrary density test (Session 57)
+export McCraryProblem, McCrarySolution, McCraryDensityTest
 
 ## Core interface
 export solve
@@ -207,6 +215,9 @@ export stock_yogo_critical_value, weak_iv_warning
 
 ## Weak IV robust inference
 export ar_confidence_set, ar_test_statistic
+
+## IV variance-covariance (Session 56)
+export compute_standard_vcov, compute_robust_vcov, compute_clustered_vcov, compute_vcov
 
 ## Observational propensity utilities
 export estimate_propensity_scores, compute_propensity_auc

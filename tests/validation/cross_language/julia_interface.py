@@ -496,6 +496,196 @@ def julia_gmm(
 
 
 # =============================================================================
+# IV Stage Decomposition Functions (Session 56)
+# =============================================================================
+
+
+def julia_first_stage(
+    treatment: np.ndarray,
+    instruments: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, np.ndarray, int, bool]]:
+    """
+    Call Julia FirstStage via juliacall.
+
+    Parameters
+    ----------
+    treatment : np.ndarray
+        Endogenous treatment variable D (n,)
+    instruments : np.ndarray
+        Instrumental variables Z (n,) or (n, K)
+    covariates : np.ndarray, optional
+        Exogenous covariates X (n, p)
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with coef, se, r2, partial_r2, f_statistic, fitted_values, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure instruments is 2D
+    if instruments.ndim == 1:
+        instruments = instruments.reshape(-1, 1)
+
+    # Ensure covariates is 2D or None
+    if covariates is not None and covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert numpy arrays to Julia arrays
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_instruments = jl.collect(instruments.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+
+    # Create FirstStageProblem
+    problem = jl.FirstStageProblem(
+        jl_treatment, jl_instruments, jl_covariates,
+        jl.seval(f"(alpha={alpha},)")
+    )
+
+    # Solve with OLS
+    solution = jl.solve(problem, jl.OLS())
+
+    # Extract results
+    return {
+        "coef": np.array([float(c) for c in solution.coef]),
+        "se": np.array([float(s) for s in solution.se]),
+        "r2": float(solution.r2),
+        "partial_r2": float(solution.partial_r2),
+        "f_statistic": float(solution.f_statistic),
+        "f_pvalue": float(solution.f_pvalue),
+        "fitted_values": np.array([float(f) for f in solution.fitted_values]),
+        "n": int(solution.n),
+        "n_instruments": int(solution.n_instruments),
+        "weak_iv_warning": bool(solution.weak_iv_warning),
+    }
+
+
+def julia_reduced_form(
+    outcomes: np.ndarray,
+    instruments: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, np.ndarray, int]]:
+    """
+    Call Julia ReducedForm via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n,)
+    instruments : np.ndarray
+        Instrumental variables Z (n,) or (n, K)
+    covariates : np.ndarray, optional
+        Exogenous covariates X (n, p)
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with coef, se, r2, fitted_values, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure instruments is 2D
+    if instruments.ndim == 1:
+        instruments = instruments.reshape(-1, 1)
+
+    # Ensure covariates is 2D or None
+    if covariates is not None and covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert numpy arrays to Julia arrays
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_instruments = jl.collect(instruments.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+
+    # Create ReducedFormProblem
+    problem = jl.ReducedFormProblem(
+        jl_outcomes, jl_instruments, jl_covariates,
+        jl.seval(f"(alpha={alpha},)")
+    )
+
+    # Solve with OLS
+    solution = jl.solve(problem, jl.OLS())
+
+    # Extract results
+    return {
+        "coef": np.array([float(c) for c in solution.coef]),
+        "se": np.array([float(s) for s in solution.se]),
+        "r2": float(solution.r2),
+        "fitted_values": np.array([float(f) for f in solution.fitted_values]),
+        "n": int(solution.n),
+        "n_instruments": int(solution.n_instruments),
+    }
+
+
+def julia_second_stage(
+    outcomes: np.ndarray,
+    fitted_treatment: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, np.ndarray, int]]:
+    """
+    Call Julia SecondStage via juliacall.
+
+    WARNING: This returns NAIVE standard errors that are INCORRECT for inference.
+    Use julia_tsls() for correct 2SLS standard errors.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n,)
+    fitted_treatment : np.ndarray
+        Fitted treatment D̂ from first stage (n,)
+    covariates : np.ndarray, optional
+        Exogenous covariates X (n, p)
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with coef, se_naive (INCORRECT!), r2, fitted_values, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure covariates is 2D or None
+    if covariates is not None and covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert numpy arrays to Julia arrays
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_fitted_treatment = jl.collect(fitted_treatment.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+
+    # Create SecondStageProblem
+    problem = jl.SecondStageProblem(
+        jl_outcomes, jl_fitted_treatment, jl_covariates,
+        jl.seval(f"(alpha={alpha},)")
+    )
+
+    # Solve with OLS (will issue warning about naive SEs)
+    solution = jl.solve(problem, jl.OLS())
+
+    # Extract results
+    return {
+        "coef": np.array([float(c) for c in solution.coef]),
+        "se_naive": np.array([float(s) for s in solution.se_naive]),  # Explicitly NAIVE
+        "r2": float(solution.r2),
+        "fitted_values": np.array([float(f) for f in solution.fitted_values]),
+        "n": int(solution.n),
+    }
+
+
+# =============================================================================
 # RDD (Regression Discontinuity Design) Functions
 # =============================================================================
 
@@ -2168,5 +2358,71 @@ def julia_rosenbaum_bounds(
         "observed_statistic": float(solution.observed_statistic),
         "n_pairs": int(solution.n_pairs),
         "alpha": float(solution.alpha),
+        "interpretation": str(solution.interpretation),
+    }
+
+
+# =============================================================================
+# McCrary Density Test (Session 57)
+# =============================================================================
+
+
+def julia_mccrary_test(
+    x: np.ndarray,
+    cutoff: float,
+    bandwidth: Optional[float] = None,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, bool, str, int]]:
+    """
+    Call Julia McCrary density test via juliacall.
+
+    Session 57: Tests for manipulation of running variable at cutoff.
+
+    Parameters
+    ----------
+    x : np.ndarray
+        Running variable values
+    cutoff : float
+        RDD cutoff value
+    bandwidth : float, optional
+        Bandwidth for density estimation (None = automatic ROT)
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with theta, se, p_value, passes, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert to Julia
+    jl_x = jl.collect(x.astype(np.float64))
+    jl_cutoff = float(cutoff)
+    jl_bandwidth = None if bandwidth is None else float(bandwidth)
+
+    # Create McCraryProblem
+    problem = jl.McCraryProblem(
+        jl_x,
+        jl_cutoff,
+        jl_bandwidth,
+        jl.seval(f"(alpha={alpha},)")
+    )
+
+    # Solve
+    solution = jl.solve(problem, jl.McCraryDensityTest())
+
+    return {
+        "theta": float(solution.theta),
+        "se": float(solution.se),
+        "z_stat": float(solution.z_stat),
+        "p_value": float(solution.p_value),
+        "passes": bool(solution.passes),
+        "f_left": float(solution.f_left),
+        "f_right": float(solution.f_right),
+        "bandwidth": float(solution.bandwidth),
+        "n_left": int(solution.n_left),
+        "n_right": int(solution.n_right),
         "interpretation": str(solution.interpretation),
     }

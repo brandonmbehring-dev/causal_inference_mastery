@@ -31,7 +31,7 @@ const FULL_MODE = !QUICK_MODE
         include("test_sharp_rdd.jl")       # Phase 3.2-3.4
         include("test_fuzzy_rdd.jl")       # Phase 3 - Session 27
         include("test_sensitivity.jl")     # Phase 3.6
-        # TODO: Add test_mccrary.jl (Phase 3.5 - standalone)
+        include("test_mccrary.jl")         # Session 57: CJM (2020) variance
     end
 
     # =========================================================================

@@ -38,7 +38,8 @@ const FULL_MODE = !QUICK_MODE
         include("test_liml.jl")  # Phase 4.4
         include("test_gmm.jl")  # Phase 4.5
         include("test_weak_iv_robust.jl")  # Phase 4.6
-        # TODO: Add test_sensitivity.jl (Phase 4.8)
+        include("test_vcov.jl")  # Session 56: VCov estimators
+        include("test_stages.jl")  # Session 56: Stage decomposition
     end
 
     # =========================================================================
