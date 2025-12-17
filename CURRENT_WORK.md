@@ -1,17 +1,46 @@
 # Current Work
 
-**Last Updated**: 2025-12-17 [Session 60 - Project Audit & Consolidation]
+**Last Updated**: 2025-12-17 [Session 61 - Python RDD Adversarial Tests]
 
 ---
 
 ## Right Now
 
-**Session 60**: Project Audit & Consolidation - ✅ COMPLETE
+**Session 61**: Python RDD Adversarial Tests - ✅ COMPLETE
 
-Comprehensive audit of codebase verified:
-- Sessions 56-59 work exists and passes (84 new IV tests)
-- Committed all uncommitted work (5 files, 1,453 lines)
-- Updated ROADMAP.md to Session 60
+Added Python RDD adversarial tests (37 tests) to close validation layer gap.
+
+---
+
+## Session 61 Summary (2025-12-17)
+
+**Python RDD Adversarial Tests - ✅ COMPLETE**
+
+**Files Created**:
+| File | Purpose | Lines |
+|------|---------|-------|
+| `tests/validation/adversarial/test_rdd_adversarial.py` | 37 adversarial edge case tests | ~500 |
+
+**Test Categories**:
+- Boundary violations (4 tests): all one side, few observations, far from cutoff
+- Data quality (5 tests): NaN/Inf detection, constant outcomes, outliers
+- Numerical stability (4 tests): ties, tiny/huge values, scaled variables
+- Bandwidth edge cases (3 tests): small/large bandwidth, automatic selection
+- McCrary edge cases (2 tests): insufficient data, all-positive
+- Covariate edge cases (3 tests): single/multiple covariates, constant
+- Sensitivity edge cases (3 tests): donut hole, bandwidth/polynomial sensitivity
+- Cutoff edge cases (3 tests): negative, large, asymmetric
+- Kernel edge cases (3 tests): triangular, rectangular, invalid
+- Inference options (3 tests): standard, robust, invalid
+- Error handling (3 tests): dimensions, empty, invalid alpha
+- Integration (1 test): multiple edge cases combined
+
+**API Notes**:
+- `mccrary_density_test()` returns `(theta, p_value, message)` tuple
+- `bandwidth_sensitivity_analysis()` requires `h_optimal` parameter
+- `polynomial_order_sensitivity()` requires `bandwidth` parameter
+
+**Tests**: ✅ 37/37 passing
 
 ---
 
