@@ -1,14 +1,70 @@
 # Current Work
 
-**Last Updated**: 2025-12-17 [Session 61 - Python RDD Adversarial Tests]
+**Last Updated**: 2025-12-17 [Session 62 - CATE Validation Complete]
 
 ---
 
 ## Right Now
 
-**Session 61**: Python RDD Adversarial Tests - ✅ COMPLETE
+**Session 62**: CATE Monte Carlo + Adversarial Validation - ✅ COMPLETE
 
-Added Python RDD adversarial tests (37 tests) to close validation layer gap.
+Added comprehensive CATE validation tests (56 total) - the ONLY method that had no validation tests.
+
+---
+
+## Session 62 Summary (2025-12-17)
+
+**CATE Monte Carlo + Adversarial Validation - ✅ COMPLETE**
+
+**Files Created**:
+| File | Purpose | Lines |
+|------|---------|-------|
+| `tests/validation/monte_carlo/dgp_cate.py` | 6 DGP generators for CATE | ~530 |
+| `tests/validation/monte_carlo/test_monte_carlo_cate.py` | 20 Monte Carlo tests | ~520 |
+| `tests/validation/adversarial/test_cate_adversarial.py` | 36 adversarial tests | ~550 |
+
+**DGP Generators**:
+- `dgp_constant_effect()`: τ(x) = β₀ (homogeneous)
+- `dgp_linear_heterogeneity()`: τ(x) = β₀ + β₁x₁
+- `dgp_nonlinear_heterogeneity()`: τ(x) = β₀(1 + sin(x₁))
+- `dgp_complex_heterogeneity()`: τ(x) = β₀I(x₁>0) + β₁x₂
+- `dgp_high_dimensional()`: Sparse effects in p >> n
+- `dgp_imbalanced_treatment()`: Extreme treatment imbalance
+
+**Monte Carlo Tests** (20 tests):
+| Class | Tests | Validates |
+|-------|-------|-----------|
+| `TestSLearnerMonteCarlo` | 3 | Bias, coverage, regularization bias detection |
+| `TestTLearnerMonteCarlo` | 3 | Bias, CATE recovery, coverage with heterogeneity |
+| `TestXLearnerMonteCarlo` | 2 | Imbalanced treatment handling, nonlinear recovery |
+| `TestRLearnerMonteCarlo` | 2 | Doubly robust bias, confounding handling |
+| `TestDMLMonteCarlo` | 3 | Cross-fitting benefit, coverage, heterogeneity |
+| `TestCausalForestMonteCarlo` | 3 | Complex heterogeneity, honest splitting, bias |
+| `TestCATEMethodComparison` | 2 | All methods constant effect, scenario ranking |
+| `TestCATEHighDimensional` | 2 | Sparse detection, regularization |
+
+**Adversarial Tests** (36 tests):
+| Class | Tests | Edge Cases |
+|-------|-------|------------|
+| `TestCATEInputValidation` | 7 | NaN, Inf, empty, mismatched, non-binary, 1D |
+| `TestCATETreatmentImbalance` | 4 | 99% treated, 1% treated, small groups |
+| `TestCATEConstantValues` | 4 | Constant Y, constant X, zero variance |
+| `TestCATEHighDimensional` | 4 | p > n, p >> n, near-singular |
+| `TestCATECollinearity` | 3 | Perfect, near-perfect, linear combination |
+| `TestCATESmallSample` | 3 | Minimum viable, 3 per arm, single covariate |
+| `TestCATENumericalStability` | 4 | Large values, small values, mixed scale, outliers |
+| `TestTLearnerEdgeCases` | 1 | No covariate overlap |
+| `TestXLearnerEdgeCases` | 1 | Propensity at boundary |
+| `TestRLearnerEdgeCases` | 1 | Zero treatment residuals |
+| `TestDMLEdgeCases` | 2 | Insufficient folds, fewer folds |
+| `TestCATERobustness` | 2 | All methods basic, ridge regularization |
+
+**Validation Matrix Update**:
+| Method | Py MC | Py Adv | Jl MC | Jl Adv | Cross-Lang |
+|--------|:-----:|:------:|:-----:|:------:|:----------:|
+| CATE | ✅ | ✅ | ❌ | ❌ | ✅ |
+
+**Tests**: ✅ 56/56 passing (20 MC + 36 adversarial)
 
 ---
 
