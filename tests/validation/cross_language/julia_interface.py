@@ -2713,3 +2713,981 @@ def julia_compute_elasticity(
         float(t1_rate),
         float(t2_rate),
     ))
+
+
+# =============================================================================
+# Selection Models (Session 85)
+# =============================================================================
+
+
+def julia_heckman_two_step(
+    outcomes: np.ndarray,
+    selected: np.ndarray,
+    selection_covariates: np.ndarray,
+    outcome_covariates: Optional[np.ndarray] = None,
+    alpha: float = 0.05,
+    add_intercept: bool = True,
+) -> Dict[str, Union[float, int, np.ndarray]]:
+    """
+    Call Julia HeckmanTwoStep via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable (n,). Use NaN for unselected.
+    selected : np.ndarray
+        Selection indicator (n,), boolean or 0/1.
+    selection_covariates : np.ndarray
+        Covariates for selection equation (n, k_z).
+    outcome_covariates : np.ndarray, optional
+        Covariates for outcome equation (n, k_x). If None, uses selection_covariates.
+    alpha : float, default=0.05
+        Significance level.
+    add_intercept : bool, default=True
+        Whether to add intercept to equations.
+
+    Returns
+    -------
+    dict
+        Julia result with estimate, se, rho, lambda_coef, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert to Julia-compatible types
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_selected = jl.collect(selected.astype(bool))
+    jl_sel_cov = jl.collect(selection_covariates.astype(np.float64))
+
+    if outcome_covariates is not None:
+        jl_out_cov = jl.collect(outcome_covariates.astype(np.float64))
+    else:
+        jl_out_cov = None
+
+    # Create HeckmanProblem
+    problem = jl.HeckmanProblem(
+        jl_outcomes,
+        jl_selected,
+        jl_sel_cov,
+        jl_out_cov,
+        jl.seval(f"(alpha={alpha},)")
+    )
+
+    # Solve with HeckmanTwoStep
+    solution = jl.solve(problem, jl.HeckmanTwoStep(add_intercept=add_intercept))
+
+    # Extract selection probabilities and IMR as numpy arrays
+    selection_probs = np.array([float(x) for x in solution.selection_probs])
+    imr = np.array([float(x) for x in solution.imr])
+    gamma = np.array([float(x) for x in solution.gamma])
+    beta = np.array([float(x) for x in solution.beta])
+
+    return {
+        "estimate": float(solution.estimate),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "rho": float(solution.rho),
+        "sigma": float(solution.sigma),
+        "lambda_coef": float(solution.lambda_coef),
+        "lambda_se": float(solution.lambda_se),
+        "lambda_pvalue": float(solution.lambda_pvalue),
+        "n_selected": int(solution.n_selected),
+        "n_total": int(solution.n_total),
+        "selection_probs": selection_probs,
+        "imr": imr,
+        "gamma": gamma,
+        "beta": beta,
+        "probit_converged": bool(solution.probit_converged),
+    }
+
+
+def julia_selection_bias_test(
+    solution_dict: Dict[str, Union[float, int]],
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, bool, str]]:
+    """
+    Call Julia selection_bias_test using solution data.
+
+    Note: This reconstructs the test from Python solution dict since
+    we cannot pass HeckmanSolution directly.
+
+    Parameters
+    ----------
+    solution_dict : dict
+        Dictionary from julia_heckman_two_step or Python heckman_two_step
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Test result with statistic, pvalue, reject_null
+    """
+    lambda_coef = solution_dict["lambda_coef"]
+    lambda_se = solution_dict["lambda_se"]
+
+    if lambda_se <= 0 or np.isnan(lambda_se):
+        return {
+            "statistic": float("nan"),
+            "pvalue": float("nan"),
+            "reject_null": False,
+            "interpretation": "Cannot compute test: invalid standard error",
+        }
+
+    from scipy.stats import norm as scipy_norm
+
+    t_stat = lambda_coef / lambda_se
+    pvalue = 2 * (1 - scipy_norm.cdf(abs(t_stat)))
+    reject = pvalue < alpha
+
+    return {
+        "statistic": t_stat,
+        "pvalue": pvalue,
+        "reject_null": reject,
+        "interpretation": "Selection bias test",
+    }
+
+
+def julia_compute_imr(selection_probs: np.ndarray) -> np.ndarray:
+    """
+    Call Julia compute_imr.
+
+    Parameters
+    ----------
+    selection_probs : np.ndarray
+        Selection probabilities (n,)
+
+    Returns
+    -------
+    np.ndarray
+        Inverse Mills Ratio values
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl_probs = jl.collect(selection_probs.astype(np.float64))
+    jl_imr = jl.compute_imr(jl_probs)
+
+    return np.array([float(x) for x in jl_imr])
+
+
+# =============================================================================
+# QUANTILE TREATMENT EFFECTS (Session 89)
+# =============================================================================
+
+
+def julia_unconditional_qte(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    quantile: float = 0.5,
+    n_bootstrap: int = 1000,
+    seed: int = 42,
+) -> Dict[str, Union[float, int]]:
+    """
+    Call Julia unconditional_qte via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable
+    treatment : np.ndarray
+        Binary treatment indicator (0/1)
+    quantile : float, default=0.5
+        Target quantile in (0, 1)
+    n_bootstrap : int, default=1000
+        Bootstrap replications
+    seed : int, default=42
+        Random seed
+
+    Returns
+    -------
+    dict
+        Julia result with tau_q, se, ci_lower, ci_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert to Julia types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+
+    # Include QTE module
+    jl.seval('include(joinpath(@__DIR__, "src/qte/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/qte/unconditional.jl"))')
+
+    # Call unconditional_qte
+    jl_code = f"""
+    using Random
+    rng = MersenneTwister({seed})
+    outcome_jl = {list(outcome.astype(float))}
+    treatment_jl = {list(treatment.astype(float))}
+    result = unconditional_qte(
+        Float64.(outcome_jl),
+        Float64.(treatment_jl);
+        quantile={quantile},
+        n_bootstrap={n_bootstrap},
+        rng=rng
+    )
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "tau_q": float(solution.tau_q),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "quantile": float(solution.quantile),
+        "method": str(solution.method),
+        "n_treated": int(solution.n_treated),
+        "n_control": int(solution.n_control),
+        "n_total": int(solution.n_total),
+    }
+
+
+def julia_conditional_qte(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    quantile: float = 0.5,
+) -> Dict[str, Union[float, int]]:
+    """
+    Call Julia conditional_qte via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable
+    treatment : np.ndarray
+        Binary treatment indicator (0/1)
+    covariates : np.ndarray
+        Covariate matrix (n x p)
+    quantile : float, default=0.5
+        Target quantile in (0, 1)
+
+    Returns
+    -------
+    dict
+        Julia result with tau_q, se, ci_lower, ci_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Include QTE module
+    jl.seval('include(joinpath(@__DIR__, "src/qte/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/qte/conditional.jl"))')
+
+    n, p = covariates.shape
+    cov_list = [list(row) for row in covariates]
+
+    # Call conditional_qte
+    jl_code = f"""
+    using LinearAlgebra
+    using Distributions
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    covariates_jl = Float64.(hcat({cov_list}...)')
+    result = conditional_qte(outcome_jl, treatment_jl, covariates_jl; quantile={quantile})
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "tau_q": float(solution.tau_q),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "quantile": float(solution.quantile),
+        "method": str(solution.method),
+        "n_treated": int(solution.n_treated),
+        "n_control": int(solution.n_control),
+        "n_total": int(solution.n_total),
+    }
+
+
+def julia_rif_qte(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    quantile: float = 0.5,
+    n_bootstrap: int = 1000,
+    seed: int = 42,
+    covariates: Optional[np.ndarray] = None,
+) -> Dict[str, Union[float, int]]:
+    """
+    Call Julia rif_qte via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable
+    treatment : np.ndarray
+        Binary treatment indicator (0/1)
+    quantile : float, default=0.5
+        Target quantile in (0, 1)
+    n_bootstrap : int, default=1000
+        Bootstrap replications
+    seed : int, default=42
+        Random seed
+    covariates : np.ndarray, optional
+        Covariate matrix (n x p)
+
+    Returns
+    -------
+    dict
+        Julia result with tau_q, se, ci_lower, ci_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Include QTE module
+    jl.seval('include(joinpath(@__DIR__, "src/qte/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/qte/rif.jl"))')
+
+    cov_code = "nothing"
+    if covariates is not None:
+        cov_list = [list(row) for row in covariates]
+        cov_code = f"Float64.(hcat({cov_list}...)')"
+
+    jl_code = f"""
+    using Random
+    using Statistics
+    using LinearAlgebra
+    rng = MersenneTwister({seed})
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    covariates_jl = {cov_code}
+    result = rif_qte(outcome_jl, treatment_jl; quantile={quantile}, covariates=covariates_jl,
+                     n_bootstrap={n_bootstrap}, rng=rng)
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "tau_q": float(solution.tau_q),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "quantile": float(solution.quantile),
+        "method": str(solution.method),
+        "n_treated": int(solution.n_treated),
+        "n_control": int(solution.n_control),
+        "n_total": int(solution.n_total),
+    }
+
+
+# =============================================================================
+# MTE Functions (Session 91)
+# =============================================================================
+
+
+def julia_late_estimator(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, int, str]]:
+    """
+    Call Julia late_estimator via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y
+    treatment : np.ndarray
+        Binary treatment D (0/1)
+    instrument : np.ndarray
+        Binary instrument Z (0/1)
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with late, se, ci_lower, ci_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Include MTE module
+    jl.seval('include(joinpath(@__DIR__, "src/mte/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/mte/late.jl"))')
+
+    jl_code = f"""
+    using Statistics
+    using Distributions
+    using LinearAlgebra
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    instrument_jl = Float64.({list(instrument.astype(float))})
+    result = late_estimator(outcome_jl, treatment_jl, instrument_jl; alpha={alpha})
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "late": float(solution.late),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "pvalue": float(solution.pvalue),
+        "complier_share": float(solution.complier_share),
+        "always_taker_share": float(solution.always_taker_share),
+        "never_taker_share": float(solution.never_taker_share),
+        "first_stage_coef": float(solution.first_stage_coef),
+        "first_stage_f": float(solution.first_stage_f),
+        "n_obs": int(solution.n_obs),
+        "method": str(solution.method),
+    }
+
+
+def julia_late_bounds(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+) -> Dict[str, float]:
+    """
+    Call Julia late_bounds via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y
+    treatment : np.ndarray
+        Binary treatment D (0/1)
+    instrument : np.ndarray
+        Binary instrument Z (0/1)
+
+    Returns
+    -------
+    dict
+        Julia result with bounds_lower, bounds_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl.seval('include(joinpath(@__DIR__, "src/mte/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/mte/late.jl"))')
+
+    jl_code = f"""
+    using Statistics
+    using Distributions
+    using LinearAlgebra
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    instrument_jl = Float64.({list(instrument.astype(float))})
+    result = late_bounds(outcome_jl, treatment_jl, instrument_jl)
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "bounds_lower": float(solution.bounds_lower),
+        "bounds_upper": float(solution.bounds_upper),
+        "late_under_monotonicity": float(solution.late_under_monotonicity),
+        "first_stage": float(solution.first_stage),
+        "reduced_form": float(solution.reduced_form),
+        "bounds_width": float(solution.bounds_width),
+    }
+
+
+def julia_local_iv(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    n_grid: int = 20,
+    n_bootstrap: int = 100,
+    seed: int = 42,
+) -> Dict[str, Union[np.ndarray, float, int, str]]:
+    """
+    Call Julia local_iv via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y
+    treatment : np.ndarray
+        Binary treatment D (0/1)
+    instrument : np.ndarray
+        Continuous or discrete instrument Z
+    n_grid : int, default=20
+        Number of grid points
+    n_bootstrap : int, default=100
+        Bootstrap replications
+    seed : int, default=42
+        Random seed
+
+    Returns
+    -------
+    dict
+        Julia result with mte_grid, u_grid, se_grid, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl.seval('include(joinpath(@__DIR__, "src/mte/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/mte/local_iv.jl"))')
+
+    jl_code = f"""
+    using Statistics
+    using Distributions
+    using LinearAlgebra
+    using Random
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    instrument_jl = Float64.({list(instrument.astype(float))})
+    result = local_iv(
+        outcome_jl, treatment_jl, instrument_jl;
+        n_grid={n_grid}, n_bootstrap={n_bootstrap}, random_state={seed}
+    )
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "mte_grid": np.array([float(x) for x in solution.mte_grid]),
+        "u_grid": np.array([float(x) for x in solution.u_grid]),
+        "se_grid": np.array([float(x) for x in solution.se_grid]),
+        "ci_lower": np.array([float(x) for x in solution.ci_lower]),
+        "ci_upper": np.array([float(x) for x in solution.ci_upper]),
+        "propensity_support": (
+            float(solution.propensity_support[1]),
+            float(solution.propensity_support[2]),
+        ),
+        "n_obs": int(solution.n_obs),
+        "n_trimmed": int(solution.n_trimmed),
+        "bandwidth": float(solution.bandwidth),
+        "method": str(solution.method),
+    }
+
+
+def julia_ate_from_mte(
+    mte_grid: np.ndarray,
+    u_grid: np.ndarray,
+    se_grid: np.ndarray,
+    propensity_support: tuple,
+    n_obs: int,
+) -> Dict[str, Union[float, str, int]]:
+    """
+    Call Julia ate_from_mte via juliacall.
+
+    Parameters
+    ----------
+    mte_grid : np.ndarray
+        MTE estimates at grid points
+    u_grid : np.ndarray
+        Grid points
+    se_grid : np.ndarray
+        Standard errors at grid points
+    propensity_support : tuple
+        (p_min, p_max)
+    n_obs : int
+        Sample size
+
+    Returns
+    -------
+    dict
+        ATE result with estimate, se, ci_lower, ci_upper
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl.seval('include(joinpath(@__DIR__, "src/mte/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/mte/policy.jl"))')
+
+    jl_code = f"""
+    using Statistics
+    using Distributions
+    using Random
+    mte_grid = Float64.({list(mte_grid.astype(float))})
+    u_grid = Float64.({list(u_grid.astype(float))})
+    se_grid = Float64.({list(se_grid.astype(float))})
+    ci_lower = mte_grid .- 1.96 .* se_grid
+    ci_upper = mte_grid .+ 1.96 .* se_grid
+    mte_solution = MTESolution(
+        mte_grid=mte_grid,
+        u_grid=u_grid,
+        se_grid=se_grid,
+        ci_lower=ci_lower,
+        ci_upper=ci_upper,
+        propensity_support=({propensity_support[0]}, {propensity_support[1]}),
+        n_obs={n_obs},
+        n_trimmed=0,
+        bandwidth=0.1,
+        method=:local_iv
+    )
+    result = ate_from_mte(mte_solution)
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "estimate": float(solution.estimate),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "parameter": str(solution.parameter),
+        "n_obs": int(solution.n_obs),
+    }
+
+
+# =============================================================================
+# CONTROL FUNCTION (Session 95)
+# =============================================================================
+
+
+def julia_control_function_ate(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+) -> Dict[str, Union[float, int, bool]]:
+    """
+    Call Julia control_function_ate via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable
+    treatment : np.ndarray
+        Treatment indicator (0/1)
+    instrument : np.ndarray
+        Instrumental variable (0/1)
+    covariates : np.ndarray, optional
+        Covariate matrix (n x p)
+
+    Returns
+    -------
+    dict
+        Julia result with ate, se, ci_lower, ci_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl.seval('include(joinpath(@__DIR__, "src/control_function/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/control_function/linear.jl"))')
+
+    cov_code = "nothing"
+    if covariates is not None:
+        cov_list = [list(row) for row in covariates]
+        cov_code = f"Float64.(hcat({cov_list}...)')"
+
+    jl_code = f"""
+    using LinearAlgebra
+    using Distributions
+    using GLM
+    using DataFrames
+
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    instrument_jl = Float64.({list(instrument.astype(float))})
+    covariates_jl = {cov_code}
+
+    result = control_function_ate(outcome_jl, treatment_jl, instrument_jl; covariates=covariates_jl)
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "ate": float(solution.ate),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "pvalue": float(solution.pvalue),
+        "rho": float(solution.rho),
+        "rho_se": float(solution.rho_se),
+        "first_stage_fstat": float(solution.first_stage.fstat),
+        "first_stage_r2": float(solution.first_stage.r2),
+        "n_obs": int(solution.n_obs),
+        "endogeneity_detected": bool(solution.endogeneity_detected),
+    }
+
+
+# =============================================================================
+# PARTIAL IDENTIFICATION BOUNDS (Session 95)
+# =============================================================================
+
+
+def julia_manski_worst_case(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    outcome_support: Optional[tuple] = None,
+) -> Dict[str, Union[float, int, bool]]:
+    """
+    Call Julia manski_worst_case via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable
+    treatment : np.ndarray
+        Treatment indicator (0/1)
+    outcome_support : tuple, optional
+        (Y_min, Y_max) outcome bounds
+
+    Returns
+    -------
+    dict
+        Julia result with bounds_lower, bounds_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl.seval('include(joinpath(@__DIR__, "src/bounds/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/bounds/manski.jl"))')
+
+    support_code = "nothing"
+    if outcome_support is not None:
+        support_code = f"({outcome_support[0]}, {outcome_support[1]})"
+
+    jl_code = f"""
+    using Statistics
+
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+
+    result = manski_worst_case(outcome_jl, treatment_jl; outcome_support={support_code})
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "bounds_lower": float(solution.bounds_lower),
+        "bounds_upper": float(solution.bounds_upper),
+        "bounds_width": float(solution.bounds_width),
+        "point_identified": bool(solution.point_identified),
+        "assumptions": str(solution.assumptions),
+        "naive_ate": float(solution.naive_ate),
+        "ate_in_bounds": bool(solution.ate_in_bounds),
+        "n_treated": int(solution.n_treated),
+        "n_control": int(solution.n_control),
+    }
+
+
+def julia_lee_bounds(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    observed: np.ndarray,
+    monotonicity: str = "positive",
+    n_bootstrap: int = 100,
+    seed: int = 42,
+) -> Dict[str, Union[float, int, bool, str]]:
+    """
+    Call Julia lee_bounds via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable
+    treatment : np.ndarray
+        Treatment indicator (0/1)
+    observed : np.ndarray
+        Observation indicator (0/1)
+    monotonicity : str
+        "positive" or "negative"
+    n_bootstrap : int
+        Bootstrap replications
+    seed : int
+        Random seed
+
+    Returns
+    -------
+    dict
+        Julia result with bounds_lower, bounds_upper, ci_lower, ci_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl.seval('include(joinpath(@__DIR__, "src/bounds/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/bounds/lee.jl"))')
+
+    jl_code = f"""
+    using Statistics
+    using Random
+    using Distributions
+
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    observed_jl = Float64.({list(observed.astype(float))})
+
+    rng = MersenneTwister({seed})
+    result = lee_bounds(outcome_jl, treatment_jl, observed_jl;
+                        monotonicity=:{monotonicity}, n_bootstrap={n_bootstrap}, rng=rng)
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "bounds_lower": float(solution.bounds_lower),
+        "bounds_upper": float(solution.bounds_upper),
+        "bounds_width": float(solution.bounds_width),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "point_identified": bool(solution.point_identified),
+        "trimming_proportion": float(solution.trimming_proportion),
+        "trimmed_group": str(solution.trimmed_group),
+        "attrition_treated": float(solution.attrition_treated),
+        "attrition_control": float(solution.attrition_control),
+        "n_treated_observed": int(solution.n_treated_observed),
+        "n_control_observed": int(solution.n_control_observed),
+        "n_trimmed": int(solution.n_trimmed),
+        "monotonicity": str(solution.monotonicity),
+    }
+
+
+# =============================================================================
+# MEDIATION ANALYSIS (Session 95)
+# =============================================================================
+
+
+def julia_baron_kenny(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    mediator: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+) -> Dict[str, Union[float, int]]:
+    """
+    Call Julia baron_kenny via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable
+    treatment : np.ndarray
+        Treatment indicator (0/1)
+    mediator : np.ndarray
+        Mediator variable
+    covariates : np.ndarray, optional
+        Covariate matrix (n x p)
+
+    Returns
+    -------
+    dict
+        Julia result with path coefficients and Sobel test
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl.seval('include(joinpath(@__DIR__, "src/mediation/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/mediation/estimators.jl"))')
+
+    cov_code = "nothing"
+    if covariates is not None:
+        cov_list = [list(row) for row in covariates]
+        cov_code = f"Float64.(hcat({cov_list}...)')"
+
+    jl_code = f"""
+    using LinearAlgebra
+    using Distributions
+
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    mediator_jl = Float64.({list(mediator.astype(float))})
+    covariates_jl = {cov_code}
+
+    result = baron_kenny(outcome_jl, treatment_jl, mediator_jl; covariates=covariates_jl)
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "alpha_1": float(solution.alpha_1),
+        "alpha_1_se": float(solution.alpha_1_se),
+        "alpha_1_pvalue": float(solution.alpha_1_pvalue),
+        "beta_1": float(solution.beta_1),
+        "beta_1_se": float(solution.beta_1_se),
+        "beta_1_pvalue": float(solution.beta_1_pvalue),
+        "beta_2": float(solution.beta_2),
+        "beta_2_se": float(solution.beta_2_se),
+        "beta_2_pvalue": float(solution.beta_2_pvalue),
+        "indirect_effect": float(solution.indirect_effect),
+        "indirect_se": float(solution.indirect_se),
+        "direct_effect": float(solution.direct_effect),
+        "total_effect": float(solution.total_effect),
+        "sobel_z": float(solution.sobel_z),
+        "sobel_pvalue": float(solution.sobel_pvalue),
+        "r2_mediator_model": float(solution.r2_mediator_model),
+        "r2_outcome_model": float(solution.r2_outcome_model),
+        "n_obs": int(solution.n_obs),
+    }
+
+
+def julia_mediation_analysis(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    mediator: np.ndarray,
+    n_bootstrap: int = 500,
+    seed: int = 42,
+    covariates: Optional[np.ndarray] = None,
+) -> Dict[str, Union[float, int, str, tuple]]:
+    """
+    Call Julia mediation_analysis via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable
+    treatment : np.ndarray
+        Treatment indicator (0/1)
+    mediator : np.ndarray
+        Mediator variable
+    n_bootstrap : int
+        Bootstrap replications
+    seed : int
+        Random seed
+    covariates : np.ndarray, optional
+        Covariate matrix (n x p)
+
+    Returns
+    -------
+    dict
+        Julia result with effects, SEs, CIs, and p-values
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    jl.seval('include(joinpath(@__DIR__, "src/mediation/types.jl"))')
+    jl.seval('include(joinpath(@__DIR__, "src/mediation/estimators.jl"))')
+
+    cov_code = "nothing"
+    if covariates is not None:
+        cov_list = [list(row) for row in covariates]
+        cov_code = f"Float64.(hcat({cov_list}...)')"
+
+    jl_code = f"""
+    using LinearAlgebra
+    using Distributions
+    using Random
+
+    outcome_jl = Float64.({list(outcome.astype(float))})
+    treatment_jl = Float64.({list(treatment.astype(float))})
+    mediator_jl = Float64.({list(mediator.astype(float))})
+    covariates_jl = {cov_code}
+
+    rng = MersenneTwister({seed})
+    result = mediation_analysis(outcome_jl, treatment_jl, mediator_jl;
+                                 covariates=covariates_jl, n_bootstrap={n_bootstrap}, rng=rng)
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    return {
+        "total_effect": float(solution.total_effect),
+        "direct_effect": float(solution.direct_effect),
+        "indirect_effect": float(solution.indirect_effect),
+        "proportion_mediated": float(solution.proportion_mediated),
+        "te_se": float(solution.te_se),
+        "de_se": float(solution.de_se),
+        "ie_se": float(solution.ie_se),
+        "pm_se": float(solution.pm_se),
+        "te_ci": (float(solution.te_ci[0]), float(solution.te_ci[1])),
+        "de_ci": (float(solution.de_ci[0]), float(solution.de_ci[1])),
+        "ie_ci": (float(solution.ie_ci[0]), float(solution.ie_ci[1])),
+        "pm_ci": (float(solution.pm_ci[0]), float(solution.pm_ci[1])),
+        "te_pvalue": float(solution.te_pvalue),
+        "de_pvalue": float(solution.de_pvalue),
+        "ie_pvalue": float(solution.ie_pvalue),
+        "method": str(solution.method),
+        "n_obs": int(solution.n_obs),
+        "n_bootstrap": int(solution.n_bootstrap),
+    }

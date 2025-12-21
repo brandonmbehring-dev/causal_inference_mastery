@@ -1,14 +1,268 @@
 # Current Work
 
-**Last Updated**: 2025-12-19 [Session 82 - Context Engineering Enhancement]
+**Last Updated**: 2025-12-20 [Session 95 - Julia Cross-Language Parity]
 
 ---
 
 ## Right Now
 
-**Session 82**: Context Engineering Enhancement - ✅ COMPLETE
+**Session 95**: Julia Cross-Language Parity - ✅ COMPLETE
 
-Comprehensive context engineering overhaul: MCP integration, custom skills, documentation suite, Type I error validation tests.
+Implemented Julia parity for Control Function, Bounds, and Mediation modules.
+
+---
+
+## Session 95 Summary (2025-12-20)
+
+**Julia Cross-Language Parity - ✅ COMPLETE**
+
+### Overview
+
+Implemented full Julia parity for three advanced causal inference modules with 180 new tests.
+
+### Modules Completed
+
+| Module | Julia Tests | Python Tests | Cross-Lang |
+|--------|-------------|--------------|------------|
+| Control Function | 54 | 102 | Interface added |
+| Bounds (Manski/Lee) | 45 | - | Interface + tests |
+| Mediation | 81 | 73 | Interface + tests |
+| **Total** | **180** | **175** | **3 test files** |
+
+### Files Created/Modified
+
+**Julia Source Files:**
+| File | Lines | Purpose |
+|------|-------|---------|
+| `julia/src/control_function/types.jl` | ~120 | CF problem/solution types |
+| `julia/src/control_function/linear.jl` | ~250 | Linear CF estimator |
+| `julia/src/control_function/nonlinear.jl` | ~200 | Probit/Logit CF |
+| `julia/src/bounds/types.jl` | ~135 | Manski/Lee result types |
+| `julia/src/bounds/manski.jl` | ~350 | Manski bounds (5 variants) |
+| `julia/src/bounds/lee.jl` | ~280 | Lee (2009) attrition bounds |
+| `julia/src/mediation/types.jl` | ~180 | Mediation result types |
+| `julia/src/mediation/estimators.jl` | ~320 | Baron-Kenny, CDE, diagnostics |
+| `julia/src/mediation/sensitivity.jl` | ~200 | Sensitivity analysis |
+| **Total** | **~2,000** | **9 source files** |
+
+**Julia Test Files:**
+| File | Tests | Status |
+|------|-------|--------|
+| `julia/test/control_function/runtests.jl` | 54 | ✅ PASS |
+| `julia/test/bounds/runtests.jl` | 45 | ✅ PASS |
+| `julia/test/mediation/runtests.jl` | 81 | ✅ PASS |
+
+**Cross-Language Interface:**
+| File | Functions Added |
+|------|-----------------|
+| `julia_interface.py` | 7 new functions |
+| `test_python_julia_bounds.py` | Manski/Lee parity tests |
+| `test_python_julia_mediation.py` | Baron-Kenny parity tests |
+
+### Key Implementations
+
+**Control Function (Julia):**
+- `control_function_ate`: Linear CF with Murphy-Topel SE correction
+- `nonlinear_control_function`: Probit/Logit for binary outcomes
+- Fixed GLM intercept handling bug in nonlinear AME computation
+
+**Bounds (Julia):**
+- `manski_worst_case`: No-assumptions bounds
+- `manski_mtr`: Monotone Treatment Response bounds
+- `manski_mts`: Monotone Treatment Selection bounds
+- `manski_mtr_mts`: Combined MTR+MTS bounds
+- `manski_iv`: Instrumental variable bounds
+- `lee_bounds`: Lee (2009) attrition bounds with bootstrap CI
+- `check_monotonicity`: Tests for monotonicity assumption
+
+**Mediation (Julia):**
+- `baron_kenny`: Classic path analysis with Sobel test
+- `mediation_analysis`: Full analysis with bootstrap CIs
+- `controlled_direct_effect`: CDE at fixed mediator value
+- `mediation_diagnostics`: Assumption checking
+- `mediation_sensitivity`: Unmeasured confounding sensitivity
+
+### Bug Fixes
+
+1. **CFProblem T undefined**: Changed `alpha::T = T(0.05)` to `alpha::Real = 0.05`
+2. **Nonlinear CF dimension mismatch**: GLM adds intercept automatically
+3. **Lee bounds `using` inside function**: Moved to module level
+
+### Exports Added to CausalEstimators.jl
+
+```julia
+# Control Function
+export control_function_ate, nonlinear_control_function
+export CFSolution, NonlinearCFSolution, FirstStageCFResult
+
+# Bounds
+export manski_worst_case, manski_mtr, manski_mts, manski_mtr_mts, manski_iv
+export lee_bounds, check_monotonicity, compare_bounds
+export ManskiBoundsResult, ManskiIVBoundsResult, LeeBoundsResult
+
+# Mediation
+export baron_kenny, mediation_analysis, controlled_direct_effect
+export mediation_diagnostics, mediation_sensitivity
+export BaronKennyResult, MediationResult, CDEResult, SensitivityResult
+```
+
+---
+
+## Session 94 Summary (2025-12-20)
+
+**Shift-Share IV Python - ✅ COMPLETE** (32 tests)
+
+---
+
+## Session 93 Summary (2025-12-20)
+
+**Control Function Python - ✅ COMPLETE**
+
+### Overview
+
+Implemented full control function module with 102 tests passing:
+- Linear Control Function with Murphy-Topel SE correction
+- Bootstrap inference for both linear and nonlinear models
+- Nonlinear Control Function (Probit/Logit) for binary outcomes
+- Built-in endogeneity test (H0: ρ = 0)
+- CF matches 2SLS to 10 decimals in linear case
+
+### Files Created
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `src/causal_inference/control_function/__init__.py` | 67 | Public API |
+| `src/causal_inference/control_function/types.py` | 205 | TypedDicts |
+| `src/causal_inference/control_function/control_function.py` | 686 | Linear CF estimator |
+| `src/causal_inference/control_function/nonlinear.py` | 515 | Probit/Logit CF |
+| `tests/test_control_function/conftest.py` | 653 | DGP fixtures |
+| `tests/test_control_function/test_control_function.py` | ~350 | 30 known-answer tests |
+| `tests/test_control_function/test_cf_adversarial.py` | ~400 | 31 adversarial tests |
+| `tests/test_control_function/test_cf_monte_carlo.py` | 407 | 15 Monte Carlo tests |
+| `tests/test_control_function/test_nonlinear_cf.py` | 310 | 26 nonlinear tests |
+| **Total** | **~3,600** | **102 tests** |
+
+### Key Features
+
+1. **Linear CF**: Y = β₀ + β₁D + ρν̂ + u where ν̂ = first-stage residuals
+2. **Murphy-Topel SE**: Corrected SEs for two-step estimation uncertainty
+3. **Bootstrap Inference**: Paired bootstrap re-estimating both stages
+4. **Endogeneity Test**: T-test on control coefficient (H0: ρ = 0)
+5. **2SLS Equivalence**: Numerically matches 2SLS in linear models
+6. **Nonlinear Extension**: Probit/Logit CF for binary outcomes (where 2SLS invalid)
+7. **Average Marginal Effects**: Computed for nonlinear models
+
+### Test Categories
+
+| Category | Tests | Status |
+|----------|-------|--------|
+| CF-2SLS equivalence | 3 | ✅ PASS |
+| Treatment effect recovery | 3 | ✅ PASS |
+| Endogeneity detection | 4 | ✅ PASS |
+| Standard errors | 4 | ✅ PASS |
+| First-stage diagnostics | 5 | ✅ PASS |
+| Adversarial (inputs) | 31 | ✅ PASS |
+| Monte Carlo (bias, coverage) | 15 | ✅ PASS |
+| Nonlinear CF | 26 | ✅ PASS |
+| Metadata/summary | 11 | ✅ PASS |
+| **Total** | **102** | **✅ ALL PASS** |
+
+### Exports Added
+
+```python
+from src.causal_inference import (
+    # Linear CF
+    ControlFunction, control_function_ate,
+    # Nonlinear CF
+    NonlinearControlFunction, nonlinear_control_function,
+    # Types
+    ControlFunctionResult, FirstStageResult, NonlinearCFResult
+)
+```
+
+### Mathematical Foundation
+
+**Why Control Function works:**
+1. First stage: D = π₀ + π₁Z + ν (treatment on instruments)
+2. Second stage: Y = β₀ + β₁D + ρν̂ + u (outcome with control)
+3. The coefficient ρ captures Cov(D, ε)/Var(ν)
+4. If ρ = 0, no endogeneity → OLS consistent
+5. If ρ ≠ 0, endogeneity → CF/2SLS needed
+
+**Why 2SLS fails for nonlinear:**
+- Jensen's inequality: E[Φ(β*D̂)] ≠ Φ(β*E[D̂])
+- Control function includes residuals directly, avoiding this problem
+
+---
+
+## Session 92 Summary (2025-12-20)
+
+**Mediation Analysis Python - ✅ COMPLETE**
+
+### Overview
+
+Implemented full mediation module with 100 tests passing:
+- Baron-Kenny linear path analysis with Sobel test
+- Simulation-based NDE/NIE (Imai et al. 2010)
+- Controlled Direct Effect (CDE)
+- Sensitivity analysis for unmeasured confounding
+
+### Files Created
+
+| File | Lines | Purpose |
+|------|-------|---------|
+| `src/causal_inference/mediation/__init__.py` | 94 | Public API |
+| `src/causal_inference/mediation/types.py` | 298 | TypedDicts |
+| `src/causal_inference/mediation/estimators.py` | 788 | Baron-Kenny, NDE/NIE, CDE |
+| `src/causal_inference/mediation/sensitivity.py` | 411 | ρ sensitivity analysis |
+| `tests/test_mediation/conftest.py` | 345 | DGP fixtures |
+| `tests/test_mediation/test_baron_kenny.py` | 303 | 26 Baron-Kenny tests |
+| `tests/test_mediation/test_nde_nie.py` | 449 | 23 natural effects tests |
+| `tests/test_mediation/test_cde.py` | 253 | 14 CDE tests |
+| `tests/test_mediation/test_sensitivity.py` | 313 | 14 sensitivity tests |
+| `tests/test_mediation/test_mediation_adversarial.py` | 390 | 23 adversarial tests |
+| **Total** | **3,645** | **100 tests** |
+
+### Key Features
+
+1. **Baron-Kenny Method**: α₁ (T→M), β₁ (direct), β₂ (M→Y), Sobel test
+2. **Simulation Method**: NDE = E[Y(1,M(0)) - Y(0,M(0))], NIE = E[Y(1,M(1)) - Y(1,M(0))]
+3. **CDE**: E[Y(1,m) - Y(0,m)] at fixed mediator value m
+4. **Sensitivity**: Robustness to ρ (error correlation)
+5. **Generalized Models**: Logistic mediator/outcome supported
+
+### Test Categories
+
+| Category | Tests | Status |
+|----------|-------|--------|
+| Baron-Kenny known-answer | 26 | ✅ PASS |
+| NDE/NIE simulation | 23 | ✅ PASS |
+| CDE | 14 | ✅ PASS |
+| Sensitivity | 14 | ✅ PASS |
+| Adversarial | 23 | ✅ PASS |
+| **Total** | **100** | **✅ ALL PASS** |
+
+### Exports Added
+
+```python
+from src.causal_inference import (
+    baron_kenny, mediation_analysis,
+    natural_direct_effect, natural_indirect_effect,
+    controlled_direct_effect, mediation_sensitivity,
+    MediationResult, BaronKennyResult, CDEResult, SensitivityResult
+)
+```
+
+---
+
+## Session 90-91 Summary
+
+**MTE (Python + Julia) - ✅ COMPLETE**
+
+- Python: 93 tests (local_iv, late, policy, diagnostics)
+- Julia: 63 tests
+- Cross-language parity: 15 tests
+- **Total: 171 tests**
 
 ---
 

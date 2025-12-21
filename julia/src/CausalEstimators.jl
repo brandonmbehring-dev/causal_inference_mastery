@@ -156,6 +156,37 @@ include("bunching/types.jl")
 include("bunching/counterfactual.jl")
 include("bunching/estimator.jl")
 
+# Selection Models (Session 85)
+include("selection/types.jl")
+include("selection/heckman.jl")
+
+# Quantile Treatment Effects (Session 89)
+include("qte/types.jl")
+include("qte/unconditional.jl")
+include("qte/conditional.jl")
+include("qte/rif.jl")
+
+# Marginal Treatment Effects (Session 91)
+include("mte/types.jl")
+include("mte/late.jl")
+include("mte/local_iv.jl")
+include("mte/policy.jl")
+
+# Control Function (Session 95)
+include("control_function/types.jl")
+include("control_function/linear.jl")
+include("control_function/nonlinear.jl")
+
+# Bounds (Session 95)
+include("bounds/types.jl")
+include("bounds/manski.jl")
+include("bounds/lee.jl")
+
+# Mediation (Session 95)
+include("mediation/types.jl")
+include("mediation/estimators.jl")
+include("mediation/sensitivity.jl")
+
 # Exports
 
 ## Abstract types
@@ -171,10 +202,14 @@ export AbstractSCMProblem, AbstractSCMEstimator, AbstractSCMSolution
 export AbstractSensitivityProblem, AbstractSensitivityEstimator, AbstractSensitivitySolution
 export AbstractRKDProblem, AbstractRKDEstimator, AbstractRKDSolution
 export AbstractBunchingProblem, AbstractBunchingEstimator, AbstractBunchingSolution
+export AbstractSelectionProblem, AbstractSelectionEstimator, AbstractSelectionSolution
+export AbstractCFProblem, AbstractCFEstimator, AbstractCFSolution
+export AbstractBoundsProblem, AbstractBoundsEstimator, AbstractBoundsResult
 
 ## Problem types
 export RCTProblem, PSMProblem, RDDProblem, IVProblem, DiDProblem, StaggeredDiDProblem
-export SCMProblem, RKDProblem, BunchingProblem
+export SCMProblem, RKDProblem, BunchingProblem, HeckmanProblem
+export CFProblem, NonlinearCFProblem
 export ObservationalProblem
 export CATEProblem
 export EValueProblem, RosenbaumProblem
@@ -192,6 +227,8 @@ export SyntheticControl, AugmentedSC
 export EValue, RosenbaumBounds
 export SharpRKD, FuzzyRKD
 export SaezBunching
+export HeckmanTwoStep
+export ControlFunction, NonlinearCF
 
 ## Solution types
 export RCTSolution, PSMSolution, RDDSolution, FuzzyRDDSolution, IVSolution, DiDSolution
@@ -202,6 +239,9 @@ export EValueSolution, RosenbaumSolution
 export EffectType, RR, OR, HR, SMD, ATE, effect_type_from_symbol
 export FirstStageSolution, ReducedFormSolution, SecondStageSolution  # Session 56
 export BunchingSolution, CounterfactualResult
+export HeckmanSolution
+export CFSolution, NonlinearCFSolution, FirstStageCFResult
+export ManskiBoundsResult, ManskiIVBoundsResult, LeeBoundsResult
 
 ## RDD utilities
 export AbstractBandwidthSelector, IKBandwidth, CCTBandwidth
@@ -264,5 +304,34 @@ export density_smoothness_test, covariate_smoothness_test, first_stage_test, rkd
 export polynomial_counterfactual, estimate_counterfactual
 export compute_excess_mass, compute_elasticity
 export bunching_confidence_interval, elasticity_confidence_interval
+
+## Selection utilities (Session 85)
+export compute_imr, selection_bias_test
+
+## QTE types and functions (Session 89)
+export QTEProblem, QTESolution, QTEBandProblem, QTEBandSolution
+export unconditional_qte, unconditional_qte_band
+export conditional_qte, quantile_regression
+export rif_qte, rif_qte_band, compute_rif
+
+## MTE types and functions (Session 91)
+export MTEProblem, MTESolution, LATEProblem, LATESolution
+export LATEBoundsResult, ComplierResult, PolicyResult, CommonSupportResult
+export late_estimator, late_bounds, complier_characteristics
+export local_iv, polynomial_mte
+export ate_from_mte, att_from_mte, atu_from_mte, prte, late_from_mte
+
+## Control Function types and functions (Session 95)
+export control_function_ate, nonlinear_control_function
+
+## Bounds types and functions (Session 95)
+export manski_worst_case, manski_mtr, manski_mts, manski_mtr_mts, manski_iv
+export lee_bounds, check_monotonicity, compare_bounds
+
+## Mediation types and functions (Session 95)
+export AbstractMediationProblem, AbstractMediationEstimator, AbstractMediationResult
+export BaronKennyResult, MediationResult, CDEResult, SensitivityResult, MediationDiagnostics
+export baron_kenny, mediation_analysis, controlled_direct_effect, mediation_diagnostics
+export mediation_sensitivity
 
 end # module CausalEstimators

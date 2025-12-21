@@ -90,4 +90,34 @@ end
     include("bunching/runtests.jl")
 end
 
+# Selection Models (Session 85)
+@safetestset "Selection Models" begin
+    include("selection/runtests.jl")
+end
+
+# QTE (Session 89)
+@safetestset "QTE Estimators" begin
+    include("qte/runtests.jl")
+end
+
+# MTE (Session 91)
+@safetestset "MTE Estimators" begin
+    include("mte/runtests.jl")
+end
+
+# Control Function (Session 95)
+@safetestset "Control Function" begin
+    include("control_function/runtests.jl")
+end
+
+# Partial Identification Bounds (Session 95)
+@safetestset "Bounds" begin
+    include("bounds/runtests.jl")
+end
+
+# Mediation Analysis (Session 95)
+@safetestset "Mediation" begin
+    include("mediation/runtests.jl")
+end
+
 @info "Test suite complete"
