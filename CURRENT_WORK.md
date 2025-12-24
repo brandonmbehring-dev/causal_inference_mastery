@@ -1,28 +1,38 @@
 # Current Work
 
-**Last Updated**: 2025-12-24 [Session 107 - BUG-7 Fix]
+**Last Updated**: 2025-12-24 [Session 108 - BUG-1 Fix]
 
 ---
 
 ## Right Now
 
+**Session 108**: BUG-1 — RDD Kernel Weighted 2SLS ✅ COMPLETE
+
+Fixed kernel weighting in Fuzzy RDD:
+
+**Problem**: `kernel` parameter (triangular/rectangular/epanechnikov) was accepted but never applied to 2SLS estimation. All kernels produced identical results.
+
+**Fix**: `src/causal_inference/rdd/fuzzy_rdd.py`
+- Added `_compute_kernel_weights()`: Computes triangular/rectangular/epanechnikov kernel weights
+- Added `_weighted_2sls()`: Weighted two-stage least squares with sandwich variance estimator
+- Modified `FuzzyRDD.fit()` to apply kernel weights in both first and second stage
+
+**Validation**:
+- 91/93 RDD tests passing (2 unrelated McCrary xfails)
+- New test: triangular vs rectangular kernels now produce different estimates
+- New test: Epanechnikov vs rectangular produces different estimates
+- New test: Kernel weight shapes verified at boundaries
+
+**Next**: Session 109 - BUG-2 (CCT bandwidth implementation)
+
+---
+
 **Session 107**: BUG-7 — SCM Jackknife Recomputation ✅ COMPLETE
 
 Fixed jackknife SE in Augmented SCM:
-
-**Problem**: `_jackknife_se()` renormalized existing weights after dropping a control unit instead of recomputing optimal weights. This underestimated uncertainty.
-
-**Fix**: `src/causal_inference/scm/augmented_scm.py:390-401`
 - Replaced `loo_weights / loo_weights.sum()` with `compute_scm_weights()` call
-- Now properly recomputes weights for each leave-one-out configuration
-- Added exception handling for optimization failures in LOO loop
-
-**Validation**:
+- Now properly recomputes weights for each LOO configuration
 - 78 SCM tests passing
-- Monte Carlo test: jackknife SE within factor of 2 of empirical SD
-- Jackknife vs bootstrap consistency verified
-
-**Next**: Session 108 - BUG-1 (RDD kernel weighted 2SLS)
 
 ---
 
@@ -171,7 +181,10 @@ Implemented Targeted Maximum Likelihood Estimation:
 
 | Session | Date | Focus | Status |
 |---------|------|-------|--------|
-| **105** | 2025-12-24 | **Documentation Update** | ✅ |
+| **108** | 2025-12-24 | **BUG-1: RDD Kernel Weighting** | ✅ |
+| 107 | 2025-12-24 | BUG-7: SCM Jackknife | ✅ |
+| 106 | 2025-12-24 | BUG-8,5,6: SCM/Import/Stratified | ✅ |
+| 105 | 2025-12-24 | Documentation Update | ✅ |
 | 104 | 2025-12-24 | Hierarchical Bayesian ATE (MCMC) | ✅ |
 | 103 | 2025-12-24 | Bayesian Doubly Robust | ✅ |
 | 102 | 2025-12-24 | Bayesian Propensity Scores | ✅ |

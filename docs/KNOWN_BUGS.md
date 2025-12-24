@@ -1,13 +1,13 @@
 # Known Bugs
 
-**Last Updated**: 2025-12-24 (Session 107)
+**Last Updated**: 2025-12-24 (Session 108)
 **Source**: `repo_review_codex.md` + verification tests
 
 This document tracks known correctness and methodological bugs. Each bug has been verified with automated tests in `tests/validation/audit/test_codex_bugs.py`.
 
 ---
 
-## FIXED (Sessions 106-107)
+## FIXED (Sessions 106-108)
 
 ### ✅ BUG-8: SCM Optimization Silent Failure — **FIXED in Session 106**
 
@@ -29,34 +29,14 @@ This document tracks known correctness and methodological bugs. Each bug has bee
 **File**: `src/causal_inference/scm/augmented_scm.py`
 **Fix**: Replaced weight renormalization with `compute_scm_weights()` call in LOO loop. Now properly recomputes weights for each LOO configuration.
 
+### ✅ BUG-1: Fuzzy RDD Kernel is No-Op — **FIXED in Session 108**
+
+**File**: `src/causal_inference/rdd/fuzzy_rdd.py`
+**Fix**: Implemented weighted 2SLS with kernel weights. Added `_compute_kernel_weights()` for triangular/rectangular/epanechnikov kernels. Added `_weighted_2sls()` with sandwich variance estimator. Kernel weights now properly applied in both first and second stage.
+
 ---
 
 ## HIGH Severity (Correctness Issues)
-
-### BUG-1: Fuzzy RDD Kernel is No-Op
-
-**File**: `src/causal_inference/rdd/fuzzy_rdd.py`
-
-**Issue**: The `kernel` parameter (e.g., `kernel='triangular'`) is accepted but never used in the actual 2SLS estimation. All kernels produce identical results - effectively rectangular.
-
-**Evidence**:
-```python
-# Triangular and rectangular produce IDENTICAL results
-rdd_tri = FuzzyRDD(cutoff=0.0, bandwidth=1.0, kernel="triangular")
-rdd_rect = FuzzyRDD(cutoff=0.0, bandwidth=1.0, kernel="rectangular")
-# rdd_tri.coef_ == rdd_rect.coef_ (to 10 decimal places)
-```
-
-**Impact**: Users expecting kernel weighting (triangular downweights observations far from cutoff) get no weighting.
-
-**Remediation Options**:
-1. Implement weighted 2SLS with kernel weights (WLS in both stages)
-2. Remove kernel option and document "rectangular window only"
-3. Rename parameter to `bandwidth_kernel` to clarify it only affects bandwidth selection
-
-**Test**: `tests/validation/audit/test_codex_bugs.py::TestBug1FuzzyRDDKernelNoOp`
-
----
 
 ### BUG-2: CCT Bandwidth Mislabeled
 
@@ -262,7 +242,7 @@ Expected output: All tests **PASS** (tests prove bugs exist, not that code is co
 | BUG-5 | HIGH | 106 | ✅ FIXED |
 | BUG-6 | HIGH | 106 | ✅ FIXED |
 | BUG-7 | HIGH | 107 | ✅ FIXED |
-| BUG-1 | HIGH | 108 | Scheduled |
+| BUG-1 | HIGH | 108 | ✅ FIXED |
 | BUG-2 | HIGH | 109 | Scheduled |
 | BUG-3 | MEDIUM | 110 | Scheduled |
 | BUG-4 | MEDIUM | 110 | Scheduled |
@@ -272,4 +252,4 @@ Expected output: All tests **PASS** (tests prove bugs exist, not that code is co
 ---
 
 **Last Audit**: Session 83 (2025-12-19)
-**Last Fix Session**: 107 (2025-12-24)
+**Last Fix Session**: 108 (2025-12-24)

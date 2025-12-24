@@ -422,3 +422,99 @@ class TestFuzzyRDDSummary:
         if fuzzy.compliance_rate_ < 0.3:
             assert "WARNING" in summary or "low compliance" in summary, \
                 "Summary should mention low compliance warning"
+
+
+class TestKernelWeighting:
+    """BUG-1 fix validation: Kernel weighting must affect estimates."""
+
+    def test_triangular_vs_rectangular_different(self):
+        """
+        Triangular and rectangular kernels should produce different estimates.
+
+        BUG-1 FIX VALIDATION: Prior to fix, kernel parameter was ignored and
+        all kernels produced identical results. Now triangular downweights
+        observations far from cutoff, producing different estimates.
+        """
+        np.random.seed(42)
+        n = 500
+        cutoff = 0.0
+
+        # Running variable
+        X = np.random.uniform(-2, 2, n)
+
+        # Treatment assignment with fuzzy compliance
+        Z = (X >= cutoff).astype(float)
+        compliance_prob = 0.7 + 0.2 * np.random.random(n)
+        D = (np.random.random(n) < compliance_prob * Z + 0.1 * (1 - Z)).astype(float)
+
+        # Outcome with heterogeneous effects (stronger near cutoff)
+        # This creates situation where kernel weighting matters
+        true_effect = 2.0 + 0.5 * np.abs(X)  # Effect varies with distance
+        Y = 1.0 + 0.5 * X + D * true_effect + np.random.normal(0, 1, n)
+
+        # Fit with triangular kernel
+        fuzzy_tri = FuzzyRDD(cutoff=cutoff, bandwidth=1.0, kernel="triangular")
+        fuzzy_tri.fit(Y, X, D)
+
+        # Fit with rectangular kernel
+        fuzzy_rect = FuzzyRDD(cutoff=cutoff, bandwidth=1.0, kernel="rectangular")
+        fuzzy_rect.fit(Y, X, D)
+
+        # Estimates should differ (triangular gives more weight to obs near cutoff)
+        diff = abs(fuzzy_tri.coef_ - fuzzy_rect.coef_)
+        assert diff > 0.01, (
+            f"BUG-1 NOT FIXED: Triangular ({fuzzy_tri.coef_:.4f}) and "
+            f"rectangular ({fuzzy_rect.coef_:.4f}) kernels produce identical estimates. "
+            f"Kernel weighting is not being applied."
+        )
+
+    def test_epanechnikov_vs_rectangular_different(self):
+        """Epanechnikov kernel should differ from rectangular."""
+        np.random.seed(123)
+        n = 500
+        cutoff = 0.0
+
+        X = np.random.uniform(-2, 2, n)
+        Z = (X >= cutoff).astype(float)
+        D = (np.random.random(n) < 0.7 * Z + 0.1).astype(float)
+        Y = 1.0 + 0.5 * X + D * (2.0 + 0.3 * X**2) + np.random.normal(0, 1, n)
+
+        fuzzy_epan = FuzzyRDD(cutoff=cutoff, bandwidth=1.0, kernel="epanechnikov")
+        fuzzy_epan.fit(Y, X, D)
+
+        fuzzy_rect = FuzzyRDD(cutoff=cutoff, bandwidth=1.0, kernel="rectangular")
+        fuzzy_rect.fit(Y, X, D)
+
+        diff = abs(fuzzy_epan.coef_ - fuzzy_rect.coef_)
+        assert diff > 0.01, (
+            f"Epanechnikov ({fuzzy_epan.coef_:.4f}) and rectangular "
+            f"({fuzzy_rect.coef_:.4f}) should produce different estimates."
+        )
+
+    def test_kernel_weights_applied_correctly(self):
+        """Verify kernel weights have expected shape at boundaries."""
+        from src.causal_inference.rdd.fuzzy_rdd import _compute_kernel_weights
+
+        X = np.array([-1.5, -1.0, -0.5, 0.0, 0.5, 1.0, 1.5])
+        cutoff = 0.0
+        bandwidth = 1.0
+
+        # Triangular: max at cutoff, zero at boundary
+        w_tri = _compute_kernel_weights(X, cutoff, bandwidth, "triangular")
+        assert w_tri[3] == 1.0, "Triangular weight should be 1.0 at cutoff"
+        assert w_tri[1] == 0.0, "Triangular weight should be 0 at boundary"
+        assert w_tri[5] == 0.0, "Triangular weight should be 0 at boundary"
+        assert w_tri[0] == 0.0, "Triangular weight should be 0 outside bandwidth"
+
+        # Rectangular: uniform within bandwidth
+        w_rect = _compute_kernel_weights(X, cutoff, bandwidth, "rectangular")
+        assert w_rect[3] == 1.0, "Rectangular weight at cutoff"
+        assert w_rect[1] == 1.0, "Rectangular weight at boundary"
+        assert w_rect[5] == 1.0, "Rectangular weight at boundary"
+        assert w_rect[0] == 0.0, "Rectangular weight outside bandwidth"
+
+        # Epanechnikov: parabolic shape
+        w_epan = _compute_kernel_weights(X, cutoff, bandwidth, "epanechnikov")
+        assert w_epan[3] == 0.75, "Epanechnikov weight at cutoff"
+        assert w_epan[1] == 0.0, "Epanechnikov weight at boundary"
+        assert w_epan[2] > w_epan[1], "Epanechnikov decreases toward boundary"

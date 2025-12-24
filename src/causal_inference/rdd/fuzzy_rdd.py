@@ -28,6 +28,204 @@ from src.causal_inference.utils.validation import (
 )
 
 
+def _compute_kernel_weights(
+    X: np.ndarray,
+    cutoff: float,
+    bandwidth: float,
+    kernel: str,
+) -> np.ndarray:
+    """
+    Compute kernel weights for observations based on distance from cutoff.
+
+    Parameters
+    ----------
+    X : ndarray
+        Running variable values.
+    cutoff : float
+        RDD cutoff value.
+    bandwidth : float
+        Bandwidth for kernel weighting.
+    kernel : str
+        Kernel type: 'triangular', 'rectangular', or 'epanechnikov'.
+
+    Returns
+    -------
+    weights : ndarray
+        Non-negative kernel weights for each observation.
+    """
+    u = (X - cutoff) / bandwidth
+
+    if kernel == "triangular":
+        # Triangular: K(u) = (1 - |u|) for |u| <= 1
+        weights = np.maximum(0, 1 - np.abs(u))
+    elif kernel == "rectangular":
+        # Rectangular (uniform): K(u) = 1 for |u| <= 1
+        weights = (np.abs(u) <= 1).astype(float)
+    elif kernel == "epanechnikov":
+        # Epanechnikov: K(u) = 0.75 * (1 - u^2) for |u| <= 1
+        weights = np.maximum(0, 0.75 * (1 - u**2))
+    else:
+        raise ValueError(
+            f"Unknown kernel: {kernel}. Use 'triangular', 'rectangular', or 'epanechnikov'."
+        )
+
+    return weights
+
+
+def _weighted_2sls(
+    Y: np.ndarray,
+    D: np.ndarray,
+    Z: np.ndarray,
+    X: np.ndarray,
+    weights: np.ndarray,
+    alpha: float = 0.05,
+) -> dict:
+    """
+    Weighted Two-Stage Least Squares for kernel-weighted RDD.
+
+    Parameters
+    ----------
+    Y : ndarray, shape (n,)
+        Outcome variable.
+    D : ndarray, shape (n,)
+        Endogenous treatment.
+    Z : ndarray, shape (n,)
+        Instrument (eligibility indicator).
+    X : ndarray, shape (n, k)
+        Exogenous controls.
+    weights : ndarray, shape (n,)
+        Kernel weights for each observation.
+    alpha : float
+        Significance level for confidence intervals.
+
+    Returns
+    -------
+    dict with keys:
+        - coef: Treatment effect estimate
+        - se: Standard error
+        - t_stat: t-statistic
+        - p_value: p-value
+        - ci: (lower, upper) confidence interval
+        - first_stage_f: First-stage F-statistic
+        - first_stage_r2: First-stage R-squared
+    """
+    n = len(Y)
+
+    # Apply square root weights for WLS (sqrt because we square them in normal equations)
+    sqrt_w = np.sqrt(weights)
+
+    # First stage: D ~ Z + X (weighted)
+    # Design matrix: [1, Z, X]
+    W1 = np.column_stack([np.ones(n), Z, X])
+
+    # Weight the observations
+    W1_w = W1 * sqrt_w[:, np.newaxis]
+    D_w = D * sqrt_w
+
+    # Solve weighted first stage
+    try:
+        beta_first, residuals_first, rank, s = np.linalg.lstsq(W1_w, D_w, rcond=None)
+    except np.linalg.LinAlgError:
+        raise ValueError("First stage regression failed (singular matrix)")
+
+    # Fitted values (predicted D)
+    D_hat = W1 @ beta_first
+
+    # First-stage F-statistic (on Z coefficient)
+    # Compare restricted model (without Z) vs unrestricted
+    W1_restricted = np.column_stack([np.ones(n), X])
+    W1_restricted_w = W1_restricted * sqrt_w[:, np.newaxis]
+    beta_restricted, _, _, _ = np.linalg.lstsq(W1_restricted_w, D_w, rcond=None)
+    D_hat_restricted = W1_restricted @ beta_restricted
+
+    # Weighted residuals
+    resid_unrestricted = (D - D_hat) * sqrt_w
+    resid_restricted = (D - D_hat_restricted) * sqrt_w
+
+    ssr_unrestricted = np.sum(resid_unrestricted**2)
+    ssr_restricted = np.sum(resid_restricted**2)
+
+    # F-statistic: F = ((SSR_R - SSR_U) / q) / (SSR_U / (n - k))
+    q = 1  # One instrument (Z)
+    k_full = W1.shape[1]
+    df_resid = n - k_full
+
+    if df_resid > 0 and ssr_unrestricted > 0:
+        first_stage_f = ((ssr_restricted - ssr_unrestricted) / q) / (ssr_unrestricted / df_resid)
+    else:
+        first_stage_f = np.nan
+
+    # First-stage R-squared
+    tss_first = np.sum((D_w - np.mean(D_w))**2)
+    first_stage_r2 = 1 - ssr_unrestricted / tss_first if tss_first > 0 else 0.0
+
+    # Second stage: Y ~ D_hat + X (weighted)
+    # Design matrix: [1, D_hat, X]
+    W2 = np.column_stack([np.ones(n), D_hat, X])
+
+    W2_w = W2 * sqrt_w[:, np.newaxis]
+    Y_w = Y * sqrt_w
+
+    # Solve weighted second stage
+    try:
+        beta_second, residuals_second, rank, s = np.linalg.lstsq(W2_w, Y_w, rcond=None)
+    except np.linalg.LinAlgError:
+        raise ValueError("Second stage regression failed (singular matrix)")
+
+    # Treatment effect is coefficient on D_hat (index 1)
+    coef = beta_second[1]
+
+    # Standard errors (robust, using actual D not D_hat for proper IV SEs)
+    # Residuals from structural equation
+    Y_fitted = W2 @ beta_second
+    resid_struct = (Y - Y_fitted) * sqrt_w
+
+    # Robust variance using sandwich estimator
+    # V = (W'W)^-1 W' diag(e^2) W (W'W)^-1
+    WtW = W2_w.T @ W2_w
+    try:
+        WtW_inv = np.linalg.inv(WtW)
+    except np.linalg.LinAlgError:
+        WtW_inv = np.linalg.pinv(WtW)
+
+    # Meat of sandwich: sum of w_i^2 * e_i^2 * x_i x_i'
+    meat = np.zeros((W2.shape[1], W2.shape[1]))
+    for i in range(n):
+        xi = W2_w[i, :]
+        meat += resid_struct[i]**2 * np.outer(xi, xi)
+
+    # Sandwich variance
+    vcov = WtW_inv @ meat @ WtW_inv
+
+    # SE for treatment effect (coefficient 1)
+    se = np.sqrt(vcov[1, 1])
+
+    # Inference
+    if se > 0:
+        t_stat = coef / se
+        df = n - W2.shape[1]
+        df = max(df, 1)
+        p_value = 2 * (1 - stats.t.cdf(np.abs(t_stat), df))
+        t_crit = stats.t.ppf(1 - alpha / 2, df)
+        ci_lower = coef - t_crit * se
+        ci_upper = coef + t_crit * se
+    else:
+        t_stat = np.inf if coef != 0 else 0
+        p_value = 0.0 if coef != 0 else 1.0
+        ci_lower = coef
+        ci_upper = coef
+
+    return {
+        "coef": coef,
+        "se": se,
+        "t_stat": t_stat,
+        "p_value": p_value,
+        "ci": (ci_lower, ci_upper),
+        "first_stage_f": first_stage_f,
+        "first_stage_r2": first_stage_r2,
+    }
+
+
 class FuzzyRDD:
     """
     Fuzzy Regression Discontinuity Design estimator using 2SLS.
@@ -278,27 +476,38 @@ class FuzzyRDD:
         # Stack controls
         controls = np.column_stack([X_left_control, X_right_control])
 
-        # Fit 2SLS with Z as instrument
-        self._2sls = TwoStageLeastSquares(inference=self.inference, alpha=self.alpha)
+        # BUG-1 FIX: Compute kernel weights and apply to 2SLS
+        # Previously kernel parameter was accepted but never used
+        kernel_weights = _compute_kernel_weights(
+            X=X_window,
+            cutoff=self.cutoff,
+            bandwidth=h,
+            kernel=self.kernel,
+        )
 
-        # Reshape for 2SLS (expects 2D arrays)
-        self._2sls.fit(
+        # Fit weighted 2SLS with kernel weights applied
+        result_2sls = _weighted_2sls(
             Y=Y_window,
-            D=D_window.reshape(-1, 1),  # Endogenous treatment
-            Z=Z_window.reshape(-1, 1),  # Instrument: eligibility
-            X=controls,  # Local linear controls
+            D=D_window,
+            Z=Z_window,
+            X=controls,
+            weights=kernel_weights,
+            alpha=self.alpha,
         )
 
         # Extract results
-        self.coef_ = float(self._2sls.coef_[0])  # First coef is treatment effect
-        self.se_ = float(self._2sls.se_[0])
-        self.t_stat_ = float(self._2sls.t_stats_[0])
-        self.p_value_ = float(self._2sls.p_values_[0])
-        self.ci_ = (float(self._2sls.ci_[0, 0]), float(self._2sls.ci_[0, 1]))
+        self.coef_ = float(result_2sls["coef"])
+        self.se_ = float(result_2sls["se"])
+        self.t_stat_ = float(result_2sls["t_stat"])
+        self.p_value_ = float(result_2sls["p_value"])
+        self.ci_ = (float(result_2sls["ci"][0]), float(result_2sls["ci"][1]))
 
         # First-stage diagnostics
-        self.first_stage_f_stat_ = float(self._2sls.first_stage_f_stat_)
-        self.first_stage_r2_ = float(self._2sls.first_stage_r2_)
+        self.first_stage_f_stat_ = float(result_2sls["first_stage_f"])
+        self.first_stage_r2_ = float(result_2sls["first_stage_r2"])
+
+        # Store kernel weights for diagnostics
+        self._kernel_weights = kernel_weights
 
         # Compute compliance rate
         self.compliance_rate_ = self._compute_compliance_rate(D_window, Z_window)
