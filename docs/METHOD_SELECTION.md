@@ -41,7 +41,45 @@ START: Do you want to estimate a causal effect?
     │       ├─ Model misspecification ──► DoublyRobust
     │       ├─ Need exact matches ──► PSM
     │       └─ General use ──► IPW or Regression
-    └─ NO ──► Consider bounds analysis or find better data
+    └─ NO ──► Continue to Step 6
+
+├─ Step 6: Is there SAMPLE SELECTION (non-random attrition)?
+│   ├─ YES ──────────────────────────────────► Selection Methods
+│   │                                           (Heckman Two-Stage)
+│   └─ NO ──► Continue to Step 7
+
+├─ Step 7: Do identification assumptions FAIL but you want bounds?
+│   ├─ YES ──────────────────────────────────► Bounds Methods
+│   │   └─ What can you assume?                (Manski, Lee)
+│   │       ├─ Monotone response ──► Manski Monotone
+│   │       ├─ IV setting ──► Manski IV Bounds
+│   │       └─ Selection on treatment ──► Lee Bounds
+│   └─ NO ──► Continue to Step 8
+
+├─ Step 8: Need DISTRIBUTIONAL effects (not just mean)?
+│   ├─ YES ──────────────────────────────────► QTE Methods
+│   │                                           (Quantile Treatment Effects)
+│   └─ NO ──► Continue to Step 9
+
+├─ Step 9: Need MARGINAL treatment effects across propensity?
+│   ├─ YES ──────────────────────────────────► MTE Methods
+│   │                                           (Local IV, Policy Relevant)
+│   └─ NO ──► Continue to Step 10
+
+├─ Step 10: Need to decompose DIRECT vs INDIRECT effects?
+│   ├─ YES ──────────────────────────────────► Mediation Analysis
+│   │                                           (Baron-Kenny, NDE/NIE)
+│   └─ NO ──► Continue to Step 11
+
+├─ Step 11: Endogeneity with KNOWN FUNCTIONAL FORM?
+│   ├─ YES ──────────────────────────────────► Control Function
+│   │                                           (Linear, Probit/Logit)
+│   └─ NO ──► Continue to Step 12
+
+└─ Step 12: SHIFT-SHARE identification strategy available?
+    ├─ YES ──────────────────────────────────► Shift-Share IV
+    │                                           (Bartik Instruments)
+    └─ NO ──► Reconsider identification or data
 ```
 
 ---
@@ -170,6 +208,183 @@ START: Do you want to estimate a causal effect?
 
 ---
 
+### 6. Selection Methods (Heckman)
+
+**When to use**: Sample selection/attrition is non-random and correlated with outcome
+
+| Method | Best For | Key Feature |
+|--------|----------|-------------|
+| `HeckmanTwoStage` | Selection on observables | Mills ratio correction |
+| `HeckmanML` | Maximum likelihood | Joint estimation |
+
+**Assumptions**:
+- Exclusion restriction: At least one variable affects selection but not outcome
+- Normality: Errors are jointly normal (for two-stage)
+
+**Key Output**:
+- Lambda (λ): Mills ratio coefficient - measures selection bias
+- Rho (ρ): Correlation between selection and outcome errors
+
+**Diagnostics**:
+- Significance of λ indicates selection bias present
+- Compare with OLS to assess bias magnitude
+
+**Implementation**: `src/causal_inference/selection/`
+
+---
+
+### 7. Bounds Methods (Manski, Lee)
+
+**When to use**: Standard identification assumptions fail, want to bound treatment effects
+
+| Method | Best For | Key Feature |
+|--------|----------|-------------|
+| `ManskiWorstCase` | No assumptions | Widest bounds |
+| `ManskiMonotone` | Monotone treatment response | Tighter bounds |
+| `ManskiIV` | IV with violations | Bounds under partial compliance |
+| `ManskiMTS` | Monotone treatment selection | Selection-based bounds |
+| `ManskiMTR` | Monotone treatment response | Response-based bounds |
+| `LeeBounds` | Sample selection | Trimming-based bounds |
+
+**Key Insight**:
+- Bounds trade off assumptions for width
+- More assumptions → tighter bounds
+- Always valid (no point estimates, no false precision)
+
+**Diagnostics**:
+- Bound width indicates identification strength
+- Check if bounds include zero (significance)
+
+**Implementation**: `src/causal_inference/bounds/`
+
+---
+
+### 8. QTE Methods (Quantile Treatment Effects)
+
+**When to use**: Care about distributional effects, not just mean
+
+| Method | Best For | Key Feature |
+|--------|----------|-------------|
+| `UnconditionalQTE` | Population quantiles | Marginal distribution effects |
+| `ConditionalQTE` | Heterogeneity by X | Conditional quantile regression |
+| `RIF_QTE` | Recentered influence function | Unconditional effects with covariates |
+
+**Key Insight**:
+- QTE(τ) ≠ TE at quantile τ of treated
+- Unconditional QTE: Effect on population distribution
+- Conditional QTE: Effect at quantile given X
+
+**Assumptions**:
+- Rank invariance (for unconditional): Treatment doesn't change rank
+- Standard causal assumptions (unconfoundedness, etc.)
+
+**Implementation**: `src/causal_inference/qte/`
+
+---
+
+### 9. MTE Methods (Marginal Treatment Effects)
+
+**When to use**: IV setting, want to understand heterogeneity across propensity to treat
+
+| Method | Best For | Key Feature |
+|--------|----------|-------------|
+| `LocalIV` | MTE at propensity p | Local slope of outcome on propensity |
+| `PolicyRelevant` | Policy evaluation | Weighted average of MTEs |
+| `LATERecovery` | LATE decomposition | MTE integral over compliers |
+
+**Key Insight**:
+- MTE(p) = E[Y₁ - Y₀ | P(Z) = p]
+- LATE = weighted average of MTEs
+- Can evaluate new policies by reweighting
+
+**Assumptions**:
+- Valid IV (relevance, exclusion)
+- Monotonicity
+- Sufficient variation in propensity
+
+**Implementation**: `src/causal_inference/mte/`
+
+---
+
+### 10. Mediation Analysis
+
+**When to use**: Want to decompose effect into direct and indirect paths
+
+| Method | Best For | Key Feature |
+|--------|----------|-------------|
+| `BaronKenny` | Traditional approach | Product of coefficients |
+| `NDE_NIE` | Causal mediation | Natural direct/indirect effects |
+| `CDE` | Controlled effects | Effect at fixed mediator |
+| `MediationSensitivity` | Robustness | Sequential ignorability tests |
+
+**Key Insight**:
+- Total Effect = Direct Effect + Indirect Effect
+- NDE: Effect if mediator held at control value
+- NIE: Effect through mediator pathway
+
+**Assumptions**:
+- Sequential ignorability: No unmeasured T→M or M→Y confounding
+- No treatment-mediator interaction (for simple decomposition)
+
+**Diagnostics**:
+- Sensitivity analysis for unmeasured confounding
+- Proportion mediated
+
+**Implementation**: `src/causal_inference/mediation/`
+
+---
+
+### 11. Control Function Methods
+
+**When to use**: Endogeneity with known functional form, alternative to IV
+
+| Method | Best For | Key Feature |
+|--------|----------|-------------|
+| `ControlFunctionLinear` | Linear models | First-stage residual as control |
+| `ControlFunctionProbit` | Binary treatment | Probit first stage |
+| `ControlFunctionLogit` | Binary treatment | Logit first stage |
+
+**Key Insight**:
+- Two-step: (1) Predict treatment, (2) Include residual in outcome
+- More flexible than 2SLS for nonlinear models
+- Can handle heterogeneous effects
+
+**Assumptions**:
+- Valid exclusion restriction
+- Correct functional form for first stage
+- Additive separability of unobservables
+
+**Implementation**: `src/causal_inference/control_function/`
+
+---
+
+### 12. Shift-Share IV Methods (Bartik)
+
+**When to use**: Industry/sector exposure varies across locations + aggregate shocks
+
+| Method | Best For | Key Feature |
+|--------|----------|-------------|
+| `ShiftShareIV` | Labor economics | Bartik instrument construction |
+| `RotembergDiagnostics` | Validity checks | Weight decomposition |
+
+**Instrument Construction**:
+- Z_i = Σ_s (share_{i,s} × shock_s)
+- Shares: Local exposure to sectors
+- Shocks: National/aggregate sector changes
+
+**Assumptions** (choose one):
+- Exogenous shares (Goldsmith-Pinkham et al. 2020)
+- Exogenous shocks (Borusyak et al. 2022)
+
+**Diagnostics**:
+- Rotemberg weights: Which sectors drive the estimate
+- Negative weights: Potential monotonicity violations
+- First-stage F-statistic
+
+**Implementation**: `src/causal_inference/shift_share/`
+
+---
+
 ## Method Comparison Matrix
 
 | Method Family | Estimand | Identification | Internal Validity | External Validity |
@@ -179,6 +394,13 @@ START: Do you want to estimate a causal effect?
 | RDD | LATE at cutoff | Continuity | High near cutoff | Local to cutoff |
 | DiD | ATT | Parallel trends | Medium | Treated units |
 | Observational | ATE/ATT | Selection on observables | Low-Medium | Sample-dependent |
+| Selection | ATE (corrected) | Exclusion + normality | Medium | Selected sample |
+| Bounds | Interval | Varies by assumption | High (conservative) | Sample-dependent |
+| QTE | QTE(τ) | Rank invariance | Medium | Quantile-specific |
+| MTE | MTE(p) | IV + monotonicity | Medium-High | Policy-dependent |
+| Mediation | NDE/NIE | Sequential ignorability | Low-Medium | Pathway-specific |
+| Control Function | ATE | Exclusion + form | Medium | Model-dependent |
+| Shift-Share | LATE | Exogenous shares/shocks | Medium | Sector-weighted |
 
 ---
 
@@ -206,6 +428,13 @@ START: Do you want to estimate a causal effect?
 | Observational data, rich covariates | DoublyRobust | Best robustness properties |
 | Need exact comparison units | PSM | Interpretable matches |
 | Concerned about weak instrument | LIML or AndersonRubin | Robust to weak IV |
+| Survey with non-response | Heckman Selection | Corrects for selection bias |
+| Assumptions questionable | Manski/Lee Bounds | Honest about uncertainty |
+| Care about inequality effects | QTE | Effects across distribution |
+| Want to evaluate new policies | MTE | Policy-relevant treatment effects |
+| Treatment works through mediator | Mediation Analysis | Decompose direct/indirect |
+| Endogeneity, non-linear model | Control Function | More flexible than 2SLS |
+| Labor/trade with sector exposure | Shift-Share IV | Bartik instrument |
 
 ---
 
@@ -214,4 +443,9 @@ START: Do you want to estimate a causal effect?
 - `docs/TROUBLESHOOTING.md` - When methods fail
 - `docs/FAILURE_MODES.md` - Method-specific failure patterns
 - `docs/METHODOLOGICAL_CONCERNS.md` - Known issues and solutions
+- `docs/QUICK_REFERENCE.md` - Copy/paste commands
 - Query research-kb: `research_kb_get_concept "{method_name}"`
+
+---
+
+*Last updated: 2025-12-24 (Session 98 - 21 method families)*

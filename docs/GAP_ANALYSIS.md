@@ -1,211 +1,122 @@
 # Gap Analysis: Missing Causal Inference Methods
 
-**Audit Date**: 2025-12-19 (Session 83)
-**Scope**: Identify methods not implemented that have high interview/research frequency
+**Last Updated**: 2025-12-24 (Session 105)
+**Previous Audit**: 2025-12-19 (Session 83)
+**Status**: ✅ **ALL PRIORITY METHODS COMPLETE** - 23 method families implemented
+
+---
+
+## Session 98: Consolidation & Documentation
+
+Rather than adding new methods (TMLE, DTR, etc.), Session 98 focused on:
+
+1. **Updated METHOD_SELECTION.md** - Extended decision tree from 5 to 12 steps
+2. **Updated QUICK_REFERENCE.md** - Full 21-method API reference
+3. **Created 4 Tutorial Notebooks** in `docs/examples/`:
+   - `example_policy_evaluation.ipynb` - DiD + Event Study + SCM
+   - `example_rdd_analysis.ipynb` - Sharp RDD with diagnostics
+   - `example_iv_weak_instruments.ipynb` - 2SLS vs LIML vs Fuller
+   - `example_new_methods_showcase.ipynb` - Sessions 85-97 methods
+
+**Rationale**: With 21 method families achieving Python-Julia parity and ~52,500 lines of code, the project benefits more from documentation depth than additional method breadth.
 
 ---
 
 ## Current Implementation Status
 
-### Implemented Methods (14 Families)
+### Implemented Methods (21 Families)
 
-| Family | Python | Julia | Estimators |
-|--------|--------|-------|------------|
-| RCT | ✅ | ✅ | SimpleATE, Stratified, IPW, Regression-Adjusted, Permutation |
-| Observational | ✅ | ✅ | IPW, Doubly Robust, Outcome Regression |
-| PSM | ✅ | ✅ | Nearest Neighbor, Caliper, Optimal |
-| DiD | ✅ | ✅ | Classic 2x2, Event Study, Callaway-Sant'Anna, Sun-Abraham |
-| IV | ✅ | ✅ | 2SLS, GMM, LIML, Fuller, Diagnostics |
-| RDD | ✅ | ✅ | Sharp, Fuzzy, McCrary, Sensitivity |
-| SCM | ✅ | ✅ | Basic, Augmented, Placebo Inference |
-| CATE | ✅ | ✅ | S/T/X/R-Learners, DML |
-| Sensitivity | ✅ | ✅ | Rosenbaum Bounds, E-values |
-| RKD | ✅ | ✅ | Sharp, Fuzzy, Diagnostics |
-| Bunching | ✅ | ✅ | Saez Excess Mass, Counterfactual |
+| Family | Python | Julia | Estimators | Session |
+|--------|--------|-------|------------|---------|
+| RCT | ✅ | ✅ | SimpleATE, Stratified, IPW, Regression, Permutation | 1-6 |
+| Observational | ✅ | ✅ | IPW, Doubly Robust, Outcome Regression | 5-6 |
+| PSM | ✅ | ✅ | Nearest Neighbor, Caliper, Optimal | 7 |
+| DiD | ✅ | ✅ | Classic, Event Study, Callaway-Sant'Anna, Sun-Abraham | 8-10 |
+| IV | ✅ | ✅ | 2SLS, GMM, LIML, Fuller, CLR, Diagnostics | 11-13, 55-58, 70 |
+| RDD | ✅ | ✅ | Sharp, Fuzzy, McCrary, Sensitivity | 14-16 |
+| SCM | ✅ | ✅ | Basic, Augmented, Placebo Inference | 46-49 |
+| CATE | ✅ | ✅ | S/T/X/R-Learners, DML, Causal Forest | 42-45 |
+| Sensitivity | ✅ | ✅ | Rosenbaum Bounds, E-values | 43, 51-53 |
+| RKD | ✅ | ✅ | Sharp, Fuzzy, Diagnostics | 72-75 |
+| Bunching | ✅ | ✅ | Saez Excess Mass, Counterfactual | 76-81 |
+| **Selection** | ✅ | ✅ | Heckman Two-Stage | 85 |
+| **Bounds** | ✅ | ✅ | Manski (5 variants), Lee | 86-88 |
+| **QTE** | ✅ | ✅ | Unconditional, Conditional, RIF | 88-89 |
+| **MTE** | ✅ | ✅ | Local IV, Policy, LATE | 90-91 |
+| **Mediation** | ✅ | ✅ | Baron-Kenny, NDE/NIE, CDE, Sensitivity | 92 |
+| **Control Function** | ✅ | ✅ | Linear, Nonlinear (Probit/Logit) | 93 |
+| **Shift-Share** | ✅ | ✅ | Bartik Instruments, Rotemberg Weights | 94, 97 |
+| **TMLE** | ✅ | ✅ | Targeted Maximum Likelihood Estimation | 99-100 |
+| **Bayesian** | ✅ | ✅ | Conjugate ATE, Propensity, DR, Hierarchical | 101-104 |
 
----
-
-## TIER 1: Critical Gaps (High Interview Frequency)
-
-### 1. Heckman Selection Model
-
-**Priority**: 🔴 CRITICAL
-**Interview Frequency**: ~40% of applied micro interviews
-
-**What it is**: Two-stage estimator for selection bias when outcome is only observed for a selected sample (e.g., wages observed only for employed).
-
-**Key features needed**:
-- Probit selection equation
-- Inverse Mills ratio construction
-- Outcome equation with selection correction
-- Standard errors accounting for two-stage estimation
-- Tests for selection (ρ significance)
-
-**References**:
-- Heckman (1979). Sample Selection Bias as a Specification Error
-- Wooldridge (2010). Econometric Analysis of Cross Section and Panel Data, Ch. 19
-
-**Estimated effort**: 2-3 sessions
+**Bold** = NEW since Session 83 audit
 
 ---
 
-### 2. Manski Bounds (Worst-Case Bounds)
+## Changes Since Session 83
 
-**Priority**: 🔴 HIGH
-**Interview Frequency**: ~25% of theory-focused interviews
+### Methods Implemented (Sessions 85-95)
 
-**What it is**: Nonparametric bounds on treatment effects under minimal assumptions. Provides identification region when point identification fails.
+All TIER 1 gaps from Session 83 are now closed:
 
-**Key features needed**:
-- Treatment effect bounds under no assumptions
-- Monotone treatment response (MTR) bounds
-- Monotone treatment selection (MTS) bounds
-- Combined MTR+MTS bounds
-- Instrumental variables bounds
-
-**References**:
-- Manski (1990). Nonparametric Bounds on Treatment Effects
-- Manski (2003). Partial Identification of Probability Distributions
-
-**Estimated effort**: 2 sessions
+| Original Gap | Status | Session |
+|--------------|--------|---------|
+| 🔴 Heckman Selection | ✅ Complete | 85 |
+| 🔴 Manski Bounds | ✅ Complete | 86-88 |
+| 🔴 Lee Bounds | ✅ Complete | 87-88 |
+| 🔴 QTE | ✅ Complete | 88-89 |
+| 🟡 MTE | ✅ Complete | 90-91 |
+| 🟡 Mediation | ✅ Complete | 92 |
+| 🟡 Control Function | ✅ Complete | 93 |
+| 🟡 Shift-Share | ⚠️ Python only | 94 |
+| 🟢 GRF | ✅ Was already complete | 42 |
 
 ---
 
-### 3. Lee Bounds (Attrition/Selection)
+## Remaining Gaps
 
-**Priority**: 🔴 HIGH
-**Interview Frequency**: ~20% of RCT-focused interviews
+### TIER 1: High Priority
 
-**What it is**: Bounds on treatment effects when there's sample attrition or selection that may be affected by treatment.
-
-**Key features needed**:
-- Trimming procedure (trim always-takers or never-takers)
-- Sharp bounds construction
-- Confidence intervals via bootstrap
-- Sensitivity to monotonicity assumption
-
-**References**:
-- Lee (2009). Training, Wages, and Sample Selection
-
-**Estimated effort**: 1-2 sessions
+*All TIER 1 gaps closed as of Session 97.*
 
 ---
 
-### 4. Quantile Treatment Effects (QTE)
+### TIER 2: Medium Priority
 
-**Priority**: 🔴 HIGH
-**Interview Frequency**: ~30% of distributional questions
+#### 2. TMLE (Targeted Maximum Likelihood Estimation) ✅ COMPLETE
 
-**What it is**: Estimate treatment effects at different quantiles of the outcome distribution, not just the mean.
-
-**Key features needed**:
-- Unconditional QTE
-- Conditional QTE (quantile regression)
-- Distributional effects (entire distribution comparison)
-- Standard errors (bootstrap, analytical)
-
-**References**:
-- Koenker & Bassett (1978). Regression Quantiles
-- Firpo, Fortin, Lemieux (2009). Unconditional Quantile Regressions
-
-**Estimated effort**: 2 sessions
-
----
-
-## TIER 2: Medium Priority Gaps
-
-### 5. Marginal Treatment Effects (MTE)
-
-**Priority**: 🟡 MEDIUM
-**Use case**: Understanding heterogeneity in IV settings, LATE decomposition
-
-**What it is**: Treatment effects as a function of unobserved resistance to treatment. Generalizes LATE.
-
-**Key features needed**:
-- Local IV estimation along propensity score
-- Policy-relevant treatment effects (PRTE)
-- Average treatment effects from MTE
-
-**References**:
-- Heckman & Vytlacil (2005). Structural Equations, Treatment Effects
-
-**Estimated effort**: 3 sessions
-
----
-
-### 6. TMLE (Targeted Maximum Likelihood Estimation)
-
-**Priority**: 🟡 MEDIUM
+**Priority**: ✅ DONE (Session 99)
 **Use case**: Doubly robust estimation with formal statistical guarantees
 
-**What it is**: Fluctuation-based approach to doubly robust estimation. Has better finite-sample properties than standard DR.
+**What it is**: Fluctuation-based approach to doubly robust estimation with better finite-sample properties.
 
-**Note**: Partially covered by DML, but TMLE adds targeting step.
+**Implemented features**:
+- ✅ Targeting step (linear fluctuation)
+- ✅ Clever covariate construction: H = T/g - (1-T)/(1-g)
+- ✅ Influence function-based inference (EIF)
+- ✅ Convergence detection
+- ✅ Double robustness validation
+
+**Files created**:
+- `src/causal_inference/observational/tmle.py` (~370 lines)
+- `src/causal_inference/observational/tmle_helpers.py` (~220 lines)
+- `tests/observational/test_tmle.py` (25 tests)
+- `tests/validation/monte_carlo/test_monte_carlo_tmle.py` (7 MC tests)
+
+**Validation results**:
+- Bias: < 0.05 (both models correct)
+- Coverage: 91-99%
+- SE calibration: within 20%
+- Double robustness: verified (one model wrong still works)
 
 **References**:
 - van der Laan & Rose (2011). Targeted Learning
 
-**Estimated effort**: 2 sessions
-
 ---
 
-### 7. Mediation Analysis
+### TIER 3: Lower Priority (Optional)
 
-**Priority**: 🟡 MEDIUM
-**Use case**: Decomposing direct and indirect effects
-
-**Key features needed**:
-- Natural direct effect (NDE)
-- Natural indirect effect (NIE)
-- Controlled direct effect (CDE)
-- Sensitivity analysis for unmeasured confounding
-
-**References**:
-- Baron & Kenny (1986) - traditional
-- Imai, Keele, Tingley (2010) - causal mediation
-
-**Estimated effort**: 2 sessions
-
----
-
-### 8. Control Function Approach
-
-**Priority**: 🟡 MEDIUM
-**Use case**: Nonlinear models with endogeneity
-
-**What it is**: Alternative to IV for nonlinear models. Estimates residual from first stage and includes in second stage.
-
-**References**:
-- Rivers & Vuong (1988)
-- Wooldridge (2015). Control Function Methods
-
-**Estimated effort**: 1-2 sessions
-
----
-
-### 9. Shift-Share / Bartik Instruments
-
-**Priority**: 🟡 MEDIUM
-**Use case**: Regional economics, labor economics
-
-**What it is**: Instruments constructed from national/industry shocks interacted with local shares.
-
-**Key features needed**:
-- Shift-share construction
-- Rotemberg weights
-- Exposure robust standard errors
-- Diagnostics (share exogeneity)
-
-**References**:
-- Goldsmith-Pinkham, Sorkin, Swift (2020). Bartik Instruments
-
-**Estimated effort**: 2 sessions
-
----
-
-## TIER 3: Lower Priority Gaps
-
-### 10. Principal Stratification
+#### 3. Principal Stratification
 
 **Use case**: Noncompliance beyond LATE, post-treatment confounding
 
@@ -213,7 +124,7 @@
 
 ---
 
-### 11. Dynamic Treatment Regimes (DTR)
+#### 4. Dynamic Treatment Regimes (DTR)
 
 **Use case**: Sequential treatment decisions over time
 
@@ -221,77 +132,104 @@
 
 ---
 
-### 12. Bayesian Causal Inference
+#### 5. Bayesian Causal Inference ✅ COMPLETE (Sessions 101-104)
 
-**Use case**: Incorporating prior information, posterior distributions of effects
+**Priority**: ✅ DONE (Sessions 101-104)
+**Use case**: Incorporating prior information, posterior distributions, hierarchical models
 
-**Estimated effort**: 3 sessions
+**Implemented features**:
+
+*Session 101: Conjugate ATE*
+- ✅ Conjugate normal-normal model (closed-form posterior)
+- ✅ `bayesian_ate()` estimator (Python + Julia)
+- ✅ Prior sensitivity diagnostics (shrinkage metric)
+- ✅ Posterior samples for uncertainty propagation
+- ✅ Credible intervals with probability interpretation
+
+*Session 102: Bayesian Propensity Scores*
+- ✅ Stratified Beta-Binomial (discrete covariates)
+- ✅ Logistic Laplace approximation (continuous covariates)
+- ✅ `bayesian_propensity()` with automatic method selection
+
+*Session 103: Bayesian Doubly Robust*
+- ✅ Combines Bayesian propensity with frequentist outcome models
+- ✅ Propagates propensity uncertainty through AIPW formula
+- ✅ Variance inflation using influence function
+
+*Session 104: Hierarchical Bayesian ATE (MCMC)*
+- ✅ Partial pooling across groups/sites
+- ✅ Non-centered parameterization for stable MCMC
+- ✅ PyMC (Python) / Turing.jl (Julia) integration
+- ✅ MCMC diagnostics: R-hat, ESS, divergences
+
+**Files created**:
+- Python: `src/causal_inference/bayesian/` (~1,200 lines, 83+ tests)
+- Julia: `julia/src/bayesian/` (~1,100 lines, 163+ tests)
+
+**Dependencies** (optional):
+- Python: `pymc>=5.10`, `arviz>=0.18` (for hierarchical)
+- Julia: `Turing.jl`, `MCMCDiagnosticTools` (for hierarchical)
 
 ---
 
-### 13. Generalized Random Forests (GRF)
+## Updated Roadmap
 
-**Use case**: Nonparametric CATE with confidence intervals
-
-**Note**: Could wrap `econml` or `grf` R package
-
-**Estimated effort**: 2 sessions
-
----
-
-## Recommended Phase 12 Roadmap
-
-Based on interview frequency and research importance:
+### Phase 14: Julia Parity (Sessions 96-97) ✅ COMPLETE
 
 ```
-Phase 12: Selection & Bounds (Sessions 84-89)
-├── Session 84: Heckman Selection (Python)
-├── Session 85: Heckman Selection (Julia + cross-language)
-├── Session 86: Manski Bounds (Python)
-├── Session 87: Lee Bounds (Python)
-├── Session 88: Bounds (Julia + cross-language)
-└── Session 89: QTE (both languages)
+└── Session 97: Shift-Share Julia implementation ✅
+```
 
-Phase 13: Advanced Methods (Sessions 90-95)
-├── Session 90: MTE (Python)
-├── Session 91: MTE (Julia)
-├── Session 92: Mediation Analysis
-├── Session 93: Control Function
-├── Session 94: Shift-Share IV
-└── Session 95: Cross-language parity for Phase 12-13
+### Phase 15: Advanced Methods (Sessions 98-100)
+
+```
+├── Session 98-99: TMLE (Python + Julia)
+└── Session 100: Consolidation & Documentation
+```
+
+### Phase 16: Optional Extensions (Sessions 101+)
+
+```
+├── Principal Stratification (if needed)
+├── Dynamic Treatment Regimes (if needed)
+└── Bayesian Methods (if needed)
 ```
 
 ---
 
-## Priority Matrix
+## Priority Matrix (Updated)
 
 | Method | Interview Freq | Research Use | Difficulty | Priority |
 |--------|---------------|--------------|------------|----------|
-| Heckman | 40% | Very High | Medium | 🔴 P1 |
-| Manski Bounds | 25% | High | Medium | 🔴 P1 |
-| Lee Bounds | 20% | High | Low | 🔴 P1 |
-| QTE | 30% | Very High | Medium | 🔴 P1 |
-| MTE | 15% | High | High | 🟡 P2 |
-| TMLE | 10% | Medium | Medium | 🟡 P2 |
-| Mediation | 20% | Medium | Medium | 🟡 P2 |
-| Control Function | 10% | Medium | Low | 🟡 P2 |
-| Shift-Share | 15% | Medium | Medium | 🟡 P2 |
-| Principal Strat | 5% | Low | High | 🟢 P3 |
-| DTR | 5% | Low | High | 🟢 P3 |
-| Bayesian | 5% | Low | High | 🟢 P3 |
-| GRF | 10% | Medium | Low | 🟢 P3 |
+| ~~Shift-Share (Julia)~~ | ~~N/A~~ | ~~Medium~~ | ~~Low~~ | ✅ DONE |
+| ~~TMLE~~ | ~~10%~~ | ~~Medium~~ | ~~Medium~~ | ✅ DONE (Sessions 99-100) |
+| ~~Bayesian~~ | ~~5%~~ | ~~Medium~~ | ~~Medium~~ | ✅ DONE (Sessions 101-104) |
+| Principal Strat | 5% | Low | High | 🟢 Optional |
+| DTR | 5% | Low | High | 🟢 Optional |
 
 ---
 
-## Conclusion
+## Summary
 
-**Highest impact additions for interview prep**:
-1. Heckman Selection - Most frequently asked
-2. QTE - Common distributional questions
-3. Bounds (Manski + Lee) - Theory-heavy interviews
+**Since Session 83**:
+- Method families: 14 → 23 (+9)
+- Lines (Python): ~22K → ~29K
+- Lines (Julia): ~23K → ~27K
+- Tests: ~7K → ~9K
 
-**Total estimated sessions for TIER 1**: 6-8 sessions
+**Bayesian Module (Sessions 101-104)**:
+- Conjugate ATE with prior sensitivity
+- Bayesian propensity scores (Beta-Binomial, Logistic Laplace)
+- Bayesian Doubly Robust (uncertainty propagation)
+- Hierarchical ATE with MCMC (PyMC/Turing.jl)
+
+**Remaining work**:
+- 0 HIGH priority (all closed)
+- 0 MEDIUM priority (all closed)
+- 2 LOW priority (optional: Principal Stratification, DTR)
+
+**Total estimated sessions for gaps**: 0 sessions required (optional methods only)
 
 ---
 
-**Generated**: Session 83 Audit
+**Generated**: Session 105 Documentation Update

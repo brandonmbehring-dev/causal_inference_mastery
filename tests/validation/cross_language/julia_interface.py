@@ -3691,3 +3691,111 @@ def julia_mediation_analysis(
         "n_obs": int(solution.n_obs),
         "n_bootstrap": int(solution.n_bootstrap),
     }
+
+
+def julia_shift_share_iv(
+    Y: np.ndarray,
+    D: np.ndarray,
+    shares: np.ndarray,
+    shocks: np.ndarray,
+    X: Optional[np.ndarray] = None,
+    inference: str = "robust",
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, int, np.ndarray, dict]]:
+    """
+    Call Julia shift_share_iv via juliacall.
+
+    Parameters
+    ----------
+    Y : np.ndarray
+        Outcome variable
+    D : np.ndarray
+        Endogenous treatment
+    shares : np.ndarray
+        Sector shares (n x S)
+    shocks : np.ndarray
+        Sector shocks (S,)
+    X : np.ndarray, optional
+        Control variables
+    inference : str
+        'robust' or 'clustered'
+    alpha : float
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with estimate, SE, diagnostics
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert to Julia arrays
+    n = len(Y)
+    n_sectors = len(shocks)
+
+    Y_list = list(Y.astype(float))
+    D_list = list(D.astype(float))
+    shocks_list = list(shocks.astype(float))
+
+    # Shares is 2D - convert row by row
+    shares_rows = [list(row) for row in shares.astype(float)]
+
+    # Build controls code
+    if X is not None:
+        X_rows = [list(row) for row in X.astype(float)]
+        x_code = f"hcat({X_rows}...)''"
+    else:
+        x_code = "nothing"
+
+    jl_code = f"""
+    using Random
+    using Statistics
+
+    Y_jl = Float64.({Y_list})
+    D_jl = Float64.({D_list})
+    shocks_jl = Float64.({shocks_list})
+    shares_jl = Float64.(vcat([reshape({row}, 1, :) for row in {shares_rows}]...))
+    X_jl = {x_code}
+
+    result = shift_share_iv(Y_jl, D_jl, shares_jl, shocks_jl;
+                            X=X_jl, inference=:{inference}, alpha=Float64({alpha}))
+    result
+    """
+    solution = jl.seval(jl_code)
+
+    # Extract Rotemberg diagnostics
+    rotemberg = {
+        "weights": np.array([float(w) for w in solution.rotemberg.weights]),
+        "negative_weight_share": float(solution.rotemberg.negative_weight_share),
+        "top_5_sectors": [int(s) for s in solution.rotemberg.top_5_sectors],
+        "top_5_weights": np.array([float(w) for w in solution.rotemberg.top_5_weights]),
+        "herfindahl": float(solution.rotemberg.herfindahl),
+    }
+
+    # Extract first stage
+    first_stage = {
+        "f_statistic": float(solution.first_stage.f_statistic),
+        "f_pvalue": float(solution.first_stage.f_pvalue),
+        "partial_r2": float(solution.first_stage.partial_r2),
+        "coefficient": float(solution.first_stage.coefficient),
+        "se": float(solution.first_stage.se),
+        "t_stat": float(solution.first_stage.t_stat),
+        "weak_iv_warning": bool(solution.first_stage.weak_iv_warning),
+    }
+
+    return {
+        "estimate": float(solution.estimate),
+        "se": float(solution.se),
+        "t_stat": float(solution.t_stat),
+        "p_value": float(solution.p_value),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+        "first_stage": first_stage,
+        "rotemberg": rotemberg,
+        "n_obs": int(solution.n_obs),
+        "n_sectors": int(solution.n_sectors),
+        "share_sum_mean": float(solution.share_sum_mean),
+        "inference": str(solution.inference),
+        "alpha": float(solution.alpha),
+    }

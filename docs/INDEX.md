@@ -37,6 +37,20 @@ Single entry point for causal_inference_mastery documentation.
 
 ---
 
+## Session History
+
+Session archives are organized in `docs/archive/sessions/`:
+
+| Resource | Purpose |
+|----------|---------|
+| [Session Index](archive/sessions/INDEX.md) | Quick lookup by method/session |
+| [SESSION_85-95](archive/sessions/) | Advanced methods (Selection, QTE, MTE, etc.) |
+| [SESSION_63-82](archive/sessions/) | RKD, Bunching, Context Engineering |
+| [SESSION_42-62](archive/sessions/) | CATE, Sensitivity, SCM |
+| [SESSION_1-19](archive/sessions/) | Foundation (RCT, PSM, DiD, IV, RDD) |
+
+---
+
 ## Directory Structure
 
 ```
@@ -44,11 +58,12 @@ docs/
 ├── INDEX.md                    # You are here
 ├── QUICK_REFERENCE.md          # Commands cheat sheet
 ├── ROADMAP.md                  # Master plan
+├── GAP_ANALYSIS.md             # Missing methods (updated Session 96)
 ├── METHODOLOGICAL_CONCERNS.md  # 13 tracked concerns
-├── METHOD_SELECTION.md         # Decision tree (NEW)
-├── TROUBLESHOOTING.md          # Debug guide (NEW)
-├── GLOSSARY.md                 # Terminology (NEW)
-├── FAILURE_MODES.md            # Failure taxonomy (NEW)
+├── METHOD_SELECTION.md         # Decision tree
+├── TROUBLESHOOTING.md          # Debug guide
+├── GLOSSARY.md                 # Terminology
+├── FAILURE_MODES.md            # Failure taxonomy
 ├── KNOWN_LIMITATIONS.md        # Test xfails
 ├── patterns/                   # Reusable patterns
 │   ├── validation.md           # 6-layer validation architecture
@@ -62,9 +77,7 @@ docs/
 ├── checklists/
 │   └── PHASE_COMPLETION_CHECKLIST.md
 └── archive/
-    ├── sessions/               # Historical SESSION_*.md
-    ├── plans/                  # Superseded plans
-    └── validation/             # Old validation docs
+    └── sessions/               # Historical SESSION_*.md + INDEX.md
 ```
 
 ---
@@ -83,4 +96,4 @@ docs/
 
 ---
 
-*Last updated: 2025-12-19 (Context Engineering Enhancement)*
+*Last updated: 2025-12-23 (Session 96 - Documentation Architecture)*

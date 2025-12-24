@@ -4,7 +4,7 @@ Copy/paste-ready commands and quick lookups for causal_inference_mastery.
 
 ---
 
-## Method Selection
+## Method Selection (21 Families)
 
 | Your Situation | Method |
 |----------------|--------|
@@ -13,6 +13,18 @@ Copy/paste-ready commands and quick lookups for causal_inference_mastery.
 | Before/after comparison | Difference-in-Differences (DiD) |
 | Endogenous variable | Instrumental Variables (IV) |
 | Threshold/cutoff | Regression Discontinuity (RDD) |
+| Single treated unit | Synthetic Control (SCM) |
+| Treatment effect heterogeneity | CATE (S/T/X/R-learners, Causal Forest) |
+| Sensitivity to confounding | E-values, Rosenbaum Bounds |
+| Kink in policy | Regression Kink Design (RKD) |
+| Bunching at threshold | Bunching Estimators |
+| Sample selection/attrition | Heckman Selection |
+| Assumptions violated | Manski/Lee Bounds |
+| Distributional effects | Quantile Treatment Effects (QTE) |
+| Marginal effects | MTE (Local IV, Policy Relevant) |
+| Direct vs indirect effects | Mediation Analysis |
+| Endogeneity, nonlinear | Control Function |
+| Sector exposure + shocks | Shift-Share IV (Bartik) |
 
 ---
 
@@ -94,6 +106,67 @@ See [patterns/validation.md](patterns/validation.md) for Layers 5-6 (R Triangula
 
 ---
 
+## Diagnostic Commands (New Methods)
+
+```python
+# Heckman Selection - Mills ratio
+from causal_inference.selection import heckman_two_stage
+result = heckman_two_stage(Y, X, Z)
+print(f"Lambda (selection): {result['lambda']:.3f} (p={result['lambda_pvalue']:.3f})")
+
+# Manski Bounds - Width indicates identification strength
+from causal_inference.bounds import manski_bounds
+result = manski_bounds(Y, T)
+print(f"Bounds: [{result['lower']:.3f}, {result['upper']:.3f}]")
+
+# QTE - Effects across distribution
+from causal_inference.qte import unconditional_qte
+result = unconditional_qte(Y, T, quantiles=[0.25, 0.5, 0.75])
+for q, est in zip(result['quantiles'], result['estimates']):
+    print(f"QTE({q:.0%}): {est:.3f}")
+
+# MTE - Marginal effects curve
+from causal_inference.mte import marginal_treatment_effect
+result = marginal_treatment_effect(Y, T, Z, X)
+print(f"MTE at p=0.5: {result['mte_at_median']:.3f}")
+
+# Mediation - Direct/Indirect decomposition
+from causal_inference.mediation import mediation_analysis
+result = mediation_analysis(Y, T, M, X)
+print(f"NDE: {result['nde']:.3f}, NIE: {result['nie']:.3f}")
+print(f"% Mediated: {result['proportion_mediated']:.1%}")
+
+# Control Function - First-stage residual
+from causal_inference.control_function import control_function
+result = control_function(Y, T, Z, X)
+print(f"CF Estimate: {result['estimate']:.3f}")
+
+# Shift-Share - Rotemberg diagnostics
+from causal_inference.shift_share import shift_share_iv
+result = shift_share_iv(Y, T, shares, shocks)
+print(f"Estimate: {result['estimate']:.3f}")
+print(f"Negative weight share: {result['rotemberg']['negative_weight_share']:.1%}")
+print(f"Top sector: {result['rotemberg']['top_5_sectors'][0]}")
+```
+
+---
+
+## Interview Quick Answers
+
+| Question | Answer |
+|----------|--------|
+| When would 2SLS fail? | Weak instruments (F < 10) |
+| Why not just regression? | Selection bias from unobserved confounders |
+| DiD vs RDD? | Time variation vs cutoff |
+| When use bounds? | When standard assumptions fail |
+| What does Heckman correct? | Sample selection bias (non-random attrition) |
+| What are Rotemberg weights? | Which sectors drive shift-share IV estimate |
+| QTE vs ATE? | Distributional effects vs mean effect |
+| NDE vs NIE? | Direct effect vs effect through mediator |
+| Control function vs 2SLS? | CF handles nonlinear models, heterogeneity |
+
+---
+
 ## Key Files
 
 | File | Purpose |
@@ -123,4 +196,4 @@ Types: `feat`, `fix`, `test`, `docs`, `refactor`, `validate`
 
 ---
 
-*Last updated: 2025-12-16 (Session 37.5)*
+*Last updated: 2025-12-24 (Session 98 - 21 method families)*

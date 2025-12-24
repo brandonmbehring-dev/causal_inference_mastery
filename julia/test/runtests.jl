@@ -120,4 +120,9 @@ end
     include("mediation/runtests.jl")
 end
 
+# Shift-Share IV (Session 97)
+@safetestset "Shift-Share IV" begin
+    include("shift_share/test_shift_share.jl")
+end
+
 @info "Test suite complete"

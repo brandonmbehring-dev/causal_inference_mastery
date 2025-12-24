@@ -434,3 +434,125 @@ function Base.show(io::IO, sol::DRSolution)
     println(io, "Return Code:      $(sol.retcode)")
     println(io, "=" ^ 50)
 end
+
+
+# =============================================================================
+# TMLESolution (Targeted Maximum Likelihood Estimation)
+# =============================================================================
+
+"""
+    TMLESolution{T} <: AbstractObservationalSolution
+
+Solution from Targeted Maximum Likelihood Estimation (TMLE).
+
+# Mathematical Formulation
+
+TMLE improves on doubly robust estimation via an iterative targeting step:
+
+1. Initial estimates:
+   - Propensity: e(X) = P(T=1|X)
+   - Outcome: Q(T,X) = E[Y|T,X]
+
+2. Targeting step (iterate until convergence):
+   - Clever covariate: H = T/e - (1-T)/(1-e)
+   - Fit fluctuation: Y ~ ε*H + offset(Q)
+   - Update: Q* = Q + ε*H
+
+3. ATE: mean(Q*(1,X)) - mean(Q*(0,X))
+
+4. Variance via Efficient Influence Function:
+   EIF_i = H1*(Y - Q1*)*T - H0*(Y - Q0*)*(1-T) + Q1* - Q0* - ATE
+
+# Double Robustness + Efficiency
+
+- Consistent if EITHER propensity OR outcome model correct
+- Achieves semiparametric efficiency bound when both correct
+- Better finite-sample bias than standard DR
+
+# Fields
+- `estimate::T`: TMLE estimate of ATE
+- `se::T`: Standard error (from efficient influence function)
+- `ci_lower::T`: Lower bound of confidence interval
+- `ci_upper::T`: Upper bound of confidence interval
+- `p_value::T`: Two-sided p-value (H₀: ATE = 0)
+- `n_treated::Int`: Number of treated units
+- `n_control::Int`: Number of control units
+- `n_trimmed::Int`: Number of units trimmed for extreme propensities
+- `epsilon::T`: Total fluctuation coefficient
+- `n_iterations::Int`: Number of targeting iterations
+- `converged::Bool`: Whether targeting converged
+- `convergence_criterion::T`: Final value of mean(H * residuals)
+- `propensity_scores::Vector{T}`: Estimated (or provided) propensity scores
+- `Q0_initial::Vector{T}`: Initial E[Y|T=0, X] predictions
+- `Q1_initial::Vector{T}`: Initial E[Y|T=1, X] predictions
+- `Q0_star::Vector{T}`: Targeted E[Y|T=0, X] predictions
+- `Q1_star::Vector{T}`: Targeted E[Y|T=1, X] predictions
+- `eif::Vector{T}`: Efficient influence function values
+- `propensity_auc::T`: AUC of propensity model
+- `mu0_r2::T`: R² for control outcome model
+- `mu1_r2::T`: R² for treated outcome model
+- `retcode::Symbol`: `:Success`, `:Warning`, or `:Error`
+- `original_problem::ObservationalProblem`: Original problem specification
+
+# Example
+```julia
+solution = solve(problem, TMLE())
+
+println("ATE: \$(solution.estimate) ± \$(solution.se)")
+println("Converged: \$(solution.converged) in \$(solution.n_iterations) iterations")
+```
+
+# References
+- van der Laan, M. J., & Rose, S. (2011). Targeted Learning. Springer.
+- Schuler, M. S., & Rose, S. (2017). TMLE for causal inference. AJE.
+"""
+struct TMLESolution{T<:Real} <: AbstractObservationalSolution
+    estimate::T
+    se::T
+    ci_lower::T
+    ci_upper::T
+    p_value::T
+    n_treated::Int
+    n_control::Int
+    n_trimmed::Int
+    epsilon::T
+    n_iterations::Int
+    converged::Bool
+    convergence_criterion::T
+    propensity_scores::Vector{T}
+    Q0_initial::Vector{T}
+    Q1_initial::Vector{T}
+    Q0_star::Vector{T}
+    Q1_star::Vector{T}
+    eif::Vector{T}
+    propensity_auc::T
+    mu0_r2::T
+    mu1_r2::T
+    retcode::Symbol
+    original_problem::ObservationalProblem{T}
+end
+
+# Pretty printing
+function Base.show(io::IO, sol::TMLESolution)
+    println(io, "TMLESolution (Targeted Maximum Likelihood)")
+    println(io, "=" ^ 50)
+    println(io, "ATE Estimate:     $(round(sol.estimate, digits=4))")
+    println(io, "Std. Error:       $(round(sol.se, digits=4))")
+    println(io, "95% CI:           [$(round(sol.ci_lower, digits=4)), $(round(sol.ci_upper, digits=4))]")
+    println(io, "p-value:          $(round(sol.p_value, digits=4))")
+    println(io, "-" ^ 50)
+    println(io, "n_treated:        $(sol.n_treated)")
+    println(io, "n_control:        $(sol.n_control)")
+    println(io, "n_trimmed:        $(sol.n_trimmed)")
+    println(io, "-" ^ 50)
+    println(io, "Epsilon:          $(round(sol.epsilon, digits=6))")
+    println(io, "Iterations:       $(sol.n_iterations)")
+    println(io, "Converged:        $(sol.converged)")
+    println(io, "Criterion:        $(round(sol.convergence_criterion, digits=8))")
+    println(io, "-" ^ 50)
+    println(io, "Propensity AUC:   $(round(sol.propensity_auc, digits=4))")
+    println(io, "Outcome μ₀ R²:    $(round(sol.mu0_r2, digits=4))")
+    println(io, "Outcome μ₁ R²:    $(round(sol.mu1_r2, digits=4))")
+    println(io, "Return Code:      $(sol.retcode)")
+    println(io, "=" ^ 50)
+end

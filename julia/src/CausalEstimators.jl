@@ -116,12 +116,13 @@ include("did/event_study.jl")
 # DiD staggered methods (Phase 5 - Session 18)
 include("did/staggered.jl")
 
-# Observational IPW/DR (Session 32+)
+# Observational IPW/DR/TMLE (Session 32+, Session 100)
 include("observational/types.jl")
 include("observational/propensity.jl")
 include("observational/ipw.jl")
 include("observational/outcome_models.jl")
 include("observational/doubly_robust.jl")
+include("observational/tmle.jl")
 
 # CATE Meta-Learners (Session 44)
 include("cate/types.jl")
@@ -187,6 +188,17 @@ include("mediation/types.jl")
 include("mediation/estimators.jl")
 include("mediation/sensitivity.jl")
 
+# Shift-Share IV (Session 97)
+include("shift_share/types.jl")
+include("shift_share/shift_share.jl")
+
+# Bayesian Causal Inference (Sessions 101-104)
+include("bayesian/types.jl")
+include("bayesian/conjugate_ate.jl")
+include("bayesian/bayesian_propensity.jl")
+include("bayesian/bayesian_dr.jl")
+include("bayesian/hierarchical_ate.jl")
+
 # Exports
 
 ## Abstract types
@@ -205,11 +217,13 @@ export AbstractBunchingProblem, AbstractBunchingEstimator, AbstractBunchingSolut
 export AbstractSelectionProblem, AbstractSelectionEstimator, AbstractSelectionSolution
 export AbstractCFProblem, AbstractCFEstimator, AbstractCFSolution
 export AbstractBoundsProblem, AbstractBoundsEstimator, AbstractBoundsResult
+export AbstractShiftShareProblem, AbstractShiftShareEstimator, AbstractShiftShareSolution
 
 ## Problem types
 export RCTProblem, PSMProblem, RDDProblem, IVProblem, DiDProblem, StaggeredDiDProblem
 export SCMProblem, RKDProblem, BunchingProblem, HeckmanProblem
 export CFProblem, NonlinearCFProblem
+export ShiftShareProblem
 export ObservationalProblem
 export CATEProblem
 export EValueProblem, RosenbaumProblem
@@ -221,7 +235,7 @@ export NearestNeighborPSM
 export SharpRDD, FuzzyRDD
 export TSLS, LIML, GMM, AndersonRubin, ConditionalLR, OLS
 export ClassicDiD, EventStudy, StaggeredTWFE, CallawaySantAnna, SunAbraham
-export ObservationalIPW, DoublyRobust
+export ObservationalIPW, DoublyRobust, TMLE
 export SLearner, TLearner, XLearner, RLearner, DoubleMachineLearning
 export SyntheticControl, AugmentedSC
 export EValue, RosenbaumBounds
@@ -229,10 +243,11 @@ export SharpRKD, FuzzyRKD
 export SaezBunching
 export HeckmanTwoStep
 export ControlFunction, NonlinearCF
+export ShiftShareIV
 
 ## Solution types
 export RCTSolution, PSMSolution, RDDSolution, FuzzyRDDSolution, IVSolution, DiDSolution
-export IPWSolution, DRSolution, RKDSolution, FuzzyRKDSolution
+export IPWSolution, DRSolution, TMLESolution, RKDSolution, FuzzyRKDSolution
 export CATESolution
 export SCMSolution
 export EValueSolution, RosenbaumSolution
@@ -242,6 +257,7 @@ export BunchingSolution, CounterfactualResult
 export HeckmanSolution
 export CFSolution, NonlinearCFSolution, FirstStageCFResult
 export ManskiBoundsResult, ManskiIVBoundsResult, LeeBoundsResult
+export ShiftShareSolution, FirstStageSSResult, RotembergDiagnostics
 
 ## RDD utilities
 export AbstractBandwidthSelector, IKBandwidth, CCTBandwidth
@@ -333,5 +349,16 @@ export AbstractMediationProblem, AbstractMediationEstimator, AbstractMediationRe
 export BaronKennyResult, MediationResult, CDEResult, SensitivityResult, MediationDiagnostics
 export baron_kenny, mediation_analysis, controlled_direct_effect, mediation_diagnostics
 export mediation_sensitivity
+
+## Shift-Share IV types and functions (Session 97)
+export shift_share_iv
+
+## Bayesian types and functions (Sessions 101-104)
+export BayesianATEResult
+export bayesian_ate
+export BayesianPropensityResult, StratumInfo
+export bayesian_propensity, bayesian_propensity_stratified, bayesian_propensity_logistic
+export BayesianDRResult, bayesian_dr_ate
+export HierarchicalATEResult, hierarchical_bayesian_ate
 
 end # module CausalEstimators

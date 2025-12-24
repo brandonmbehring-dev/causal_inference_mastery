@@ -1,4 +1,17 @@
-"""Causal inference methods: RCT, PSM, DiD, IV, RDD, Selection, Bounds, QTE, MTE, Mediation, CF, SS."""
+"""Causal inference methods: RCT, PSM, DiD, IV, RDD, Selection, Bounds, QTE, MTE, Mediation, CF, SS, Bayesian."""
+
+# Bayesian module (Sessions 101-102)
+from .bayesian import (
+    # Session 101: ATE
+    bayesian_ate,
+    BayesianATEResult,
+    # Session 102: Propensity
+    bayesian_propensity,
+    bayesian_propensity_stratified,
+    bayesian_propensity_logistic,
+    BayesianPropensityResult,
+    StratumInfo,
+)
 
 # Shift-Share IV module (Session 94)
 from .shift_share import (
