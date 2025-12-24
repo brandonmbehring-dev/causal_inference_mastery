@@ -11,7 +11,7 @@ SharpRDD : Sharp regression discontinuity estimator
 Functions
 ---------
 imbens_kalyanaraman_bandwidth : IK optimal bandwidth selector
-cct_bandwidth : CCT optimal bandwidth selector
+cct_bandwidth : CCT-style approximation (uses IK with 1.5× bias bandwidth)
 cross_validation_bandwidth : CV bandwidth selector
 
 Examples

@@ -122,19 +122,46 @@ class TestImbensKalyanaramanBandwidth:
 
 
 class TestCCTBandwidth:
-    """Test CCT bandwidth with known properties."""
+    """Test CCT bandwidth approximation (BUG-2 fix validation)."""
+
+    def test_cct_emits_approximation_warning(self):
+        """
+        BUG-2 FIX: cct_bandwidth() should warn users it's an approximation.
+
+        The function is NOT true CCT - it uses IK bandwidth with 1.5× scaling.
+        Users should be explicitly warned about this limitation.
+        """
+        import warnings
+
+        np.random.seed(42)
+        X = np.random.uniform(-4, 4, 200)
+        Y = X + 3 * (X >= 0) + np.random.normal(0, 1, 200)
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            cct_bandwidth(Y, X, cutoff=0.0)
+
+            # Check warning was emitted
+            assert len(w) == 1, f"Expected 1 warning, got {len(w)}"
+            assert issubclass(w[0].category, UserWarning)
+            assert "APPROXIMATION" in str(w[0].message)
+            assert "rdrobust" in str(w[0].message).lower()
 
     def test_cct_bias_correction_ratio(self):
         """
         CCT bias correction bandwidth should be ≈ 1.5 * main bandwidth.
 
-        From implementation: h_bias = 1.5 * h_main
+        From implementation: h_bias = 1.5 * h_main (ad-hoc approximation)
         """
+        import warnings
+
         np.random.seed(42)
         X = np.random.uniform(-4, 4, 200)
         Y = X + 3 * (X >= 0) + np.random.normal(0, 1, 200)
 
-        h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0, bias_correction=True)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")  # Suppress approximation warning
+            h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0, bias_correction=True)
 
         # Check ratio
         ratio = h_bias / h_main
@@ -145,11 +172,15 @@ class TestCCTBandwidth:
         """
         With bias_correction=False, h_main == h_bias.
         """
+        import warnings
+
         np.random.seed(123)
         X = np.random.uniform(-3, 3, 150)
         Y = 0.5 * X**2 + np.random.normal(0, 0.8, 150)
 
-        h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0, bias_correction=False)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0, bias_correction=False)
 
         assert h_main == h_bias, \
             f"With bias_correction=False, should have h_main == h_bias, got {h_main:.3f} vs {h_bias:.3f}"
@@ -158,14 +189,19 @@ class TestCCTBandwidth:
         """
         CCT implementation uses IK bandwidth as approximation.
 
-        h_main from CCT should equal IK bandwidth.
+        BUG-2 DOCUMENTATION: This test documents the known limitation that
+        CCT h_main equals IK bandwidth (not true CCT bandwidth).
         """
+        import warnings
+
         np.random.seed(456)
         X = np.random.uniform(-5, 5, 200)
         Y = np.sin(X) + 2 * (X >= 0) + np.random.normal(0, 1, 200)
 
         h_ik = imbens_kalyanaraman_bandwidth(Y, X, cutoff=0.0)
-        h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0)
 
         assert h_main == h_ik, \
             f"CCT main bandwidth should equal IK bandwidth, got {h_main:.3f} vs {h_ik:.3f}"
@@ -246,11 +282,15 @@ class TestBandwidthEdgeCases:
 
     def test_cct_returns_two_values(self):
         """CCT should always return tuple of (h_main, h_bias)."""
+        import warnings
+
         np.random.seed(42)
         X = np.array([1, 2, 3, 4, 5])
         Y = np.array([1, 2, 3, 5, 6])
 
-        result = cct_bandwidth(Y, X, cutoff=3.0)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            result = cct_bandwidth(Y, X, cutoff=3.0)
 
         assert isinstance(result, tuple), "CCT should return tuple"
         assert len(result) == 2, "CCT should return (h_main, h_bias)"

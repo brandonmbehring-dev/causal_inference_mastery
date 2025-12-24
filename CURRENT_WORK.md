@@ -1,29 +1,35 @@
 # Current Work
 
-**Last Updated**: 2025-12-24 [Session 108 - BUG-1 Fix]
+**Last Updated**: 2025-12-24 [Session 109 - BUG-2 Fix]
 
 ---
 
 ## Right Now
 
-**Session 108**: BUG-1 — RDD Kernel Weighted 2SLS ✅ COMPLETE
+**Session 109**: BUG-2 — CCT Bandwidth Clarification ✅ COMPLETE
 
-Fixed kernel weighting in Fuzzy RDD:
+Clarified that `cct_bandwidth()` is an approximation, not true CCT:
 
-**Problem**: `kernel` parameter (triangular/rectangular/epanechnikov) was accepted but never applied to 2SLS estimation. All kernels produced identical results.
+**Problem**: Function claimed to implement CCT (Calonico-Cattaneo-Titiunik 2014) but actually returns IK bandwidth with ad-hoc 1.5× scaling for bias bandwidth.
 
-**Fix**: `src/causal_inference/rdd/fuzzy_rdd.py`
-- Added `_compute_kernel_weights()`: Computes triangular/rectangular/epanechnikov kernel weights
-- Added `_weighted_2sls()`: Weighted two-stage least squares with sandwich variance estimator
-- Modified `FuzzyRDD.fit()` to apply kernel weights in both first and second stage
+**Fix**: `src/causal_inference/rdd/bandwidth.py`
+- Updated docstring with clear warning about approximation
+- Added UserWarning at runtime recommending `rdrobust` for production use
+- Updated API docs in `sharp_rdd.py`, `fuzzy_rdd.py`, and `__init__.py`
+- Function kept for backward compatibility but limitation now transparent
 
 **Validation**:
-- 91/93 RDD tests passing (2 unrelated McCrary xfails)
-- New test: triangular vs rectangular kernels now produce different estimates
-- New test: Epanechnikov vs rectangular produces different estimates
-- New test: Kernel weight shapes verified at boundaries
+- 15/15 bandwidth tests passing
+- New test: Verifies warning is emitted when `cct_bandwidth()` called
+- All RDD tests pass with warnings correctly propagated
 
-**Next**: Session 109 - BUG-2 (CCT bandwidth implementation)
+**Next**: Session 110 - MEDIUM bugs (BUG-3,4,9,10)
+
+---
+
+**Session 108**: BUG-1 — RDD Kernel Weighted 2SLS ✅ COMPLETE
+
+Fixed kernel weighting in Fuzzy RDD by implementing weighted 2SLS.
 
 ---
 
@@ -181,7 +187,8 @@ Implemented Targeted Maximum Likelihood Estimation:
 
 | Session | Date | Focus | Status |
 |---------|------|-------|--------|
-| **108** | 2025-12-24 | **BUG-1: RDD Kernel Weighting** | ✅ |
+| **109** | 2025-12-24 | **BUG-2: CCT Bandwidth Clarification** | ✅ |
+| 108 | 2025-12-24 | BUG-1: RDD Kernel Weighting | ✅ |
 | 107 | 2025-12-24 | BUG-7: SCM Jackknife | ✅ |
 | 106 | 2025-12-24 | BUG-8,5,6: SCM/Import/Stratified | ✅ |
 | 105 | 2025-12-24 | Documentation Update | ✅ |

@@ -153,10 +153,23 @@ def cct_bandwidth(
     bias_correction: bool = True,
 ) -> Tuple[float, float]:
     """
-    Calonico-Cattaneo-Titiunik (2014) optimal bandwidth.
+    CCT-style bandwidth approximation based on Imbens-Kalyanaraman.
 
-    MSE-optimal bandwidth with optional bias correction for
-    robust confidence intervals.
+    .. warning::
+
+        **APPROXIMATION ONLY**: This function does NOT implement the full
+        Calonico-Cattaneo-Titiunik (2014) bandwidth selection algorithm.
+        It returns the IK bandwidth as h_main and uses an ad-hoc 1.5×
+        multiplier for h_bias.
+
+        For production RDD analysis requiring true CCT bandwidth with
+        robust bias correction, use the `rdrobust` R package or
+        `rddensity` Python package.
+
+    This function provides a computationally simple approximation that:
+    - Uses IK bandwidth (Imbens-Kalyanaraman 2012) as the main bandwidth
+    - Applies a 1.5× scaling factor for the bias correction bandwidth
+    - Does NOT implement the iterative regularization from CCT (2014)
 
     Parameters
     ----------
@@ -174,9 +187,30 @@ def cct_bandwidth(
     Returns
     -------
     h_main : float
-        Main bandwidth for point estimate
+        Main bandwidth (equals IK bandwidth)
     h_bias : float
-        Bias correction bandwidth (if bias_correction=True), else same as h_main
+        Bias correction bandwidth (1.5 × h_main if bias_correction=True)
+
+    Notes
+    -----
+    The true CCT bandwidth selection (Calonico, Cattaneo, Titiunik 2014)
+    involves:
+
+    1. Separate regularization for variance and bias components
+    2. Pilot estimation of second and third derivatives
+    3. Iterative bandwidth refinement
+
+    This approximation skips these steps and provides a simpler alternative
+    that may be adequate for exploratory analysis but should NOT be used
+    for final inference in published research.
+
+    References
+    ----------
+    Calonico, S., Cattaneo, M. D., & Titiunik, R. (2014). Robust nonparametric
+        confidence intervals for regression-discontinuity designs. Econometrica.
+
+    Imbens, G. W., & Kalyanaraman, K. (2012). Optimal bandwidth choice for the
+        regression discontinuity estimator. Review of Economic Studies.
 
     Examples
     --------
@@ -187,23 +221,33 @@ def cct_bandwidth(
     >>> X = np.random.uniform(-5, 5, 500)
     >>> Y = X**2 + 2 * (X >= 0) + np.random.normal(0, 1, 500)
     >>> h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0, bias_correction=True)
+    >>> # Note: h_main equals IK bandwidth, h_bias = 1.5 * h_main
     >>> print(f"Main bandwidth: {h_main:.3f}, Bias bandwidth: {h_bias:.3f}")
     Main bandwidth: 1.123, Bias bandwidth: 1.685
     """
+    import warnings
+
+    warnings.warn(
+        "cct_bandwidth() is an APPROXIMATION using IK bandwidth with 1.5× scaling "
+        "for bias bandwidth. For true CCT bandwidth selection with robust bias "
+        "correction, use the 'rdrobust' R package or 'rddensity' Python package.",
+        UserWarning,
+        stacklevel=2,
+    )
+
     # Convert to numpy arrays
     Y = np.asarray(Y).flatten()
     X = np.asarray(X).flatten()
 
-    # For now, use IK bandwidth as approximation for CCT
-    # Full CCT implementation requires iterative procedure (complex)
-    # This provides a reasonable approximation that's MSE-optimal
+    # APPROXIMATION: Use IK bandwidth as base
+    # True CCT requires iterative regularization procedure
     h_ik = imbens_kalyanaraman_bandwidth(Y, X, cutoff, kernel)
 
     h_main = h_ik
 
     if bias_correction:
-        # Bias correction bandwidth is typically larger
-        # CCT recommendation: h_bias ≈ 1.5 * h_main
+        # APPROXIMATION: Use 1.5× multiplier for bias bandwidth
+        # True CCT uses data-driven regularization
         h_bias = 1.5 * h_main
     else:
         h_bias = h_main

@@ -34,127 +34,14 @@ This document tracks known correctness and methodological bugs. Each bug has bee
 **File**: `src/causal_inference/rdd/fuzzy_rdd.py`
 **Fix**: Implemented weighted 2SLS with kernel weights. Added `_compute_kernel_weights()` for triangular/rectangular/epanechnikov kernels. Added `_weighted_2sls()` with sandwich variance estimator. Kernel weights now properly applied in both first and second stage.
 
----
-
-## HIGH Severity (Correctness Issues)
-
-### BUG-2: CCT Bandwidth Mislabeled
+### ✅ BUG-2: CCT Bandwidth Mislabeled — **FIXED in Session 109**
 
 **File**: `src/causal_inference/rdd/bandwidth.py`
-
-**Issue**: `cct_bandwidth()` claims to implement Calonico-Cattaneo-Titiunik but actually returns:
-- Main bandwidth: IK bandwidth (not CCT)
-- Bias bandwidth: 1.5 × IK (ad-hoc scaling)
-
-**Evidence**:
-```python
-h_ik = imbens_kalyanaraman_bandwidth(Y, X, cutoff=0.0)
-h_cct_main, h_cct_bias = cct_bandwidth(Y, X, cutoff=0.0)
-# h_cct_main == h_ik (exactly)
-# h_cct_bias == 1.5 * h_ik (exactly)
-```
-
-**Impact**: Users expecting CCT properties (robust bias correction) get IK with arbitrary scaling.
-
-**Remediation Options**:
-1. Implement real CCT bandwidth (Cattaneo et al. 2014, 2020)
-2. Rename to `cct_approx()` and document approximation
-3. Delegate to `rdrobust` or equivalent external library
-
-**Test**: `tests/validation/audit/test_codex_bugs.py::TestBug2CCTBandwidthMislabeled`
-
----
-
-### BUG-5: test_type_i_error.py Has Broken Imports
-
-**File**: `tests/validation/monte_carlo/test_type_i_error.py`
-
-**Issue**: Uses `causal_inference.*` imports instead of `src.causal_inference.*`, causing ImportError when run.
-
-**Evidence**:
-```python
-# These imports fail:
-from causal_inference.rct.simple_ate import simple_ate
-from causal_inference.did.classic_did import classic_did
-# etc.
-```
-
-**Impact**: Type I error validation tests cannot run. Claims of Type I error control are unverified.
-
-**Remediation**:
-1. Fix imports to use `src.causal_inference.*`
-2. Or fix package structure so both import styles work
-
-**Test**: `tests/validation/audit/test_codex_bugs.py::TestBug5BrokenTypeIErrorImports`
-
----
-
-### BUG-6: Stratified ATE Anti-Conservative SE
-
-**File**: `src/causal_inference/rct/estimators_stratified.py`
-
-**Issue**: When n₁=1 or n₀=1 in a stratum, variance is set to 0. Docstring says "conservative" but setting variance to 0 makes SE **smaller** (anti-conservative).
-
-**Evidence**:
-```python
-# Line 211-212:
-var1 = np.var(y1, ddof=1) if n1 > 1 else 0  # SE too small!
-```
-
-**Impact**: Confidence intervals are too narrow when any stratum has single-unit groups.
-
-**Remediation Options**:
-1. Use pooled variance from other strata
-2. Return `np.nan` and document limitation
-3. Implement conservative bound (largest observed variance)
-
-**Test**: `tests/validation/audit/test_codex_bugs.py::TestBug6StratifiedATEAntiConservative`
-
----
-
-### BUG-7: ASCM Jackknife Not Real Jackknife
-
-**File**: `src/causal_inference/scm/augmented_scm.py`
-
-**Issue**: `_jackknife_se()` renormalizes existing weights after dropping a donor instead of recomputing SCM weights. This is not a proper leave-one-out jackknife.
-
-**Evidence**:
-```python
-# Line ~390-391:
-loo_weights = loo_weights / loo_weights.sum()  # Just renormalize!
-# Should instead call: compute_scm_weights(...)
-```
-
-**Impact**: Jackknife SE underestimates true uncertainty because it doesn't account for how dropping a donor changes optimal weights.
-
-**Remediation**:
-1. Recompute weights inside LOO loop (correct but slower)
-2. Document limitation and recommend bootstrap SE instead
-
-**Test**: `tests/validation/audit/test_codex_bugs.py::TestBug7ASCMJackknifeNotReal`
-
----
-
-### BUG-8: SCM Optimization Silent Failure
-
-**File**: `src/causal_inference/scm/weights.py`
-
-**Issue**: `compute_scm_weights()` tries two optimizers (SLSQP, trust-constr) but if both fail, proceeds silently with whatever weights result, without warning.
-
-**Evidence**:
-```python
-# After first optimizer, checks result.success
-# After fallback optimizer, NO success check - just proceeds
-```
-
-**Impact**: Users may get invalid SCM weights without any warning.
-
-**Remediation**:
-1. Add `result.success` check after fallback optimizer
-2. Raise warning or error if both optimizers fail
-3. Return success flag in result object
-
-**Test**: `tests/validation/audit/test_codex_bugs.py::TestBug8SCMSilentOptimizationFailure`
+**Fix**: Clarified that `cct_bandwidth()` is an approximation, not true CCT:
+- Updated docstring with clear warning that function uses IK bandwidth with 1.5× scaling
+- Added UserWarning at runtime recommending `rdrobust` for production use
+- Updated API docs in `sharp_rdd.py`, `fuzzy_rdd.py`, and `__init__.py`
+- Function kept for backward compatibility but limitation now transparent
 
 ---
 
@@ -243,7 +130,7 @@ Expected output: All tests **PASS** (tests prove bugs exist, not that code is co
 | BUG-6 | HIGH | 106 | ✅ FIXED |
 | BUG-7 | HIGH | 107 | ✅ FIXED |
 | BUG-1 | HIGH | 108 | ✅ FIXED |
-| BUG-2 | HIGH | 109 | Scheduled |
+| BUG-2 | HIGH | 109 | ✅ FIXED |
 | BUG-3 | MEDIUM | 110 | Scheduled |
 | BUG-4 | MEDIUM | 110 | Scheduled |
 | BUG-9 | MEDIUM | 110 | Scheduled |
@@ -252,4 +139,4 @@ Expected output: All tests **PASS** (tests prove bugs exist, not that code is co
 ---
 
 **Last Audit**: Session 83 (2025-12-19)
-**Last Fix Session**: 108 (2025-12-24)
+**Last Fix Session**: 109 (2025-12-24)

@@ -251,7 +251,8 @@ class FuzzyRDD:
         Bandwidth for local regression
         - float: Use specified bandwidth
         - 'ik': Imbens-Kalyanaraman optimal bandwidth
-        - 'cct': Calonico-Cattaneo-Titiunik optimal bandwidth
+        - 'cct': CCT-style approximation (uses IK with 1.5× bias bandwidth).
+          WARNING: This is NOT true CCT. For production use, see rdrobust.
     kernel : {'triangular', 'rectangular'}, default='triangular'
         Kernel function for weighting observations
     inference : {'standard', 'robust'}, default='robust'
