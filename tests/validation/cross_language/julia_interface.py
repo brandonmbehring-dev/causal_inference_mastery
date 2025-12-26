@@ -3799,3 +3799,962 @@ def julia_shift_share_iv(
         "inference": str(solution.inference),
         "alpha": float(solution.alpha),
     }
+
+
+# =============================================================================
+# PRINCIPAL STRATIFICATION (Session 111)
+# =============================================================================
+
+
+def julia_cace_2sls(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+    alpha: float = 0.05,
+    inference: str = "robust",
+) -> Dict[str, Union[float, int, Dict[str, float]]]:
+    """
+    Call Julia cace_2sls via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable (n,).
+    treatment : np.ndarray
+        Treatment received (n,), binary.
+    instrument : np.ndarray
+        Instrument/assignment (n,), binary.
+    covariates : np.ndarray, optional
+        Covariates (n, k). If None, no covariates.
+    alpha : float, default=0.05
+        Significance level.
+    inference : str, default="robust"
+        Inference type: "robust" or "standard".
+
+    Returns
+    -------
+    dict
+        Julia result with cace, se, ci_lower, ci_upper, strata_proportions, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert to Julia-compatible types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(bool))
+    jl_instrument = jl.collect(instrument.astype(bool))
+
+    if covariates is not None:
+        jl_covariates = jl.collect(covariates.astype(np.float64))
+    else:
+        jl_covariates = None
+
+    # Call convenience function
+    result = jl.cace_2sls(
+        jl_outcome,
+        jl_treatment,
+        jl_instrument,
+        covariates=jl_covariates,
+        alpha=alpha,
+        inference=jl.seval(f":{inference}"),
+    )
+
+    # Extract strata proportions
+    strata_props = {
+        "compliers": float(result.strata_proportions.compliers),
+        "always_takers": float(result.strata_proportions.always_takers),
+        "never_takers": float(result.strata_proportions.never_takers),
+        "compliers_se": float(result.strata_proportions.compliers_se),
+    }
+
+    return _format_cace_result(result, strata_props)
+
+
+def _format_cace_result(result, strata_props: Dict[str, float]) -> Dict[str, Union[float, int, Dict]]:
+    """Format Julia CACE result as Python dict."""
+    return {
+        "cace": float(result.cace),
+        "se": float(result.se),
+        "ci_lower": float(result.ci_lower),
+        "ci_upper": float(result.ci_upper),
+        "z_stat": float(result.z_stat),
+        "pvalue": float(result.pvalue),
+        "strata_proportions": strata_props,
+        "first_stage_coef": float(result.first_stage_coef),
+        "first_stage_se": float(result.first_stage_se),
+        "first_stage_f": float(result.first_stage_f),
+        "reduced_form": float(result.reduced_form),
+        "reduced_form_se": float(result.reduced_form_se),
+        "n": int(result.n),
+        "method": str(result.method),
+    }
+
+
+def julia_cace_em(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    max_iter: int = 100,
+    tol: float = 1e-6,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, int, Dict[str, float]]]:
+    """
+    Call Julia cace_em via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable (n,).
+    treatment : np.ndarray
+        Treatment received (n,), binary.
+    instrument : np.ndarray
+        Instrument/assignment (n,), binary.
+    max_iter : int, default=100
+        Maximum EM iterations.
+    tol : float, default=1e-6
+        Convergence tolerance.
+    alpha : float, default=0.05
+        Significance level.
+
+    Returns
+    -------
+    dict
+        Julia result with cace, se, ci_lower, ci_upper, strata_proportions, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert to Julia-compatible types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(bool))
+    jl_instrument = jl.collect(instrument.astype(bool))
+
+    # Call convenience function
+    result = jl.cace_em(
+        jl_outcome, jl_treatment, jl_instrument,
+        max_iter=max_iter, tol=tol, alpha=alpha
+    )
+
+    # Extract strata proportions
+    strata_props = {
+        "compliers": float(result.strata_proportions.compliers),
+        "always_takers": float(result.strata_proportions.always_takers),
+        "never_takers": float(result.strata_proportions.never_takers),
+        "compliers_se": float(result.strata_proportions.compliers_se),
+    }
+
+    return _format_cace_result(result, strata_props)
+
+
+def julia_wald_estimator(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, int, Dict[str, float]]]:
+    """
+    Call Julia wald_estimator via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable (n,).
+    treatment : np.ndarray
+        Treatment received (n,), binary.
+    instrument : np.ndarray
+        Instrument/assignment (n,), binary.
+    alpha : float, default=0.05
+        Significance level.
+
+    Returns
+    -------
+    dict
+        Julia result with cace, se, ci_lower, ci_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert to Julia-compatible types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(bool))
+    jl_instrument = jl.collect(instrument.astype(bool))
+
+    # Call convenience function
+    result = jl.wald_estimator(jl_outcome, jl_treatment, jl_instrument, alpha=alpha)
+
+    # Extract strata proportions
+    strata_props = {
+        "compliers": float(result.strata_proportions.compliers),
+        "always_takers": float(result.strata_proportions.always_takers),
+        "never_takers": float(result.strata_proportions.never_takers),
+        "compliers_se": float(result.strata_proportions.compliers_se),
+    }
+
+    return _format_cace_result(result, strata_props)
+
+
+def _format_cace_result(result, strata_props: Dict[str, float]) -> Dict[str, Union[float, int, Dict]]:
+    """Format Julia CACE result as Python dict."""
+    return {
+        "cace": float(result.cace),
+        "se": float(result.se),
+        "ci_lower": float(result.ci_lower),
+        "ci_upper": float(result.ci_upper),
+        "z_stat": float(result.z_stat),
+        "pvalue": float(result.pvalue),
+        "strata_proportions": strata_props,
+        "first_stage_coef": float(result.first_stage_coef),
+        "first_stage_se": float(result.first_stage_se),
+        "first_stage_f": float(result.first_stage_f),
+        "reduced_form": float(result.reduced_form),
+        "reduced_form_se": float(result.reduced_form_se),
+        "n": int(result.n),
+        "method": str(result.method),
+    }
+
+
+def julia_cace_em(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    max_iter: int = 100,
+    tol: float = 1e-6,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, int, Dict[str, float]]]:
+    """
+    Call Julia cace_em via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable (n,).
+    treatment : np.ndarray
+        Treatment received (n,), binary.
+    instrument : np.ndarray
+        Instrument/assignment (n,), binary.
+    max_iter : int, default=100
+        Maximum EM iterations.
+    tol : float, default=1e-6
+        Convergence tolerance.
+    alpha : float, default=0.05
+        Significance level.
+
+    Returns
+    -------
+    dict
+        Julia result with cace, se, ci_lower, ci_upper, strata_proportions, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert to Julia-compatible types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(bool))
+    jl_instrument = jl.collect(instrument.astype(bool))
+
+    # Call convenience function
+    result = jl.cace_em(
+        jl_outcome, jl_treatment, jl_instrument,
+        max_iter=max_iter, tol=tol, alpha=alpha
+    )
+
+    # Extract strata proportions
+    strata_props = {
+        "compliers": float(result.strata_proportions.compliers),
+        "always_takers": float(result.strata_proportions.always_takers),
+        "never_takers": float(result.strata_proportions.never_takers),
+        "compliers_se": float(result.strata_proportions.compliers_se),
+    }
+
+    return _format_cace_result(result, strata_props)
+
+
+def julia_cace_bayesian(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    prior_alpha: tuple = (1.0, 1.0, 1.0),
+    prior_mu_sd: float = 10.0,
+    quick: bool = True,
+    seed: Optional[int] = None,
+) -> Dict[str, Union[float, int, Dict[str, float]]]:
+    """
+    Call Julia cace_bayesian via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable (n,).
+    treatment : np.ndarray
+        Treatment received (n,), binary.
+    instrument : np.ndarray
+        Instrument/assignment (n,), binary.
+    prior_alpha : tuple
+        Dirichlet prior for strata proportions.
+    prior_mu_sd : float
+        Prior SD for outcome means.
+    quick : bool
+        If True, use fast settings.
+    seed : Optional[int]
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    dict
+        Julia result with cace_mean, cace_sd, cace_hdi_lower, cace_hdi_upper, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Include bayesian module
+    jl.seval('include("src/principal_stratification/bayesian.jl")')
+
+    # Convert to Julia-compatible types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(bool))
+    jl_instrument = jl.collect(instrument.astype(bool))
+
+    # Call convenience function
+    kwargs = {
+        "prior_alpha": prior_alpha,
+        "prior_mu_sd": prior_mu_sd,
+        "quick": quick,
+    }
+    if seed is not None:
+        kwargs["seed"] = seed
+
+    result = jl.cace_bayesian(jl_outcome, jl_treatment, jl_instrument, **kwargs)
+
+    return {
+        "cace_mean": float(result.cace_mean),
+        "cace_sd": float(result.cace_sd),
+        "cace_hdi_lower": float(result.cace_hdi_lower),
+        "cace_hdi_upper": float(result.cace_hdi_upper),
+        "pi_c_mean": float(result.pi_c_mean),
+        "pi_a_mean": float(result.pi_a_mean),
+        "pi_n_mean": float(result.pi_n_mean),
+        "n_samples": int(result.n_samples),
+        "n_chains": int(result.n_chains),
+        "model": str(result.model),
+    }
+
+
+def julia_ps_bounds_monotonicity(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    direct_effect_bound: float = 0.0,
+) -> Dict[str, Union[float, bool, list, str]]:
+    """
+    Call Julia ps_bounds_monotonicity via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable (n,).
+    treatment : np.ndarray
+        Treatment received (n,), binary.
+    instrument : np.ndarray
+        Instrument/assignment (n,), binary.
+    direct_effect_bound : float
+        Maximum direct effect of Z on Y.
+
+    Returns
+    -------
+    dict
+        Julia result with lower_bound, upper_bound, bound_width, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Include bounds module
+    jl.seval('include("src/principal_stratification/bounds.jl")')
+
+    # Convert to Julia-compatible types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_instrument = jl.collect(instrument.astype(np.float64))
+
+    result = jl.ps_bounds_monotonicity(
+        jl_outcome, jl_treatment, jl_instrument,
+        direct_effect_bound=direct_effect_bound
+    )
+
+    return {
+        "lower_bound": float(result.lower_bound),
+        "upper_bound": float(result.upper_bound),
+        "bound_width": float(result.bound_width),
+        "identified": bool(result.identified),
+        "assumptions": list(result.assumptions),
+        "method": str(result.method),
+    }
+
+
+def julia_ps_bounds_no_assumption(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    outcome_support: Optional[tuple] = None,
+) -> Dict[str, Union[float, bool, list, str]]:
+    """
+    Call Julia ps_bounds_no_assumption via juliacall.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Include bounds module
+    jl.seval('include("src/principal_stratification/bounds.jl")')
+
+    # Convert to Julia-compatible types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_instrument = jl.collect(instrument.astype(np.float64))
+
+    if outcome_support is not None:
+        result = jl.ps_bounds_no_assumption(
+            jl_outcome, jl_treatment, jl_instrument,
+            outcome_support=outcome_support
+        )
+    else:
+        result = jl.ps_bounds_no_assumption(jl_outcome, jl_treatment, jl_instrument)
+
+    return {
+        "lower_bound": float(result.lower_bound),
+        "upper_bound": float(result.upper_bound),
+        "bound_width": float(result.bound_width),
+        "identified": bool(result.identified),
+        "assumptions": list(result.assumptions),
+        "method": str(result.method),
+    }
+
+
+def julia_sace_bounds(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    survival: np.ndarray,
+    monotonicity: str = "none",
+) -> Dict[str, Union[float, int, str]]:
+    """
+    Call Julia sace_bounds via juliacall.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable (n,), NaN for non-survivors.
+    treatment : np.ndarray
+        Treatment received (n,), binary.
+    survival : np.ndarray
+        Survival indicator (n,), binary.
+    monotonicity : str
+        Monotonicity assumption.
+
+    Returns
+    -------
+    dict
+        Julia result with sace, se, lower_bound, upper_bound, etc.
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Include sace module
+    jl.seval('include("src/principal_stratification/sace.jl")')
+
+    # Convert to Julia-compatible types
+    jl_outcome = jl.collect(outcome.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_survival = jl.collect(survival.astype(np.float64))
+
+    result = jl.sace_bounds(
+        jl_outcome, jl_treatment, jl_survival,
+        monotonicity=monotonicity
+    )
+
+    return {
+        "sace": float(result.sace),
+        "se": float(result.se),
+        "lower_bound": float(result.lower_bound),
+        "upper_bound": float(result.upper_bound),
+        "proportion_survivors_treat": float(result.proportion_survivors_treat),
+        "proportion_survivors_control": float(result.proportion_survivors_control),
+        "n": int(result.n),
+        "method": str(result.method),
+    }
+
+
+# =============================================================================
+# DML Continuous Treatment Functions (Session 116)
+# =============================================================================
+
+
+def julia_dml_continuous(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    n_folds: int = 5,
+    model: str = "ridge",
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, np.ndarray, int, str]]:
+    """
+    Call Julia dml_continuous via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n,)
+    treatment : np.ndarray
+        Continuous treatment D (n,)
+    covariates : np.ndarray
+        Covariate matrix X (n, p)
+    n_folds : int, default=5
+        Number of cross-fitting folds
+    model : str, default="ridge"
+        Model type for nuisance estimation ("ols" or "ridge")
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with ate, ate_se, cate, ci_lower, ci_upper,
+        fold_estimates, fold_ses, outcome_r2, treatment_r2, n, n_folds
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure covariates is 2D
+    if covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert to Julia-compatible types
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64))
+
+    # Convert model string to Julia Symbol
+    jl_model = jl.seval(f":{model}")
+
+    # Call Julia dml_continuous
+    result = jl.dml_continuous(
+        jl_outcomes, jl_treatment, jl_covariates,
+        n_folds=n_folds, model=jl_model, alpha=alpha
+    )
+
+    return {
+        "ate": float(result.ate),
+        "ate_se": float(result.ate_se),
+        "ci_lower": float(result.ci_lower),
+        "ci_upper": float(result.ci_upper),
+        "cate": np.array([float(c) for c in result.cate]),
+        "method": str(result.method),
+        "fold_estimates": np.array([float(f) for f in result.fold_estimates]),
+        "fold_ses": np.array([float(s) for s in result.fold_ses]),
+        "outcome_r2": float(result.outcome_r2),
+        "treatment_r2": float(result.treatment_r2),
+        "n": int(result.n),
+        "n_folds": int(result.n_folds),
+    }
+
+
+# =============================================================================
+# Panel DML-CRE Functions (Session 117)
+# =============================================================================
+
+
+def julia_dml_cre(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    unit_id: np.ndarray,
+    time: np.ndarray,
+    n_folds: int = 5,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, np.ndarray, int, str]]:
+    """
+    Call Julia dml_cre (binary treatment) via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n_obs,)
+    treatment : np.ndarray
+        Binary treatment D (n_obs,)
+    covariates : np.ndarray
+        Covariate matrix X (n_obs, p)
+    unit_id : np.ndarray
+        Unit identifiers (n_obs,)
+    time : np.ndarray
+        Time period identifiers (n_obs,)
+    n_folds : int, default=5
+        Number of cross-fitting folds
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with ate, ate_se, cate, ci_lower, ci_upper,
+        fold_estimates, fold_ses, outcome_r2, treatment_r2, n_obs, n_units, n_folds, unit_effects
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure covariates is 2D
+    if covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert to Julia-compatible types
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64))
+    jl_unit_id = jl.collect(unit_id.astype(np.int64))
+    jl_time = jl.collect(time.astype(np.int64))
+
+    # Create PanelData in Julia
+    panel = jl.PanelData(jl_outcomes, jl_treatment, jl_covariates, jl_unit_id, jl_time)
+
+    # Call Julia dml_cre
+    result = jl.dml_cre(panel, n_folds=n_folds, alpha=alpha)
+
+    return {
+        "ate": float(result.ate),
+        "ate_se": float(result.ate_se),
+        "ci_lower": float(result.ci_lower),
+        "ci_upper": float(result.ci_upper),
+        "cate": np.array([float(c) for c in result.cate]),
+        "method": str(result.method),
+        "fold_estimates": np.array([float(f) for f in result.fold_estimates]),
+        "fold_ses": np.array([float(s) for s in result.fold_ses]),
+        "outcome_r2": float(result.outcome_r2),
+        "treatment_r2": float(result.treatment_r2),
+        "n_obs": int(result.n_obs),
+        "n_units": int(result.n_units),
+        "n_folds": int(result.n_folds),
+        "unit_effects": np.array([float(u) for u in result.unit_effects]),
+    }
+
+
+def julia_dml_cre_continuous(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    unit_id: np.ndarray,
+    time: np.ndarray,
+    n_folds: int = 5,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, np.ndarray, int, str]]:
+    """
+    Call Julia dml_cre_continuous via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n_obs,)
+    treatment : np.ndarray
+        Continuous treatment D (n_obs,)
+    covariates : np.ndarray
+        Covariate matrix X (n_obs, p)
+    unit_id : np.ndarray
+        Unit identifiers (n_obs,)
+    time : np.ndarray
+        Time period identifiers (n_obs,)
+    n_folds : int, default=5
+        Number of cross-fitting folds
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Julia result with ate, ate_se, cate, ci_lower, ci_upper,
+        fold_estimates, fold_ses, outcome_r2, treatment_r2, n_obs, n_units, n_folds, unit_effects
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure covariates is 2D
+    if covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert to Julia-compatible types
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64))
+    jl_unit_id = jl.collect(unit_id.astype(np.int64))
+    jl_time = jl.collect(time.astype(np.int64))
+
+    # Create PanelData in Julia
+    panel = jl.PanelData(jl_outcomes, jl_treatment, jl_covariates, jl_unit_id, jl_time)
+
+    # Call Julia dml_cre_continuous
+    result = jl.dml_cre_continuous(panel, n_folds=n_folds, alpha=alpha)
+
+    return {
+        "ate": float(result.ate),
+        "ate_se": float(result.ate_se),
+        "ci_lower": float(result.ci_lower),
+        "ci_upper": float(result.ci_upper),
+        "cate": np.array([float(c) for c in result.cate]),
+        "method": str(result.method),
+        "fold_estimates": np.array([float(f) for f in result.fold_estimates]),
+        "fold_ses": np.array([float(s) for s in result.fold_ses]),
+        "outcome_r2": float(result.outcome_r2),
+        "treatment_r2": float(result.treatment_r2),
+        "n_obs": int(result.n_obs),
+        "n_units": int(result.n_units),
+        "n_folds": int(result.n_folds),
+        "unit_effects": np.array([float(u) for u in result.unit_effects]),
+    }
+
+
+# =============================================================================
+# Panel QTE Functions (Session 118)
+# =============================================================================
+
+
+def julia_panel_rif_qte(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    unit_id: np.ndarray,
+    time: np.ndarray,
+    tau: float = 0.5,
+    alpha: float = 0.05,
+    include_covariates: bool = True,
+) -> Dict[str, Union[float, int, str]]:
+    """
+    Call Julia panel_rif_qte via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n_obs,)
+    treatment : np.ndarray
+        Binary treatment D (n_obs,)
+    covariates : np.ndarray
+        Covariate matrix X (n_obs, p)
+    unit_id : np.ndarray
+        Unit identifiers (n_obs,)
+    time : np.ndarray
+        Time period identifiers (n_obs,)
+    tau : float, default=0.5
+        Quantile to estimate
+    alpha : float, default=0.05
+        Significance level
+    include_covariates : bool, default=True
+        Include covariates in RIF regression
+
+    Returns
+    -------
+    dict
+        Julia result with qte, qte_se, ci_lower, ci_upper, quantile,
+        n_obs, n_units, outcome_quantile, density_at_quantile, bandwidth, method
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure covariates is 2D
+    if covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert to Julia-compatible types
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64))
+    jl_unit_id = jl.collect(unit_id.astype(np.int64))
+    jl_time = jl.collect(time.astype(np.int64))
+
+    # Create PanelData in Julia
+    panel = jl.PanelData(jl_outcomes, jl_treatment, jl_covariates, jl_unit_id, jl_time)
+
+    # Call Julia panel_rif_qte
+    result = jl.panel_rif_qte(
+        panel, tau=tau, alpha=alpha, include_covariates=include_covariates
+    )
+
+    return {
+        "qte": float(result.qte),
+        "qte_se": float(result.qte_se),
+        "ci_lower": float(result.ci_lower),
+        "ci_upper": float(result.ci_upper),
+        "quantile": float(result.quantile),
+        "n_obs": int(result.n_obs),
+        "n_units": int(result.n_units),
+        "outcome_quantile": float(result.outcome_quantile),
+        "density_at_quantile": float(result.density_at_quantile),
+        "bandwidth": float(result.bandwidth),
+        "method": str(result.method),
+    }
+
+
+def julia_panel_rif_qte_band(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    unit_id: np.ndarray,
+    time: np.ndarray,
+    quantiles: Optional[np.ndarray] = None,
+    alpha: float = 0.05,
+    include_covariates: bool = True,
+) -> Dict[str, Union[np.ndarray, int, str]]:
+    """
+    Call Julia panel_rif_qte_band via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n_obs,)
+    treatment : np.ndarray
+        Binary treatment D (n_obs,)
+    covariates : np.ndarray
+        Covariate matrix X (n_obs, p)
+    unit_id : np.ndarray
+        Unit identifiers (n_obs,)
+    time : np.ndarray
+        Time period identifiers (n_obs,)
+    quantiles : np.ndarray, optional
+        Quantiles to estimate. Default: [0.1, 0.25, 0.5, 0.75, 0.9]
+    alpha : float, default=0.05
+        Significance level
+    include_covariates : bool, default=True
+        Include covariates in RIF regression
+
+    Returns
+    -------
+    dict
+        Julia result with quantiles, qtes, qte_ses, ci_lowers, ci_uppers,
+        n_obs, n_units, method
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure covariates is 2D
+    if covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert to Julia-compatible types
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64))
+    jl_unit_id = jl.collect(unit_id.astype(np.int64))
+    jl_time = jl.collect(time.astype(np.int64))
+
+    # Create PanelData in Julia
+    panel = jl.PanelData(jl_outcomes, jl_treatment, jl_covariates, jl_unit_id, jl_time)
+
+    # Call Julia panel_rif_qte_band
+    if quantiles is not None:
+        jl_quantiles = jl.collect(quantiles.astype(np.float64))
+        result = jl.panel_rif_qte_band(
+            panel, quantiles=jl_quantiles, alpha=alpha, include_covariates=include_covariates
+        )
+    else:
+        result = jl.panel_rif_qte_band(
+            panel, alpha=alpha, include_covariates=include_covariates
+        )
+
+    return {
+        "quantiles": np.array([float(q) for q in result.quantiles]),
+        "qtes": np.array([float(q) for q in result.qtes]),
+        "qte_ses": np.array([float(s) for s in result.qte_ses]),
+        "ci_lowers": np.array([float(c) for c in result.ci_lowers]),
+        "ci_uppers": np.array([float(c) for c in result.ci_uppers]),
+        "n_obs": int(result.n_obs),
+        "n_units": int(result.n_units),
+        "method": str(result.method),
+    }
+
+
+def julia_panel_unconditional_qte(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    unit_id: np.ndarray,
+    time: np.ndarray,
+    tau: float = 0.5,
+    n_bootstrap: int = 1000,
+    alpha: float = 0.05,
+    cluster_bootstrap: bool = True,
+    random_state: Optional[int] = None,
+) -> Dict[str, Union[float, int, str]]:
+    """
+    Call Julia panel_unconditional_qte via juliacall.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n_obs,)
+    treatment : np.ndarray
+        Binary treatment D (n_obs,)
+    covariates : np.ndarray
+        Covariate matrix X (n_obs, p)
+    unit_id : np.ndarray
+        Unit identifiers (n_obs,)
+    time : np.ndarray
+        Time period identifiers (n_obs,)
+    tau : float, default=0.5
+        Quantile to estimate
+    n_bootstrap : int, default=1000
+        Number of bootstrap replications
+    alpha : float, default=0.05
+        Significance level
+    cluster_bootstrap : bool, default=True
+        Use cluster bootstrap
+    random_state : int, optional
+        Random seed
+
+    Returns
+    -------
+    dict
+        Julia result with qte, qte_se, ci_lower, ci_upper, quantile,
+        n_obs, n_units, outcome_quantile, density_at_quantile, bandwidth, method
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Ensure covariates is 2D
+    if covariates.ndim == 1:
+        covariates = covariates.reshape(-1, 1)
+
+    # Convert to Julia-compatible types
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(np.float64))
+    jl_covariates = jl.collect(covariates.astype(np.float64))
+    jl_unit_id = jl.collect(unit_id.astype(np.int64))
+    jl_time = jl.collect(time.astype(np.int64))
+
+    # Create PanelData in Julia
+    panel = jl.PanelData(jl_outcomes, jl_treatment, jl_covariates, jl_unit_id, jl_time)
+
+    # Call Julia panel_unconditional_qte
+    if random_state is not None:
+        result = jl.panel_unconditional_qte(
+            panel,
+            tau=tau,
+            n_bootstrap=n_bootstrap,
+            alpha=alpha,
+            cluster_bootstrap=cluster_bootstrap,
+            random_state=random_state,
+        )
+    else:
+        result = jl.panel_unconditional_qte(
+            panel,
+            tau=tau,
+            n_bootstrap=n_bootstrap,
+            alpha=alpha,
+            cluster_bootstrap=cluster_bootstrap,
+        )
+
+    return {
+        "qte": float(result.qte),
+        "qte_se": float(result.qte_se),
+        "ci_lower": float(result.ci_lower),
+        "ci_upper": float(result.ci_upper),
+        "quantile": float(result.quantile),
+        "n_obs": int(result.n_obs),
+        "n_units": int(result.n_units),
+        "outcome_quantile": float(result.outcome_quantile),
+        "density_at_quantile": float(result.density_at_quantile),
+        "bandwidth": float(result.bandwidth),
+        "method": str(result.method),
+    }

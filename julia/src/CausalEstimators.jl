@@ -199,6 +199,19 @@ include("bayesian/bayesian_propensity.jl")
 include("bayesian/bayesian_dr.jl")
 include("bayesian/hierarchical_ate.jl")
 
+# Principal Stratification (Session 111)
+include("principal_stratification/types.jl")
+include("principal_stratification/cace.jl")
+
+# DML Continuous Treatment (Session 116)
+include("cate/dml_continuous.jl")
+
+# Panel DML-CRE (Session 117)
+include("panel/dml_cre.jl")
+
+# Panel QTE (Session 118)
+include("panel/panel_qte.jl")
+
 # Exports
 
 ## Abstract types
@@ -236,7 +249,7 @@ export SharpRDD, FuzzyRDD
 export TSLS, LIML, GMM, AndersonRubin, ConditionalLR, OLS
 export ClassicDiD, EventStudy, StaggeredTWFE, CallawaySantAnna, SunAbraham
 export ObservationalIPW, DoublyRobust, TMLE
-export SLearner, TLearner, XLearner, RLearner, DoubleMachineLearning
+export SLearner, TLearner, XLearner, RLearner, DoubleMachineLearning, DMLContinuous
 export SyntheticControl, AugmentedSC
 export EValue, RosenbaumBounds
 export SharpRKD, FuzzyRKD
@@ -248,7 +261,7 @@ export ShiftShareIV
 ## Solution types
 export RCTSolution, PSMSolution, RDDSolution, FuzzyRDDSolution, IVSolution, DiDSolution
 export IPWSolution, DRSolution, TMLESolution, RKDSolution, FuzzyRKDSolution
-export CATESolution
+export CATESolution, DMLContinuousResult
 export SCMSolution
 export EValueSolution, RosenbaumSolution
 export EffectType, RR, OR, HR, SMD, ATE, effect_type_from_symbol
@@ -360,5 +373,24 @@ export BayesianPropensityResult, StratumInfo
 export bayesian_propensity, bayesian_propensity_stratified, bayesian_propensity_logistic
 export BayesianDRResult, bayesian_dr_ate
 export HierarchicalATEResult, hierarchical_bayesian_ate
+
+## Principal Stratification types and functions (Session 111)
+export AbstractPSProblem, AbstractPSEstimator, AbstractPSSolution
+export CACEProblem, CACESolution, StrataProportions
+export CACETwoSLS, WaldEstimator
+export cace_2sls, wald_estimator
+
+## DML Continuous Treatment (Session 116)
+export dml_continuous
+
+## Panel DML-CRE types and functions (Session 117)
+export PanelData, DMLCREResult
+export n_obs, n_units, n_periods, n_covariates, is_balanced
+export get_unique_units, get_unit_indices, compute_unit_means, compute_treatment_mean
+export dml_cre, dml_cre_continuous
+
+## Panel QTE types and functions (Session 118)
+export PanelQTEResult, PanelQTEBandResult
+export panel_rif_qte, panel_rif_qte_band, panel_unconditional_qte
 
 end # module CausalEstimators

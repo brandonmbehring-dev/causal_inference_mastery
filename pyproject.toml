@@ -39,6 +39,13 @@ mcmc = [
     "pymc>=5.10",
     "arviz>=0.18",
 ]
+bayesian = [
+    "pymc>=5.10",
+    "arviz>=0.18",
+]
+r-triangulation = [
+    "rpy2>=3.5",
+]
 dev = [
     "pytest>=7.4.0",
     "pytest-cov>=4.1.0",
@@ -174,5 +181,6 @@ module = [
     "causaldata.*",
     "pymc.*",
     "arviz.*",
+    "rpy2.*",
 ]
 ignore_missing_imports = true
