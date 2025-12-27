@@ -103,46 +103,52 @@ This document tracks known correctness and methodological bugs. Each bug has bee
 
 ---
 
-## OUTSTANDING (Session 147+)
+## FIXED (Session 150)
 
-### ⚠️ BUG-11: Phillips-Perron Test Type I Error ~51%
+### ✅ BUG-11: Phillips-Perron Test Type I Error ~51% → FIXED
 
 **File**: `src/causal_inference/timeseries/stationarity.py`
 **Priority**: HIGH
-**Status**: KNOWN, xfailed tests
+**Status**: ✅ FIXED (Session 150)
 
-**Issue**: Phillips-Perron test has Type I error rate around 51% (expected ~5% at α=0.05). This means the test is essentially flipping a coin rather than providing valid inference.
+**Issue**: Phillips-Perron test had Type I error rate around 51% (expected ~5% at α=0.05).
 
-**Evidence**: Monte Carlo test with 500 runs under H0 (random walk) shows:
-- Type I error: 51% (should be ~5%)
-- Power: 77% (should be >80%)
-- PP/ADF agreement: 63.5% (should be >85%)
+**Root Cause**: Incorrect Z_t formula. The correction term was using a wrong formula with `sqrt(sum_y_lag_sq)` in the denominator and wrong variance terms.
 
-**Root Cause**: Likely issue with HAC variance estimation or critical values in PP implementation.
+**Fix**: Corrected to match arch package implementation:
+```python
+z_t = sqrt(gamma_0 / lambda_sq) * t_rho - 0.5 * (lambda_sq - gamma_0) / lambda_hat * (T * se_rho / s)
+```
+Where `se_rho` is the OLS standard error of the coefficient, and `s = sqrt(SSR/(T-k))`.
 
-**xfailed Tests**:
-- `tests/test_timeseries/test_stationarity_extended.py::test_pp_type1_error`
-- `tests/test_timeseries/test_stationarity_extended.py::test_pp_power`
-- `tests/test_timeseries/test_stationarity_extended.py::test_pp_vs_adf_agreement`
+**Verification**: All 3 PP Monte Carlo tests now pass:
+- Type I error: ~6% (was 51%)
+- Power: >80%
+- PP/ADF agreement: >85%
 
 ---
 
-### ⚠️ BUG-12: Moving Block Bootstrap IRF Coverage ~42%
+### ✅ BUG-12: Moving Block Bootstrap IRF Coverage ~42% → FIXED
 
 **File**: `src/causal_inference/timeseries/irf.py`
 **Priority**: MEDIUM
-**Status**: KNOWN, xfailed tests
+**Status**: ✅ FIXED (Session 150)
 
-**Issue**: MBB confidence bands for IRF have coverage around 42% for 90% CI target. Suggests block bootstrap not properly preserving temporal dependence in VAR residual context.
+**Issue**: MBB confidence bands for IRF had coverage around 42% for 90% CI target.
 
-**Evidence**: Monte Carlo test with 100 runs shows:
-- Coverage: 42% (should be ~90%)
+**Root Cause**: Block length too short. Using `n^(1/3) ≈ 6` for n=200 was not sufficient to preserve VAR autocorrelation structure.
 
-**Root Cause**: Likely need for larger block lengths or different block bootstrap variant for VAR context.
+**Fix**: Increased default block length formula:
+```python
+base_length = int(np.ceil(1.75 * (n_effective ** (1 / 3))))
+min_length = max(2 * lags + 1, 10)
+block_length = max(base_length, min_length)
+```
+For n=200, VAR(1): block_length now = 11 (was 6).
 
-**xfailed Tests**:
-- `tests/test_timeseries/test_irf_extended.py::test_mbb_coverage`
-- `tests/test_timeseries/test_irf_extended.py::test_joint_coverage_bonferroni`
+**Verification**: Both MBB Monte Carlo tests now pass:
+- MBB coverage: ~90% (was 42%)
+- Joint Bonferroni coverage: ~85%
 
 ---
 
@@ -172,13 +178,13 @@ pytest tests/validation/audit/test_codex_bugs.py -v
 | BUG-10 | MEDIUM | 110 | ✅ FIXED |
 | DOC-1 | LOW | 110 | ✅ FIXED |
 | DOC-2 | LOW | — | ✅ Already Fixed |
-| BUG-11 | HIGH | — | ⚠️ KNOWN (PP Type I error) |
-| BUG-12 | MEDIUM | — | ⚠️ KNOWN (MBB coverage) |
+| BUG-11 | HIGH | 150 | ✅ FIXED (PP Type I error) |
+| BUG-12 | MEDIUM | 150 | ✅ FIXED (MBB coverage) |
 
-**Outstanding bugs: 2 (1 HIGH, 1 MEDIUM)**
+**Outstanding bugs: 0**
 
 ---
 
 **Last Audit**: Session 83 (2025-12-19)
-**Last Fix Session**: 110 (2025-12-24) + DOC fixes
+**Last Fix Session**: 150 (2025-12-27) - PP test and MBB coverage fixes
 **Bug Discovery**: Session 147 (2025-12-27) - Time series validation

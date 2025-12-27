@@ -356,7 +356,6 @@ class TestStationarityMonteCarlo:
         assert power > 0.70, f"KPSS power {power:.2%} too low"
 
     @pytest.mark.slow
-    @pytest.mark.xfail(reason="PP test Type I error ~51% indicates implementation issue - needs investigation")
     def test_pp_type1_error(self):
         """PP Type I error should be close to alpha under H0."""
         n_runs = 500
@@ -377,7 +376,6 @@ class TestStationarityMonteCarlo:
         assert 0.02 < type1_rate < 0.12, f"Type I error {type1_rate:.2%} outside bounds"
 
     @pytest.mark.slow
-    @pytest.mark.xfail(reason="PP power below target - related to Type I error issue")
     def test_pp_power(self):
         """PP should have high power against stationary AR(1)."""
         n_runs = 200
@@ -400,7 +398,6 @@ class TestStationarityMonteCarlo:
         assert power > 0.80, f"PP power {power:.2%} too low"
 
     @pytest.mark.slow
-    @pytest.mark.xfail(reason="PP/ADF agreement low - related to PP implementation issue")
     def test_pp_vs_adf_agreement(self):
         """PP and ADF should agree on most cases."""
         n_runs = 200

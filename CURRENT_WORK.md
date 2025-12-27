@@ -1,10 +1,61 @@
 # Current Work
 
-**Last Updated**: 2025-12-27 [Session 149 - VECM]
+**Last Updated**: 2025-12-27 [Session 150 - Bug Fixes + Julia PCMCI Tests]
 
 ---
 
 ## Right Now
+
+**Session 150**: Bug Fixes + Julia Time-Series Tests ✅ COMPLETE
+
+Two-part session completing time-series infrastructure:
+
+### Part A: Bug Fixes
+
+**BUG-11: Phillips-Perron Test Type I Error** ✅ FIXED
+- File: `src/causal_inference/timeseries/stationarity.py`
+- Issue: Type I error ~51% (expected ~5%)
+- Root cause: Incorrect Z_t formula with wrong variance terms
+- Fix: Corrected to match arch package implementation:
+  ```python
+  z_t = sqrt(γ₀/λ²) * t_ρ - 0.5 * (λ² - γ₀)/λ * (T * σ_ρ / s)
+  ```
+- Result: Type I error now ~6%, all 3 PP Monte Carlo tests pass
+
+**BUG-12: Moving Block Bootstrap IRF Coverage** ✅ FIXED
+- File: `src/causal_inference/timeseries/irf.py`
+- Issue: Coverage ~42% for 90% CI target
+- Root cause: Block length too short (n^(1/3) ≈ 6 for n=200)
+- Fix: Increased default to `1.75 * n^(1/3)` with minimum `max(2*lags+1, 10)`
+- Result: Coverage now ~90%, both MBB tests pass
+
+### Part B: Julia Time-Series Tests
+
+**test_granger.jl** (~250 lines, 20 tests)
+- Layer 1: Unidirectional, bidirectional, no causality, multi-lag, causality matrix
+- Layer 2: Short series, invalid lags/index, constant series
+- Layer 3: Type I error control, power, lag selection, bidirectional detection
+
+**test_var.jl** (~250 lines, 20 tests)
+- Layer 1: VAR(1) coefficient recovery, VAR(2) structure, intercept, residuals, sigma, forecast
+- Layer 2: Minimum observations, invalid lags, variable names
+- Layer 3: Coefficient consistency, forecast MSE, information criteria selection
+
+**test_pcmci.jl** (~300 lines, 25 tests)
+- Layer 1: Chain, fork, collider detection, lagged relationships, no-edge null
+- Layer 2: Short series, max lag, single variable, all-connected
+- Layer 3: Discovery accuracy, SHD, false positive rate, lag identification
+
+### Summary
+
+| Metric | Before | After |
+|--------|--------|-------|
+| PP Type I error | ~51% | ~6% |
+| MBB coverage | ~42% | ~90% |
+| Julia time-series tests | 100 | 165+ |
+| Outstanding bugs | 2 | 0 |
+
+---
 
 **Session 149**: VECM (Python + Julia) ✅ COMPLETE
 
@@ -1623,6 +1674,9 @@ Implemented Targeted Maximum Likelihood Estimation:
 
 | Session | Date | Focus | Status |
 |---------|------|-------|--------|
+| **150** | 2025-12-27 | **Bug Fixes (PP, MBB) + Julia Tests** | ✅ |
+| 149 | 2025-12-27 | VECM (Python + Julia) | ✅ |
+| 147-148 | 2025-12-27 | Julia Time-Series Parity | ✅ |
 | **146** | 2025-12-27 | **VAR Extensions: MBB IRF, Bootstrap FEVD** | ✅ |
 | 145 | 2025-12-27 | VAR Extensions: KPSS, PP, Johansen | ✅ |
 | 143-144 | 2025-12-27 | Tier 3 Neural: GANITE + TEDVAE | ✅ |

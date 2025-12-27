@@ -476,9 +476,12 @@ def moving_block_bootstrap_irf(
     lags = svar_result.lags
     n_effective = n_obs - lags
 
-    # Default block length: T^(1/3)
+    # Default block length for VAR MBB: should preserve autocorrelation structure
+    # Use 1.75 * n^(1/3) (Politis & Romano 1994) with minimum for VAR dependence
     if block_length is None:
-        block_length = max(1, int(np.ceil(n_effective ** (1 / 3))))
+        base_length = int(np.ceil(1.75 * (n_effective ** (1 / 3))))
+        min_length = max(2 * lags + 1, 10)  # At least 2*lags or 10 observations
+        block_length = max(base_length, min_length)
 
     if block_length > n_effective:
         raise ValueError(
@@ -779,9 +782,12 @@ def moving_block_bootstrap_irf_joint(
     lags = svar_result.lags
     n_effective = n_obs - lags
 
-    # Default block length: T^(1/3)
+    # Default block length for VAR MBB: should preserve autocorrelation structure
+    # Use 1.75 * n^(1/3) (Politis & Romano 1994) with minimum for VAR dependence
     if block_length is None:
-        block_length = max(1, int(np.ceil(n_effective ** (1 / 3))))
+        base_length = int(np.ceil(1.75 * (n_effective ** (1 / 3))))
+        min_length = max(2 * lags + 1, 10)  # At least 2*lags or 10 observations
+        block_length = max(base_length, min_length)
 
     # Storage for bootstrap IRFs
     irf_boots = np.zeros((n_bootstrap, n_vars, n_vars, horizons + 1))

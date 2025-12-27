@@ -743,7 +743,17 @@ def phillips_perron_test(
         lambda_sq = gamma_0
 
     # Step 3: Compute PP Z_t statistic
-    # Z_t = sqrt(s^2 / lambda^2) * t_rho - T * (lambda^2 - s^2) / (2 * lambda * s_rho)
+    # Formula (matching arch package implementation):
+    # Z_t = sqrt(γ₀/λ²) * t_ρ - 0.5 * (λ² - γ₀)/λ * (T * σ_ρ / s)
+    #
+    # Where:
+    #   γ₀ = SSR/T (short-run variance, no DoF adjustment)
+    #   λ² = Newey-West long-run variance
+    #   t_ρ = ρ̂/σ_ρ (OLS t-statistic)
+    #   σ_ρ = OLS standard error of ρ
+    #   s = sqrt(SSR/(T-k)) (DoF-adjusted std)
+    #
+    # Reference: Phillips & Perron (1988), arch package unitroot.py
 
     # Compute OLS standard error of rho
     XtX_inv = np.linalg.inv(X.T @ X)
@@ -752,21 +762,20 @@ def phillips_perron_test(
     # OLS t-statistic
     t_rho = rho_hat / se_rho
 
-    # Compute correction factor
+    # DoF-adjusted standard deviation
     s = np.sqrt(s2)
     lambda_hat = np.sqrt(lambda_sq)
 
-    # Standard error of regression (for the x'x term)
-    sum_y_lag_sq = np.sum((y_lag - np.mean(y_lag)) ** 2)
-
-    # PP Z_t statistic
-    ratio = s / lambda_hat
-    correction = (T * (lambda_sq - s2)) / (2 * lambda_hat * se_rho * np.sqrt(sum_y_lag_sq))
-
-    z_t = ratio * t_rho - correction
+    # PP Z_t statistic (correct formula from arch)
+    z_t = (
+        np.sqrt(gamma_0 / lambda_sq) * t_rho
+        - 0.5 * ((lambda_sq - gamma_0) / lambda_hat) * (T * se_rho / s)
+    )
 
     # PP Z_rho statistic (alternative form)
-    z_rho = T * rho_hat - (T**2 * (lambda_sq - s2)) / (2 * sum_y_lag_sq)
+    # Z_ρ = T * ρ̂ - 0.5 * (T² * σ²_ρ / s²) * (λ² - γ₀)
+    se_rho_sq = se_rho**2
+    z_rho = T * rho_hat - 0.5 * (T**2 * se_rho_sq / s2) * (lambda_sq - gamma_0)
 
     # Step 4: Get critical values (same as ADF) and p-value
     critical_values = ADF_CRITICAL_VALUES.get(regression, ADF_CRITICAL_VALUES["c"])

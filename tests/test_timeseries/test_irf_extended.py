@@ -338,7 +338,6 @@ class TestMBBIRFMonteCarlo:
     """Monte Carlo validation for MBB IRF."""
 
     @pytest.mark.slow
-    @pytest.mark.xfail(reason="MBB coverage ~42% suggests block bootstrap needs tuning for VAR residuals")
     def test_mbb_coverage(self):
         """MBB confidence bands should have approximately correct coverage."""
         n_runs = 100
@@ -395,7 +394,6 @@ class TestMBBIRFMonteCarlo:
         assert 0.80 < coverage < 0.98, f"MBB coverage {coverage:.2%} outside bounds"
 
     @pytest.mark.slow
-    @pytest.mark.xfail(reason="Joint Bonferroni coverage ~82% slightly below 85% target")
     def test_joint_coverage_bonferroni(self):
         """Joint Bonferroni bands should control family-wise error."""
         n_runs = 50
