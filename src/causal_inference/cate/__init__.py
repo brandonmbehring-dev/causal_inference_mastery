@@ -28,9 +28,10 @@ References
   Factors." AAAI 2021.
 """
 
-from .base import CATEResult
+from .base import CATEResult, OMLResult
 from .meta_learners import s_learner, t_learner, x_learner, r_learner
 from .dml import double_ml
+from .oml import irm_dml
 from .dml_continuous import dml_continuous, DMLContinuousResult
 from .causal_forest import causal_forest
 from .dragonnet import dragonnet
@@ -47,12 +48,15 @@ from .latent_cate import factor_analysis_cate, ppca_cate, gmm_stratified_cate
 
 __all__ = [
     "CATEResult",
+    "OMLResult",
     # Linear meta-learners
     "s_learner",
     "t_learner",
     "x_learner",
     "r_learner",
     "double_ml",
+    # OML / IRM
+    "irm_dml",
     "dml_continuous",
     "DMLContinuousResult",
     # Tree-based

@@ -588,3 +588,99 @@ function Dragonnet(
     )
     Dragonnet(; backend, config)
 end
+
+
+# =============================================================================
+# OML Estimators (Session 153)
+# =============================================================================
+
+"""
+    IRMEstimator <: AbstractCATEEstimator
+
+Interactive Regression Model (IRM) with K-fold cross-fitting.
+
+IRM extends Double ML to the fully flexible model Y = g(T, X) + U,
+providing doubly robust estimation of treatment effects.
+
+# Algorithm
+1. Split data into K folds
+2. For each fold k:
+   - Fit g0(X) = E[Y|T=0, X] on control units of OTHER folds
+   - Fit g1(X) = E[Y|T=1, X] on treated units of OTHER folds
+   - Fit m(X) = P(T=1|X) on ALL units of OTHER folds
+   - Predict on fold k (out-of-sample)
+3. Compute doubly robust score:
+   ψ = (g1(X) - g0(X)) + T(Y-g1)/m - (1-T)(Y-g0)/(1-m) - θ
+4. ATE = mean of plug-in + IPW corrections
+
+# Fields
+- `n_folds::Int`: Number of cross-fitting folds (default: 5)
+- `model::Symbol`: Base learner (:ols, :ridge)
+- `target::Symbol`: Target parameter (:ate or :atte)
+
+# Comparison with DoubleMachineLearning (PLR)
+- PLR: Y = θ*T + g(X) + U (treatment effect enters linearly)
+- IRM: Y = g(T, X) + U (fully flexible in treatment)
+- PLR requires outcome model correctly specified
+- IRM is doubly robust: consistent if propensity OR outcome correct
+
+# Double Robustness
+The IRM score has the property that E[ψ] = 0 if either:
+- The propensity model m(X) is correctly specified, OR
+- The outcome models g0(X), g1(X) are correctly specified
+
+This provides insurance against model misspecification.
+
+# References
+- Chernozhukov et al. (2018). "Double/debiased machine learning"
+- Robins & Rotnitzky (1995). "Semiparametric efficiency"
+
+# Example
+```julia
+using CausalEstimators
+
+problem = CATEProblem(Y, T, X, (alpha=0.05,))
+
+# Estimate ATE with IRM
+solution = solve(problem, IRMEstimator())
+println("ATE: \$(solution.ate) ± \$(solution.se)")
+
+# Estimate ATTE (effect on treated)
+solution_atte = solve(problem, IRMEstimator(target=:atte))
+println("ATTE: \$(solution_atte.ate)")
+```
+"""
+struct IRMEstimator <: AbstractCATEEstimator
+    n_folds::Int
+    model::Symbol
+    target::Symbol
+
+    function IRMEstimator(;
+        n_folds::Int = 5,
+        model::Symbol = :ridge,
+        target::Symbol = :ate
+    )
+        if n_folds < 2
+            throw(ArgumentError(
+                "CRITICAL ERROR: Invalid IRMEstimator configuration.\n" *
+                "Function: IRMEstimator\n" *
+                "n_folds must be >= 2, got $n_folds"
+            ))
+        end
+        if model ∉ (:ols, :ridge)
+            throw(ArgumentError(
+                "CRITICAL ERROR: Invalid IRMEstimator configuration.\n" *
+                "Function: IRMEstimator\n" *
+                "model must be :ols or :ridge, got :$model"
+            ))
+        end
+        if target ∉ (:ate, :atte)
+            throw(ArgumentError(
+                "CRITICAL ERROR: Invalid IRMEstimator configuration.\n" *
+                "Function: IRMEstimator\n" *
+                "target must be :ate or :atte, got :$target"
+            ))
+        end
+        new(n_folds, model, target)
+    end
+end

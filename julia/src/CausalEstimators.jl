@@ -133,6 +133,7 @@ include("cate/x_learner.jl")
 include("cate/r_learner.jl")
 include("cate/dml.jl")
 include("cate/dragonnet.jl")  # Session 152: Neural CATE
+include("cate/oml.jl")  # Session 153: OML/IRM
 
 # Synthetic Control Methods (Session 47)
 include("scm/types.jl")
@@ -267,6 +268,7 @@ export ClassicDiD, EventStudy, StaggeredTWFE, CallawaySantAnna, SunAbraham
 export ObservationalIPW, DoublyRobust, TMLE
 export SLearner, TLearner, XLearner, RLearner, DoubleMachineLearning, DMLContinuous
 export Dragonnet, DragonNetConfig  # Session 152: Neural CATE
+export IRMEstimator  # Session 153: OML/IRM
 export SyntheticControl, AugmentedSC
 export EValue, RosenbaumBounds
 export SharpRKD, FuzzyRKD

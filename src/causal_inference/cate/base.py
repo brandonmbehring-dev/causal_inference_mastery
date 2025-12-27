@@ -35,6 +35,44 @@ class CATEResult(TypedDict):
     method: str
 
 
+class OMLResult(TypedDict):
+    """Return type for Orthogonal Machine Learning estimators.
+
+    Extends CATEResult with OML-specific fields for target parameter
+    and score function type.
+
+    Attributes
+    ----------
+    cate : np.ndarray
+        Individual treatment effects τ(xᵢ) for each unit. Shape (n,).
+    ate : float
+        Average treatment effect (or ATTE if target="atte").
+    ate_se : float
+        Standard error of the ATE/ATTE estimate.
+    ci_lower : float
+        Lower bound of (1-alpha)% confidence interval.
+    ci_upper : float
+        Upper bound of (1-alpha)% confidence interval.
+    method : str
+        Name of the estimation method (e.g., "irm_dml").
+    target : str
+        Target parameter: "ate" (Average Treatment Effect) or
+        "atte" (Average Treatment Effect on Treated).
+    score_type : str
+        Score function type: "irm" (Interactive Regression Model, doubly robust)
+        or "plr" (Partially Linear Regression).
+    """
+
+    cate: np.ndarray
+    ate: float
+    ate_se: float
+    ci_lower: float
+    ci_upper: float
+    method: str
+    target: str
+    score_type: str
+
+
 def validate_cate_inputs(
     outcomes: np.ndarray,
     treatment: np.ndarray,

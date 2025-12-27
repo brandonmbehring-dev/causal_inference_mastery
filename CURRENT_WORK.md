@@ -1,10 +1,68 @@
 # Current Work
 
-**Last Updated**: 2025-12-27 [Session 152 - Julia DragonNet (Neural CATE)]
+**Last Updated**: 2025-12-27 [Session 153 - Orthogonal Machine Learning (OML)]
 
 ---
 
 ## Right Now
+
+**Session 153**: Orthogonal Machine Learning (OML) ✅ COMPLETE
+
+Extended DML to full OML framework with Interactive Regression Model (IRM) and doubly robust scores.
+
+### Key Innovation
+
+**DML (PLR) vs OML (IRM)**:
+- PLR: Y = θT + g(X) + U (treatment linear, requires outcome model correct)
+- IRM: Y = g(T,X) + U (fully flexible, doubly robust)
+
+IRM score: ψ = (g₁-g₀) + T(Y-g₁)/m - (1-T)(Y-g₀)/(1-m) - θ
+
+Consistent if **either** propensity OR outcome model correctly specified.
+
+### Python Implementation (~380 lines)
+
+**oml.py** (~280 lines)
+- `_cross_fit_irm_nuisance()` - separate g0, g1 on control/treated subsets
+- `_irm_score()` - doubly robust influence function
+- `_atte_score()` - ATTE-specific influence function
+- `irm_dml()` - main entry with ATE/ATTE targets
+
+**base.py** (+40 lines)
+- `OMLResult` TypedDict with target and score_type fields
+
+### Julia Implementation (~300 lines)
+
+**oml.jl** (~250 lines)
+- `_cross_fit_irm_nuisance()` - K-fold cross-fitting for IRM
+- `_irm_score()`, `_atte_score()` - influence functions
+- `solve(::CATEProblem, ::IRMEstimator)` - main entry
+
+**types.jl** (+95 lines)
+- `IRMEstimator <: AbstractCATEEstimator` with n_folds, model, target
+
+### Tests (53 passing)
+
+**Python test_oml.py** (24 tests)
+- Layer 1: 7 known-answer (constant effect, heterogeneous, ATTE)
+- Layer 2: 8 adversarial (confounded, high-dim, extreme propensity)
+- Layer 3: 5 Monte Carlo (bias, coverage, doubly robust property)
+
+**Julia test_oml.jl** (29 tests)
+- Layer 1: 7 known-answer tests
+- Layer 2: 8 adversarial tests
+- Comparison: IRM vs DML
+
+### Summary
+
+| Metric | Value |
+|--------|-------|
+| Python lines | ~380 |
+| Julia lines | ~345 |
+| New tests | 53 |
+| Targets | ATE, ATTE |
+
+---
 
 **Session 152**: Julia DragonNet (Neural CATE) ✅ COMPLETE
 
