@@ -62,6 +62,7 @@ from causal_inference.timeseries.types import (
     KPSSResult,
     PPResult,
     JohansenResult,
+    VECMResult,
 )
 
 from causal_inference.timeseries.granger import (
@@ -160,6 +161,13 @@ from causal_inference.timeseries.fevd import (
     bootstrap_fevd,
 )
 
+from causal_inference.timeseries.vecm import (
+    vecm_estimate,
+    vecm_forecast,
+    vecm_granger_causality,
+    compute_error_correction_term,
+)
+
 __all__ = [
     # Types
     "GrangerResult",
@@ -170,6 +178,7 @@ __all__ = [
     "KPSSResult",
     "PPResult",
     "JohansenResult",
+    "VECMResult",
     # Granger
     "granger_causality",
     "granger_causality_matrix",
@@ -242,4 +251,9 @@ __all__ = [
     "fevd_convergence",
     "variance_contribution_table",
     "bootstrap_fevd",
+    # VECM
+    "vecm_estimate",
+    "vecm_forecast",
+    "vecm_granger_causality",
+    "compute_error_correction_term",
 ]

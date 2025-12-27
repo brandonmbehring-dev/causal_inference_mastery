@@ -105,10 +105,13 @@ using .Cointegration
 include("bootstrap_irf.jl")
 using .BootstrapIRF
 
+# VECM (Session 149)
+include("vecm.jl")
+
 # Re-export types
 export GrangerResult, VARResult, ADFResult, LagSelectionResult
 export KPSSResult, PPResult, ConfirmatoryResult
-export JohansenResult, EngleGrangerResult
+export JohansenResult, EngleGrangerResult, VECMResult
 
 # Re-export VAR functions
 export var_estimate, var_forecast, var_residuals
@@ -155,5 +158,8 @@ export johansen_test, engle_granger_test
 export bootstrap_irf, moving_block_bootstrap_irf
 export joint_confidence_bands, moving_block_bootstrap_irf_joint
 export bootstrap_fevd
+
+# Re-export VECM functions
+export vecm_estimate, vecm_forecast, compute_error_correction_term
 
 end # module

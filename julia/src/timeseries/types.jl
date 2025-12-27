@@ -9,7 +9,7 @@ using LinearAlgebra
 
 export GrangerResult, VARResult, ADFResult, LagSelectionResult
 export KPSSResult, PPResult, ConfirmatoryResult
-export JohansenResult, EngleGrangerResult
+export JohansenResult, EngleGrangerResult, VECMResult
 export n_vars, n_params_per_eq, get_lag_matrix, get_intercepts
 export get_optimal_by_criterion
 
@@ -374,6 +374,55 @@ end
 function Base.show(io::IO, r::EngleGrangerResult)
     status = r.is_cointegrated ? "Cointegrated" : "Not cointegrated"
     print(io, "EngleGrangerResult($status, ADF stat=$(round(r.adf_result.statistic, digits=4)))")
+end
+
+
+"""
+    VECMResult
+
+Vector Error Correction Model (VECM) estimation result.
+
+The VECM representation of a cointegrated VAR(p) is:
+
+    ΔY_t = αβ'Y_{t-1} + Γ₁ΔY_{t-1} + ... + Γ_{p-1}ΔY_{t-p+1} + c + ε_t
+
+# Fields
+- `alpha`: Adjustment coefficients (k × r matrix)
+- `beta`: Cointegrating vectors (k × r matrix)
+- `gamma`: Short-run dynamics (k × k*(p-1) matrix)
+- `pi`: Long-run matrix αβ' (k × k)
+- `const_term`: Constant term (k × 1 vector) or nothing
+- `coint_rank`: Cointegration rank r
+- `lags`: VAR lags (VECM uses p-1 differenced lags)
+- `residuals`: Model residuals (T × k)
+- `sigma`: Residual covariance (k × k)
+- `n_obs`: Number of observations
+- `n_vars`: Number of variables
+- `det_order`: Deterministic terms: -1=none, 0=restricted const, 1=unrestricted
+- `aic`: Akaike Information Criterion
+- `bic`: Bayesian Information Criterion
+- `log_likelihood`: Log-likelihood value
+"""
+struct VECMResult
+    alpha::Matrix{Float64}
+    beta::Matrix{Float64}
+    gamma::Matrix{Float64}
+    pi::Matrix{Float64}
+    const_term::Union{Vector{Float64}, Nothing}
+    coint_rank::Int
+    lags::Int
+    residuals::Matrix{Float64}
+    sigma::Matrix{Float64}
+    n_obs::Int
+    n_vars::Int
+    det_order::Int
+    aic::Float64
+    bic::Float64
+    log_likelihood::Float64
+end
+
+function Base.show(io::IO, r::VECMResult)
+    print(io, "VECMResult(rank=$(r.coint_rank), lags=$(r.lags), n_vars=$(r.n_vars), n_obs=$(r.n_obs), AIC=$(round(r.aic, digits=2)))")
 end
 
 end # module

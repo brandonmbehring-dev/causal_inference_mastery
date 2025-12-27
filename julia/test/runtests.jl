@@ -130,11 +130,12 @@ end
     include("dtr/runtests.jl")
 end
 
-# Time Series Causal Inference (Session 147)
+# Time Series Causal Inference (Session 147, 149)
 @safetestset "Time Series" begin
     @safetestset "Stationarity" begin include("timeseries/test_stationarity.jl") end
     @safetestset "Cointegration" begin include("timeseries/test_cointegration.jl") end
     @safetestset "Bootstrap IRF" begin include("timeseries/test_bootstrap_irf.jl") end
+    @safetestset "VECM" begin include("timeseries/test_vecm.jl") end
 end
 
 @info "Test suite complete"

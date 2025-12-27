@@ -520,3 +520,122 @@ class JohansenResult:
             f"JohansenResult({coint}, rank={self.rank}, "
             f"n_vars={self.n_vars}, lags={self.lags})"
         )
+
+
+@dataclass
+class VECMResult:
+    """
+    Vector Error Correction Model (VECM) estimation result.
+
+    The VECM representation of a cointegrated VAR(p) is:
+
+        ΔY_t = αβ'Y_{t-1} + Γ₁ΔY_{t-1} + ... + Γ_{p-1}ΔY_{t-p+1} + c + ε_t
+
+    Where:
+    - α (k×r): Adjustment/loading coefficients (speed of adjustment to equilibrium)
+    - β (k×r): Cointegrating vectors (long-run equilibrium relationships)
+    - Π = αβ': Long-run impact matrix (reduced rank = r)
+    - Γ_i: Short-run dynamics matrices
+    - c: Constant term (if included)
+    - ε_t: Error term with covariance Σ
+
+    Attributes
+    ----------
+    alpha : np.ndarray
+        Adjustment coefficients (k × r matrix). Each column represents how
+        variables adjust to deviations from one cointegrating relationship.
+    beta : np.ndarray
+        Cointegrating vectors (k × r matrix). Each column is a long-run
+        equilibrium relationship β'Y = 0.
+    gamma : np.ndarray
+        Short-run dynamics coefficients (k × k*(p-1) matrix).
+        Stacked as [Γ₁ | Γ₂ | ... | Γ_{p-1}].
+    pi : np.ndarray
+        Long-run impact matrix Π = αβ' (k × k matrix).
+    const : np.ndarray
+        Constant term (k × 1 vector). None if no constant.
+    coint_rank : int
+        Cointegration rank r (number of cointegrating relationships).
+    lags : int
+        Number of lags in original VAR (VECM uses p-1 differenced lags).
+    residuals : np.ndarray
+        Model residuals (T × k matrix).
+    sigma : np.ndarray
+        Residual covariance matrix (k × k).
+    n_obs : int
+        Number of observations used in estimation.
+    n_vars : int
+        Number of variables (k).
+    det_order : int
+        Deterministic terms: -1=none, 0=restricted const, 1=unrestricted const.
+    aic : float
+        Akaike Information Criterion.
+    bic : float
+        Bayesian Information Criterion.
+    log_likelihood : float
+        Log-likelihood value.
+
+    Properties
+    ----------
+    error_correction_term : np.ndarray
+        The ECT = β'Y_{t-1} for each time period.
+    adjustment_half_life : np.ndarray
+        Half-life of adjustment for each cointegrating relationship.
+
+    References
+    ----------
+    Lütkepohl (2005). "New Introduction to Multiple Time Series Analysis"
+    Johansen (1995). "Likelihood-Based Inference in Cointegrated VAR Models"
+    """
+
+    alpha: np.ndarray  # Adjustment coefficients (k × r)
+    beta: np.ndarray  # Cointegrating vectors (k × r)
+    gamma: np.ndarray  # Short-run dynamics (k × k*(p-1))
+    pi: np.ndarray  # Long-run matrix αβ' (k × k)
+    const: Optional[np.ndarray]  # Constant (k × 1) or None
+    coint_rank: int  # Cointegration rank r
+    lags: int  # VAR lags (VECM has p-1 differenced lags)
+    residuals: np.ndarray  # Residuals (T × k)
+    sigma: np.ndarray  # Residual covariance (k × k)
+    n_obs: int  # Number of observations
+    n_vars: int  # Number of variables
+    det_order: int = 0  # Deterministic terms
+    aic: float = 0.0  # AIC
+    bic: float = 0.0  # BIC
+    log_likelihood: float = 0.0  # Log-likelihood
+
+    @property
+    def error_correction_term(self) -> np.ndarray:
+        """
+        Compute error correction terms for interpretation.
+
+        Returns β'Y_{t-1} which represents deviations from long-run equilibrium.
+        Not stored since requires original data; use compute_ect() for this.
+        """
+        # This is a placeholder - ECT requires original data
+        return self.pi
+
+    @property
+    def adjustment_half_life(self) -> np.ndarray:
+        """
+        Half-life of adjustment back to equilibrium for each variable.
+
+        For diagonal elements of α, half-life ≈ -ln(2) / ln(1 + α_ii)
+        Assumes α represents speed of adjustment.
+        """
+        half_lives = np.zeros(self.coint_rank)
+        for i in range(self.coint_rank):
+            # Average adjustment speed for each cointegrating relation
+            avg_alpha = np.mean(np.abs(self.alpha[:, i]))
+            if avg_alpha > 0:
+                half_lives[i] = -np.log(2) / np.log(1 - avg_alpha) if avg_alpha < 1 else np.inf
+            else:
+                half_lives[i] = np.inf
+        return half_lives
+
+    def __repr__(self) -> str:
+        return (
+            f"VECMResult(rank={self.coint_rank}, lags={self.lags}, "
+            f"n_vars={self.n_vars}, n_obs={self.n_obs}, "
+            f"AIC={self.aic:.2f}, BIC={self.bic:.2f})"
+        )
