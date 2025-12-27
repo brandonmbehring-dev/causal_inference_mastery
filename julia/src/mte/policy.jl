@@ -12,7 +12,7 @@ References:
 using Statistics
 using Distributions
 
-include("types.jl")
+# Note: types.jl is included by CausalEstimators.jl before this file
 
 
 """

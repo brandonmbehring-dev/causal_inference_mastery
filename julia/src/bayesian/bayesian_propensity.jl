@@ -257,22 +257,7 @@ function bayesian_propensity_stratified(
 end
 
 
-"""
-    _sigmoid(x)
-
-Sigmoid function with numerical stability.
-"""
-function _sigmoid(x::Real)
-    if x >= 0
-        z = exp(-x)
-        return 1.0 / (1.0 + z)
-    else
-        z = exp(x)
-        return z / (1.0 + z)
-    end
-end
-
-_sigmoid(x::AbstractArray) = _sigmoid.(x)
+# Note: _sigmoid() is defined in cate/utils.jl (included before this file)
 
 
 """

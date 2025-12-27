@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "research-kb": {
-      "command": "python",
+      "command": "/home/brandon_behring/Claude/research-kb/venv/bin/python",
       "args": ["-m", "research_kb_mcp.server"],
       "cwd": "/home/brandon_behring/Claude/research-kb",
       "description": "Search causal inference literature with hybrid FTS+vector+graph retrieval"

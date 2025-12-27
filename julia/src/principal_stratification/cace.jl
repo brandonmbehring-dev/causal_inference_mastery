@@ -27,7 +27,7 @@ using LinearAlgebra
 using Statistics
 using Distributions
 
-include("types.jl")
+# Note: types.jl is included by CausalEstimators.jl before this file
 
 """
     solve(problem::CACEProblem, estimator::CACETwoSLS) -> CACESolution

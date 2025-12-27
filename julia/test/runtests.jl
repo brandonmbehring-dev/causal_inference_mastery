@@ -125,4 +125,9 @@ end
     include("shift_share/test_shift_share.jl")
 end
 
+# Dynamic Treatment Regimes (Session 121)
+@safetestset "DTR Estimators" begin
+    include("dtr/runtests.jl")
+end
+
 @info "Test suite complete"

@@ -4758,3 +4758,343 @@ def julia_panel_unconditional_qte(
         "bandwidth": float(result.bandwidth),
         "method": str(result.method),
     }
+
+
+# ============================================================================
+# CAUSAL DISCOVERY (Session 133)
+# ============================================================================
+
+
+def julia_generate_random_dag(
+    n_vars: int,
+    edge_prob: float = 0.3,
+    seed: Optional[int] = None,
+) -> Dict[str, Union[int, np.ndarray]]:
+    """
+    Call Julia generate_random_dag via juliacall.
+
+    Parameters
+    ----------
+    n_vars : int
+        Number of variables
+    edge_prob : float, default=0.3
+        Probability of edge between each pair
+    seed : int, optional
+        Random seed for reproducibility
+
+    Returns
+    -------
+    dict
+        Julia result with adjacency_matrix and n_nodes
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    if seed is not None:
+        dag = jl.generate_random_dag(n_vars, edge_prob=edge_prob, seed=seed)
+    else:
+        dag = jl.generate_random_dag(n_vars, edge_prob=edge_prob)
+
+    # Convert adjacency matrix to numpy
+    adj = np.array([[int(dag.adjacency[i, j]) for j in range(1, n_vars + 1)]
+                    for i in range(1, n_vars + 1)])
+
+    return {
+        "n_nodes": int(dag.n_nodes),
+        "adjacency_matrix": adj,
+    }
+
+
+def julia_generate_dag_data(
+    adjacency_matrix: np.ndarray,
+    n_samples: int,
+    noise_type: str = "gaussian",
+    seed: Optional[int] = None,
+) -> Dict[str, np.ndarray]:
+    """
+    Call Julia generate_dag_data via juliacall.
+
+    Parameters
+    ----------
+    adjacency_matrix : np.ndarray
+        DAG adjacency matrix (n_vars x n_vars)
+    n_samples : int
+        Number of samples to generate
+    noise_type : str, default="gaussian"
+        Noise distribution: "gaussian", "laplace", "uniform", "exponential"
+    seed : int, optional
+        Random seed
+
+    Returns
+    -------
+    dict
+        Julia result with data matrix and coefficient matrix B
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    n_vars = adjacency_matrix.shape[0]
+
+    # Create DAG in Julia
+    jl_adj = jl.seval("Matrix{Int8}")(adjacency_matrix.astype(np.int8))
+    dag = jl.DAG(n_vars, [f"X{i}" for i in range(n_vars)], jl_adj)
+
+    # Generate data
+    noise_sym = jl.seval(f":{noise_type}")
+    if seed is not None:
+        data, B = jl.generate_dag_data(dag, n_samples, noise_type=noise_sym, seed=seed)
+    else:
+        data, B = jl.generate_dag_data(dag, n_samples, noise_type=noise_sym)
+
+    # Convert to numpy
+    data_np = np.array([[float(data[i, j]) for j in range(1, n_vars + 1)]
+                        for i in range(1, n_samples + 1)])
+    B_np = np.array([[float(B[i, j]) for j in range(1, n_vars + 1)]
+                     for i in range(1, n_vars + 1)])
+
+    return {
+        "data": data_np,
+        "B": B_np,
+    }
+
+
+def julia_pc_algorithm(
+    data: np.ndarray,
+    alpha: float = 0.01,
+) -> Dict[str, Union[int, float, np.ndarray]]:
+    """
+    Call Julia pc_algorithm via juliacall.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Data matrix (n_samples x n_vars)
+    alpha : float, default=0.01
+        Significance level for CI tests
+
+    Returns
+    -------
+    dict
+        Julia result with skeleton, cpdag, n_ci_tests
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    n_samples, n_vars = data.shape
+
+    # Convert data to Julia matrix
+    jl_data = jl.seval("Matrix{Float64}")(data.astype(np.float64))
+
+    # Run PC algorithm
+    result = jl.pc_algorithm(jl_data, alpha=alpha)
+
+    # Extract skeleton adjacency
+    skeleton_adj = np.array([[int(result.skeleton.adjacency[i, j])
+                              for j in range(1, n_vars + 1)]
+                             for i in range(1, n_vars + 1)])
+
+    # Extract CPDAG (directed and undirected)
+    cpdag_directed = np.array([[int(result.cpdag.directed[i, j])
+                                for j in range(1, n_vars + 1)]
+                               for i in range(1, n_vars + 1)])
+    cpdag_undirected = np.array([[int(result.cpdag.undirected[i, j])
+                                  for j in range(1, n_vars + 1)]
+                                 for i in range(1, n_vars + 1)])
+
+    return {
+        "skeleton": skeleton_adj,
+        "cpdag_directed": cpdag_directed,
+        "cpdag_undirected": cpdag_undirected,
+        "n_ci_tests": int(result.n_ci_tests),
+        "alpha": float(result.alpha),
+    }
+
+
+def julia_direct_lingam(
+    data: np.ndarray,
+    seed: Optional[int] = None,
+) -> Dict[str, Union[np.ndarray, list]]:
+    """
+    Call Julia direct_lingam via juliacall.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Data matrix (n_samples x n_vars)
+    seed : int, optional
+        Random seed
+
+    Returns
+    -------
+    dict
+        Julia result with dag, causal_order, adjacency_matrix
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    n_samples, n_vars = data.shape
+
+    # Convert data to Julia matrix
+    jl_data = jl.seval("Matrix{Float64}")(data.astype(np.float64))
+
+    # Run DirectLiNGAM
+    if seed is not None:
+        result = jl.direct_lingam(jl_data, seed=seed)
+    else:
+        result = jl.direct_lingam(jl_data)
+
+    # Extract DAG adjacency
+    dag_adj = np.array([[int(result.dag.adjacency[i, j])
+                         for j in range(1, n_vars + 1)]
+                        for i in range(1, n_vars + 1)])
+
+    # Extract causal order (convert to 0-indexed)
+    causal_order = [int(result.causal_order[i]) - 1 for i in range(1, n_vars + 1)]
+
+    # Extract adjacency matrix (weighted)
+    adj_matrix = np.array([[float(result.adjacency_matrix[i, j])
+                            for j in range(1, n_vars + 1)]
+                           for i in range(1, n_vars + 1)])
+
+    return {
+        "dag_adjacency": dag_adj,
+        "causal_order": causal_order,
+        "adjacency_matrix": adj_matrix,
+    }
+
+
+def julia_skeleton_f1(
+    estimated_adj: np.ndarray,
+    true_dag_adj: np.ndarray,
+) -> Dict[str, float]:
+    """
+    Call Julia skeleton_f1 via juliacall.
+
+    Parameters
+    ----------
+    estimated_adj : np.ndarray
+        Estimated skeleton adjacency matrix
+    true_dag_adj : np.ndarray
+        True DAG adjacency matrix
+
+    Returns
+    -------
+    dict
+        Precision, recall, F1 score
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    n_vars = estimated_adj.shape[0]
+
+    # Create Graph from estimated adjacency
+    jl_est_adj = jl.seval("Matrix{Int8}")(estimated_adj.astype(np.int8))
+    skeleton = jl.Graph(n_vars, jl_est_adj)
+
+    # Create DAG from true adjacency
+    jl_true_adj = jl.seval("Matrix{Int8}")(true_dag_adj.astype(np.int8))
+    true_dag = jl.DAG(n_vars, [f"X{i}" for i in range(n_vars)], jl_true_adj)
+
+    # Compute F1
+    precision, recall, f1 = jl.skeleton_f1(skeleton, true_dag)
+
+    return {
+        "precision": float(precision),
+        "recall": float(recall),
+        "f1": float(f1),
+    }
+
+
+def julia_compute_shd(
+    cpdag_directed: np.ndarray,
+    cpdag_undirected: np.ndarray,
+    true_dag_adj: np.ndarray,
+) -> Dict[str, int]:
+    """
+    Call Julia compute_shd via juliacall.
+
+    Parameters
+    ----------
+    cpdag_directed : np.ndarray
+        CPDAG directed edges matrix
+    cpdag_undirected : np.ndarray
+        CPDAG undirected edges matrix
+    true_dag_adj : np.ndarray
+        True DAG adjacency matrix
+
+    Returns
+    -------
+    dict
+        Structural Hamming Distance
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    n_vars = cpdag_directed.shape[0]
+
+    # Create CPDAG
+    jl_directed = jl.seval("Matrix{Int8}")(cpdag_directed.astype(np.int8))
+    jl_undirected = jl.seval("Matrix{Int8}")(cpdag_undirected.astype(np.int8))
+    cpdag = jl.CPDAG(n_vars, [f"X{i}" for i in range(n_vars)], jl_directed, jl_undirected)
+
+    # Create true DAG
+    jl_true_adj = jl.seval("Matrix{Int8}")(true_dag_adj.astype(np.int8))
+    true_dag = jl.DAG(n_vars, [f"X{i}" for i in range(n_vars)], jl_true_adj)
+
+    # Compute SHD
+    shd = jl.compute_shd(cpdag, true_dag)
+
+    return {
+        "shd": int(shd),
+    }
+
+
+def julia_fisher_z_test(
+    data: np.ndarray,
+    x: int,
+    y: int,
+    conditioning_set: Optional[list] = None,
+    alpha: float = 0.05,
+) -> Dict[str, Union[float, bool]]:
+    """
+    Call Julia fisher_z_test via juliacall.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Data matrix (n_samples x n_vars)
+    x : int
+        First variable index (0-based)
+    y : int
+        Second variable index (0-based)
+    conditioning_set : list, optional
+        List of conditioning variable indices (0-based)
+    alpha : float, default=0.05
+        Significance level
+
+    Returns
+    -------
+    dict
+        Test result with pvalue, statistic, independent flag
+    """
+    if not JULIA_AVAILABLE:
+        raise RuntimeError("Julia not available. Install juliacall.")
+
+    # Convert data to Julia matrix
+    jl_data = jl.seval("Matrix{Float64}")(data.astype(np.float64))
+
+    # Convert to 1-indexed
+    jl_x = x + 1
+    jl_y = y + 1
+
+    if conditioning_set is not None and len(conditioning_set) > 0:
+        jl_cond = jl.collect([c + 1 for c in conditioning_set])
+        result = jl.fisher_z_test(jl_data, jl_x, jl_y, jl_cond, alpha=alpha)
+    else:
+        result = jl.fisher_z_test(jl_data, jl_x, jl_y, alpha=alpha)
+
+    return {
+        "pvalue": float(result.pvalue),
+        "statistic": float(result.statistic),
+        "independent": bool(result.independent),
+    }

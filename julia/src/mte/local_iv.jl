@@ -12,7 +12,7 @@ using Distributions
 using LinearAlgebra
 using Random
 
-include("types.jl")
+# Note: types.jl is included by CausalEstimators.jl before this file
 
 
 """
@@ -504,19 +504,4 @@ function smooth_mte(mte::Vector{T}; sigma::T = T(1.0)) where T<:Real
 end
 
 
-"""
-    residualize(y, X)
-
-Residualize y on X via OLS.
-"""
-function residualize(y::Vector{T}, X::Matrix{T}) where T<:Real
-    n = length(y)
-    X_const = hcat(ones(T, n), X)
-
-    try
-        beta = X_const \ y
-        return y .- X_const * beta
-    catch
-        return y
-    end
-end
+# Note: residualize() is defined in late.jl (included before this file)

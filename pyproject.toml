@@ -129,6 +129,8 @@ markers = [
     "monte_carlo: marks Monte Carlo validation tests",
     "cross_language: marks cross-language validation tests",
     "e2e: marks end-to-end workflow tests",
+    "benchmark: marks performance benchmark tests",
+    "mcmc: marks MCMC-based tests (very slow)",
 ]
 
 # Coverage configuration
@@ -138,6 +140,7 @@ omit = [
     "*/tests/*",
     "*/test_*.py",
     "*/__init__.py",
+    "benchmarks/*",
 ]
 
 [tool.coverage.report]

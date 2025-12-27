@@ -10,7 +10,7 @@ using Statistics
 using Distributions
 using LinearAlgebra
 
-include("types.jl")
+# Note: types.jl is included by CausalEstimators.jl before this file
 
 
 """

@@ -212,6 +212,19 @@ include("panel/dml_cre.jl")
 # Panel QTE (Session 118)
 include("panel/panel_qte.jl")
 
+# Dynamic Treatment Regimes (Session 121)
+include("dtr/types.jl")
+include("dtr/q_learning.jl")
+include("dtr/a_learning.jl")
+
+# Causal Discovery (Session 133)
+include("discovery/Discovery.jl")
+using .Discovery
+
+# Time Series Causal Inference (Session 135)
+include("timeseries/TimeSeries.jl")
+using .TimeSeries
+
 # Exports
 
 ## Abstract types
@@ -231,6 +244,7 @@ export AbstractSelectionProblem, AbstractSelectionEstimator, AbstractSelectionSo
 export AbstractCFProblem, AbstractCFEstimator, AbstractCFSolution
 export AbstractBoundsProblem, AbstractBoundsEstimator, AbstractBoundsResult
 export AbstractShiftShareProblem, AbstractShiftShareEstimator, AbstractShiftShareSolution
+export AbstractDTRProblem, AbstractDTREstimator, AbstractDTRSolution
 
 ## Problem types
 export RCTProblem, PSMProblem, RDDProblem, IVProblem, DiDProblem, StaggeredDiDProblem
@@ -240,6 +254,7 @@ export ShiftShareProblem
 export ObservationalProblem
 export CATEProblem
 export EValueProblem, RosenbaumProblem
+export DTRData
 export FirstStageProblem, ReducedFormProblem, SecondStageProblem  # Session 56
 
 ## Estimator types
@@ -271,6 +286,7 @@ export HeckmanSolution
 export CFSolution, NonlinearCFSolution, FirstStageCFResult
 export ManskiBoundsResult, ManskiIVBoundsResult, LeeBoundsResult
 export ShiftShareSolution, FirstStageSSResult, RotembergDiagnostics
+export QLearningResult, ALearningResult
 
 ## RDD utilities
 export AbstractBandwidthSelector, IKBandwidth, CCTBandwidth
@@ -392,5 +408,45 @@ export dml_cre, dml_cre_continuous
 ## Panel QTE types and functions (Session 118)
 export PanelQTEResult, PanelQTEBandResult
 export panel_rif_qte, panel_rif_qte_band, panel_unconditional_qte
+
+## DTR types and functions (Session 121)
+export n_covariates, get_history, optimal_regime
+export q_learning, q_learning_single_stage
+export a_learning, a_learning_single_stage
+
+## Causal Discovery types and functions (Session 133-134)
+export Graph, DAG, CPDAG, PCResult, LiNGAMResult, CITestResult
+export EdgeMark, PAG, FCIResult, NONE, TAIL, ARROW, CIRCLE
+export pc_algorithm, pc_skeleton, pc_orient
+export fci_algorithm, fci_orient
+export direct_lingam, ica_lingam
+export generate_random_dag, generate_dag_data
+export skeleton_f1, compute_shd, dag_to_cpdag
+export partial_correlation, fisher_z_test, ci_test
+export n_directed_edges, n_bidirected_edges, n_circle_edges
+
+## Time Series types and functions (Session 135)
+export GrangerResult, VARResult, ADFResult, LagSelectionResult
+export granger_causality, granger_causality_matrix, bidirectional_granger
+export var_estimate, var_forecast, var_residuals
+export get_lag_matrix, get_intercepts
+
+## PCMCI types and functions (Session 136)
+export LinkType, TimeSeriesLink, LaggedDAG, PCMCIResult
+export ConditionSelectionResult
+export is_significant, is_lagged, add_edge!, remove_edge!, has_edge
+export get_parents, get_children, n_edges, to_links
+export get_lagged_dag, get_significant_links, get_parents_of
+export parcorr_test
+export pcmci, pc_stable_condition_selection, mci_test_all
+
+## SVAR types and functions (Session 137)
+export IdentificationMethod, SVARResult, IRFResult, FEVDResult
+export is_just_identified, is_over_identified
+export get_structural_coefficient, get_response, get_decomposition
+export has_confidence_bands, validate_rows_sum_to_one
+export cholesky_svar, companion_form, vma_coefficients, structural_vma_coefficients
+export check_stability, long_run_impact_matrix, verify_identification
+export compute_irf, compute_fevd
 
 end # module CausalEstimators
