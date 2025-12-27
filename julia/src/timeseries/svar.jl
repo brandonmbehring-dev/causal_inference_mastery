@@ -10,9 +10,9 @@ using Statistics
 
 using ..TimeSeriesTypes
 using ..VAR: var_estimate
-using ..SVARTypes: SVARResult, IRFResult, FEVDResult, IdentificationMethod, CHOLESKY
+using ..SVARTypes: SVARResult, IRFResult, FEVDResult, IdentificationMethod, CHOLESKY, LONG_RUN
 
-export cholesky_svar, companion_form, vma_coefficients, structural_vma_coefficients
+export cholesky_svar, long_run_svar, companion_form, vma_coefficients, structural_vma_coefficients
 export check_stability, long_run_impact_matrix, verify_identification
 export compute_irf, compute_fevd
 
@@ -105,6 +105,153 @@ function cholesky_svar(var_result::VARResult; ordering::Union{Vector{String},Not
         B0=B0,
         structural_shocks=structural_shocks,
         identification=CHOLESKY,
+        n_restrictions=n_restrictions,
+        n_vars=n_vars,
+        n_obs=var_result.n_obs_effective,
+        lags=var_result.lags,
+        var_names=var_result.var_names,
+        ordering=ordering,
+        log_likelihood=var_result.log_likelihood
+    )
+end
+
+
+"""
+    long_run_svar(var_result; ordering=nothing)
+
+Structural VAR using Blanchard-Quah long-run identification.
+
+Imposes restrictions on the long-run cumulative impact matrix C(1):
+    C(1) = (I - A₁ - ... - Aₚ)⁻¹ B₀⁻¹ = Ξ · B₀⁻¹
+
+The Cholesky decomposition of the long-run covariance yields a lower
+triangular C(1), meaning shock j has no permanent effect on variable i
+for j > i.
+
+# Arguments
+- `var_result::VARResult`: Estimated reduced-form VAR model. Must be stable.
+- `ordering::Vector{String}`: Variable ordering for long-run restrictions
+
+# Returns
+- `SVARResult`: Structural VAR estimation results with long-run identification
+
+# Throws
+- Error if VAR is not stable (has unit root or explosive roots)
+- Error if ordering contains invalid variable names
+
+# Example
+```julia
+using Random
+Random.seed!(42)
+data = randn(300, 2)
+var_result = var_estimate(data, lags=2)
+svar_result = long_run_svar(var_result)
+# Verify C(1) is lower triangular
+C1 = long_run_impact_matrix(svar_result)
+@assert isapprox(triu(C1, 1), zeros(2, 2), atol=1e-10)
+```
+
+# References
+Blanchard, O. J., & Quah, D. (1989). The dynamic effects of aggregate
+demand and supply disturbances. American Economic Review, 79(4), 655-673.
+"""
+function long_run_svar(var_result::VARResult; ordering::Union{Vector{String},Nothing}=nothing)
+    n_vars = length(var_result.var_names)
+    sigma = var_result.sigma
+
+    # Step 0: Check stability (required for long-run identification)
+    is_stable, eigenvalues = check_stability(var_result)
+    if !is_stable
+        max_modulus = maximum(abs.(eigenvalues))
+        error("VAR is not stable (max eigenvalue modulus = $(round(max_modulus, digits=4)) >= 1). " *
+              "Long-run identification requires a stable VAR. " *
+              "Consider differencing the data or using fewer lags.")
+    end
+
+    # Handle ordering (same pattern as cholesky_svar)
+    if ordering !== nothing
+        if length(ordering) != n_vars
+            error("ordering has $(length(ordering)) elements, expected $n_vars")
+        end
+        for name in ordering
+            if !(name in var_result.var_names)
+                error("Variable '$name' not in VAR model")
+            end
+        end
+
+        # Permute to ordering space
+        perm = [findfirst(==(name), var_result.var_names) for name in ordering]
+        P_perm = zeros(n_vars, n_vars)
+        for (i, j) in enumerate(perm)
+            P_perm[i, j] = 1.0
+        end
+        sigma_ordered = P_perm * sigma * P_perm'
+    else
+        ordering = var_result.var_names
+        sigma_ordered = sigma
+        P_perm = Matrix{Float64}(I, n_vars, n_vars)
+    end
+
+    # Step 1: Compute sum of lag coefficient matrices (in ordering space)
+    A_sum = zeros(n_vars, n_vars)
+    for lag in 1:var_result.lags
+        A_lag = get_lag_matrix(var_result, lag)
+        if ordering != var_result.var_names
+            A_lag = P_perm * A_lag * P_perm'
+        end
+        A_sum += A_lag
+    end
+
+    # Step 2: Compute Ξ = (I - A_sum)⁻¹ (long-run multiplier)
+    I_minus_A = Matrix{Float64}(I, n_vars, n_vars) - A_sum
+    Xi = try
+        inv(I_minus_A)
+    catch e
+        error("Cannot compute long-run multiplier: (I - A_sum) is singular. " *
+              "This typically indicates a unit root or near-unit-root process.")
+    end
+
+    # Step 3: Long-run reduced-form covariance: Ω = Ξ Σᵤ Ξ'
+    Omega = Xi * sigma_ordered * Xi'
+
+    # Step 4: Cholesky decomposition: Ω = P P' (P is lower triangular)
+    P_chol = try
+        cholesky(Symmetric(Omega)).L
+    catch e
+        error("Long-run covariance matrix Ω is not positive definite. " *
+              "This may indicate numerical issues or near-singularity. " *
+              "Original error: $e")
+    end
+
+    # Step 5: Back out B₀⁻¹ = Ξ⁻¹ P = (I - A_sum) P
+    B0_inv_ordered = I_minus_A * P_chol
+
+    # Transform back to original ordering
+    if ordering != var_result.var_names
+        P_perm_inv = P_perm'
+        B0_inv = P_perm_inv * B0_inv_ordered * P_perm_inv'
+    else
+        B0_inv = Matrix(B0_inv_ordered)
+    end
+
+    # Compute B₀ = (B₀⁻¹)⁻¹
+    B0 = inv(B0_inv)
+
+    # Compute structural shocks: ε_t = B₀ u_t
+    residuals = var_result.residuals
+    structural_shocks = Matrix((B0 * residuals')')
+
+    # Identification info
+    n_restrictions = n_vars * (n_vars - 1) ÷ 2
+
+    SVARResult(
+        var_coefficients=var_result.coefficients,
+        var_residuals=residuals,
+        var_sigma=sigma,
+        B0_inv=B0_inv,
+        B0=B0,
+        structural_shocks=structural_shocks,
+        identification=LONG_RUN,
         n_restrictions=n_restrictions,
         n_vars=n_vars,
         n_obs=var_result.n_obs_effective,

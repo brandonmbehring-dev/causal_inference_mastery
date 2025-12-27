@@ -134,6 +134,7 @@ from causal_inference.timeseries.svar_types import (
 from causal_inference.timeseries.svar import (
     cholesky_svar,
     short_run_svar,
+    long_run_svar,
     companion_form,
     vma_coefficients,
     structural_vma_coefficients,
@@ -230,6 +231,7 @@ __all__ = [
     # SVAR core
     "cholesky_svar",
     "short_run_svar",
+    "long_run_svar",
     "companion_form",
     "vma_coefficients",
     "structural_vma_coefficients",

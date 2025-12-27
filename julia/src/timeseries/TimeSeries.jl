@@ -143,7 +143,7 @@ export get_structural_coefficient, get_response, get_decomposition
 export has_confidence_bands, validate_rows_sum_to_one
 
 # Re-export SVAR functions
-export cholesky_svar, companion_form, vma_coefficients, structural_vma_coefficients
+export cholesky_svar, long_run_svar, companion_form, vma_coefficients, structural_vma_coefficients
 export check_stability, long_run_impact_matrix, verify_identification
 export compute_irf, compute_fevd
 

@@ -315,6 +315,173 @@ def _optimize_svar_ab(
     return B0_inv
 
 
+def long_run_svar(
+    var_result: VARResult,
+    ordering: Optional[List[str]] = None,
+) -> SVARResult:
+    """
+    Structural VAR using Blanchard-Quah long-run identification.
+
+    Imposes restrictions on the long-run cumulative impact matrix C(1):
+        C(1) = (I - A₁ - ... - Aₚ)⁻¹ B₀⁻¹ = Ξ · B₀⁻¹
+
+    The Cholesky decomposition of the long-run covariance yields a lower
+    triangular C(1), meaning shock j has no permanent effect on variable i
+    for j > i.
+
+    This is the classic Blanchard & Quah (1989) identification scheme,
+    commonly used to separate permanent (supply) from transitory (demand) shocks.
+
+    Parameters
+    ----------
+    var_result : VARResult
+        Estimated reduced-form VAR model. Must be stable (stationary).
+    ordering : List[str], optional
+        Variable ordering for long-run restrictions.
+        If None, uses order in var_result.var_names.
+        First variable is affected only by first shock in long run.
+
+    Returns
+    -------
+    SVARResult
+        Structural VAR estimation results with long-run identification
+
+    Raises
+    ------
+    ValueError
+        If VAR is not stable (has unit root or explosive roots)
+        If ordering contains invalid variable names
+        If long-run covariance matrix is not positive definite
+
+    Example
+    -------
+    >>> import numpy as np
+    >>> from causal_inference.timeseries import var_estimate, long_run_svar
+    >>> from causal_inference.timeseries import long_run_impact_matrix
+    >>> np.random.seed(42)
+    >>> # Generate data with permanent and transitory shocks
+    >>> n = 300
+    >>> data = np.random.randn(n, 2)
+    >>> var_result = var_estimate(data, lags=2)
+    >>> svar_result = long_run_svar(var_result)
+    >>> # Verify C(1) is lower triangular
+    >>> C1 = long_run_impact_matrix(svar_result)
+    >>> print(f"Upper triangle of C(1): {C1[0, 1]:.10f}")  # Should be ~0
+
+    Notes
+    -----
+    The algorithm:
+    1. Compute Ξ = (I - Σ Aᵢ)⁻¹ (long-run reduced-form multiplier)
+    2. Compute long-run reduced-form covariance: Ω = Ξ Σᵤ Ξ'
+    3. Cholesky decompose: Ω = P P' (P is lower triangular)
+    4. Back out impact matrix: B₀⁻¹ = Ξ⁻¹ P
+    5. Result: C(1) = Ξ B₀⁻¹ = P (lower triangular by construction)
+
+    This identification requires the VAR to be stable (all eigenvalues of
+    companion matrix inside unit circle), otherwise Ξ is undefined.
+
+    References
+    ----------
+    Blanchard, O. J., & Quah, D. (1989). The dynamic effects of aggregate
+    demand and supply disturbances. American Economic Review, 79(4), 655-673.
+    """
+    n_vars = var_result.n_vars
+    sigma = var_result.sigma
+
+    # Step 0: Check stability (required for long-run identification)
+    is_stable, eigenvalues = check_stability(var_result)
+    if not is_stable:
+        max_modulus = np.max(np.abs(eigenvalues))
+        raise ValueError(
+            f"VAR is not stable (max eigenvalue modulus = {max_modulus:.4f} >= 1). "
+            f"Long-run identification requires a stable VAR. "
+            f"Consider differencing the data or using fewer lags."
+        )
+
+    # Handle ordering (same pattern as cholesky_svar)
+    if ordering is not None:
+        if len(ordering) != n_vars:
+            raise ValueError(
+                f"ordering has {len(ordering)} elements, expected {n_vars}"
+            )
+        for name in ordering:
+            if name not in var_result.var_names:
+                raise ValueError(f"Variable '{name}' not in VAR model")
+
+        # Permute to ordering space
+        perm = [var_result.var_names.index(name) for name in ordering]
+        P_perm = np.eye(n_vars)[perm, :]
+        sigma_ordered = P_perm @ sigma @ P_perm.T
+    else:
+        ordering = var_result.var_names
+        sigma_ordered = sigma
+        P_perm = np.eye(n_vars)
+
+    # Step 1: Compute sum of lag coefficient matrices (in ordering space)
+    A_sum = np.zeros((n_vars, n_vars))
+    for lag in range(1, var_result.lags + 1):
+        A_lag = var_result.get_lag_matrix(lag)
+        if ordering != var_result.var_names:
+            A_lag = P_perm @ A_lag @ P_perm.T
+        A_sum += A_lag
+
+    # Step 2: Compute Ξ = (I - A_sum)⁻¹ (long-run multiplier)
+    I_minus_A = np.eye(n_vars) - A_sum
+    try:
+        Xi = linalg.inv(I_minus_A)
+    except linalg.LinAlgError:
+        raise ValueError(
+            "Cannot compute long-run multiplier: (I - A_sum) is singular. "
+            "This typically indicates a unit root or near-unit-root process."
+        )
+
+    # Step 3: Long-run reduced-form covariance: Ω = Ξ Σᵤ Ξ'
+    Omega = Xi @ sigma_ordered @ Xi.T
+
+    # Step 4: Cholesky decomposition: Ω = P P' (P is lower triangular)
+    try:
+        P_chol = linalg.cholesky(Omega, lower=True)
+    except linalg.LinAlgError as e:
+        raise ValueError(
+            f"Long-run covariance matrix Ω is not positive definite. "
+            f"This may indicate numerical issues or near-singularity. "
+            f"Original error: {e}"
+        )
+
+    # Step 5: Back out B₀⁻¹ = Ξ⁻¹ P = (I - A_sum) P
+    B0_inv_ordered = I_minus_A @ P_chol
+
+    # Transform back to original ordering
+    if ordering != var_result.var_names:
+        P_perm_inv = P_perm.T  # Orthogonal, so inverse = transpose
+        B0_inv = P_perm_inv @ B0_inv_ordered @ P_perm_inv.T
+    else:
+        B0_inv = B0_inv_ordered
+
+    # Compute B₀ = (B₀⁻¹)⁻¹
+    B0 = linalg.inv(B0_inv)
+
+    # Compute structural shocks: ε_t = B₀ u_t
+    residuals = var_result.residuals
+    structural_shocks = (B0 @ residuals.T).T
+
+    # Identification info
+    n_restrictions = n_vars * (n_vars - 1) // 2  # Lower triangular C(1)
+
+    return SVARResult(
+        var_result=var_result,
+        B0_inv=B0_inv,
+        B0=B0,
+        structural_shocks=structural_shocks,
+        identification=IdentificationMethod.LONG_RUN,
+        n_restrictions=n_restrictions,
+        is_just_identified=True,
+        is_over_identified=False,
+        log_likelihood=var_result.log_likelihood,
+        ordering=list(ordering),
+    )
+
+
 def companion_form(var_result: VARResult) -> np.ndarray:
     """
     Build VAR companion matrix for IRF computation.

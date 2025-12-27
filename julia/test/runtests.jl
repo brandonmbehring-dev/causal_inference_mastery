@@ -130,7 +130,7 @@ end
     include("dtr/runtests.jl")
 end
 
-# Time Series Causal Inference (Session 147, 149, 150)
+# Time Series Causal Inference (Session 147, 149, 150, 154)
 @safetestset "Time Series" begin
     @safetestset "Stationarity" begin include("timeseries/test_stationarity.jl") end
     @safetestset "Cointegration" begin include("timeseries/test_cointegration.jl") end
@@ -139,6 +139,7 @@ end
     @safetestset "Granger" begin include("timeseries/test_granger.jl") end
     @safetestset "VAR" begin include("timeseries/test_var.jl") end
     @safetestset "PCMCI" begin include("timeseries/test_pcmci.jl") end
+    @safetestset "SVAR" begin include("timeseries/test_svar.jl") end
 end
 
 # Causal Discovery (Session 133, 134, 138, 151)

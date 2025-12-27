@@ -1,10 +1,66 @@
 # Current Work
 
-**Last Updated**: 2025-12-27 [Session 153 - Orthogonal Machine Learning (OML)]
+**Last Updated**: 2025-12-27 [Session 154 - SVAR Long-Run Restrictions (Blanchard-Quah)]
 
 ---
 
 ## Right Now
+
+**Session 154**: SVAR Long-Run Restrictions (Blanchard-Quah) ✅ COMPLETE
+
+Implemented Blanchard-Quah long-run identification for Structural VAR, extending the time-series SVAR infrastructure.
+
+### Key Innovation
+
+**Long-run vs Short-run identification**:
+- Cholesky (short-run): Lower triangular B₀⁻¹ (contemporaneous impact)
+- Blanchard-Quah (long-run): Lower triangular C(1) (cumulative impact)
+
+C(1) = (I - Σ Aᵢ)⁻¹ B₀⁻¹ = Ξ · B₀⁻¹
+
+Shock j has NO permanent effect on variable i when j > i in the ordering.
+
+### Algorithm
+
+1. Compute Ξ = (I - Σ Aᵢ)⁻¹ (long-run multiplier)
+2. Compute Ω = Ξ Σᵤ Ξ' (long-run reduced-form covariance)
+3. Cholesky: Ω = P P' (P lower triangular)
+4. Back out B₀⁻¹ = Ξ⁻¹ P = (I - Σ Aᵢ) P
+
+### Python Implementation (~165 lines)
+
+**svar.py** (+165 lines)
+- `long_run_svar()` - Blanchard-Quah identification
+- Stability check before decomposition
+- Ordering permutation handling
+
+### Julia Implementation (~145 lines)
+
+**svar.jl** (+145 lines)
+- `long_run_svar()` - identical algorithm
+- Exports from SVAR and TimeSeries modules
+
+### Tests (67 new tests)
+
+**Python** (12 tests)
+- Layer 1: 7 known-answer (C(1) triangular, IRF, FEVD)
+- Layer 2: 5 adversarial (unstable VAR, ordering, high-dim)
+
+**Julia** (55 tests)
+- Layer 1: 7 long-run tests + 6 Cholesky + 3 VMA + 2 stability
+- Layer 2: 3 adversarial tests
+
+### Summary
+
+| Metric | Value |
+|--------|-------|
+| Python lines | ~165 |
+| Julia lines | ~145 |
+| New tests | 67 |
+| C(1) verification | ✓ |
+| Cross-language | ✓ |
+
+---
 
 **Session 153**: Orthogonal Machine Learning (OML) ✅ COMPLETE
 
