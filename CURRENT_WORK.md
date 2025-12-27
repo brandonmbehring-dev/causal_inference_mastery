@@ -1,10 +1,207 @@
 # Current Work
 
-**Last Updated**: 2025-12-27 [Session 144 - TEDVAE]
+**Last Updated**: 2025-12-27 [Session 149 - VECM]
 
 ---
 
 ## Right Now
+
+**Session 149**: VECM (Python + Julia) ✅ COMPLETE
+
+Vector Error Correction Model for cointegrated time series:
+
+```
+ΔY_t = αβ'Y_{t-1} + Γ₁ΔY_{t-1} + ... + Γ_{p-1}ΔY_{t-p+1} + c + ε_t
+```
+
+### Python VECM (~570 lines)
+- `vecm_estimate()` - Full VECM via Johansen ML or OLS
+- `vecm_forecast()` - Multi-horizon forecasting
+- `vecm_granger_causality()` - Granger causality in VECM framework
+- `VECMResult` - dataclass with α, β, Γ, Π, diagnostics
+
+### Julia VECM (~390 lines)
+- `vecm_estimate()` - Cross-language parity with Python
+- `vecm_forecast()` - VECM forecasting
+- `VECMResult` - struct matching Python
+
+### Tests
+- Python: 31 tests
+- Julia: 37 tests
+- Cross-language parity verified
+
+---
+
+**Session 147-148**: Julia Time-Series Parity ✅ COMPLETE
+
+Ported Python time-series methods (Sessions 145-146) to Julia for cross-language parity.
+
+### Julia Implementation (~1,200 lines)
+
+- `types.jl` (+100 lines) - Extended with new types
+  - `KPSSResult` - KPSS test result (opposite null from ADF)
+  - `PPResult` - Phillips-Perron test result
+  - `ConfirmatoryResult` - Combined ADF + KPSS analysis
+  - `JohansenResult` - Johansen cointegration with eigenvalues/vectors
+  - `EngleGrangerResult` - Two-step cointegration test
+
+- `stationarity.jl` (~500 lines) NEW - Full stationarity testing suite
+  - `adf_test()` - Augmented Dickey-Fuller with AIC/BIC lag selection
+  - `kpss_test()` - KPSS with Bartlett kernel long-run variance
+  - `phillips_perron_test()` - PP test with Newey-West HAC correction
+  - `confirmatory_stationarity_test()` - ADF + KPSS combined analysis
+  - `difference_series()`, `check_stationarity()` - Utility functions
+
+- `cointegration.jl` (~450 lines) NEW - Cointegration tests
+  - `johansen_test()` - Full Johansen procedure (trace + max eigenvalue)
+  - `engle_granger_test()` - Two-step Engle-Granger test
+  - Critical values: MacKinnon-Haug-Michelis (1999) tables
+
+- `bootstrap_irf.jl` (~450 lines) NEW - Bootstrap inference
+  - `bootstrap_irf()` - Residual/wild bootstrap IRF
+  - `moving_block_bootstrap_irf()` - MBB preserving temporal dependence
+  - `joint_confidence_bands()` - Bonferroni/sup/Simes corrections
+  - `moving_block_bootstrap_irf_joint()` - MBB with joint bands
+  - `bootstrap_fevd()` - Bootstrap FEVD with confidence intervals
+
+### Tests (~400 lines)
+
+- `test_stationarity.jl` (~160 lines) - 40 tests
+  - ADF, KPSS, PP tests for stationary and non-stationary series
+  - Confirmatory testing, differencing, multi-series checks
+
+- `test_cointegration.jl` (~130 lines) - 27 tests
+  - Johansen rank detection, cointegrated vs independent systems
+  - Engle-Granger two-step test, input validation
+
+- `test_bootstrap_irf.jl` (~130 lines) - 33 tests
+  - Bootstrap IRF with residual/wild methods
+  - MBB, joint confidence bands (Bonferroni/sup/Simes)
+  - Bootstrap FEVD with CI
+
+### Test Results: 100/100 time-series tests passing
+
+---
+
+**Session 146**: Inference Improvements ✅ COMPLETE
+
+Extended IRF and FEVD with bootstrap inference and joint confidence bands.
+
+### Python Implementation (~600 lines)
+
+- `svar_types.py` (+130 lines) - New result type
+  - `FEVDBootstrapResult` - FEVD with bootstrap CIs and accessor methods
+
+- `irf.py` (+430 lines) - Extended IRF with block bootstrap
+  - `moving_block_bootstrap_irf()` - MBB preserves temporal dependence
+  - `_moving_block_sample()` - Block resampling helper
+  - `joint_confidence_bands()` - Bonferroni/sup/Simes corrections
+  - `moving_block_bootstrap_irf_joint()` - MBB with joint bands
+
+- `fevd.py` (+270 lines) - Bootstrap FEVD
+  - `bootstrap_fevd()` - Residual/wild/block bootstrap methods
+  - `_compute_fevd_raw()` - Raw FEVD array helper
+  - `_reconstruct_var_data_fevd()` - VAR reconstruction
+  - `_moving_block_sample_fevd()` - Block resampling for FEVD
+
+### Key Insights
+
+```
+Moving Block Bootstrap (Kunsch 1989)
+────────────────────────────────────
+- Block length: l = T^(1/3) (optimal for variance estimation)
+- Preserves within-block temporal dependence
+- Better for time series than i.i.d. residual resampling
+
+Joint Confidence Bands (Multiple Comparison Correction)
+───────────────────────────────────────────────────────
+Bonferroni: α* = α/H for H horizons (conservative)
+Sup-t: Uses max|t| distribution (exact under normality)
+Simes: Ordered rejection (less conservative, independent)
+
+Pointwise CI ⊂ Joint CI (joint bands are wider)
+Joint coverage: P(all true IRFs within bands) ≥ 1-α
+```
+
+### Tests (~550 lines)
+
+- `test_irf_extended.py` (~330 lines) - 21 tests
+  - Layer 1: 9 known-answer tests (MBB structure, joint bands)
+  - Layer 2: 6 adversarial tests (short series, invalid inputs)
+  - Layer 3: 6 @slow Monte Carlo tests (coverage, MBB vs residual)
+
+- `test_fevd_extended.py` (~220 lines) - 20 tests
+  - Layer 1: 11 known-answer tests (FEVD structure, methods)
+  - Layer 2: 5 adversarial tests (short series, invalid inputs)
+  - Layer 3: 4 @slow Monte Carlo tests (coverage, CI width)
+
+### Test Results: 32/32 non-slow tests passing, 201/201 total timeseries tests passing
+
+---
+
+**Session 145**: Stationarity & Cointegration Extensions ✅ COMPLETE
+
+Extended time-series toolkit with KPSS, Phillips-Perron tests and Johansen cointegration.
+
+### Python Implementation (~650 lines)
+
+- `types.py` (+180 lines) - New result types
+  - `KPSSResult` - KPSS test result (opposite null from ADF)
+  - `PPResult` - Phillips-Perron test result (HAC-robust unit root)
+  - `JohansenResult` - Johansen cointegration result with rank, eigenvalues, cointegrating vectors
+
+- `stationarity.py` (+425 lines) - Extended stationarity tests
+  - `kpss_test()` - KPSS test for stationarity (H0: stationary)
+  - `phillips_perron_test()` - PP test with Newey-West correction
+  - `confirmatory_stationarity_test()` - Combined ADF + KPSS analysis
+  - KPSS critical values (Kwiatkowski et al. 1992)
+
+- `cointegration.py` (~580 lines) NEW - Cointegration analysis
+  - `johansen_test()` - Full Johansen procedure
+    - Trace and max eigenvalue statistics
+    - Rank determination via sequential testing
+    - Cointegrating vectors (β) and adjustment coefficients (α)
+    - Critical values (MacKinnon-Haug-Michelis 1999)
+  - `engle_granger_test()` - Simple two-step cointegration test
+
+### Key Insights
+
+```
+KPSS vs ADF (Confirmatory Testing)
+──────────────────────────────────
+ADF:  H0 = unit root     → Reject = stationary
+KPSS: H0 = stationary    → Reject = non-stationary
+
+Interpretation:
+- ADF rejects + KPSS fails to reject → Stationary
+- ADF fails + KPSS rejects → Non-stationary
+- Both reject / Both fail → Inconclusive
+
+Johansen Procedure
+──────────────────
+VECM: ΔY_t = Π Y_{t-1} + Γ ΔY_{t-1} + ε_t
+where Π = αβ'
+
+α = Adjustment coefficients (speed of return to equilibrium)
+β = Cointegrating vectors (long-run relationships)
+rank(Π) = Number of cointegrating relationships
+```
+
+### Tests (~550 lines)
+
+- `test_stationarity_extended.py` (~300 lines) - 25 tests
+  - Layer 1: 14 known-answer tests (KPSS, PP, confirmatory)
+  - Layer 2: 11 adversarial tests (short series, edge cases)
+  - Layer 3: 6 @slow Monte Carlo tests (Type I error, power)
+
+- `test_cointegration.py` (~350 lines) - 21 tests
+  - Layer 1: 11 known-answer tests (rank detection, result structure)
+  - Layer 2: 10 adversarial tests (dimensions, validation)
+  - Layer 3: 6 @slow Monte Carlo tests (rank accuracy)
+
+### Test Results: 46/46 non-slow tests passing, 169/169 total timeseries tests passing
+
+---
 
 **Session 144**: TEDVAE (Disentangled VAE) ✅ COMPLETE
 
@@ -1426,7 +1623,9 @@ Implemented Targeted Maximum Likelihood Estimation:
 
 | Session | Date | Focus | Status |
 |---------|------|-------|--------|
-| **143-144** | 2025-12-27 | **Tier 3 Neural: GANITE + TEDVAE** | ✅ |
+| **146** | 2025-12-27 | **VAR Extensions: MBB IRF, Bootstrap FEVD** | ✅ |
+| 145 | 2025-12-27 | VAR Extensions: KPSS, PP, Johansen | ✅ |
+| 143-144 | 2025-12-27 | Tier 3 Neural: GANITE + TEDVAE | ✅ |
 | 141-142 | 2025-12-26 | Latent CATE (FA, PPCA, GMM) | ✅ |
 | 140 | 2025-12-26 | Neural Meta-Learners + Neural DML | ✅ |
 | 139 | 2025-12-26 | DragonNet (Begin Tier 2 Neural) | ✅ |
