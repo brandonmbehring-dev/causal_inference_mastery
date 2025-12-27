@@ -137,6 +137,7 @@ include("cate/oml.jl")  # Session 153: OML/IRM
 include("cate/neural_meta_learners.jl")  # Session 155: Neural Meta-Learners
 include("cate/neural_dml.jl")  # Session 155: Neural DML
 include("cate/latent_cate.jl")  # Session 156: Latent CATE
+include("cate/causal_forest.jl")  # Session 157: Causal Forest
 
 # Synthetic Control Methods (Session 47)
 include("scm/types.jl")
@@ -275,6 +276,7 @@ export IRMEstimator  # Session 153: OML/IRM
 export NeuralSLearner, NeuralTLearner, NeuralXLearner, NeuralRLearner  # Session 155
 export NeuralDoubleMachineLearning  # Session 155
 export FactorAnalysisCATEEstimator, PPCACATEEstimator, GMMStratifiedCATEEstimator  # Session 156
+export CausalForestEstimator  # Session 157
 export SyntheticControl, AugmentedSC
 export EValue, RosenbaumBounds
 export SharpRKD, FuzzyRKD

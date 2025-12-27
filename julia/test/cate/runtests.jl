@@ -29,6 +29,7 @@ using Statistics
     include("test_neural_meta_learners.jl")  # Session 155: Neural Meta-Learners
     include("test_neural_dml.jl")  # Session 155: Neural DML
     include("test_latent_cate.jl")  # Session 156: Latent CATE
+    include("test_causal_forest.jl")  # Session 157: Causal Forest
 
     # Validation tests (Monte Carlo and Adversarial)
     @testset "CATE Monte Carlo Validation" begin

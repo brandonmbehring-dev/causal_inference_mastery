@@ -1,48 +1,56 @@
 # Current Work
 
-**Last Updated**: 2025-12-27 [Session 156 - Latent CATE Julia Parity]
+**Last Updated**: 2025-12-27 [Session 157 - Causal Forest Julia Parity]
 
 ---
 
 ## Right Now
 
-**Session 156**: Latent CATE (Julia Parity) ✅ COMPLETE
+**Session 157**: Causal Forest (Julia Parity) ✅ COMPLETE
 
-Implemented latent CATE methods in Julia matching Python `latent_cate.py`, using dimensionality reduction for latent confounder adjustment.
+Implemented Causal Forest in Julia - custom honest forest implementation since Python wraps econml's CausalForestDML.
 
 ### Key Innovation
 
-**Latent confounder adjustment without VAE**:
-- Factor Analysis via EM algorithm (extracts latent factors)
-- PCA via SVD (dimensionality reduction)
-- GMM via EM with K-means initialization (stratification)
-- No new dependencies - uses LinearAlgebra, Distributions
+**Honest causal tree implementation from scratch**:
+- Structure/estimation sample split (honesty)
+- CATE-specific splitting criterion (heterogeneity maximization)
+- Bootstrap variance estimation over trees
+- No new dependencies - uses Random, Statistics, LinearAlgebra
 
-### Julia Implementation (~500 lines)
+### Julia Implementation (~650 lines)
 
-**latent_cate.jl** (~350 lines)
-- `_pca_transform` - SVD-based principal components
-- `_factor_analysis` - EM algorithm for latent factors
-- `_gmm_fit` - GMM clustering via EM
-- `FactorAnalysisCATEEstimator` - FA + base meta-learner
-- `PPCACATEEstimator` - PCA + base meta-learner
-- `GMMStratifiedCATEEstimator` - Stratum-specific CATE
+**causal_forest.jl** (~500 lines)
+- `CausalTreeNode` - Mutable tree node structure
+- `_estimate_leaf_tau` - Leaf-level CATE estimation
+- `_heterogeneity_gain` - Split criterion maximizing CATE variance
+- `_find_best_split` - Search over variables and values
+- `build_honest_tree` - Structure half → tree, estimation half → leaves
+- `CausalForestEstimator` - Forest aggregation with bootstrap/subsample
+- `solve` method - Build forest, predict CATE, estimate variance
 
-### Tests (66 new tests)
+### Tests (45 new tests)
 
-**test_latent_cate.jl** (~150 lines)
-- Layer 1: Constant/linear CATE DGPs for each method
+**test_causal_forest.jl** (~150 lines)
+- Layer 1: Constant/step/linear CATE DGPs
 - Layer 2: Invalid params, small samples, high-dim, imbalanced
-- Comparison tests vs standard meta-learners
+- Comparison tests vs T-learner
+- Tree node unit tests
 
 ### Summary
 
 | Metric | Value |
 |--------|-------|
-| Julia lines | ~500 |
-| New tests | 66 |
-| Methods | 3 (FA, PPCA, GMM-stratified) |
+| Julia lines | ~650 |
+| New tests | 45 |
+| Methods | 1 (CausalForestEstimator) |
 | Dependencies | None new |
+
+---
+
+**Session 156**: Latent CATE (Julia Parity) ✅ COMPLETE
+
+Implemented latent CATE methods in Julia matching Python `latent_cate.py`, using dimensionality reduction for latent confounder adjustment.
 
 ---
 
