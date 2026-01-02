@@ -3501,3 +3501,440 @@ def r_rosenbaum_bounds(
         return None
     finally:
         numpy2ri.deactivate()
+
+
+# =============================================================================
+# Observational Methods (WeightIt, drtmle)
+# =============================================================================
+
+
+def check_weightit_installed() -> bool:
+    """Check if the WeightIt R package is installed.
+
+    Returns
+    -------
+    bool
+        True if WeightIt can be loaded in R, False otherwise.
+    """
+    if not check_r_available():
+        return False
+    try:
+        import rpy2.robjects as ro
+
+        ro.r("suppressPackageStartupMessages(library(WeightIt))")
+        return True
+    except Exception:
+        return False
+
+
+def check_drtmle_installed() -> bool:
+    """Check if the drtmle R package is installed.
+
+    Returns
+    -------
+    bool
+        True if drtmle can be loaded in R, False otherwise.
+    """
+    if not check_r_available():
+        return False
+    try:
+        import rpy2.robjects as ro
+
+        ro.r("suppressPackageStartupMessages(library(drtmle))")
+        return True
+    except Exception:
+        return False
+
+
+def r_propensity_glm(
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+) -> Optional[Dict[str, Any]]:
+    """Estimate propensity scores via R glm(family=binomial).
+
+    Compares against Python's sklearn LogisticRegression.
+    Both use unpenalized logistic regression.
+
+    Parameters
+    ----------
+    treatment : np.ndarray
+        Binary treatment indicator (0/1), shape (n,).
+    covariates : np.ndarray
+        Covariate matrix X, shape (n, p).
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - propensity: np.ndarray of propensity scores
+        - auc: float, ROC AUC
+        - pseudo_r2: float, McFadden's pseudo-R²
+        - converged: bool
+        Returns None if R unavailable.
+
+    Notes
+    -----
+    R command: glm(treatment ~ ., data=data, family=binomial)
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for propensity validation", UserWarning)
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        n, p = covariates.shape
+
+        # Transfer data to R
+        ro.globalenv["treatment"] = ro.IntVector(treatment.astype(int))
+
+        for j in range(p):
+            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+
+        result = ro.r(
+            f"""
+            suppressPackageStartupMessages(library(pROC))
+
+            # Build formula dynamically
+            n <- length(treatment)
+            p <- {p}
+
+            # Create data frame
+            df <- data.frame(treatment = treatment)
+            for (j in 1:p) {{
+                df[[paste0("X", j)]] <- get(paste0("X", j))
+            }}
+
+            # Fit logistic regression (no penalty, like sklearn with penalty=None)
+            fit <- glm(treatment ~ ., data = df, family = binomial())
+
+            # Extract propensity scores
+            propensity <- predict(fit, type = "response")
+
+            # Compute AUC
+            roc_obj <- roc(treatment, propensity, quiet = TRUE)
+            auc_val <- as.numeric(auc(roc_obj))
+
+            # McFadden's pseudo-R²
+            null_model <- glm(treatment ~ 1, data = df, family = binomial())
+            pseudo_r2 <- 1 - (logLik(fit) / logLik(null_model))
+
+            list(
+                propensity = propensity,
+                auc = auc_val,
+                pseudo_r2 = as.numeric(pseudo_r2),
+                converged = fit$converged
+            )
+            """
+        )
+
+        return {
+            "propensity": np.array(result.rx2("propensity")),
+            "auc": float(result.rx2("auc")[0]),
+            "pseudo_r2": float(result.rx2("pseudo_r2")[0]),
+            "converged": bool(result.rx2("converged")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R propensity estimation failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_ipw_observational(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    stabilize: bool = False,
+    trim_percentile: Optional[Tuple[float, float]] = None,
+) -> Optional[Dict[str, Any]]:
+    """Estimate IPW ATE via WeightIt package.
+
+    Computes inverse probability weighted ATE using R's WeightIt
+    for comparison with Python's ipw_ate_observational().
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y, shape (n,).
+    treatment : np.ndarray
+        Binary treatment indicator (0/1), shape (n,).
+    covariates : np.ndarray
+        Covariate matrix X, shape (n, p).
+    stabilize : bool, default=False
+        Whether to use stabilized weights.
+    trim_percentile : Tuple[float, float], optional
+        Percentile range for trimming (e.g., (0.01, 0.99)).
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - estimate: float, IPW ATE estimate
+        - se: float, robust standard error
+        - ci_lower: float
+        - ci_upper: float
+        - ess_treated: float, effective sample size for treated
+        - ess_control: float, effective sample size for control
+        Returns None if WeightIt unavailable.
+
+    Notes
+    -----
+    Uses: WeightIt::weightit() for weights, survey::svyglm for estimation.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for IPW validation", UserWarning)
+        return None
+
+    if not check_weightit_installed():
+        warnings.warn(
+            "WeightIt R package not installed. Install in R with: "
+            "install.packages('WeightIt')",
+            UserWarning,
+        )
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        n, p = covariates.shape
+
+        # Transfer data to R
+        ro.globalenv["Y"] = ro.FloatVector(outcomes)
+        ro.globalenv["treatment"] = ro.IntVector(treatment.astype(int))
+        ro.globalenv["stabilize"] = stabilize
+
+        for j in range(p):
+            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+
+        # Handle trimming
+        if trim_percentile is not None:
+            ro.globalenv["trim_lower"] = trim_percentile[0]
+            ro.globalenv["trim_upper"] = trim_percentile[1]
+            trim_code = """
+            ps <- W$ps
+            lower_thresh <- quantile(ps, trim_lower)
+            upper_thresh <- quantile(ps, trim_upper)
+            keep <- ps >= lower_thresh & ps <= upper_thresh
+            df <- df[keep, ]
+            W$weights <- W$weights[keep]
+            """
+        else:
+            trim_code = ""
+
+        result = ro.r(
+            f"""
+            suppressPackageStartupMessages({{
+                library(WeightIt)
+                library(survey)
+            }})
+
+            # Build data frame
+            n <- length(treatment)
+            p <- {p}
+
+            df <- data.frame(Y = Y, treatment = factor(treatment))
+            for (j in 1:p) {{
+                df[[paste0("X", j)]] <- get(paste0("X", j))
+            }}
+
+            # Build formula for covariates
+            cov_names <- paste0("X", 1:p)
+            ps_formula <- as.formula(paste("treatment ~", paste(cov_names, collapse = " + ")))
+
+            # Estimate weights via WeightIt
+            W <- weightit(
+                ps_formula,
+                data = df,
+                method = "glm",
+                estimand = "ATE",
+                stabilize = stabilize
+            )
+
+            {trim_code}
+
+            # Create survey design with IPW weights
+            design <- svydesign(ids = ~1, weights = ~W$weights, data = df)
+
+            # Estimate ATE via weighted regression
+            fit <- svyglm(Y ~ treatment, design = design)
+            summ <- summary(fit)
+
+            # Extract results
+            estimate <- coef(fit)["treatment1"]
+            se <- summ$coefficients["treatment1", "Std. Error"]
+            ci <- confint(fit)["treatment1", ]
+
+            # Effective sample sizes
+            weights_t <- W$weights[df$treatment == "1"]
+            weights_c <- W$weights[df$treatment == "0"]
+            ess_treated <- sum(weights_t)^2 / sum(weights_t^2)
+            ess_control <- sum(weights_c)^2 / sum(weights_c^2)
+
+            list(
+                estimate = estimate,
+                se = se,
+                ci_lower = ci[1],
+                ci_upper = ci[2],
+                ess_treated = ess_treated,
+                ess_control = ess_control
+            )
+            """
+        )
+
+        return {
+            "estimate": float(result.rx2("estimate")[0]),
+            "se": float(result.rx2("se")[0]),
+            "ci_lower": float(result.rx2("ci_lower")[0]),
+            "ci_upper": float(result.rx2("ci_upper")[0]),
+            "ess_treated": float(result.rx2("ess_treated")[0]),
+            "ess_control": float(result.rx2("ess_control")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R IPW estimation failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_dr_ate(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+) -> Optional[Dict[str, Any]]:
+    """Estimate doubly robust ATE via drtmle or AIPW package.
+
+    Computes DR (AIPW) estimator using R packages for
+    comparison with Python's dr_ate().
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y, shape (n,).
+    treatment : np.ndarray
+        Binary treatment indicator (0/1), shape (n,).
+    covariates : np.ndarray
+        Covariate matrix X, shape (n, p).
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - estimate: float, DR ATE estimate
+        - se: float, standard error (influence function based)
+        - ci_lower: float
+        - ci_upper: float
+        Returns None if required packages unavailable.
+
+    Notes
+    -----
+    Tries drtmle first, falls back to manual AIPW if unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for DR validation", UserWarning)
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        n, p = covariates.shape
+
+        # Transfer data to R
+        ro.globalenv["Y"] = ro.FloatVector(outcomes)
+        ro.globalenv["treatment"] = ro.IntVector(treatment.astype(int))
+
+        for j in range(p):
+            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+
+        result = ro.r(
+            f"""
+            # Build data frame
+            n <- length(treatment)
+            p <- {p}
+
+            df <- data.frame(Y = Y, A = treatment)
+            for (j in 1:p) {{
+                df[[paste0("X", j)]] <- get(paste0("X", j))
+            }}
+
+            # Create covariate matrix for modeling
+            X <- as.matrix(df[, paste0("X", 1:p)])
+
+            # Try drtmle if available, otherwise use manual AIPW
+            if (requireNamespace("drtmle", quietly = TRUE)) {{
+                library(drtmle)
+
+                # drtmle expects specific format
+                fit <- drtmle(
+                    Y = Y,
+                    A = treatment,
+                    W = X,
+                    family = gaussian(),
+                    glm_g = paste0("X", 1:p, collapse = " + "),
+                    glm_Q = paste0("X", 1:p, collapse = " + "),
+                    SL_g = NULL,
+                    SL_Q = NULL
+                )
+
+                estimate <- fit$drtmle$est[2] - fit$drtmle$est[1]  # ATE = E[Y(1)] - E[Y(0)]
+                se <- sqrt(fit$drtmle$cov[2,2] + fit$drtmle$cov[1,1] - 2*fit$drtmle$cov[1,2])
+                ci <- c(estimate - 1.96 * se, estimate + 1.96 * se)
+
+                list(
+                    estimate = estimate,
+                    se = se,
+                    ci_lower = ci[1],
+                    ci_upper = ci[2]
+                )
+            }} else {{
+                # Manual AIPW implementation
+                # Propensity model
+                ps_fit <- glm(A ~ ., data = cbind(A = treatment, X), family = binomial())
+                ps <- predict(ps_fit, type = "response")
+                ps <- pmax(pmin(ps, 1 - 1e-6), 1e-6)  # Clip
+
+                # Outcome models
+                mu1_fit <- lm(Y ~ ., data = cbind(Y = Y, X)[treatment == 1, ])
+                mu0_fit <- lm(Y ~ ., data = cbind(Y = Y, X)[treatment == 0, ])
+
+                mu1 <- predict(mu1_fit, newdata = as.data.frame(X))
+                mu0 <- predict(mu0_fit, newdata = as.data.frame(X))
+
+                # AIPW estimator
+                phi1 <- mu1 + treatment / ps * (Y - mu1)
+                phi0 <- mu0 + (1 - treatment) / (1 - ps) * (Y - mu0)
+
+                estimate <- mean(phi1 - phi0)
+                se <- sd(phi1 - phi0) / sqrt(n)
+                ci <- c(estimate - 1.96 * se, estimate + 1.96 * se)
+
+                list(
+                    estimate = estimate,
+                    se = se,
+                    ci_lower = ci[1],
+                    ci_upper = ci[2]
+                )
+            }}
+            """
+        )
+
+        return {
+            "estimate": float(result.rx2("estimate")[0]),
+            "se": float(result.rx2("se")[0]),
+            "ci_lower": float(result.rx2("ci_lower")[0]),
+            "ci_upper": float(result.rx2("ci_upper")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R DR estimation failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
