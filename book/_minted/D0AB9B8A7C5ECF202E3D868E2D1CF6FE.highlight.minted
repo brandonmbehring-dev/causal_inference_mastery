@@ -1,0 +1,23 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{iv}\PYG{n+nn}{.}\PYG{n+nn}{diagnostics}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{classify\PYGZus{}instrument\PYGZus{}strength}\PYG{p}{,}
+    \PYG{n}{cragg\PYGZus{}donald\PYGZus{}statistic}\PYG{p}{,}
+    \PYG{n}{anderson\PYGZus{}rubin\PYGZus{}test}\PYG{p}{,}
+    \PYG{n}{weak\PYGZus{}instrument\PYGZus{}summary}\PYG{p}{,}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Classify instrument strength using Stock\PYGZhy{}Yogo critical values}
+\PYG{n}{classification}\PYG{p}{,} \PYG{n}{critical\PYGZus{}value}\PYG{p}{,} \PYG{n}{interpretation} \PYG{o}{=} \PYG{n}{classify\PYGZus{}instrument\PYGZus{}strength}\PYG{p}{(}
+    \PYG{n}{f\PYGZus{}statistic}\PYG{o}{=}\PYG{l+m+mf}{12.5}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}instruments}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}endogenous}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n}{bias\PYGZus{}threshold}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{10pct}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}  \PYG{c+c1}{\PYGZsh{} 10\PYGZpc{}, 15\PYGZpc{}, or 20\PYGZpc{} maximal bias}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Classification: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{classification}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Output: Classification: weak}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Critical Value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{critical\PYGZus{}value}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Output: Critical Value: 16.38}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Interpretation: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{interpretation}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Output: Instruments fail Stock\PYGZhy{}Yogo test (F=12.50 \PYGZlt{}= 16.38)}
+\end{MintedVerbatim}

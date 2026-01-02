@@ -1,0 +1,36 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{bounds}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{manski\PYGZus{}worst\PYGZus{}case}\PYG{p}{,}
+    \PYG{n}{manski\PYGZus{}mtr}\PYG{p}{,}
+    \PYG{n}{manski\PYGZus{}mts}\PYG{p}{,}
+    \PYG{n}{manski\PYGZus{}mtr\PYGZus{}mts}\PYG{p}{,}
+    \PYG{n}{compare\PYGZus{}bounds}\PYG{p}{,}
+\PYG{p}{)}
+
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{seed}\PYG{p}{(}\PYG{l+m+mi}{42}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Generate data}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{1000}
+\PYG{n}{treatment} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{binomial}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+\PYG{n}{outcome} \PYG{o}{=} \PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{treatment} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{randn}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} True ATE = 2}
+
+\PYG{c+c1}{\PYGZsh{} Worst\PYGZhy{}case bounds}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{manski\PYGZus{}worst\PYGZus{}case}\PYG{p}{(}\PYG{n}{outcome}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{outcome\PYGZus{}support}\PYG{o}{=}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{5}\PYG{p}{,} \PYG{l+m+mi}{7}\PYG{p}{)}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Worst\PYGZhy{}case: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}lower}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}upper}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Wide bounds due to no assumptions}
+
+\PYG{c+c1}{\PYGZsh{} MTR bounds (assuming positive effect)}
+\PYG{n}{result\PYGZus{}mtr} \PYG{o}{=} \PYG{n}{manski\PYGZus{}mtr}\PYG{p}{(}\PYG{n}{outcome}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{direction}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{positive}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{MTR: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}mtr}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}lower}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}mtr}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}upper}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Combined MTR + MTS}
+\PYG{n}{result\PYGZus{}both} \PYG{o}{=} \PYG{n}{manski\PYGZus{}mtr\PYGZus{}mts}\PYG{p}{(}\PYG{n}{outcome}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{mtr\PYGZus{}direction}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{positive}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{MTR+MTS: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}both}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}lower}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}both}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}upper}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Compare all bounds}
+\PYG{n}{comparison} \PYG{o}{=} \PYG{n}{compare\PYGZus{}bounds}\PYG{p}{(}\PYG{n}{outcome}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{)}
+\PYG{k}{for} \PYG{n}{method}\PYG{p}{,} \PYG{n}{res} \PYG{o+ow}{in} \PYG{n}{comparison}\PYG{o}{.}\PYG{n}{items}\PYG{p}{(}\PYG{p}{)}\PYG{p}{:}
+    \PYG{k}{if} \PYG{n}{method} \PYG{o}{!=} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{\PYGZus{}summary}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:}
+        \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{method}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{: width = }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{res}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}width}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

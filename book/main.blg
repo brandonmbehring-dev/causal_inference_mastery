@@ -1,0 +1,74 @@
+This is BibTeX, Version 0.99d (TeX Live 2025/dev/Debian)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+A level-1 auxiliary file: chapters/part1_foundations/ch01_potential_outcomes.aux
+A level-1 auxiliary file: chapters/part1_foundations/ch02_randomized_experiments.aux
+A level-1 auxiliary file: chapters/part1_foundations/ch03_statistical_inference.aux
+A level-1 auxiliary file: chapters/part2_selection_observables/ch04_propensity_score.aux
+A level-1 auxiliary file: chapters/part2_selection_observables/ch05_weighting.aux
+A level-1 auxiliary file: chapters/part2_selection_observables/ch06_cate.aux
+A level-1 auxiliary file: chapters/part2_selection_observables/ch07_causal_forests.aux
+A level-1 auxiliary file: chapters/part2_selection_observables/ch08_sensitivity.aux
+A level-1 auxiliary file: chapters/part3_selection_unobservables/ch09_iv.aux
+A level-1 auxiliary file: chapters/part3_selection_unobservables/ch10_weak_instruments.aux
+A level-1 auxiliary file: chapters/part3_selection_unobservables/ch11_control_function.aux
+A level-1 auxiliary file: chapters/part3_selection_unobservables/ch12_bounds.aux
+A level-1 auxiliary file: chapters/part4_natural_experiments/ch13_did_classic.aux
+A level-1 auxiliary file: chapters/part4_natural_experiments/ch14_did_modern.aux
+A level-1 auxiliary file: chapters/part4_natural_experiments/ch15_rdd.aux
+A level-1 auxiliary file: chapters/part4_natural_experiments/ch16_scm.aux
+A level-1 auxiliary file: chapters/part4_natural_experiments/ch17_kink_bunching.aux
+A level-1 auxiliary file: chapters/part5_advanced/ch18_qte.aux
+A level-1 auxiliary file: chapters/part5_advanced/ch19_mte.aux
+A level-1 auxiliary file: chapters/part5_advanced/ch20_mediation.aux
+A level-1 auxiliary file: chapters/part5_advanced/ch21_selection_panel.aux
+A level-1 auxiliary file: chapters/part5_advanced/ch22_dtr.aux
+A level-1 auxiliary file: chapters/part6_implementation/ch23_principal_strat.aux
+A level-1 auxiliary file: chapters/part6_implementation/ch24_bayesian.aux
+A level-1 auxiliary file: chapters/part6_implementation/ch25_validation.aux
+A level-1 auxiliary file: chapters/appendices/app_julia.aux
+The style file: plainnat.bst
+Database file #1: bibliography.bib
+Warning--empty journal in fisher1935design
+You've used 46 entries,
+            2773 wiz_defined-function locations,
+            889 strings with 13081 characters,
+and the built_in function-call counts, 20800 in all, are:
+= -- 1940
+> -- 992
+< -- 33
++ -- 340
+- -- 294
+* -- 1733
+:= -- 3160
+add.period$ -- 139
+call.type$ -- 46
+change.case$ -- 235
+chr.to.int$ -- 46
+cite$ -- 93
+duplicate$ -- 930
+empty$ -- 1826
+format.name$ -- 378
+if$ -- 4325
+int.to.chr$ -- 1
+int.to.str$ -- 1
+missing$ -- 48
+newline$ -- 239
+num.names$ -- 184
+pop$ -- 406
+preamble$ -- 1
+purify$ -- 190
+quote$ -- 0
+skip$ -- 689
+stack$ -- 0
+substring$ -- 1165
+swap$ -- 45
+text.length$ -- 0
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 496
+warning$ -- 1
+while$ -- 220
+width$ -- 0
+write$ -- 604
+(There was 1 warning)

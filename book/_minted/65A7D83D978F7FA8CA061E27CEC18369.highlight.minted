@@ -1,0 +1,7 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{problem}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{EValueProblem}\PYG{p}{(}\PYG{l+m+mf}{2.5}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{ci\PYGZus{}lower}\PYG{o}{=}\PYG{l+m+mf}{1.8}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{ci\PYGZus{}upper}\PYG{o}{=}\PYG{l+m+mf}{3.5}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{effect\PYGZus{}type}\PYG{o}{=}\PYG{l+s+ss}{:rr}\PYG{p}{)}
+\PYG{n}{solution}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{solve}\PYG{p}{(}\PYG{n}{problem}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{EValue}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{E\PYGZhy{}value: }\PYG{l+s+si}{\PYGZdl{}}\PYG{p}{(}\PYG{n}{solution}\PYG{o}{.}\PYG{n}{e\PYGZus{}value}\PYG{p}{)}\PYG{l+s}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{E\PYGZhy{}value for CI: }\PYG{l+s+si}{\PYGZdl{}}\PYG{p}{(}\PYG{n}{solution}\PYG{o}{.}\PYG{n}{e\PYGZus{}value\PYGZus{}ci}\PYG{p}{)}\PYG{l+s}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

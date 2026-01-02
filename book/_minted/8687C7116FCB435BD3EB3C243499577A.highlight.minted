@@ -1,0 +1,27 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s}{    SLearner \PYGZlt{}: AbstractCATEEstimator}
+
+\PYG{l+s}{Single model approach: fit mu(X, T) \PYGZhy{}\PYGZgt{} Y, then CATE(x) = mu\PYGZus{}hat(x, 1) \PYGZhy{} mu\PYGZus{}hat(x, 0).}
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{k}{struct} \PYG{k+kt}{SLearner}\PYG{+w}{ }\PYG{o}{\PYGZlt{}:}\PYG{+w}{ }\PYG{k+kt}{AbstractCATEEstimator}\PYG{+w}{ }\PYG{k}{end}
+
+\PYG{k}{function}\PYG{+w}{ }\PYG{n}{solve}\PYG{p}{(}\PYG{n}{problem}\PYG{o}{::}\PYG{k+kt}{CATEProblem}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{::}\PYG{k+kt}{SLearner}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{(}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{outcomes}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{covariates}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{problem}
+\PYG{+w}{    }\PYG{n}{n}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{length}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Augment covariates with treatment}
+\PYG{+w}{    }\PYG{n}{X\PYGZus{}aug}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{hcat}\PYG{p}{(}\PYG{n}{ones}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{covariates}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{Float64}\PYG{o}{.}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{)}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{coef}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{fit\PYGZus{}linear\PYGZus{}model}\PYG{p}{(}\PYG{n}{X\PYGZus{}aug}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{outcomes}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} CATE = coefficient on treatment (for linear model)}
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} For flexibility, compute explicitly:}
+\PYG{+w}{    }\PYG{n}{X\PYGZus{}treat}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{hcat}\PYG{p}{(}\PYG{n}{ones}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{covariates}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{ones}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{X\PYGZus{}ctrl}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{hcat}\PYG{p}{(}\PYG{n}{ones}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{covariates}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{zeros}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{n}{cate}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{X\PYGZus{}treat}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{n}{coef}\PYG{+w}{ }\PYG{o}{.\PYGZhy{}}\PYG{+w}{ }\PYG{n}{X\PYGZus{}ctrl}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{n}{coef}\PYG{+w}{  }\PYG{c}{\PYGZsh{} = coef[end] for all i}
+\PYG{+w}{    }\PYG{n}{ate}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{mean}\PYG{p}{(}\PYG{n}{cate}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{CATESolution}\PYG{p}{(}\PYG{n}{cate}\PYG{o}{=}\PYG{n}{cate}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{ate}\PYG{o}{=}\PYG{n}{ate}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{...}\PYG{p}{)}
+\PYG{k}{end}
+\end{MintedVerbatim}

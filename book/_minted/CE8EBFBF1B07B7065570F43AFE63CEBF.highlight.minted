@@ -1,0 +1,14 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{required\PYGZus{}sample\PYGZus{}size}\PYG{p}{(}\PYG{n}{effect\PYGZus{}size}\PYG{p}{,} \PYG{n}{sigma}\PYG{p}{,} \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,} \PYG{n}{power}\PYG{o}{=}\PYG{l+m+mf}{0.80}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Compute required sample size per group for ATE estimation.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{z\PYGZus{}alpha} \PYG{o}{=} \PYG{n}{stats}\PYG{o}{.}\PYG{n}{norm}\PYG{o}{.}\PYG{n}{ppf}\PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{alpha}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{)}
+    \PYG{n}{z\PYGZus{}beta} \PYG{o}{=} \PYG{n}{stats}\PYG{o}{.}\PYG{n}{norm}\PYG{o}{.}\PYG{n}{ppf}\PYG{p}{(}\PYG{n}{power}\PYG{p}{)}
+    \PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{2} \PYG{o}{*} \PYG{p}{(}\PYG{n}{z\PYGZus{}alpha} \PYG{o}{+} \PYG{n}{z\PYGZus{}beta}\PYG{p}{)}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{sigma}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2} \PYG{o}{/} \PYG{n}{effect\PYGZus{}size}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}
+    \PYG{k}{return} \PYG{n+nb}{int}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{ceil}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{minimum\PYGZus{}detectable\PYGZus{}effect}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{sigma}\PYG{p}{,} \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,} \PYG{n}{power}\PYG{o}{=}\PYG{l+m+mf}{0.80}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Compute MDE given sample size.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{z\PYGZus{}alpha} \PYG{o}{=} \PYG{n}{stats}\PYG{o}{.}\PYG{n}{norm}\PYG{o}{.}\PYG{n}{ppf}\PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{alpha}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{)}
+    \PYG{n}{z\PYGZus{}beta} \PYG{o}{=} \PYG{n}{stats}\PYG{o}{.}\PYG{n}{norm}\PYG{o}{.}\PYG{n}{ppf}\PYG{p}{(}\PYG{n}{power}\PYG{p}{)}
+    \PYG{k}{return} \PYG{p}{(}\PYG{n}{z\PYGZus{}alpha} \PYG{o}{+} \PYG{n}{z\PYGZus{}beta}\PYG{p}{)} \PYG{o}{*} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{sigma}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2} \PYG{o}{/} \PYG{n}{n}\PYG{p}{)}
+\end{MintedVerbatim}

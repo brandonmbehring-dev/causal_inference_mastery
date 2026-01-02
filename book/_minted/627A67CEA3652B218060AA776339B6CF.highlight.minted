@@ -1,0 +1,23 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{did}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{event\PYGZus{}study}\PYG{p}{,} \PYG{n}{plot\PYGZus{}event\PYGZus{}study}
+
+\PYG{c+c1}{\PYGZsh{} Estimate event study}
+\PYG{n}{es\PYGZus{}result} \PYG{o}{=} \PYG{n}{event\PYGZus{}study}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{o}{=}\PYG{n}{D}\PYG{p}{,}
+    \PYG{n}{time}\PYG{o}{=}\PYG{n}{time\PYGZus{}periods}\PYG{p}{,}
+    \PYG{n}{unit\PYGZus{}id}\PYG{o}{=}\PYG{n}{unit\PYGZus{}ids}\PYG{p}{,}
+    \PYG{n}{treatment\PYGZus{}time}\PYG{o}{=}\PYG{n}{T\PYGZus{}star}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}leads}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,}           \PYG{c+c1}{\PYGZsh{} Pre\PYGZhy{}treatment periods to include}
+    \PYG{n}{n\PYGZus{}lags}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,}            \PYG{c+c1}{\PYGZsh{} Post\PYGZhy{}treatment periods to include}
+    \PYG{n}{omit\PYGZus{}period}\PYG{o}{=}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,}      \PYG{c+c1}{\PYGZsh{} Reference period}
+    \PYG{n}{cluster\PYGZus{}se}\PYG{o}{=}\PYG{k+kc}{True}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Access coefficients by event time}
+\PYG{k}{for} \PYG{n}{k}\PYG{p}{,} \PYG{n}{coef} \PYG{o+ow}{in} \PYG{n}{es\PYGZus{}result}\PYG{o}{.}\PYG{n}{coefficients}\PYG{o}{.}\PYG{n}{items}\PYG{p}{(}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Event time }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{k}\PYG{l+s+si}{:}\PYG{l+s+s2}{+d}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{coef}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (SE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{es\PYGZus{}result}\PYG{o}{.}\PYG{n}{se}\PYG{p}{[}\PYG{n}{k}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Visualize}
+\PYG{n}{plot\PYGZus{}event\PYGZus{}study}\PYG{p}{(}\PYG{n}{es\PYGZus{}result}\PYG{p}{,} \PYG{n}{title}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Event Study: Treatment Effects by Period}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

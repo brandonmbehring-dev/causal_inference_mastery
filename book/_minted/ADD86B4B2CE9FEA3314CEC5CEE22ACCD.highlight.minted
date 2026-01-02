@@ -1,0 +1,35 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{mte}\PYG{n+nn}{.}\PYG{n+nn}{diagnostics}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{common\PYGZus{}support\PYGZus{}check}\PYG{p}{,}
+    \PYG{n}{monotonicity\PYGZus{}test}\PYG{p}{,}
+    \PYG{n}{mte\PYGZus{}shape\PYGZus{}test}\PYG{p}{,}
+    \PYG{n}{mte\PYGZus{}sensitivity\PYGZus{}to\PYGZus{}trimming}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Estimate propensity for diagnostics}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sklearn}\PYG{n+nn}{.}\PYG{n+nn}{linear\PYGZus{}model}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{LogisticRegression}
+\PYG{n}{lr} \PYG{o}{=} \PYG{n}{LogisticRegression}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{lr}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Z}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{,} \PYG{n}{D}\PYG{p}{)}
+\PYG{n}{propensity\PYGZus{}scores} \PYG{o}{=} \PYG{n}{lr}\PYG{o}{.}\PYG{n}{predict\PYGZus{}proba}\PYG{p}{(}\PYG{n}{Z}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}\PYG{p}{[}\PYG{p}{:}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}
+
+\PYG{c+c1}{\PYGZsh{} Check common support}
+\PYG{n}{support\PYGZus{}result} \PYG{o}{=} \PYG{n}{common\PYGZus{}support\PYGZus{}check}\PYG{p}{(}\PYG{n}{propensity\PYGZus{}scores}\PYG{p}{,} \PYG{n}{D}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{support\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{recommendation}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Monotonicity test}
+\PYG{n}{mono\PYGZus{}result} \PYG{o}{=} \PYG{n}{monotonicity\PYGZus{}test}\PYG{p}{(}\PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s2}{Monotonicity: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mono\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{notes}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{  First stage: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mono\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{first\PYGZus{}stage}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{  Complier share: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mono\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{complier\PYGZus{}share}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.1\PYGZpc{}}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} MTE shape test}
+\PYG{n}{shape\PYGZus{}result} \PYG{o}{=} \PYG{n}{mte\PYGZus{}shape\PYGZus{}test}\PYG{p}{(}
+    \PYG{n}{mte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{mte\PYGZus{}grid}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,}
+    \PYG{n}{mte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{u\PYGZus{}grid}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,}
+    \PYG{n}{mte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{se\PYGZus{}grid}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}
+\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s2}{MTE Shape:}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{  Constant test: p = }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{shape\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{constant\PYGZus{}mte\PYGZus{}test}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{p\PYGZus{}value}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{  Linearity test: p = }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{shape\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{linearity\PYGZus{}test}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{p\PYGZus{}value}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{  Pattern: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{shape\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{monotonicity\PYGZus{}test}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{interpretation}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

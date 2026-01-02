@@ -1,0 +1,16 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{rdd}\PYG{n+nn}{.}\PYG{n+nn}{mccrary}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{mccrary\PYGZus{}density\PYGZus{}test}
+
+\PYG{c+c1}{\PYGZsh{} Test for manipulation}
+\PYG{n}{mccrary\PYGZus{}result} \PYG{o}{=} \PYG{n}{mccrary\PYGZus{}density\PYGZus{}test}\PYG{p}{(}\PYG{n}{X}\PYG{p}{,} \PYG{n}{c}\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Log density difference: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mccrary\PYGZus{}result}\PYG{o}{.}\PYG{n}{theta}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Standard error: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mccrary\PYGZus{}result}\PYG{o}{.}\PYG{n}{se}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Test statistic: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mccrary\PYGZus{}result}\PYG{o}{.}\PYG{n}{z\PYGZus{}stat}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{P\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mccrary\PYGZus{}result}\PYG{o}{.}\PYG{n}{pvalue}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{k}{if} \PYG{n}{mccrary\PYGZus{}result}\PYG{o}{.}\PYG{n}{pvalue} \PYG{o}{\PYGZlt{}} \PYG{l+m+mf}{0.05}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{WARNING: Evidence of manipulation at cutoff}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{k}{else}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{No evidence of manipulation detected}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

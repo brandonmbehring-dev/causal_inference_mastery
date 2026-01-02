@@ -1,0 +1,36 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{qte}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{unconditional\PYGZus{}qte}\PYG{p}{,} \PYG{n}{unconditional\PYGZus{}qte\PYGZus{}band}
+
+\PYG{c+c1}{\PYGZsh{} Single quantile estimation}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{unconditional\PYGZus{}qte}\PYG{p}{(}
+    \PYG{n}{outcome}\PYG{o}{=}\PYG{n}{y}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{o}{=}\PYG{n}{t}\PYG{p}{,}
+    \PYG{n}{quantile}\PYG{o}{=}\PYG{l+m+mf}{0.5}\PYG{p}{,}        \PYG{c+c1}{\PYGZsh{} Median treatment effect}
+    \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{1000}\PYG{p}{,}
+    \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,}
+    \PYG{n}{random\PYGZus{}state}\PYG{o}{=}\PYG{l+m+mi}{42}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{QTE(0.5) = }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{tau\PYGZus{}q}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{95\PYGZpc{} CI: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{ci\PYGZus{}lower}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{ci\PYGZus{}upper}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Multiple quantiles with joint confidence band}
+\PYG{n}{band\PYGZus{}result} \PYG{o}{=} \PYG{n}{unconditional\PYGZus{}qte\PYGZus{}band}\PYG{p}{(}
+    \PYG{n}{outcome}\PYG{o}{=}\PYG{n}{y}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{o}{=}\PYG{n}{t}\PYG{p}{,}
+    \PYG{n}{quantiles}\PYG{o}{=}\PYG{p}{[}\PYG{l+m+mf}{0.1}\PYG{p}{,} \PYG{l+m+mf}{0.25}\PYG{p}{,} \PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{l+m+mf}{0.75}\PYG{p}{,} \PYG{l+m+mf}{0.9}\PYG{p}{]}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{1000}\PYG{p}{,}
+    \PYG{n}{joint}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,}          \PYG{c+c1}{\PYGZsh{} Compute joint band}
+    \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Plot QTE across quantiles}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{matplotlib}\PYG{n+nn}{.}\PYG{n+nn}{pyplot}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{plt}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{fill\PYGZus{}between}\PYG{p}{(}\PYG{n}{band\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{quantiles}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,}
+                 \PYG{n}{band\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{joint\PYGZus{}ci\PYGZus{}lower}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,}
+                 \PYG{n}{band\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{joint\PYGZus{}ci\PYGZus{}upper}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,}
+                 \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.2}\PYG{p}{,} \PYG{n}{label}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{95}\PYG{l+s+s1}{\PYGZpc{}}\PYG{l+s+s1}{ Joint CI}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{plot}\PYG{p}{(}\PYG{n}{band\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{quantiles}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{band\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{qte\PYGZus{}estimates}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{o\PYGZhy{}}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{xlabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{Quantile}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{plt}\PYG{o}{.}\PYG{n}{ylabel}\PYG{p}{(}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{QTE}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\end{MintedVerbatim}

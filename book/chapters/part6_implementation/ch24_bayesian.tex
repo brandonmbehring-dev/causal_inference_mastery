@@ -1,0 +1,570 @@
+\chapter{Bayesian Causal Inference}
+\label{ch:bayesian}
+
+\section{Introduction}
+
+Bayesian methods offer a coherent framework for causal inference that naturally handles uncertainty, incorporates prior information, and provides direct probability statements about treatment effects.
+
+\begin{definition}[Bayesian ATE]
+Given prior $p(\tau)$ and likelihood $p(Y \mid \tau, T, X)$:
+\begin{equation}
+p(\tau \mid Y, T, X) \propto p(Y \mid \tau, T, X) \cdot p(\tau)
+\end{equation}
+The posterior $p(\tau \mid Y, T, X)$ represents beliefs about the treatment effect given the data.
+\end{definition}
+
+This chapter develops:
+\begin{enumerate}
+\item \textbf{Conjugate ATE}: Closed-form posterior via normal-normal model
+\item \textbf{Bayesian Propensity Scores}: Beta-binomial and logistic approaches
+\item \textbf{Bayesian Doubly Robust}: Propagating propensity uncertainty
+\item \textbf{Hierarchical ATE}: Partial pooling across sites with MCMC
+\end{enumerate}
+
+
+\section{Conjugate Normal-Normal Model}
+
+\subsection{Mathematical Framework}
+
+The conjugate normal-normal model provides closed-form posteriors without MCMC.
+
+\begin{proposition}[Normal-Normal Conjugacy]
+Let:
+\begin{align}
+\text{Prior:} \quad & \tau \sim \mathcal{N}(\mu_0, \sigma_0^2) \\
+\text{Likelihood:} \quad & Y_i \mid T_i, X_i \sim \mathcal{N}(\alpha + \tau T_i + X_i'\beta, \sigma^2)
+\end{align}
+Then the posterior is:
+\begin{equation}
+\tau \mid Y, T, X \sim \mathcal{N}(\mu_n, \sigma_n^2)
+\end{equation}
+where:
+\begin{align}
+\sigma_n^{-2} &= \sigma_0^{-2} + \sigma_{\text{OLS}}^{-2} \label{eq:post-prec}\\
+\mu_n &= \sigma_n^2 \left( \frac{\mu_0}{\sigma_0^2} + \frac{\hat{\tau}_{\text{OLS}}}{\sigma_{\text{OLS}}^2} \right) \label{eq:post-mean}
+\end{align}
+\end{proposition}
+
+\begin{insight}
+The posterior is a precision-weighted average:
+\begin{itemize}
+\item \textbf{Prior precision}: $1/\sigma_0^2$ (strength of prior beliefs)
+\item \textbf{Likelihood precision}: $1/\sigma_{\text{OLS}}^2$ (information from data)
+\item More data $\Rightarrow$ posterior approaches MLE
+\end{itemize}
+\end{insight}
+
+\subsection{Prior Shrinkage}
+
+\begin{definition}[Prior-to-Posterior Shrinkage]
+\begin{equation}
+\text{Shrinkage} = \frac{\sigma_0^{-2}}{\sigma_0^{-2} + \sigma_{\text{OLS}}^{-2}}
+\end{equation}
+\begin{itemize}
+\item Shrinkage $\approx 0$: Data dominates (weak prior, many observations)
+\item Shrinkage $\approx 1$: Prior dominates (strong prior, few observations)
+\end{itemize}
+\end{definition}
+
+\subsection{Implementation: Bayesian ATE}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.bayesian import bayesian_ate
+
+result = bayesian_ate(
+    outcomes=Y,
+    treatment=T,
+    covariates=X,                 # Optional
+    prior_mean=0.0,               # Centered on no effect
+    prior_sd=10.0,                # Weakly informative
+    credible_level=0.95,
+    n_posterior_samples=5000,
+)
+
+# Posterior summary
+print(f"Posterior mean: {result['posterior_mean']:.4f}")
+print(f"Posterior SD: {result['posterior_sd']:.4f}")
+print(f"95% Credible Interval: [{result['ci_lower']:.4f}, {result['ci_upper']:.4f}]")
+
+# Compare with frequentist
+print(f"\nOLS estimate: {result['ols_estimate']:.4f}")
+print(f"OLS SE: {result['ols_se']:.4f}")
+
+# Shrinkage diagnostic
+print(f"\nPrior shrinkage: {result['prior_to_posterior_shrinkage']:.1%}")
+print(f"Effective sample size: {result['effective_sample_size']:.0f}")
+\end{minted}
+
+\subsection{Credible vs Confidence Intervals}
+
+\begin{table}[h]
+\centering
+\caption{Bayesian vs Frequentist Intervals}
+\begin{tabular}{lll}
+\toprule
+Property & Credible Interval & Confidence Interval \\
+\midrule
+Interpretation & $P(\tau \in \text{CI} \mid \text{data}) = 0.95$ & Coverage over repeated samples \\
+Prior role & Incorporates prior beliefs & None \\
+Finite sample & Valid with any $n$ & Asymptotic validity \\
+Direct probability & Yes & No (coverage interpretation) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Bayesian Propensity Score Estimation}
+
+\subsection{Beta-Binomial Model (Stratified)}
+
+For discrete covariates defining strata $s \in \{1, \ldots, S\}$:
+
+\begin{proposition}[Beta-Binomial Conjugacy]
+\begin{align}
+\text{Prior:} \quad & e_s \sim \text{Beta}(\alpha_0, \beta_0) \\
+\text{Likelihood:} \quad & T_i \mid s_i = s \sim \text{Bernoulli}(e_s)
+\end{align}
+Posterior:
+\begin{equation}
+e_s \mid T \sim \text{Beta}(\alpha_0 + n_{1,s}, \beta_0 + n_{0,s})
+\end{equation}
+where $n_{1,s}$ and $n_{0,s}$ are treated and control counts in stratum $s$.
+\end{proposition}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.bayesian import bayesian_propensity_stratified
+
+result = bayesian_propensity_stratified(
+    treatment=T,
+    covariates=X,                 # Discretized into strata
+    prior_alpha=1.0,              # Beta(1,1) = uniform prior
+    prior_beta=1.0,
+    n_bins=5,                     # For continuous covariates
+    n_posterior_samples=1000,
+)
+
+# Posterior propensity for each observation
+print(f"Propensity shape: {result['posterior_mean'].shape}")
+print(f"Mean uncertainty: {result['mean_uncertainty']:.4f}")
+
+# Stratum-level information
+for info in result['stratum_info']:
+    print(f"Stratum {info['stratum_id']}: n={info['n_obs']}, "
+          f"e={info['posterior_mean']:.3f} +/- {info['posterior_sd']:.3f}")
+\end{minted}
+
+\subsection{Bayesian Logistic Regression (Laplace Approximation)}
+
+For continuous covariates, use logistic regression with a normal prior on coefficients:
+
+\begin{align}
+\text{Prior:} \quad & \beta \sim \mathcal{N}(0, \sigma_{\text{prior}}^2 I) \\
+\text{Likelihood:} \quad & T_i \mid X_i \sim \text{Bernoulli}(\sigma(X_i' \beta)) \\
+\text{Posterior:} \quad & \beta \mid T, X \approx \mathcal{N}(\hat{\beta}_{\text{MAP}}, H^{-1})
+\end{align}
+
+where $H$ is the Hessian of the negative log-posterior at $\hat{\beta}_{\text{MAP}}$.
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.bayesian import bayesian_propensity_logistic
+
+result = bayesian_propensity_logistic(
+    treatment=T,
+    covariates=X,
+    prior_sd=10.0,                # Weakly informative on coefficients
+    n_posterior_samples=1000,
+    include_intercept=True,
+)
+
+# Coefficient uncertainty
+print("Coefficient posteriors:")
+for i, (mean, sd) in enumerate(zip(result['coefficient_mean'],
+                                    result['coefficient_sd'])):
+    print(f"  beta_{i}: {mean:.3f} +/- {sd:.3f}")
+
+# Propensity uncertainty propagated to each unit
+print(f"\nMean propensity uncertainty: {result['mean_uncertainty']:.4f}")
+print(f"Propensity range: {result['propensity_range']:.3f}")
+\end{minted}
+
+\subsection{Automatic Method Selection}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.bayesian import bayesian_propensity
+
+# Auto-selects based on covariate characteristics
+result = bayesian_propensity(
+    treatment=T,
+    covariates=X,
+    method="auto",                # "stratified", "logistic", or "auto"
+)
+
+print(f"Method selected: {result['method']}")
+\end{minted}
+
+Decision logic:
+\begin{itemize}
+\item All covariates have $\leq 10$ unique values $\Rightarrow$ stratified
+\item Otherwise $\Rightarrow$ logistic
+\end{itemize}
+
+
+\section{Bayesian Doubly Robust Estimation}
+
+\subsection{Uncertainty Propagation}
+
+The Bayesian DR estimator propagates propensity uncertainty through the AIPW formula:
+
+\begin{enumerate}
+\item Estimate Bayesian propensity $\Rightarrow$ samples $\{e^{(k)}\}_{k=1}^S$
+\item Fit frequentist outcome models $\Rightarrow$ $\hat{\mu}_0(X), \hat{\mu}_1(X)$
+\item For each propensity sample $k$:
+\begin{equation}
+\hat{\tau}^{(k)} = \frac{1}{n} \sum_{i=1}^n \left[ \frac{T_i}{e_i^{(k)}} (Y_i - \hat{\mu}_1(X_i)) + \hat{\mu}_1(X_i) - \frac{1-T_i}{1-e_i^{(k)}} (Y_i - \hat{\mu}_0(X_i)) - \hat{\mu}_0(X_i) \right]
+\end{equation}
+\item Posterior: $\tau \mid \text{data} \sim \{\hat{\tau}^{(1)}, \ldots, \hat{\tau}^{(S)}\}$
+\end{enumerate}
+
+\begin{insight}
+Why hybrid Bayesian-Frequentist?
+\begin{itemize}
+\item Propensity uncertainty: Often most important for DR
+\item Outcome models: Frequentist OLS is robust and fast
+\item Total uncertainty: Combined using influence function variance
+\end{itemize}
+\end{insight}
+
+\subsection{Implementation}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.bayesian import bayesian_dr_ate
+
+result = bayesian_dr_ate(
+    outcomes=Y,
+    treatment=T,
+    covariates=X,
+    propensity_method="auto",     # "stratified", "logistic", or "auto"
+    n_posterior_samples=1000,
+    credible_level=0.95,
+    trim_threshold=0.01,          # Propensity clipping
+)
+
+# Bayesian DR estimate
+print(f"ATE: {result['estimate']:.4f}")
+print(f"Posterior SD: {result['se']:.4f}")
+print(f"95% CI: [{result['ci_lower']:.4f}, {result['ci_upper']:.4f}]")
+
+# Comparison with frequentist DR
+print(f"\nFrequentist DR: {result['frequentist_estimate']:.4f}")
+print(f"Frequentist SE: {result['frequentist_se']:.4f}")
+
+# Propensity diagnostics
+print(f"\nMean propensity uncertainty: {result['propensity_mean_uncertainty']:.4f}")
+print(f"Outcome R2: {result['outcome_r2']:.3f}")
+\end{minted}
+
+\subsection{Double Robustness Property}
+
+Like frequentist DR, Bayesian DR is consistent when EITHER:
+\begin{itemize}
+\item Propensity model is correctly specified, OR
+\item Outcome models are correctly specified
+\end{itemize}
+
+The posterior captures uncertainty from propensity estimation, with outcome model variance added via the influence function.
+
+
+\section{Hierarchical Bayesian ATE}
+
+\subsection{Multi-Site Studies}
+
+When treatment effects vary across groups/sites, hierarchical models provide \textit{partial pooling}:
+
+\begin{definition}[Hierarchical Model]
+\begin{align}
+\mu &\sim \mathcal{N}(0, \sigma_\mu^2) && \text{(Population ATE)} \\
+\tau &\sim \text{HalfNormal}(\sigma_\tau) && \text{(Between-group SD)} \\
+\theta_j &\sim \mathcal{N}(\mu, \tau^2) && \text{(Group-specific ATE)} \\
+Y_{ij} &\sim \mathcal{N}(\alpha + \theta_j T_{ij}, \sigma^2) && \text{(Observations)}
+\end{align}
+\end{definition}
+
+\begin{insight}
+Partial Pooling Benefits:
+\begin{itemize}
+\item Small groups: Shrink toward population mean (borrows strength)
+\item Large groups: Retain group-specific signal
+\item $\tau$ estimated from data: Automatic shrinkage calibration
+\end{itemize}
+\end{insight}
+
+\subsection{Non-Centered Parameterization}
+
+To avoid the ``funnel'' geometry in hierarchical models:
+
+\begin{align}
+\theta_{\text{raw},j} &\sim \mathcal{N}(0, 1) && \text{(Standardized)} \\
+\theta_j &= \mu + \tau \cdot \theta_{\text{raw},j} && \text{(Transformed)}
+\end{align}
+
+This parameterization improves NUTS sampler efficiency when $\tau$ is small.
+
+\subsection{Implementation with PyMC}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.bayesian import hierarchical_bayesian_ate
+
+result = hierarchical_bayesian_ate(
+    outcomes=Y,
+    treatment=T,
+    groups=group_ids,             # Site/group identifier
+    # Prior hyperparameters
+    mu_prior_sd=10.0,             # Population ATE prior SD
+    tau_prior_sd=5.0,             # Heterogeneity prior SD
+    sigma_prior_sd=10.0,          # Observation noise prior SD
+    # MCMC settings
+    n_samples=2000,
+    n_chains=4,
+    n_tune=1000,
+    target_accept=0.9,
+    # Output
+    credible_level=0.95,
+)
+
+# Population-level estimates
+print("=== Population ATE ===")
+print(f"Mean: {result['population_ate']:.4f}")
+print(f"SE: {result['population_ate_se']:.4f}")
+print(f"95% CI: [{result['population_ate_ci_lower']:.4f}, "
+      f"{result['population_ate_ci_upper']:.4f}]")
+
+# Heterogeneity
+print(f"\n=== Heterogeneity ===")
+print(f"tau: {result['tau']:.4f}")
+print(f"95% CI: [{result['tau_ci_lower']:.4f}, {result['tau_ci_upper']:.4f}]")
+
+# Group-specific effects
+print("\n=== Group ATEs ===")
+for i, gid in enumerate(result['group_ids']):
+    ate = result['group_ates'][i]
+    se = result['group_ate_ses'][i]
+    print(f"Group {gid}: {ate:.3f} +/- {se:.3f}")
+\end{minted}
+
+\subsection{MCMC Diagnostics}
+
+\begin{minted}[fontsize=\small]{python}
+# Convergence checks
+print("\n=== MCMC Diagnostics ===")
+print(f"R-hat (max): {result['rhat_max']:.4f}")
+print(f"ESS (min): {result['ess_min']:.0f}")
+print(f"Divergences: {result['divergences']}")
+
+# Interpretation
+if result['rhat_max'] < 1.05:
+    print("R-hat OK: Chains converged")
+else:
+    print("WARNING: R-hat > 1.05, chains may not have converged")
+
+if result['ess_min'] > 400:
+    print("ESS OK: Adequate effective samples")
+else:
+    print("WARNING: Low ESS, increase n_samples")
+
+if result['divergences'] == 0:
+    print("Divergences OK: NUTS sampler healthy")
+else:
+    print("WARNING: Divergences detected, consider reparameterization")
+\end{minted}
+
+\begin{table}[h]
+\centering
+\caption{MCMC Diagnostic Thresholds}
+\begin{tabular}{lll}
+\toprule
+Diagnostic & Threshold & Interpretation \\
+\midrule
+R-hat & $< 1.05$ & Chains have converged \\
+ESS & $> 400$ & Adequate effective samples \\
+Divergences & $= 0$ & NUTS sampler healthy \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Implementation Details}
+
+\subsection{Complete Bayesian Pipeline}
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+from causal_inference.bayesian import (
+    bayesian_ate,
+    bayesian_dr_ate,
+    hierarchical_bayesian_ate,
+)
+
+# Generate multi-site data
+np.random.seed(42)
+n_groups = 5
+n_per_group = 100
+n = n_groups * n_per_group
+
+# True heterogeneous effects
+true_population_ate = 2.0
+true_group_effects = [1.5, 1.8, 2.0, 2.2, 2.5]
+
+groups = np.repeat(np.arange(n_groups), n_per_group)
+T = np.random.binomial(1, 0.5, n).astype(float)
+X = np.random.normal(0, 1, (n, 2))
+
+# Outcomes with group-specific effects
+Y = np.array([true_group_effects[g] for g in groups]) * T
+Y += 0.5 * X[:, 0] + np.random.normal(0, 1, n)
+
+# === Method 1: Simple Bayesian ATE (ignores grouping) ===
+simple = bayesian_ate(Y, T, X)
+print("=== Simple Bayesian ATE ===")
+print(f"Posterior mean: {simple['posterior_mean']:.4f}")
+print(f"95% CI: [{simple['ci_lower']:.4f}, {simple['ci_upper']:.4f}]")
+
+# === Method 2: Bayesian DR ===
+dr = bayesian_dr_ate(Y, T, X)
+print("\n=== Bayesian DR ===")
+print(f"Posterior mean: {dr['estimate']:.4f}")
+print(f"95% CI: [{dr['ci_lower']:.4f}, {dr['ci_upper']:.4f}]")
+
+# === Method 3: Hierarchical (accounts for grouping) ===
+hier = hierarchical_bayesian_ate(
+    Y, T, groups,
+    n_samples=1000,
+    n_chains=2,
+    progressbar=False,
+)
+print("\n=== Hierarchical Bayesian ===")
+print(f"Population ATE: {hier['population_ate']:.4f}")
+print(f"Heterogeneity tau: {hier['tau']:.4f}")
+print(f"Group effects: {hier['group_ates']}")
+\end{minted}
+
+
+\section{Monte Carlo Validation}
+
+\subsection{Test 1: Conjugate ATE Coverage}
+
+\begin{table}[h]
+\centering
+\caption{Bayesian ATE Monte Carlo Results ($n=200$, 1,000 runs)}
+\begin{tabular}{lcccc}
+\toprule
+Prior SD & True ATE & Mean Est. & Coverage & Avg Shrinkage \\
+\midrule
+10.0 (weak) & 2.00 & 2.01 & 94.8\% & 1.2\% \\
+1.0 (moderate) & 2.00 & 1.98 & 93.1\% & 18.4\% \\
+0.5 (strong) & 2.00 & 1.42 & 68.2\% & 52.3\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{insight}
+Prior sensitivity:
+\begin{itemize}
+\item Weak prior ($\sigma_0 = 10$): Posterior tracks data, valid coverage
+\item Strong prior ($\sigma_0 = 0.5$): Prior dominates, undercoverage when misspecified
+\end{itemize}
+\end{insight}
+
+\subsection{Test 2: Bayesian DR vs Frequentist DR}
+
+\begin{table}[h]
+\centering
+\caption{Bayesian DR Monte Carlo Results ($n=500$, 500 runs)}
+\begin{tabular}{lccccc}
+\toprule
+Method & True & Mean Est. & Bias & Coverage & Mean SE \\
+\midrule
+Frequentist DR & 2.00 & 2.01 & 0.01 & 94.6\% & 0.18 \\
+Bayesian DR & 2.00 & 2.01 & 0.01 & 95.2\% & 0.19 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Test 3: Hierarchical Model (Partial Pooling)}
+
+\begin{table}[h]
+\centering
+\caption{Hierarchical ATE (5 groups, 100 obs/group, true $\tau = 0.5$)}
+\begin{tabular}{lcccc}
+\toprule
+Group & True $\theta$ & Unpooled Est. & Hierarchical Est. & Shrinkage \\
+\midrule
+1 (small effect) & 1.5 & 1.52 & 1.68 & 12\% \\
+2 & 1.8 & 1.79 & 1.85 & 5\% \\
+3 (population) & 2.0 & 2.03 & 2.01 & 2\% \\
+4 & 2.2 & 2.18 & 2.15 & 3\% \\
+5 (large effect) & 2.5 & 2.48 & 2.38 & 8\% \\
+\midrule
+Population $\mu$ & 2.0 & --- & 2.01 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Discussion}
+
+\subsection{Key Takeaways}
+
+\begin{enumerate}
+\item \textbf{Conjugate models}: Closed-form when applicable (normal-normal, beta-binomial)
+\item \textbf{Credible intervals}: Direct probability interpretation
+\item \textbf{Prior sensitivity}: Weak priors let data dominate; check shrinkage
+\item \textbf{Hierarchical models}: Optimal shrinkage for multi-site studies
+\item \textbf{MCMC diagnostics}: R-hat $< 1.05$, ESS $> 400$, divergences $= 0$
+\end{enumerate}
+
+\subsection{Practical Recommendations}
+
+\begin{enumerate}
+\item \textbf{Default priors}: Use weakly informative ($\sigma_0 = 10$ for standardized outcomes)
+\item \textbf{Check shrinkage}: If $> 10\%$, prior may be influencing results significantly
+\item \textbf{Report both}: Show Bayesian and frequentist estimates for comparison
+\item \textbf{Hierarchical when applicable}: Multi-site, clustered, or meta-analytic data
+\item \textbf{Validate MCMC}: Always check diagnostics before trusting posteriors
+\end{enumerate}
+
+\subsection{When to Use Bayesian Methods}
+
+\begin{table}[h]
+\centering
+\caption{Method Selection Guide}
+\begin{tabular}{ll}
+\toprule
+Situation & Recommended Approach \\
+\midrule
+Incorporate prior information & Bayesian with informative prior \\
+Small sample size & Bayesian (regularization via prior) \\
+Multi-site study & Hierarchical Bayesian \\
+Need probability statements & Bayesian credible intervals \\
+Standard RCT, large $n$ & Frequentist (simpler, faster) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Limitations}
+
+\begin{itemize}
+\item \textbf{Prior specification}: Results depend on prior choices
+\item \textbf{Computational cost}: MCMC slower than closed-form
+\item \textbf{Model misspecification}: Hierarchical assumes exchangeability
+\item \textbf{Laplace approximation}: May be inaccurate for small $n$ or multimodal posteriors
+\end{itemize}
+
+\subsection{Connection to Other Methods}
+
+\begin{itemize}
+\item \textbf{Principal Stratification} (Chapter~\ref{ch:principal-strat}): Bayesian strata membership inference
+\item \textbf{CATE} (Chapter~\ref{ch:cate}): BART for heterogeneous effects
+\item \textbf{Selection Models} (Chapter~\ref{ch:selection}): Bayesian Heckman correction
+\item \textbf{Meta-Analysis}: Hierarchical models for combining studies
+\end{itemize}
+

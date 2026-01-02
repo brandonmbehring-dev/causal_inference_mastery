@@ -1,0 +1,26 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{mte}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{ate\PYGZus{}from\PYGZus{}mte}\PYG{p}{,} \PYG{n}{att\PYGZus{}from\PYGZus{}mte}\PYG{p}{,} \PYG{n}{atu\PYGZus{}from\PYGZus{}mte}\PYG{p}{,} \PYG{n}{prte}\PYG{p}{,} \PYG{n}{late\PYGZus{}from\PYGZus{}mte}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Compute population parameters}
+\PYG{n}{ate\PYGZus{}result} \PYG{o}{=} \PYG{n}{ate\PYGZus{}from\PYGZus{}mte}\PYG{p}{(}\PYG{n}{mte\PYGZus{}result}\PYG{p}{,} \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{500}\PYG{p}{)}
+\PYG{n}{att\PYGZus{}result} \PYG{o}{=} \PYG{n}{att\PYGZus{}from\PYGZus{}mte}\PYG{p}{(}\PYG{n}{mte\PYGZus{}result}\PYG{p}{,} \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{500}\PYG{p}{)}
+\PYG{n}{atu\PYGZus{}result} \PYG{o}{=} \PYG{n}{atu\PYGZus{}from\PYGZus{}mte}\PYG{p}{(}\PYG{n}{mte\PYGZus{}result}\PYG{p}{,} \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{500}\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s2}{Population Parameters:}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{ATE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ate\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{estimate}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (SE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ate\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{se}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{ATT: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{att\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{estimate}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (SE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{att\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{se}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{ATU: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{atu\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{estimate}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (SE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{atu\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{se}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} LATE for specific instrument shift}
+\PYG{n}{late\PYGZus{}result} \PYG{o}{=} \PYG{n}{late\PYGZus{}from\PYGZus{}mte}\PYG{p}{(}\PYG{n}{mte\PYGZus{}result}\PYG{p}{,} \PYG{n}{p\PYGZus{}old}\PYG{o}{=}\PYG{l+m+mf}{0.3}\PYG{p}{,} \PYG{n}{p\PYGZus{}new}\PYG{o}{=}\PYG{l+m+mf}{0.7}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{LATE(0.3 \PYGZhy{}\PYGZgt{} 0.7): }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{late\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{estimate}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Policy\PYGZhy{}relevant treatment effect: target bottom 30\PYGZpc{} of U\PYGZus{}D}
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{target\PYGZus{}low\PYGZus{}u}\PYG{p}{(}\PYG{n}{u}\PYG{p}{)}\PYG{p}{:}
+    \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{where}\PYG{p}{(}\PYG{n}{u} \PYG{o}{\PYGZlt{}} \PYG{l+m+mf}{0.3}\PYG{p}{,} \PYG{l+m+mf}{1.0}\PYG{p}{,} \PYG{l+m+mf}{0.0}\PYG{p}{)}
+
+\PYG{n}{prte\PYGZus{}result} \PYG{o}{=} \PYG{n}{prte}\PYG{p}{(}\PYG{n}{mte\PYGZus{}result}\PYG{p}{,} \PYG{n}{policy\PYGZus{}weights}\PYG{o}{=}\PYG{n}{target\PYGZus{}low\PYGZus{}u}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{PRTE (target low U): }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{prte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{estimate}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

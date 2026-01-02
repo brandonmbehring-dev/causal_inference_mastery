@@ -1,0 +1,566 @@
+\chapter{Cross-Language Validation}
+\label{ch:validation}
+
+\section{Introduction}
+
+Implementation correctness is foundational to causal inference. A methodologically sound estimator produces misleading results if implemented incorrectly. This chapter describes the six-layer validation architecture used throughout this book.
+
+\begin{definition}[Cross-Language Validation]
+Independent implementations in different languages (Python, Julia) should produce identical results for identical inputs:
+\begin{equation}
+\left| \hat{\tau}_{\text{Python}} - \hat{\tau}_{\text{Julia}} \right| < 10^{-10}
+\end{equation}
+Agreement validates algorithmic correctness; divergence signals implementation errors.
+\end{definition}
+
+This chapter develops:
+\begin{enumerate}
+\item \textbf{Six-Layer Architecture}: Comprehensive validation framework
+\item \textbf{Cross-Language Testing}: Python $\leftrightarrow$ Julia parity
+\item \textbf{Monte Carlo Validation}: Statistical properties verification
+\item \textbf{Adversarial Testing}: Edge case robustness
+\end{enumerate}
+
+
+\section{Six-Layer Validation Architecture}
+
+\subsection{Architecture Overview}
+
+\begin{table}[h]
+\centering
+\caption{Validation Layers}
+\begin{tabular}{clll}
+\toprule
+Layer & Name & Purpose & Implementation \\
+\midrule
+1 & Known-Answer & Hand-calculated expected values & \texttt{tests/test\_*/*.py} \\
+2 & Adversarial & Edge cases, boundary conditions & \texttt{tests/validation/adversarial/} \\
+3 & Monte Carlo & Statistical properties (5K+ runs) & \texttt{tests/validation/monte\_carlo/} \\
+4 & Cross-Language & Python $\leftrightarrow$ Julia parity & \texttt{tests/validation/cross\_language/} \\
+5 & R Triangulation & External reference (future) & --- \\
+6 & Golden Reference & Frozen reference results & \texttt{tests/golden\_results/} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Layer 1: Known-Answer Tests}
+
+For simple cases with hand-calculable results:
+
+\begin{minted}[fontsize=\small]{python}
+def test_simple_ate_known_answer():
+    """Four-unit case with known answer."""
+    outcomes = np.array([7.0, 5.0, 3.0, 1.0])
+    treatment = np.array([1, 1, 0, 0])
+
+    # Hand calculation:
+    # Y_1 = (7+5)/2 = 6.0
+    # Y_0 = (3+1)/2 = 2.0
+    # ATE = 6.0 - 2.0 = 4.0
+    result = simple_ate(outcomes, treatment)
+
+    assert result["estimate"] == 4.0, "ATE should be exactly 4.0"
+\end{minted}
+
+\subsection{Layer 2: Adversarial Tests}
+
+Tests that probe edge cases and failure modes:
+
+\begin{minted}[fontsize=\small]{python}
+class TestSimpleATEAdversarial:
+    """Edge cases that should fail gracefully."""
+
+    def test_single_treated(self):
+        """Only one treated unit (n_1 = 1)."""
+        outcomes = np.array([10.0, 2.0, 3.0])
+        treatment = np.array([1, 0, 0])
+
+        # Should handle gracefully (large SE, wide CI)
+        result = simple_ate(outcomes, treatment)
+        assert result["se"] > 0
+
+    def test_all_treated(self):
+        """All units treated (no control group)."""
+        outcomes = np.array([5.0, 6.0, 7.0])
+        treatment = np.array([1, 1, 1])
+
+        # Should raise informative error
+        with pytest.raises(ValueError, match="control"):
+            simple_ate(outcomes, treatment)
+
+    def test_extreme_outlier(self):
+        """Outlier 1000x larger than typical values."""
+        outcomes = np.array([1.0, 2.0, 1e6, 3.0])
+        treatment = np.array([1, 1, 0, 0])
+
+        # Should compute without numerical issues
+        result = simple_ate(outcomes, treatment)
+        assert np.isfinite(result["estimate"])
+\end{minted}
+
+\subsection{Layer 3: Monte Carlo Validation}
+
+Statistical validation over thousands of simulations:
+
+\begin{minted}[fontsize=\small]{python}
+@pytest.mark.monte_carlo
+def test_simple_ate_unbiased():
+    """Monte Carlo validation: 5000 runs, bias < 0.05, coverage 94-96%."""
+    n_runs = 5000
+    true_ate = 2.0
+
+    estimates = []
+    ci_covers = []
+
+    for seed in range(n_runs):
+        Y, T = generate_rct(n=100, true_ate=true_ate, seed=seed)
+        result = simple_ate(Y, T)
+
+        estimates.append(result["estimate"])
+        ci_covers.append(result["ci_lower"] < true_ate < result["ci_upper"])
+
+    # Bias check
+    bias = np.mean(estimates) - true_ate
+    assert abs(bias) < 0.05, f"Bias {bias:.4f} exceeds threshold"
+
+    # Coverage check
+    coverage = np.mean(ci_covers)
+    assert 0.94 < coverage < 0.96, f"Coverage {coverage:.2%} outside range"
+\end{minted}
+
+\begin{table}[h]
+\centering
+\caption{Monte Carlo Validation Standards}
+\begin{tabular}{lccc}
+\toprule
+Method Type & Bias Target & Coverage Target & SE Accuracy \\
+\midrule
+RCT (unconfounded) & $< 0.05$ & 94--96\% & $< 10\%$ \\
+Observational & $< 0.10$ & 93--97\% & $< 15\%$ \\
+PSM & $< 0.30$ & $\geq 95\%$ & $< 150\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Cross-Language Validation}
+
+\subsection{Design Principles}
+
+1. \textbf{Independent implementations}: Python uses NumPy/SciPy; Julia uses native arrays
+2. \textbf{Shared data}: Same random seeds and test fixtures
+3. \textbf{Strict tolerance}: Agreement to 10 decimal places (rtol $< 10^{-10}$)
+4. \textbf{Comprehensive coverage}: All estimators, not just simple cases
+
+\subsection{Julia Interface Architecture}
+
+\begin{minted}[fontsize=\small]{python}
+# tests/validation/cross_language/julia_interface.py
+
+from juliacall import Main as jl
+
+# Initialize Julia project
+JULIA_PROJECT_PATH = "julia/"
+jl.seval(f'import Pkg; Pkg.activate("{JULIA_PROJECT_PATH}")')
+jl.seval("using CausalEstimators")
+
+def julia_simple_ate(outcomes, treatment, alpha=0.05):
+    """Call Julia SimpleATE via juliacall."""
+    # Convert to Julia types
+    jl_outcomes = jl.collect(outcomes.astype(np.float64))
+    jl_treatment = jl.collect(treatment.astype(bool))
+
+    # Create problem and solve
+    problem = jl.RCTProblem(jl_outcomes, jl_treatment)
+    solution = jl.solve(problem, jl.SimpleATE())
+
+    return {
+        "estimate": float(solution.estimate),
+        "se": float(solution.se),
+        "ci_lower": float(solution.ci_lower),
+        "ci_upper": float(solution.ci_upper),
+    }
+\end{minted}
+
+\subsection{Cross-Language Test Pattern}
+
+\begin{minted}[fontsize=\small]{python}
+# tests/validation/cross_language/test_python_julia_simple_ate.py
+
+import pytest
+from tests.validation.cross_language.julia_interface import (
+    is_julia_available,
+    julia_simple_ate,
+)
+
+pytestmark = pytest.mark.skipif(
+    not is_julia_available(),
+    reason="Julia not available for cross-validation"
+)
+
+class TestPythonJuliaSimpleATE:
+    """Cross-validate Python simple_ate against Julia SimpleATE."""
+
+    def test_basic_case(self):
+        """Basic 4-unit case."""
+        outcomes = np.array([7.0, 5.0, 3.0, 1.0])
+        treatment = np.array([1, 1, 0, 0])
+
+        python_result = simple_ate(outcomes, treatment)
+        julia_result = julia_simple_ate(outcomes, treatment)
+
+        # Validate to 10 decimal places
+        assert np.isclose(
+            python_result["estimate"],
+            julia_result["estimate"],
+            rtol=1e-10
+        ), f"Estimate mismatch: Python={python_result['estimate']}, Julia={julia_result['estimate']}"
+
+        assert np.isclose(
+            python_result["se"],
+            julia_result["se"],
+            rtol=1e-10
+        ), f"SE mismatch: Python={python_result['se']}, Julia={julia_result['se']}"
+
+    def test_large_sample(self):
+        """Large sample (n=1000) stress test."""
+        np.random.seed(42)
+        n = 1000
+        treatment = np.random.binomial(1, 0.5, n)
+        outcomes = 2.0 * treatment + np.random.normal(0, 1, n)
+
+        python_result = simple_ate(outcomes, treatment)
+        julia_result = julia_simple_ate(outcomes, treatment)
+
+        assert np.isclose(python_result["estimate"], julia_result["estimate"], rtol=1e-10)
+        assert np.isclose(python_result["se"], julia_result["se"], rtol=1e-10)
+\end{minted}
+
+\subsection{Method Coverage}
+
+\begin{table}[h]
+\centering
+\caption{Cross-Language Test Coverage}
+\begin{tabular}{lll}
+\toprule
+Method Family & Python Module & Julia Module \\
+\midrule
+RCT & \texttt{rct.estimators} & \texttt{RCT.jl} \\
+DiD & \texttt{did.*} & \texttt{did/*.jl} \\
+IV & \texttt{iv.*} & \texttt{iv/*.jl} \\
+RDD & \texttt{rdd.*} & \texttt{rdd/*.jl} \\
+SCM & \texttt{scm.*} & \texttt{scm/*.jl} \\
+CATE & \texttt{cate.*} & \texttt{cate/*.jl} \\
+PSM & \texttt{psm.*} & \texttt{psm/*.jl} \\
+Sensitivity & \texttt{sensitivity.*} & \texttt{sensitivity/*.jl} \\
+QTE & \texttt{qte.*} & \texttt{qte/*.jl} \\
+MTE & \texttt{mte.*} & \texttt{mte/*.jl} \\
+Bounds & \texttt{bounds.*} & \texttt{bounds/*.jl} \\
+Mediation & \texttt{mediation.*} & \texttt{mediation/*.jl} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Data Generating Processes}
+
+\subsection{DGP Architecture}
+
+Centralized DGP generators ensure identical data across tests:
+
+\begin{minted}[fontsize=\small]{python}
+# tests/validation/monte_carlo/dgp_generators.py
+
+def dgp_simple_rct(n=100, true_ate=2.0, random_state=None):
+    """Simple RCT with homoskedastic errors."""
+    rng = np.random.default_rng(random_state)
+
+    treatment = rng.binomial(1, 0.5, n)
+    potential_Y0 = rng.normal(0, 1, n)
+    potential_Y1 = potential_Y0 + true_ate
+    outcomes = np.where(treatment == 1, potential_Y1, potential_Y0)
+
+    return outcomes, treatment
+
+def dgp_confounded_observational(n=500, true_ate=2.0, random_state=None):
+    """Observational study with confounding."""
+    rng = np.random.default_rng(random_state)
+
+    # Confounder affects both treatment and outcome
+    X = rng.normal(0, 1, n)
+    propensity = 1 / (1 + np.exp(-0.5 * X))
+    treatment = rng.binomial(1, propensity)
+
+    # Outcome depends on X and treatment
+    outcomes = 0.5 * X + true_ate * treatment + rng.normal(0, 1, n)
+
+    return outcomes, treatment, X, propensity
+\end{minted}
+
+\subsection{Method-Specific DGPs}
+
+\begin{minted}[fontsize=\small]{python}
+# tests/validation/monte_carlo/dgp_did.py
+
+def dgp_did_staggered(n_units=100, n_periods=10, true_ate=2.0, random_state=None):
+    """Staggered DiD with heterogeneous timing."""
+    rng = np.random.default_rng(random_state)
+
+    # Staggered treatment adoption
+    treatment_timing = rng.choice(range(3, n_periods), n_units)
+
+    # Panel data with unit and time fixed effects
+    unit_fe = rng.normal(0, 0.5, n_units)
+    time_fe = rng.normal(0, 0.3, n_periods)
+
+    # Build panel
+    data = []
+    for i in range(n_units):
+        for t in range(n_periods):
+            treated = 1 if t >= treatment_timing[i] else 0
+            Y = unit_fe[i] + time_fe[t] + true_ate * treated + rng.normal(0, 0.5)
+            data.append({"unit": i, "time": t, "treated": treated, "Y": Y})
+
+    return pd.DataFrame(data)
+\end{minted}
+
+
+\section{Implementation Details}
+
+\subsection{Running Validation Tests}
+
+\begin{minted}[fontsize=\small]{bash}
+# Full validation suite
+pytest tests/validation/ -v --tb=short
+
+# Layer-specific tests
+pytest tests/validation/monte_carlo/ -v -m monte_carlo
+pytest tests/validation/adversarial/ -v
+pytest tests/validation/cross_language/ -v
+
+# Skip slow Monte Carlo tests
+pytest tests/ -m "not slow"
+
+# Single method validation
+pytest tests/validation/cross_language/test_python_julia_did.py -v
+\end{minted}
+
+\subsection{CI/CD Integration}
+
+\begin{minted}[fontsize=\small]{yaml}
+# .github/workflows/validation.yml
+name: Validation Suite
+
+on: [push, pull_request]
+
+jobs:
+  monte-carlo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run Monte Carlo tests
+        run: pytest tests/validation/monte_carlo/ -v --timeout=600
+
+  cross-language:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v1
+      - name: Install Julia deps
+        run: julia --project=julia -e 'using Pkg; Pkg.instantiate()'
+      - name: Run cross-language tests
+        run: pytest tests/validation/cross_language/ -v
+\end{minted}
+
+\subsection{Debugging Validation Failures}
+
+\begin{minted}[fontsize=\small]{python}
+def debug_cross_language_failure(method_name, python_result, julia_result):
+    """Diagnostic output for validation failures."""
+    print(f"\n=== Cross-Language Failure: {method_name} ===")
+
+    for key in python_result:
+        py_val = python_result[key]
+        jl_val = julia_result.get(key, "MISSING")
+
+        if isinstance(py_val, (int, float)) and isinstance(jl_val, (int, float)):
+            diff = abs(py_val - jl_val)
+            rel_diff = diff / (abs(py_val) + 1e-10)
+            status = "OK" if rel_diff < 1e-10 else "MISMATCH"
+            print(f"  {key}: Python={py_val:.12e}, Julia={jl_val:.12e}, "
+                  f"diff={diff:.2e} ({status})")
+        else:
+            print(f"  {key}: Python={py_val}, Julia={jl_val}")
+\end{minted}
+
+
+\section{Monte Carlo Standards}
+
+\subsection{Validation Metrics}
+
+\begin{definition}[Monte Carlo Validation Criteria]
+For $R$ simulation runs with true effect $\tau$:
+\begin{align}
+\text{Bias} &= \frac{1}{R} \sum_{r=1}^R \hat{\tau}_r - \tau \\
+\text{Coverage} &= \frac{1}{R} \sum_{r=1}^R \mathbf{1}[\hat{\tau}_r^L < \tau < \hat{\tau}_r^U] \\
+\text{SE Accuracy} &= \frac{\left| \overline{\text{SE}} - \text{SD}(\hat{\tau}) \right|}{\text{SD}(\hat{\tau})}
+\end{align}
+\end{definition}
+
+\subsection{Validation Helper}
+
+\begin{minted}[fontsize=\small]{python}
+# tests/validation/utils.py
+
+def validate_monte_carlo_results(
+    estimates,
+    standard_errors,
+    ci_lowers,
+    ci_uppers,
+    true_value,
+    bias_threshold=0.05,
+    coverage_range=(0.94, 0.96),
+    se_accuracy_threshold=0.10,
+):
+    """Validate Monte Carlo simulation results."""
+    estimates = np.array(estimates)
+    standard_errors = np.array(standard_errors)
+    ci_lowers = np.array(ci_lowers)
+    ci_uppers = np.array(ci_uppers)
+
+    # Bias
+    bias = np.mean(estimates) - true_value
+    bias_ok = abs(bias) < bias_threshold
+
+    # Coverage
+    coverage = np.mean((ci_lowers < true_value) & (true_value < ci_uppers))
+    coverage_ok = coverage_range[0] < coverage < coverage_range[1]
+
+    # SE accuracy
+    empirical_se = np.std(estimates)
+    mean_reported_se = np.mean(standard_errors)
+    se_accuracy = abs(mean_reported_se - empirical_se) / empirical_se
+    se_accuracy_ok = se_accuracy < se_accuracy_threshold
+
+    return {
+        "bias": bias,
+        "bias_ok": bias_ok,
+        "coverage": coverage,
+        "coverage_ok": coverage_ok,
+        "se_accuracy": se_accuracy,
+        "se_accuracy_ok": se_accuracy_ok,
+        "all_pass": bias_ok and coverage_ok and se_accuracy_ok,
+    }
+\end{minted}
+
+
+\section{Golden Reference Tests}
+
+\subsection{Frozen Reference Values}
+
+Golden references provide regression testing against known-correct outputs:
+
+\begin{minted}[fontsize=\small]{python}
+# tests/golden_results/simple_ate.json
+{
+    "test_balanced_rct": {
+        "input": {
+            "outcomes": [7.0, 5.0, 3.0, 1.0],
+            "treatment": [1, 1, 0, 0]
+        },
+        "expected": {
+            "estimate": 4.0,
+            "se": 1.4142135623730951,
+            "ci_lower": -0.5319734684099524,
+            "ci_upper": 8.531973468409952
+        }
+    }
+}
+\end{minted}
+
+\begin{minted}[fontsize=\small]{python}
+def test_against_golden():
+    """Test against frozen reference values."""
+    import json
+
+    with open("tests/golden_results/simple_ate.json") as f:
+        golden = json.load(f)
+
+    for test_name, data in golden.items():
+        result = simple_ate(
+            np.array(data["input"]["outcomes"]),
+            np.array(data["input"]["treatment"])
+        )
+
+        for key, expected in data["expected"].items():
+            assert np.isclose(result[key], expected, rtol=1e-10), \
+                f"{test_name}.{key}: got {result[key]}, expected {expected}"
+\end{minted}
+
+
+\section{Discussion}
+
+\subsection{Key Takeaways}
+
+\begin{enumerate}
+\item \textbf{Six layers}: Comprehensive validation from unit tests to cross-language parity
+\item \textbf{Cross-language}: Python and Julia must agree to 10 decimal places
+\item \textbf{Monte Carlo}: 5,000+ runs verify statistical properties (bias, coverage, SE)
+\item \textbf{Adversarial}: Edge cases test robustness and error handling
+\item \textbf{Golden references}: Regression testing against frozen correct outputs
+\end{enumerate}
+
+\subsection{Practical Recommendations}
+
+\begin{enumerate}
+\item \textbf{Run full suite}: Before any release or major change
+\item \textbf{Check Monte Carlo}: When modifying estimator internals
+\item \textbf{Cross-language first}: When adding new estimators
+\item \textbf{Update golden}: When correct behavior changes intentionally
+\item \textbf{Document xfails}: Known limitations with explicit reasons
+\end{enumerate}
+
+\subsection{Validation Status by Method}
+
+\begin{table}[h]
+\centering
+\caption{Current Validation Status}
+\begin{tabular}{lccccc}
+\toprule
+Method & Known-Answer & Adversarial & Monte Carlo & Cross-Language & Status \\
+\midrule
+RCT & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+DiD & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+IV & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+RDD & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+SCM & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+CATE & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+PSM & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+QTE & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+MTE & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+Mediation & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+Selection & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+DTR & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+Principal Strat & \checkmark & \checkmark & \checkmark & \checkmark & VERIFIED \\
+Bayesian & \checkmark & \checkmark & \checkmark & --- & PARTIAL \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Limitations}
+
+\begin{itemize}
+\item \textbf{R triangulation}: Not yet implemented (planned Layer 5)
+\item \textbf{Julia dependency}: Cross-language tests require juliacall installation
+\item \textbf{Monte Carlo time}: Full suite takes $\sim$30 minutes
+\item \textbf{Coverage gaps}: Some edge cases may not be tested
+\end{itemize}
+
+\subsection{Connection to Other Chapters}
+
+\begin{itemize}
+\item \textbf{All chapters}: Validation ensures correctness of presented implementations
+\item \textbf{Appendix A}: Detailed DGP specifications for Monte Carlo
+\item \textbf{Appendix B}: Complete test coverage matrix
+\end{itemize}
+

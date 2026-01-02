@@ -1,0 +1,8 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{using}\PYG{+w}{ }\PYG{n}{CausalEstimators}
+
+\PYG{n}{outcomes}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{[}\PYG{l+m+mf}{10.0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{12.0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{4.0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{5.0}\PYG{p}{]}
+\PYG{n}{treatment}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{[}\PYG{n+nb}{true}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nb}{false}\PYG{p}{]}
+\PYG{n}{problem}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{RCTProblem}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nb}{nothing}\PYG{p}{,}\PYG{+w}{ }\PYG{n+nb}{nothing}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{solution}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{solve}\PYG{p}{(}\PYG{n}{problem}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SimpleATE}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
+\end{MintedVerbatim}

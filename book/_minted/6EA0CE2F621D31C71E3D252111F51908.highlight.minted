@@ -1,0 +1,27 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{iv}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{TwoStageLeastSquares}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{iv}\PYG{n+nn}{.}\PYG{n+nn}{diagnostics}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{classify\PYGZus{}instrument\PYGZus{}strength}
+
+\PYG{c+c1}{\PYGZsh{} Simulate IV data}
+\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{seed}\PYG{p}{(}\PYG{l+m+mi}{42}\PYG{p}{)}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{1000}
+\PYG{n}{Z} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} Instrument}
+\PYG{n}{U} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}        \PYG{c+c1}{\PYGZsh{} Unobserved confounder}
+\PYG{n}{D} \PYG{o}{=} \PYG{l+m+mf}{0.5} \PYG{o}{*} \PYG{n}{Z}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{(}\PYG{p}{)} \PYG{o}{+} \PYG{l+m+mf}{0.5} \PYG{o}{*} \PYG{n}{U} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+\PYG{n}{Y} \PYG{o}{=} \PYG{l+m+mf}{2.0} \PYG{o}{*} \PYG{n}{D} \PYG{o}{+} \PYG{n}{U} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Estimate}
+\PYG{n}{tsls} \PYG{o}{=} \PYG{n}{TwoStageLeastSquares}\PYG{p}{(}\PYG{n}{inference}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{robust}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Results}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{True effect: 2.0}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{2SLS estimate: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{coef\PYGZus{}}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{95\PYGZpc{} CI: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{ci\PYGZus{}lower\PYGZus{}}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{ci\PYGZus{}upper\PYGZus{}}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{First\PYGZhy{}stage F: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{first\PYGZus{}stage\PYGZus{}f\PYGZus{}}\PYG{l+s+si}{:}\PYG{l+s+s2}{.1f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Classify instrument strength}
+\PYG{n}{strength} \PYG{o}{=} \PYG{n}{classify\PYGZus{}instrument\PYGZus{}strength}\PYG{p}{(}\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{first\PYGZus{}stage\PYGZus{}f\PYGZus{}}\PYG{p}{,} \PYG{n}{n\PYGZus{}instruments}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Instrument strength: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{strength}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

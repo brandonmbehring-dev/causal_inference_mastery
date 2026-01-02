@@ -1,0 +1,539 @@
+% Chapter 13: Difference-in-Differences (Classic)
+% Part IV: Natural Experiments
+
+\chapter{Difference-in-Differences}
+\label{ch:did_classic}
+
+% ============================================================================
+\section{Introduction}
+\label{sec:did_intro}
+% ============================================================================
+
+Randomized experiments provide the gold standard for causal inference, but they are often infeasible due to ethical, practical, or financial constraints. When randomization is impossible, researchers turn to \emph{natural experiments}---situations where policy changes, institutional rules, or other external forces create variation in treatment assignment that approximates random assignment.
+
+Difference-in-differences (DiD) is the workhorse method for exploiting natural experiments. The core idea is elegantly simple: compare the change in outcomes over time for a treated group to the change for a control group. If both groups would have evolved similarly in the absence of treatment (the \emph{parallel trends} assumption), the difference in their changes identifies the causal effect.
+
+\begin{example}[Card and Krueger's Minimum Wage Study]
+In their seminal 1994 study, Card and Krueger examined the effect of New Jersey's minimum wage increase on employment. They compared employment changes at fast-food restaurants in New Jersey (treated) to those in eastern Pennsylvania (control) before and after the policy change. The DiD design exploits the fact that these neighboring regions likely would have experienced similar employment trends absent the minimum wage increase.
+\end{example}
+
+\textbf{Chapter Roadmap:}
+\begin{itemize}
+    \item Section~\ref{sec:did_2x2}: The canonical $2 \times 2$ design
+    \item Section~\ref{sec:did_parallel}: The parallel trends assumption
+    \item Section~\ref{sec:did_twfe}: Two-way fixed effects estimation
+    \item Section~\ref{sec:did_se}: Standard error estimation (cluster-robust, wild bootstrap)
+    \item Section~\ref{sec:did_event}: Event studies for dynamic effects
+    \item Section~\ref{sec:did_implementation}: Python implementation
+    \item Section~\ref{sec:did_validation}: Monte Carlo validation
+    \item Section~\ref{sec:did_guidance}: Practical guidance
+\end{itemize}
+
+% ============================================================================
+\section{The $2 \times 2$ Design}
+\label{sec:did_2x2}
+% ============================================================================
+
+The simplest DiD design involves two groups observed at two time periods: a \emph{treated group} that receives treatment after period 1, and a \emph{control group} that never receives treatment.
+
+\subsection{Setup and Notation}
+
+Let $Y_{it}$ denote the outcome for unit $i$ at time $t$, where $t \in \{0, 1\}$ (pre-treatment and post-treatment). Let $D_i \in \{0, 1\}$ indicate treatment group membership (time-invariant). The treatment is implemented between periods 0 and 1, affecting only units with $D_i = 1$ in period 1.
+
+\begin{definition}[Difference-in-Differences Estimand]
+The DiD estimand is defined as:
+\begin{equation}
+\tau^{\text{DiD}} = \underbrace{\left(\E[Y_{i1} \mid D_i = 1] - \E[Y_{i0} \mid D_i = 1]\right)}_{\text{Change for treated}} - \underbrace{\left(\E[Y_{i1} \mid D_i = 0] - \E[Y_{i0} \mid D_i = 0]\right)}_{\text{Change for control}}
+\label{eq:did_estimand}
+\end{equation}
+\end{definition}
+
+The intuition is straightforward: the change for the control group captures the counterfactual time trend that the treated group would have experienced absent treatment. Subtracting this trend from the treated group's change isolates the treatment effect.
+
+\subsection{Regression Formulation}
+
+The DiD estimator can be obtained via OLS regression:
+\begin{equation}
+Y_{it} = \beta_0 + \beta_1 D_i + \beta_2 \text{Post}_t + \beta_3 (D_i \times \text{Post}_t) + \varepsilon_{it}
+\label{eq:did_regression}
+\end{equation}
+
+where $\text{Post}_t = \indicator{t = 1}$ indicates the post-treatment period.
+
+\begin{theorem}[DiD Coefficient Interpretation]
+\label{thm:did_coefficients}
+In the regression~\eqref{eq:did_regression}:
+\begin{align}
+\beta_0 &= \E[Y_{i0} \mid D_i = 0] & \text{(Control group, pre-period mean)} \\
+\beta_1 &= \E[Y_{i0} \mid D_i = 1] - \E[Y_{i0} \mid D_i = 0] & \text{(Group difference at baseline)} \\
+\beta_2 &= \E[Y_{i1} \mid D_i = 0] - \E[Y_{i0} \mid D_i = 0] & \text{(Time trend for control)} \\
+\beta_3 &= \tau^{\text{DiD}} & \text{(Treatment effect)}
+\end{align}
+\end{theorem}
+
+\begin{proof}
+By the properties of OLS with saturated dummy variables, each cell mean is:
+\begin{align*}
+\E[Y \mid D=0, \text{Post}=0] &= \beta_0 \\
+\E[Y \mid D=1, \text{Post}=0] &= \beta_0 + \beta_1 \\
+\E[Y \mid D=0, \text{Post}=1] &= \beta_0 + \beta_2 \\
+\E[Y \mid D=1, \text{Post}=1] &= \beta_0 + \beta_1 + \beta_2 + \beta_3
+\end{align*}
+The DiD estimand is:
+\begin{align*}
+\tau^{\text{DiD}} &= [(\beta_0 + \beta_1 + \beta_2 + \beta_3) - (\beta_0 + \beta_1)] - [(\beta_0 + \beta_2) - \beta_0] \\
+&= \beta_3
+\end{align*}
+\end{proof}
+
+\subsection{Manual vs.\ Regression Computation}
+
+The DiD estimator can be computed either directly from cell means or via regression:
+
+\begin{equation}
+\hat{\tau}^{\text{DiD}} = (\bar{Y}_{1,\text{post}} - \bar{Y}_{1,\text{pre}}) - (\bar{Y}_{0,\text{post}} - \bar{Y}_{0,\text{pre}})
+\label{eq:did_manual}
+\end{equation}
+
+Both approaches yield identical point estimates. The regression approach is preferred because it:
+\begin{enumerate}
+    \item Facilitates standard error estimation
+    \item Easily extends to covariates and fixed effects
+    \item Provides a unified framework for diagnostics
+\end{enumerate}
+
+% ============================================================================
+\section{The Parallel Trends Assumption}
+\label{sec:did_parallel}
+% ============================================================================
+
+The validity of DiD hinges on the \emph{parallel trends assumption}: in the absence of treatment, treated and control units would have experienced the same change in outcomes.
+
+\begin{assumption}[Parallel Trends]
+\label{assum:parallel_trends}
+\begin{equation}
+\E[Y_{i1}(0) - Y_{i0}(0) \mid D_i = 1] = \E[Y_{i1}(0) - Y_{i0}(0) \mid D_i = 0]
+\end{equation}
+where $Y_{it}(0)$ denotes the potential outcome under no treatment.
+\end{assumption}
+
+\begin{insight}
+Parallel trends is an assumption about \emph{counterfactual} outcomes---what would have happened to the treated group absent treatment. Since we never observe $Y_{i1}(0)$ for treated units, parallel trends is fundamentally untestable.
+\end{insight}
+
+\subsection{When Parallel Trends Fails}
+
+Common violations include:
+
+\begin{enumerate}
+    \item \textbf{Differential trends}: Groups on different trajectories before treatment
+    \item \textbf{Anticipation effects}: Treated units change behavior before treatment
+    \item \textbf{Composition changes}: Sample composition shifts between periods
+    \item \textbf{Spillovers}: Treatment affects control group outcomes
+\end{enumerate}
+
+\subsection{Pre-Trends Testing}
+
+While parallel trends cannot be directly tested, researchers examine \emph{pre-treatment trends} as suggestive evidence:
+
+\begin{definition}[Pre-Trends Test]
+With multiple pre-treatment periods, test whether treated and control groups evolved similarly before treatment:
+\begin{equation}
+H_0: \E[Y_{it} - Y_{i,t-1} \mid D_i = 1] = \E[Y_{it} - Y_{i,t-1} \mid D_i = 0] \quad \forall t < T^*
+\end{equation}
+where $T^*$ is the treatment timing.
+\end{definition}
+
+\begin{remark}[Roth (2022) Warning]
+\label{rem:roth_warning}
+Pre-trends tests have important limitations:
+\begin{enumerate}
+    \item Failing to reject parallel pre-trends does not validate the assumption post-treatment
+    \item Studies that ``pass'' pre-trends tests are selected, biasing effect estimates
+    \item Low power may fail to detect meaningful violations
+\end{enumerate}
+Use pre-trends as diagnostic evidence, not proof of validity.
+\end{remark}
+
+% ============================================================================
+\section{Two-Way Fixed Effects}
+\label{sec:did_twfe}
+% ============================================================================
+
+With panel data (multiple units observed over multiple periods), the natural extension is \emph{two-way fixed effects} (TWFE):
+
+\begin{equation}
+Y_{it} = \alpha_i + \lambda_t + \beta D_{it} + \varepsilon_{it}
+\label{eq:twfe}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\alpha_i$ are unit fixed effects (absorb time-invariant unit characteristics)
+    \item $\lambda_t$ are time fixed effects (absorb common time shocks)
+    \item $D_{it} = D_i \times \text{Post}_t$ is the treatment indicator
+    \item $\beta$ is the treatment effect
+\end{itemize}
+
+\subsection{TWFE as Generalized DiD}
+
+\begin{theorem}[TWFE Equivalence]
+In the $2 \times 2$ setting (two groups, two periods), TWFE regression~\eqref{eq:twfe} yields the same coefficient $\hat{\beta}$ as the simple DiD regression~\eqref{eq:did_regression}.
+\end{theorem}
+
+\begin{proof}[Proof Sketch]
+The unit fixed effects $\alpha_i$ absorb the group intercept $\beta_1$, while time fixed effects $\lambda_t$ absorb the time trend $\beta_2$. The interaction term $D_{it}$ captures the treatment effect $\beta_3$.
+\end{proof}
+
+\subsection{Benefits of TWFE}
+
+\begin{enumerate}
+    \item \textbf{Controls for unobserved heterogeneity}: Unit fixed effects absorb all time-invariant confounders
+    \item \textbf{Controls for common shocks}: Time fixed effects absorb aggregate time trends
+    \item \textbf{Extends to multiple periods}: Natural framework for longer panels
+\end{enumerate}
+
+\subsection{The TWFE Bias Problem (Preview)}
+
+\begin{remark}[TWFE Bias with Staggered Adoption]
+When different units receive treatment at different times (staggered adoption) and treatment effects are heterogeneous, TWFE can produce biased estimates---even negative weights on some treatment effects. This is the subject of Chapter~\ref{ch:did_modern}.
+\end{remark}
+
+% ============================================================================
+\section{Standard Error Estimation}
+\label{sec:did_se}
+% ============================================================================
+
+Proper inference in DiD requires accounting for serial correlation within units and correlation across units within clusters.
+
+\subsection{The Serial Correlation Problem}
+
+\begin{theorem}[Bertrand, Duflo, and Mullainathan (2004)]
+\label{thm:bertrand}
+Standard errors from OLS are typically too small in DiD settings because:
+\begin{enumerate}
+    \item Outcomes are serially correlated within units
+    \item Treatment is perfectly correlated over time (once treated, always treated)
+\end{enumerate}
+This leads to severe over-rejection of the null hypothesis.
+\end{theorem}
+
+\subsection{Cluster-Robust Standard Errors}
+
+The solution is to cluster standard errors at the unit (or group) level:
+
+\begin{equation}
+\widehat{\Var}(\hat{\beta}) = (X'X)^{-1} \left( \sum_{g=1}^{G} X_g' \hat{\varepsilon}_g \hat{\varepsilon}_g' X_g \right) (X'X)^{-1}
+\label{eq:cluster_se}
+\end{equation}
+
+where $g$ indexes clusters and $\hat{\varepsilon}_g$ is the vector of residuals for cluster $g$.
+
+\begin{definition}[Cluster-Robust Variance]
+For DiD with $G$ clusters, the cluster-robust variance estimator accounts for arbitrary within-cluster correlation while assuming independence across clusters.
+\end{definition}
+
+\subsection{Wild Cluster Bootstrap}
+
+When the number of clusters is small ($G < 30$), cluster-robust standard errors can be unreliable. The wild cluster bootstrap provides better finite-sample performance:
+
+\begin{algorithm}[H]
+\caption{Wild Cluster Bootstrap for DiD}
+\begin{algorithmic}[1]
+\STATE Estimate the restricted model under $H_0: \beta = 0$
+\STATE Compute restricted residuals $\tilde{\varepsilon}_{it}$
+\FOR{$b = 1$ to $B$}
+    \STATE Draw cluster-level weights $w_g^{(b)} \in \{-1, +1\}$ with equal probability
+    \STATE Construct bootstrap outcomes: $Y_{it}^{(b)} = \hat{Y}_{it}^{\text{restricted}} + w_{g(i)}^{(b)} \tilde{\varepsilon}_{it}$
+    \STATE Estimate DiD on $(Y^{(b)}, X)$ to get $\hat{\beta}^{(b)}$
+\ENDFOR
+\STATE Compute bootstrap p-value: $p = \frac{1}{B} \sum_{b=1}^{B} \indicator{|\hat{\beta}^{(b)}| \geq |\hat{\beta}|}$
+\end{algorithmic}
+\end{algorithm}
+
+\begin{remark}[Few Clusters Problem]
+The \texttt{causal\_inference\_mastery} implementation automatically switches to wild cluster bootstrap when $G < 30$ clusters are detected, with a warning to the user.
+\end{remark}
+
+% ============================================================================
+\section{Event Studies}
+\label{sec:did_event}
+% ============================================================================
+
+Event studies extend DiD to examine \emph{dynamic treatment effects}---how the treatment effect evolves over time relative to treatment.
+
+\subsection{Event Study Specification}
+
+\begin{equation}
+Y_{it} = \alpha_i + \lambda_t + \sum_{k \neq -1} \beta_k \cdot D_i \cdot \indicator{t - T_i^* = k} + \varepsilon_{it}
+\label{eq:event_study}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $T_i^*$ is the treatment timing for unit $i$
+    \item $k$ indexes event time (periods relative to treatment)
+    \item $k = -1$ is omitted as the reference period (normalization)
+    \item $\beta_k$ captures the effect at event time $k$
+\end{itemize}
+
+\subsection{Interpretation}
+
+\begin{itemize}
+    \item \textbf{Pre-treatment coefficients} ($\beta_k$ for $k < 0$): Should be zero under parallel trends
+    \item \textbf{Treatment effect} ($\beta_0$): Immediate effect at treatment
+    \item \textbf{Post-treatment coefficients} ($\beta_k$ for $k > 0$): Dynamic effects over time
+\end{itemize}
+
+\subsection{Joint Test for Pre-Trends}
+
+Rather than testing individual pre-treatment coefficients, conduct a joint F-test:
+
+\begin{equation}
+H_0: \beta_{-K} = \beta_{-K+1} = \cdots = \beta_{-2} = 0
+\label{eq:pretrends_test}
+\end{equation}
+
+This tests whether all pre-treatment coefficients are jointly zero, providing a more powerful test than individual t-tests.
+
+\subsection{Visualization}
+
+Event study plots display $\hat{\beta}_k$ with confidence intervals against event time $k$. Key features:
+\begin{itemize}
+    \item Pre-treatment coefficients near zero suggest parallel trends
+    \item Reference period ($k = -1$) normalized to zero
+    \item Post-treatment pattern reveals treatment dynamics
+\end{itemize}
+
+% ============================================================================
+\section{Implementation}
+\label{sec:did_implementation}
+% ============================================================================
+
+The \texttt{causal\_inference\_mastery} package provides comprehensive DiD functionality.
+
+\subsection{Basic $2 \times 2$ DiD}
+
+\begin{minted}{python}
+from causal_inference.did import did_2x2
+
+# Estimate 2x2 DiD with cluster-robust SEs
+result = did_2x2(
+    outcomes=Y,           # Outcome array (n_obs,)
+    treatment=D,          # Treatment group indicator (n_obs,)
+    post=Post,            # Post-period indicator (n_obs,)
+    unit_id=unit_ids,     # Unit identifiers for clustering
+    cluster_se=True,      # Use cluster-robust SEs
+    se_method="cluster",  # Options: "cluster", "wild_bootstrap", "naive"
+    alpha=0.05            # Significance level
+)
+
+print(f"DiD Estimate: {result.estimate:.4f}")
+print(f"Standard Error: {result.se:.4f}")
+print(f"95% CI: [{result.ci_lower:.4f}, {result.ci_upper:.4f}]")
+print(f"p-value: {result.p_value:.4f}")
+\end{minted}
+
+\subsection{Parallel Trends Check}
+
+\begin{minted}{python}
+from causal_inference.did import check_parallel_trends
+
+# Test parallel trends with multiple pre-periods
+pretrends_result = check_parallel_trends(
+    outcomes=Y,
+    treatment=D,
+    time=time_periods,
+    unit_id=unit_ids,
+    treatment_time=T_star,  # When treatment begins
+    alpha=0.05
+)
+
+print(f"Pre-trends F-statistic: {pretrends_result.f_stat:.4f}")
+print(f"Pre-trends p-value: {pretrends_result.p_value:.4f}")
+if pretrends_result.p_value < 0.05:
+    print("WARNING: Evidence of pre-trends detected!")
+\end{minted}
+
+\subsection{Event Study}
+
+\begin{minted}{python}
+from causal_inference.did import event_study, plot_event_study
+
+# Estimate event study
+es_result = event_study(
+    outcomes=Y,
+    treatment=D,
+    time=time_periods,
+    unit_id=unit_ids,
+    treatment_time=T_star,
+    n_leads=5,           # Pre-treatment periods to include
+    n_lags=5,            # Post-treatment periods to include
+    omit_period=-1,      # Reference period
+    cluster_se=True
+)
+
+# Access coefficients by event time
+for k, coef in es_result.coefficients.items():
+    print(f"Event time {k:+d}: {coef:.4f} (SE: {es_result.se[k]:.4f})")
+
+# Visualize
+plot_event_study(es_result, title="Event Study: Treatment Effects by Period")
+\end{minted}
+
+\subsection{Return Value Structure}
+
+\begin{minted}{python}
+@dataclass
+class DiD2x2Result:
+    """Result container for 2x2 DiD estimation."""
+    estimate: float        # DiD point estimate
+    se: float              # Standard error
+    t_stat: float          # t-statistic
+    p_value: float         # Two-sided p-value
+    ci_lower: float        # Lower CI bound
+    ci_upper: float        # Upper CI bound
+    n_treated: int         # Number of treated units
+    n_control: int         # Number of control units
+    n_clusters: int        # Number of clusters
+    se_method: str         # SE method used
+    diagnostics: dict      # Additional diagnostics
+\end{minted}
+
+% ============================================================================
+\section{Monte Carlo Validation}
+\label{sec:did_validation}
+% ============================================================================
+
+We validate the DiD estimator using Monte Carlo simulation with known data-generating processes.
+
+\subsection{Data-Generating Process}
+
+\begin{equation}
+Y_{it} = \alpha_i + \lambda_t + \tau \cdot D_{it} + \varepsilon_{it}
+\label{eq:did_dgp}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\alpha_i \sim \mathcal{N}(0, 1)$ are unit fixed effects
+    \item $\lambda_t = 0.5 \cdot t$ is a linear time trend
+    \item $\tau = 2.0$ is the true treatment effect
+    \item $\varepsilon_{it} \sim \mathcal{N}(0, 1)$ with AR(1) serial correlation $\rho = 0.5$
+    \item $n = 200$ units, $T = 10$ periods, treatment at $T^* = 5$
+\end{itemize}
+
+\subsection{Validation Results}
+
+\begin{table}[htbp]
+\centering
+\caption{Monte Carlo Validation: DiD Estimator (5,000 replications)}
+\label{tab:did_mc}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{SE Method} & \textbf{Bias} & \textbf{RMSE} & \textbf{Coverage} & \textbf{SE Ratio} \\
+\midrule
+Naive (OLS)         & 0.002 & 0.142 & 0.78 & 0.65 \\
+Cluster-robust      & 0.002 & 0.142 & 0.95 & 1.02 \\
+Wild bootstrap      & 0.002 & 0.142 & 0.94 & 0.98 \\
+\midrule
+\textbf{Target}     & $<0.10$ & --- & 0.93--0.97 & 0.90--1.10 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Findings:}
+\begin{enumerate}
+    \item \textbf{Unbiasedness}: Bias is negligible ($<0.01$) across all SE methods
+    \item \textbf{Naive SEs fail}: OLS standard errors lead to severe undercoverage (78\% vs.\ 95\% target)
+    \item \textbf{Cluster-robust SEs work}: Proper 95\% coverage with cluster-robust inference
+    \item \textbf{Wild bootstrap robust}: Comparable coverage, especially valuable with few clusters
+\end{enumerate}
+
+% ============================================================================
+\section{Practical Guidance}
+\label{sec:did_guidance}
+% ============================================================================
+
+\subsection{When to Use DiD}
+
+DiD is appropriate when:
+\begin{enumerate}
+    \item A clear treatment event occurs at a specific time
+    \item A plausible control group exists that did not receive treatment
+    \item Pre-treatment data is available for both groups
+    \item The parallel trends assumption is defensible
+\end{enumerate}
+
+\subsection{Common Pitfalls}
+
+\begin{enumerate}
+    \item \textbf{Ignoring serial correlation}: Always cluster standard errors at the unit level
+    \item \textbf{Over-interpreting pre-trends}: Passing a pre-trends test does not validate the assumption
+    \item \textbf{Composition changes}: Verify the sample is stable over time
+    \item \textbf{Anticipation effects}: Check for behavioral changes before treatment
+    \item \textbf{Using TWFE with staggered adoption}: See Chapter~\ref{ch:did_modern} for proper methods
+\end{enumerate}
+
+\subsection{Reporting Recommendations}
+
+A complete DiD analysis should report:
+\begin{enumerate}
+    \item Point estimate with cluster-robust standard errors
+    \item Number of treated and control units/clusters
+    \item Pre-trends test results (with caveats about interpretation)
+    \item Event study visualization (if data permits)
+    \item Sensitivity analyses (placebo tests, alternative control groups)
+\end{enumerate}
+
+\subsection{Decision Tree}
+
+\begin{enumerate}
+    \item \textbf{Is treatment timing the same for all treated units?}
+    \begin{itemize}
+        \item Yes $\to$ Use methods in this chapter (2$\times$2 DiD, TWFE)
+        \item No $\to$ See Chapter~\ref{ch:did_modern} (Callaway-Sant'Anna, Sun-Abraham)
+    \end{itemize}
+    \item \textbf{Do you have few clusters ($<30$)?}
+    \begin{itemize}
+        \item Yes $\to$ Use wild cluster bootstrap
+        \item No $\to$ Cluster-robust SEs are sufficient
+    \end{itemize}
+    \item \textbf{Do you have multiple pre-treatment periods?}
+    \begin{itemize}
+        \item Yes $\to$ Conduct event study and pre-trends test
+        \item No $\to$ Acknowledge limitation, consider alternative evidence
+    \end{itemize}
+\end{enumerate}
+
+% ============================================================================
+\section{Summary}
+\label{sec:did_summary}
+% ============================================================================
+
+\textbf{Key Concepts:}
+\begin{itemize}
+    \item DiD compares changes over time between treated and control groups
+    \item The parallel trends assumption is critical but untestable
+    \item TWFE generalizes DiD to panel data with unit and time fixed effects
+    \item Cluster-robust standard errors are essential for valid inference
+    \item Event studies reveal dynamic treatment effects
+\end{itemize}
+
+\textbf{Key Equations:}
+\begin{align}
+\text{DiD Estimand:} \quad \tau^{\text{DiD}} &= (\bar{Y}_{1,\text{post}} - \bar{Y}_{1,\text{pre}}) - (\bar{Y}_{0,\text{post}} - \bar{Y}_{0,\text{pre}}) \\
+\text{Regression:} \quad Y_{it} &= \beta_0 + \beta_1 D_i + \beta_2 \text{Post}_t + \beta_3 (D_i \times \text{Post}_t) + \varepsilon_{it} \\
+\text{TWFE:} \quad Y_{it} &= \alpha_i + \lambda_t + \beta D_{it} + \varepsilon_{it}
+\end{align}
+
+\textbf{Key Functions:}
+\begin{itemize}
+    \item \texttt{did\_2x2()}: Basic $2 \times 2$ DiD estimation
+    \item \texttt{check\_parallel\_trends()}: Pre-trends testing
+    \item \texttt{event\_study()}: Dynamic effects estimation
+    \item \texttt{wild\_cluster\_bootstrap\_se()}: Inference with few clusters
+\end{itemize}
+
+\textbf{Next Chapter:} Chapter~\ref{ch:did_modern} addresses the TWFE bias problem with staggered adoption, introducing Callaway-Sant'Anna and Sun-Abraham estimators.
+

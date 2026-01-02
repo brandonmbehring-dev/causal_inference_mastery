@@ -1,0 +1,35 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{psm}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{PropensityScoreEstimator}\PYG{p}{,}
+    \PYG{n}{NearestNeighborMatcher}\PYG{p}{,}
+    \PYG{n}{abadie\PYGZus{}imbens\PYGZus{}variance}\PYG{p}{,}
+    \PYG{n}{check\PYGZus{}covariate\PYGZus{}balance}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Step 1: Estimate propensity scores}
+\PYG{n}{estimator} \PYG{o}{=} \PYG{n}{PropensityScoreEstimator}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{ps\PYGZus{}result} \PYG{o}{=} \PYG{n}{estimator}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{,} \PYG{n}{covariates}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Check common support}
+\PYG{k}{if} \PYG{o+ow}{not} \PYG{n}{ps\PYGZus{}result}\PYG{o}{.}\PYG{n}{has\PYGZus{}common\PYGZus{}support}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Warning: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ps\PYGZus{}result}\PYG{o}{.}\PYG{n}{n\PYGZus{}outside\PYGZus{}support}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ units outside support}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Step 2: Match treated to controls}
+\PYG{n}{matcher} \PYG{o}{=} \PYG{n}{NearestNeighborMatcher}\PYG{p}{(}\PYG{n}{M}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{with\PYGZus{}replacement}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{,} \PYG{n}{caliper}\PYG{o}{=}\PYG{l+m+mf}{0.25}\PYG{p}{)}
+\PYG{n}{match\PYGZus{}result} \PYG{o}{=} \PYG{n}{matcher}\PYG{o}{.}\PYG{n}{match}\PYG{p}{(}\PYG{n}{ps\PYGZus{}result}\PYG{o}{.}\PYG{n}{propensity\PYGZus{}scores}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Matched }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{match\PYGZus{}result}\PYG{o}{.}\PYG{n}{n\PYGZus{}matched}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{/}\PYG{l+s+si}{\PYGZob{}}\PYG{n+nb}{sum}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{)}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ treated units}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Step 3: Compute ATE from matches}
+\PYG{n}{ate}\PYG{p}{,} \PYG{n}{y1}\PYG{p}{,} \PYG{n}{y0} \PYG{o}{=} \PYG{n}{matcher}\PYG{o}{.}\PYG{n}{compute\PYGZus{}ate\PYGZus{}from\PYGZus{}matches}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{match\PYGZus{}result}\PYG{o}{.}\PYG{n}{matches}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Step 4: Compute variance (Abadie\PYGZhy{}Imbens, NOT bootstrap)}
+\PYG{n}{variance}\PYG{p}{,} \PYG{n}{se} \PYG{o}{=} \PYG{n}{abadie\PYGZus{}imbens\PYGZus{}variance}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{match\PYGZus{}result}\PYG{o}{.}\PYG{n}{matches}\PYG{p}{,} \PYG{n}{M}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Step 5: Confidence interval}
+\PYG{n}{ci\PYGZus{}lower} \PYG{o}{=} \PYG{n}{ate} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1.96} \PYG{o}{*} \PYG{n}{se}
+\PYG{n}{ci\PYGZus{}upper} \PYG{o}{=} \PYG{n}{ate} \PYG{o}{+} \PYG{l+m+mf}{1.96} \PYG{o}{*} \PYG{n}{se}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{ATE = }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ate}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (SE = }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{se}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{95\PYGZpc{} CI: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ci\PYGZus{}lower}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ci\PYGZus{}upper}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

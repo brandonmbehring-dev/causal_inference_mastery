@@ -1,0 +1,8 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n}{treated}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{[}\PYG{l+m+mf}{10.5}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{12.3}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{8.7}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{15.2}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{11.1}\PYG{p}{]}
+\PYG{n}{control}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{[}\PYG{l+m+mf}{8.2}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{10.1}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{7.5}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{12.8}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{9.3}\PYG{p}{]}
+\PYG{n}{problem}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{RosenbaumProblem}\PYG{p}{(}\PYG{n}{treated}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{control}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{gamma\PYGZus{}range}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mf}{1.0}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{3.0}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{solution}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{solve}\PYG{p}{(}\PYG{n}{problem}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{RosenbaumBounds}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{n}{println}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{Critical Gamma: }\PYG{l+s+si}{\PYGZdl{}}\PYG{p}{(}\PYG{n}{solution}\PYG{o}{.}\PYG{n}{gamma\PYGZus{}critical}\PYG{p}{)}\PYG{l+s}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,17 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{did}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{create\PYGZus{}staggered\PYGZus{}data}
+
+\PYG{c+c1}{\PYGZsh{} Create staggered data container with validation}
+\PYG{n}{data} \PYG{o}{=} \PYG{n}{create\PYGZus{}staggered\PYGZus{}data}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{,}           \PYG{c+c1}{\PYGZsh{} Outcomes (n\PYGZus{}obs,)}
+    \PYG{n}{treatment}\PYG{o}{=}\PYG{n}{D}\PYG{p}{,}          \PYG{c+c1}{\PYGZsh{} Treatment indicator (n\PYGZus{}obs,)}
+    \PYG{n}{time}\PYG{o}{=}\PYG{n}{time\PYGZus{}periods}\PYG{p}{,}    \PYG{c+c1}{\PYGZsh{} Time periods (n\PYGZus{}obs,)}
+    \PYG{n}{unit\PYGZus{}id}\PYG{o}{=}\PYG{n}{unit\PYGZus{}ids}\PYG{p}{,}     \PYG{c+c1}{\PYGZsh{} Unit identifiers (n\PYGZus{}obs,)}
+    \PYG{n}{treatment\PYGZus{}time}\PYG{o}{=}\PYG{n}{G}      \PYG{c+c1}{\PYGZsh{} Treatment timing per unit (n\PYGZus{}units,)}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Properties}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Number of cohorts: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{data}\PYG{o}{.}\PYG{n}{n\PYGZus{}cohorts}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Cohort timings: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{data}\PYG{o}{.}\PYG{n}{cohorts}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Never\PYGZhy{}treated units: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{data}\PYG{o}{.}\PYG{n}{never\PYGZus{}treated\PYGZus{}mask}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{p}{)}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,25 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{rdd}\PYG{n+nn}{.}\PYG{n+nn}{diagnostics}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{covariate\PYGZus{}balance\PYGZus{}test}\PYG{p}{,}
+    \PYG{n}{placebo\PYGZus{}cutoff\PYGZus{}test}\PYG{p}{,}
+    \PYG{n}{donut\PYGZus{}hole\PYGZus{}rdd}\PYG{p}{,}
+    \PYG{n}{bandwidth\PYGZus{}sensitivity}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Covariate balance}
+\PYG{n}{W} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} Pre\PYGZhy{}determined covariate}
+\PYG{n}{balance\PYGZus{}result} \PYG{o}{=} \PYG{n}{covariate\PYGZus{}balance\PYGZus{}test}\PYG{p}{(}\PYG{n}{W}\PYG{p}{,} \PYG{n}{X}\PYG{p}{,} \PYG{n}{c}\PYG{p}{,} \PYG{n}{bandwidth}\PYG{o}{=}\PYG{l+m+mf}{0.3}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Covariate discontinuity: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{balance\PYGZus{}result}\PYG{o}{.}\PYG{n}{tau}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (p=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{balance\PYGZus{}result}\PYG{o}{.}\PYG{n}{pvalue}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Placebo cutoffs}
+\PYG{n}{placebo\PYGZus{}cutoffs} \PYG{o}{=} \PYG{p}{[}\PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{o}{\PYGZhy{}}\PYG{l+m+mf}{0.25}\PYG{p}{,} \PYG{l+m+mf}{0.25}\PYG{p}{,} \PYG{l+m+mf}{0.5}\PYG{p}{]}
+\PYG{k}{for} \PYG{n}{pc} \PYG{o+ow}{in} \PYG{n}{placebo\PYGZus{}cutoffs}\PYG{p}{:}
+    \PYG{n}{placebo\PYGZus{}result} \PYG{o}{=} \PYG{n}{placebo\PYGZus{}cutoff\PYGZus{}test}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{X}\PYG{p}{,} \PYG{n}{true\PYGZus{}cutoff}\PYG{o}{=}\PYG{n}{c}\PYG{p}{,} \PYG{n}{placebo\PYGZus{}cutoff}\PYG{o}{=}\PYG{n}{pc}\PYG{p}{)}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Placebo c=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{pc}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{: tau=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{placebo\PYGZus{}result}\PYG{o}{.}\PYG{n}{tau}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (p=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{placebo\PYGZus{}result}\PYG{o}{.}\PYG{n}{pvalue}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Bandwidth sensitivity}
+\PYG{n}{bandwidths} \PYG{o}{=} \PYG{p}{[}\PYG{l+m+mf}{0.15}\PYG{p}{,} \PYG{l+m+mf}{0.2}\PYG{p}{,} \PYG{l+m+mf}{0.25}\PYG{p}{,} \PYG{l+m+mf}{0.3}\PYG{p}{,} \PYG{l+m+mf}{0.35}\PYG{p}{,} \PYG{l+m+mf}{0.4}\PYG{p}{]}
+\PYG{n}{sensitivity} \PYG{o}{=} \PYG{n}{bandwidth\PYGZus{}sensitivity}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{X}\PYG{p}{,} \PYG{n}{c}\PYG{p}{,} \PYG{n}{bandwidths}\PYG{p}{)}
+\PYG{k}{for} \PYG{n}{h}\PYG{p}{,} \PYG{n}{tau}\PYG{p}{,} \PYG{n}{se} \PYG{o+ow}{in} \PYG{n+nb}{zip}\PYG{p}{(}\PYG{n}{bandwidths}\PYG{p}{,} \PYG{n}{sensitivity}\PYG{o}{.}\PYG{n}{estimates}\PYG{p}{,} \PYG{n}{sensitivity}\PYG{o}{.}\PYG{n}{std\PYGZus{}errors}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{h=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{h}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{: tau=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{tau}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (se=}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{se}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

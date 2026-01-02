@@ -1,0 +1,19 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{rkd}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{FuzzyRKD}
+
+\PYG{c+c1}{\PYGZsh{} Fuzzy treatment: actual treatment differs from assignment}
+\PYG{n}{noise} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mf}{0.2}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+\PYG{n}{D} \PYG{o}{=} \PYG{n}{B} \PYG{o}{+} \PYG{n}{noise}  \PYG{c+c1}{\PYGZsh{} Noisy compliance}
+
+\PYG{c+c1}{\PYGZsh{} Outcome depends on actual treatment}
+\PYG{n}{Y} \PYG{o}{=} \PYG{l+m+mi}{1} \PYG{o}{+} \PYG{l+m+mf}{0.5} \PYG{o}{*} \PYG{n}{X} \PYG{o}{+} \PYG{n}{tau\PYGZus{}true} \PYG{o}{*} \PYG{n}{D} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mf}{0.3}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Fit Fuzzy RKD}
+\PYG{n}{frkd} \PYG{o}{=} \PYG{n}{FuzzyRKD}\PYG{p}{(}\PYG{n}{cutoff}\PYG{o}{=}\PYG{n}{c}\PYG{p}{,} \PYG{n}{bandwidth}\PYG{o}{=}\PYG{l+m+mf}{0.4}\PYG{p}{,} \PYG{n}{kernel}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{triangular}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{frkd}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{X}\PYG{p}{,} \PYG{n}{D}\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{First\PYGZhy{}stage kink: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{first\PYGZus{}stage\PYGZus{}kink}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Reduced\PYGZhy{}form kink: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{outcome\PYGZus{}kink}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Treatment effect: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{tau}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{First\PYGZhy{}stage F: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{first\PYGZus{}stage\PYGZus{}f}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,38 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{mte}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{local\PYGZus{}iv}\PYG{p}{,} \PYG{n}{polynomial\PYGZus{}mte}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+
+\PYG{c+c1}{\PYGZsh{} Generate example data}
+\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{seed}\PYG{p}{(}\PYG{l+m+mi}{42}\PYG{p}{)}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{1000}
+
+\PYG{c+c1}{\PYGZsh{} Instrument affects propensity}
+\PYG{n}{Z} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{binomial}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+\PYG{n}{U\PYGZus{}D} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{uniform}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+\PYG{n}{propensity} \PYG{o}{=} \PYG{l+m+mf}{0.3} \PYG{o}{+} \PYG{l+m+mf}{0.4} \PYG{o}{*} \PYG{n}{Z}
+\PYG{n}{D} \PYG{o}{=} \PYG{p}{(}\PYG{n}{propensity} \PYG{o}{\PYGZgt{}}\PYG{o}{=} \PYG{n}{U\PYGZus{}D}\PYG{p}{)}\PYG{o}{.}\PYG{n}{astype}\PYG{p}{(}\PYG{n+nb}{int}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Heterogeneous treatment effect: MTE(u) = 2 \PYGZhy{} 3u}
+\PYG{c+c1}{\PYGZsh{} Those with low U\PYGZus{}D have higher returns}
+\PYG{n}{Y0} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+\PYG{n}{Y1} \PYG{o}{=} \PYG{n}{Y0} \PYG{o}{+} \PYG{l+m+mi}{2} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{3} \PYG{o}{*} \PYG{n}{U\PYGZus{}D} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+\PYG{n}{Y} \PYG{o}{=} \PYG{n}{D} \PYG{o}{*} \PYG{n}{Y1} \PYG{o}{+} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{D}\PYG{p}{)} \PYG{o}{*} \PYG{n}{Y0}
+
+\PYG{c+c1}{\PYGZsh{} Estimate MTE}
+\PYG{n}{mte\PYGZus{}result} \PYG{o}{=} \PYG{n}{local\PYGZus{}iv}\PYG{p}{(}
+    \PYG{n}{outcome}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{o}{=}\PYG{n}{D}\PYG{p}{,}
+    \PYG{n}{instrument}\PYG{o}{=}\PYG{n}{Z}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}grid}\PYG{o}{=}\PYG{l+m+mi}{50}\PYG{p}{,}
+    \PYG{n}{bandwidth\PYGZus{}rule}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{silverman}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}
+    \PYG{n}{trim\PYGZus{}fraction}\PYG{o}{=}\PYG{l+m+mf}{0.01}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{500}\PYG{p}{,}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Results}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{MTE estimated at }\PYG{l+s+si}{\PYGZob{}}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{mte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{u\PYGZus{}grid}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{)}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ grid points}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Propensity support: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{propensity\PYGZus{}support}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+s2}{\PYGZdq{}}
+      \PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{propensity\PYGZus{}support}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Trimmed observations: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{n\PYGZus{}trimmed}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Bandwidth: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mte\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bandwidth}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,279 @@
+\documentclass[11pt,oneside]{amsbook}
+
+% ============================================================================
+% PACKAGE IMPORTS
+% ============================================================================
+
+% Mathematics packages
+\usepackage{mathtools}  % Enhanced version of amsmath (already loaded by amsbook)
+\usepackage{amssymb}    % Math symbols (blackboard bold, etc.)
+\usepackage{amsthm}     % Theorem environments (already loaded by amsbook)
+
+% Code listings with syntax highlighting
+\usepackage{minted}     % Requires: pip install Pygments
+\setminted{
+    breaklines=true,
+    fontsize=\small,
+    linenos=true,
+    frame=lines,
+    framesep=2mm,
+    baselinestretch=1.2,
+    bgcolor=gray!5
+}
+
+% Algorithms
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% Graphics and figures
+\usepackage{graphicx}
+\usepackage{caption}
+\usepackage{subcaption}
+
+% Tables
+\usepackage{booktabs}   % Professional tables
+\usepackage{array}      % Extended column formatting
+\usepackage{longtable}  % Multi-page tables
+
+% Bibliography
+\usepackage[round,authoryear]{natbib}  % Author-year citations with \citet, \citep
+
+% Hyperlinks (LOAD LAST)
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=blue,
+    urlcolor=blue,
+    pdftitle={Causal Inference Mastery: A Computational Approach},
+    pdfauthor={Brandon Behring},
+    bookmarks=true,
+    bookmarksnumbered=true
+}
+
+% ============================================================================
+% THEOREM ENVIRONMENTS
+% ============================================================================
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[chapter]
+\newtheorem{example}{Example}[chapter]
+\newtheorem{exercise}{Exercise}[chapter]
+
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}[chapter]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{assumption}{Assumption}[chapter]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}[chapter]
+\newtheorem{note}{Note}[chapter]
+
+% ============================================================================
+% CUSTOM COMMANDS
+% ============================================================================
+
+% Probability and statistics
+\newcommand{\E}{\mathbb{E}}         % Expectation
+\newcommand{\Var}{\mathrm{Var}}     % Variance
+\newcommand{\Cov}{\mathrm{Cov}}     % Covariance
+\newcommand{\Prob}{\mathbb{P}}      % Probability
+
+% Common sets
+\newcommand{\R}{\mathbb{R}}         % Real numbers
+\newcommand{\N}{\mathbb{N}}         % Natural numbers
+\newcommand{\Z}{\mathbb{Z}}         % Integers
+
+% Indicators and norms
+\newcommand{\indicator}[1]{\mathbb{1}\{#1\}}
+\newcommand{\norm}[1]{\|#1\|}
+
+% Convergence
+\newcommand{\convd}{\xrightarrow{d}}   % Convergence in distribution
+\newcommand{\convp}{\xrightarrow{p}}   % Convergence in probability
+\newcommand{\convas}{\xrightarrow{a.s.}}  % Almost sure convergence
+
+% Operators
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\plim}{plim}
+
+% Causal inference specific
+\newcommand{\ate}{\tau}                    % Average treatment effect
+\newcommand{\att}{\tau_{\text{ATT}}}       % ATT
+\newcommand{\atc}{\tau_{\text{ATC}}}       % ATC
+\newcommand{\cate}{\tau(x)}                % Conditional ATE
+\newcommand{\poty}[1]{Y^{(#1)}}            % Potential outcome Y(t)
+\newcommand{\propensity}{e(X)}             % Propensity score
+\newcommand{\independent}{\perp\!\!\!\perp} % Statistical independence
+\newcommand{\indep}{\perp\!\!\!\perp}       % Alias for independence
+
+% Insight box environment
+\newenvironment{insight}{\par\medskip\noindent\textbf{$\bigstar$ Insight:}\itshape}{\par\medskip}
+
+% ============================================================================
+% DOCUMENT METADATA
+% ============================================================================
+
+\title{Causal Inference Mastery:\\
+A Computational Approach to Treatment Effect Estimation}
+
+\author{Brandon Behring}
+
+\date{\today}
+
+% ============================================================================
+% DOCUMENT BODY
+% ============================================================================
+
+\begin{document}
+
+% ----------------------------------------------------------------------------
+% FRONT MATTER
+% ----------------------------------------------------------------------------
+
+\frontmatter
+
+\maketitle
+
+\tableofcontents
+
+\chapter{Preface}
+
+This book develops the theory and practice of causal inference for treatment effect estimation, with a focus on computational implementation and rigorous validation.
+
+\textbf{What This Book Covers:}
+\begin{itemize}
+    \item Part I: Foundations---potential outcomes, randomized experiments, statistical inference
+    \item Part II: Selection on Observables---propensity scores, weighting, CATE estimation, sensitivity analysis
+    \item Part III: Selection on Unobservables---instrumental variables, weak instruments, control function, partial identification
+    \item Part IV: Natural Experiments---difference-in-differences, regression discontinuity, synthetic control, kink designs
+    \item Part V: Advanced Methods---quantile treatment effects, marginal treatment effects, mediation analysis, dynamic treatment regimes
+    \item Part VI: Implementation---principal stratification, Bayesian causal inference, cross-language validation
+\end{itemize}
+
+\textbf{Key Features:}
+\begin{itemize}
+    \item Rigorous mathematical foundations with complete identification arguments
+    \item Production-ready Python implementations with full API documentation
+    \item Comprehensive Monte Carlo validation for every estimator
+    \item Julia implementations provided in Appendix B for cross-language verification
+\end{itemize}
+
+\textbf{Prerequisites:}
+\begin{itemize}
+    \item Linear regression, probability theory, statistical inference
+    \item Python programming (NumPy, pandas, scikit-learn)
+    \item Basic familiarity with machine learning
+\end{itemize}
+
+\textbf{Companion Code:}
+
+All implementations are available in the \texttt{causal\_inference\_mastery} repository, with over 90,000 lines of tested Python and Julia code across 26 method families.
+
+% ----------------------------------------------------------------------------
+% MAIN MATTER
+% ----------------------------------------------------------------------------
+
+\mainmatter
+
+% ============================================================================
+% PART I: FOUNDATIONS
+% ============================================================================
+
+\part{Foundations}
+\label{part:foundations}
+
+\include{chapters/part1_foundations/ch01_potential_outcomes}
+\include{chapters/part1_foundations/ch02_randomized_experiments}
+\include{chapters/part1_foundations/ch03_statistical_inference}
+
+% ============================================================================
+% PART II: SELECTION ON OBSERVABLES
+% ============================================================================
+
+\part{Selection on Observables}
+\label{part:selection_observables}
+
+\include{chapters/part2_selection_observables/ch04_propensity_score}
+\include{chapters/part2_selection_observables/ch05_weighting}
+\include{chapters/part2_selection_observables/ch06_cate}
+\include{chapters/part2_selection_observables/ch07_causal_forests}
+\include{chapters/part2_selection_observables/ch08_sensitivity}
+
+% ============================================================================
+% PART III: SELECTION ON UNOBSERVABLES
+% ============================================================================
+
+\part{Selection on Unobservables}
+\label{part:selection_unobservables}
+
+\include{chapters/part3_selection_unobservables/ch09_iv}
+\include{chapters/part3_selection_unobservables/ch10_weak_instruments}
+\include{chapters/part3_selection_unobservables/ch11_control_function}
+\include{chapters/part3_selection_unobservables/ch12_bounds}
+
+% ============================================================================
+% PART IV: NATURAL EXPERIMENTS
+% ============================================================================
+
+\part{Natural Experiments}
+\label{part:natural_experiments}
+
+\include{chapters/part4_natural_experiments/ch13_did_classic}
+\include{chapters/part4_natural_experiments/ch14_did_modern}
+\include{chapters/part4_natural_experiments/ch15_rdd}
+\include{chapters/part4_natural_experiments/ch16_scm}
+\include{chapters/part4_natural_experiments/ch17_kink_bunching}
+
+% ============================================================================
+% PART V: ADVANCED METHODS
+% ============================================================================
+
+\part{Advanced Methods}
+\label{part:advanced_methods}
+
+\include{chapters/part5_advanced/ch18_qte}
+\include{chapters/part5_advanced/ch19_mte}
+\include{chapters/part5_advanced/ch20_mediation}
+\include{chapters/part5_advanced/ch21_selection_panel}
+\include{chapters/part5_advanced/ch22_dtr}
+
+% ============================================================================
+% PART VI: IMPLEMENTATION
+% ============================================================================
+
+\part{Implementation}
+\label{part:implementation}
+
+\include{chapters/part6_implementation/ch23_principal_strat}
+\include{chapters/part6_implementation/ch24_bayesian}
+\include{chapters/part6_implementation/ch25_validation}
+
+% ============================================================================
+% PART VII: TIME SERIES CAUSAL METHODS
+% ============================================================================
+
+\part{Time Series Causal Methods}
+\label{part:timeseries}
+
+\include{chapters/part7_timeseries/ch26_timeseries}
+
+% ----------------------------------------------------------------------------
+% BACK MATTER
+% ----------------------------------------------------------------------------
+
+\backmatter
+
+% Appendices
+\appendix
+
+\include{chapters/appendices/app_julia}
+\include{chapters/appendices/app_discovery}
+
+\bibliographystyle{plainnat}
+\bibliography{bibliography}
+
+\end{document}

@@ -1,0 +1,521 @@
+{
+  "metadata": {
+    "generated_at": "2025-12-28T15:01:29.177462",
+    "sample_sizes": [
+      100
+    ],
+    "n_repetitions": 3,
+    "n_warmup": 2
+  },
+  "families": {
+    "rct": {
+      "simple_ate": {
+        "100": {
+          "median_ms": 0.4291220102459192,
+          "min_ms": 0.4205860022921115,
+          "max_ms": 0.4336400015745312,
+          "std_ms": 0.005412768594293137,
+          "memory_kb": 18.8447265625,
+          "speed_category": "fast"
+        }
+      },
+      "stratified_ate": {
+        "100": {
+          "median_ms": 3.013178997207433,
+          "min_ms": 2.9919779917690903,
+          "max_ms": 3.0219049949664623,
+          "std_ms": 0.012566495086639144,
+          "memory_kb": 40.0380859375,
+          "speed_category": "fast"
+        }
+      },
+      "regression_ate": {
+        "100": {
+          "median_ms": 0.5877419898752123,
+          "min_ms": 0.5830120062455535,
+          "max_ms": 0.5911680054850876,
+          "std_ms": 0.003343827675172259,
+          "memory_kb": 95.4921875,
+          "speed_category": "fast"
+        }
+      },
+      "permutation_test": {
+        "100": {
+          "median_ms": 15.64430701546371,
+          "min_ms": 15.626812994014472,
+          "max_ms": 15.707836981164292,
+          "std_ms": 0.03481216872499493,
+          "memory_kb": 52.71875,
+          "speed_category": "medium"
+        }
+      },
+      "ipw_ate": {
+        "100": {
+          "median_ms": 0.5174580146558583,
+          "min_ms": 0.5040530231781304,
+          "max_ms": 0.5244319909252226,
+          "std_ms": 0.00845663755060446,
+          "memory_kb": 19.23046875,
+          "speed_category": "fast"
+        }
+      }
+    },
+    "observational": {
+      "ipw_ate_obs": {
+        "100": {
+          "median_ms": 2.8398299764376134,
+          "min_ms": 2.8353320085443556,
+          "max_ms": 2.890165982535109,
+          "std_ms": 0.02485672260651364,
+          "memory_kb": 44.740234375,
+          "speed_category": "fast"
+        }
+      },
+      "dr_ate": {
+        "100": {
+          "median_ms": 4.4436729804147035,
+          "min_ms": 4.3935290013905615,
+          "max_ms": 4.45338201825507,
+          "std_ms": 0.026227779327233233,
+          "memory_kb": 48.4775390625,
+          "speed_category": "fast"
+        }
+      },
+      "tmle_ate": {
+        "100": {
+          "median_ms": 4.454443987924606,
+          "min_ms": 4.39089399878867,
+          "max_ms": 4.486774996621534,
+          "std_ms": 0.039828885369462726,
+          "memory_kb": 53.1298828125,
+          "speed_category": "fast"
+        }
+      }
+    },
+    "psm": {
+      "psm_ate": {
+        "100": {
+          "median_ms": 3.9252130081877112,
+          "min_ms": 3.912559011951089,
+          "max_ms": 3.9332980231847614,
+          "std_ms": 0.008534880557709915,
+          "memory_kb": 49.826171875,
+          "speed_category": "fast"
+        }
+      },
+      "psm_ate_k3": {
+        "100": {
+          "error": "benchmark_psm_ate() got an unexpected keyword argument 'M'"
+        }
+      },
+      "psm_ate_replacement": {
+        "100": {
+          "error": "benchmark_psm_ate() got an unexpected keyword argument 'M'"
+        }
+      }
+    },
+    "did": {
+      "did_2x2": {
+        "100": {
+          "median_ms": 1.9389170047361404,
+          "min_ms": 1.931342005264014,
+          "max_ms": 2.023526991251856,
+          "std_ms": 0.041785566456441166,
+          "memory_kb": 44.7255859375,
+          "speed_category": "fast"
+        }
+      },
+      "event_study": {
+        "100": {
+          "median_ms": 11.153143015690148,
+          "min_ms": 11.121774005005136,
+          "max_ms": 11.41431598807685,
+          "std_ms": 0.13113866630241833,
+          "memory_kb": 249.3271484375,
+          "speed_category": "medium"
+        }
+      },
+      "callaway_santanna": {
+        "100": {
+          "median_ms": 58.41733800480142,
+          "min_ms": 58.329321997007355,
+          "max_ms": 58.713367994641885,
+          "std_ms": 0.1642734511626714,
+          "memory_kb": 73.78515625,
+          "speed_category": "medium"
+        }
+      }
+    },
+    "iv": {
+      "two_stage_ls": {
+        "100": {
+          "median_ms": 1.6589179867878556,
+          "min_ms": 1.6465639928355813,
+          "max_ms": 1.6611620085313916,
+          "std_ms": 0.006418366548978514,
+          "memory_kb": 206.6962890625,
+          "speed_category": "fast"
+        }
+      },
+      "liml": {
+        "100": {
+          "median_ms": 0.9028070198837668,
+          "min_ms": 0.8932899800129235,
+          "max_ms": 0.9035889816004783,
+          "std_ms": 0.004681582658912592,
+          "memory_kb": 401.515625,
+          "speed_category": "fast"
+        }
+      },
+      "fuller": {
+        "100": {
+          "median_ms": 1.2449139903765172,
+          "min_ms": 1.2281530071049929,
+          "max_ms": 1.2499339936766773,
+          "std_ms": 0.009312729456668058,
+          "memory_kb": 403.935546875,
+          "speed_category": "fast"
+        }
+      },
+      "gmm": {
+        "100": {
+          "median_ms": 0.6625630194321275,
+          "min_ms": 0.661742000374943,
+          "max_ms": 0.6724720005877316,
+          "std_ms": 0.0048761879965675,
+          "memory_kb": 32.490234375,
+          "speed_category": "fast"
+        }
+      }
+    },
+    "rdd": {
+      "sharp_rdd": {
+        "100": {
+          "median_ms": 0.9730299934744835,
+          "min_ms": 0.9702649840619415,
+          "max_ms": 0.9811750205699354,
+          "std_ms": 0.004631002291835283,
+          "memory_kb": 59.3525390625,
+          "speed_category": "fast"
+        }
+      },
+      "fuzzy_rdd": {
+        "100": {
+          "median_ms": 1.5665630053263158,
+          "min_ms": 1.5446610050275922,
+          "max_ms": 1.646583987167105,
+          "std_ms": 0.043806835387567196,
+          "memory_kb": 58.439453125,
+          "speed_category": "fast"
+        }
+      },
+      "mccrary": {
+        "100": {
+          "median_ms": 0.8644140034448355,
+          "min_ms": 0.858623010572046,
+          "max_ms": 0.8670499955769628,
+          "std_ms": 0.0035197558192836195,
+          "memory_kb": 14.3515625,
+          "speed_category": "fast"
+        }
+      }
+    },
+    "scm": {
+      "synthetic_control": {
+        "100": {
+          "error": "synthetic_control() missing 1 required positional argument: 'treatment'"
+        }
+      },
+      "synthetic_control_inference": {
+        "100": {
+          "error": "synthetic_control() missing 1 required positional argument: 'treatment'"
+        }
+      },
+      "augmented_scm": {
+        "100": {
+          "error": "augmented_synthetic_control() missing 1 required positional argument: 'treatment'"
+        }
+      }
+    },
+    "cate": {
+      "s_learner": {
+        "100": {
+          "median_ms": 1.2908510107081383,
+          "min_ms": 1.2750810128636658,
+          "max_ms": 1.3628779852297157,
+          "std_ms": 0.03821705007423831,
+          "memory_kb": 36.9609375,
+          "speed_category": "fast"
+        }
+      },
+      "t_learner": {
+        "100": {
+          "median_ms": 1.6876519948709756,
+          "min_ms": 1.656522013945505,
+          "max_ms": 1.6952160221990198,
+          "std_ms": 0.01674487150862294,
+          "memory_kb": 29.4609375,
+          "speed_category": "fast"
+        }
+      },
+      "x_learner": {
+        "100": {
+          "median_ms": 290.1887219923083,
+          "min_ms": 289.586754021002,
+          "max_ms": 290.19251000136137,
+          "std_ms": 0.2846674658912215,
+          "memory_kb": 578.095703125,
+          "speed_category": "slow"
+        }
+      },
+      "r_learner": {
+        "100": {
+          "median_ms": 3.05181197472848,
+          "min_ms": 3.038327005924657,
+          "max_ms": 3.0941920122131705,
+          "std_ms": 0.023801986118014776,
+          "memory_kb": 55.5517578125,
+          "speed_category": "fast"
+        }
+      },
+      "double_ml": {
+        "100": {
+          "median_ms": 9.352507011499256,
+          "min_ms": 9.29385598283261,
+          "max_ms": 9.379127994179726,
+          "std_ms": 0.035621366562019786,
+          "memory_kb": 99.82421875,
+          "speed_category": "fast"
+        }
+      },
+      "causal_forest": {
+        "100": {
+          "error": "causal_forest() got an unexpected keyword argument 'n_trees'"
+        }
+      }
+    },
+    "rkd": {
+      "sharp_rkd": {
+        "100": {
+          "error": "SharpRKD.__init__() missing 1 required positional argument: 'cutoff'"
+        }
+      },
+      "sharp_rkd_bw": {
+        "100": {
+          "error": "SharpRKD.__init__() missing 1 required positional argument: 'cutoff'"
+        }
+      },
+      "fuzzy_rkd": {
+        "100": {
+          "error": "FuzzyRKD.__init__() missing 1 required positional argument: 'cutoff'"
+        }
+      }
+    },
+    "panel": {
+      "dml_cre": {
+        "100": {
+          "error": "dml_cre() got an unexpected keyword argument 'outcome'"
+        }
+      },
+      "dml_cre_continuous": {
+        "100": {
+          "error": "dml_cre_continuous() got an unexpected keyword argument 'outcome'"
+        }
+      },
+      "panel_rif_qte": {
+        "100": {
+          "error": "panel_rif_qte() got an unexpected keyword argument 'outcome'"
+        }
+      }
+    },
+    "sensitivity": {
+      "e_value": {
+        "100": {
+          "error": "'ate'"
+        }
+      },
+      "rosenbaum_bounds": {
+        "100": {
+          "error": "rosenbaum_bounds() got an unexpected keyword argument 'paired_differences'"
+        }
+      }
+    },
+    "bayesian": {
+      "bayesian_ate": {
+        "100": {
+          "median_ms": 0.6099039746914059,
+          "min_ms": 0.6004949973430485,
+          "max_ms": 0.6191710126586258,
+          "std_ms": 0.007624524724681245,
+          "memory_kb": 43.9580078125,
+          "speed_category": "fast"
+        }
+      },
+      "bayesian_propensity": {
+        "100": {
+          "median_ms": 7.285318017238751,
+          "min_ms": 7.259709993377328,
+          "max_ms": 7.380728988209739,
+          "std_ms": 0.05207326182938077,
+          "memory_kb": 2479.0087890625,
+          "speed_category": "fast"
+        }
+      },
+      "bayesian_dr_ate": {
+        "100": {
+          "median_ms": 27.535925997653976,
+          "min_ms": 27.467636013170704,
+          "max_ms": 27.56516099907458,
+          "std_ms": 0.04086472285254653,
+          "memory_kb": 2479.55078125,
+          "speed_category": "medium"
+        }
+      }
+    },
+    "principal_strat": {
+      "cace_2sls": {
+        "100": {
+          "error": "cace_2sls() got an unexpected keyword argument 'assignment'"
+        }
+      },
+      "cace_em": {
+        "100": {
+          "error": "cace_em() got an unexpected keyword argument 'assignment'"
+        }
+      },
+      "sace_bounds": {
+        "100": {
+          "median_ms": 0.4340010054875165,
+          "min_ms": 0.43345900485292077,
+          "max_ms": 0.4395820142235607,
+          "std_ms": 0.002767523300165848,
+          "memory_kb": 9.17578125,
+          "speed_category": "fast"
+        }
+      }
+    },
+    "bounds": {
+      "manski_worst_case": {
+        "100": {
+          "error": "manski_worst_case() got an unexpected keyword argument 'y_min'"
+        }
+      },
+      "manski_mtr": {
+        "100": {
+          "error": "manski_mtr() got an unexpected keyword argument 'y_min'"
+        }
+      },
+      "lee_bounds": {
+        "100": {
+          "error": "lee_bounds() got an unexpected keyword argument 'selection'"
+        }
+      },
+      "lee_bounds_tightened": {
+        "100": {
+          "error": "lee_bounds_tightened() got an unexpected keyword argument 'selection'"
+        }
+      }
+    },
+    "qte": {
+      "unconditional_qte": {
+        "100": {
+          "error": "unconditional_qte() got an unexpected keyword argument 'covariates'"
+        }
+      },
+      "conditional_qte": {
+        "100": {
+          "error": "conditional_qte() got an unexpected keyword argument 'quantiles'. Did you mean 'quantile'?"
+        }
+      },
+      "unconditional_qte_band": {
+        "100": {
+          "error": "unconditional_qte_band() got an unexpected keyword argument 'covariates'"
+        }
+      }
+    },
+    "bunching": {
+      "bunching_estimator": {
+        "100": {
+          "error": "bunching_estimator() got an unexpected keyword argument 'values'"
+        }
+      }
+    },
+    "selection": {
+      "heckman_two_step": {
+        "100": {
+          "error": "heckman_two_step() got an unexpected keyword argument 'selection_indicator'"
+        }
+      }
+    },
+    "mte": {
+      "local_iv": {
+        "100": {
+          "median_ms": 1332.0461089897435,
+          "min_ms": 1320.347656001104,
+          "max_ms": 1339.096741983667,
+          "std_ms": 7.73228048238142,
+          "memory_kb": 522.232421875,
+          "speed_category": "very_slow"
+        }
+      }
+    },
+    "mediation": {
+      "baron_kenny": {
+        "100": {
+          "median_ms": 1.1551739880815148,
+          "min_ms": 1.1489329917822033,
+          "max_ms": 1.1857019853778183,
+          "std_ms": 0.01606537873041665,
+          "memory_kb": 90.28125,
+          "speed_category": "fast"
+        }
+      },
+      "mediation_analysis": {
+        "100": {
+          "median_ms": 3839.501129987184,
+          "min_ms": 3839.1084790055174,
+          "max_ms": 3841.3639739737846,
+          "std_ms": 0.9838484562447333,
+          "memory_kb": 147.67578125,
+          "speed_category": "very_slow"
+        }
+      }
+    },
+    "control_function": {
+      "control_function_ate": {
+        "100": {
+          "error": "control_function_ate() got an unexpected keyword argument 'outcome'"
+        }
+      }
+    },
+    "shift_share": {
+      "shift_share_iv": {
+        "100": {
+          "error": "shift_share_iv() got an unexpected keyword argument 'outcome'"
+        }
+      }
+    },
+    "dtr": {
+      "q_learning_single_stage": {
+        "100": {
+          "median_ms": 0.7891119748819619,
+          "min_ms": 0.7862670172471553,
+          "max_ms": 0.8044119749683887,
+          "std_ms": 0.007968153817219652,
+          "memory_kb": 106.1171875,
+          "speed_category": "fast"
+        }
+      },
+      "a_learning_single_stage": {
+        "100": {
+          "median_ms": 1.3646210136357695,
+          "min_ms": 1.356655004201457,
+          "max_ms": 1.3741689908783883,
+          "std_ms": 0.007159771140452073,
+          "memory_kb": 173.8359375,
+          "speed_category": "fast"
+        }
+      }
+    }
+  }
+}

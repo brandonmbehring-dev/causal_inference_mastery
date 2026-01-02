@@ -1,0 +1,42 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{dr\PYGZus{}ate}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{covariates}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{propensity}\PYG{p}{:} \PYG{n}{Optional}\PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{None}\PYG{p}{,}
+    \PYG{n}{outcome\PYGZus{}models}\PYG{p}{:} \PYG{n}{Optional}\PYG{p}{[}\PYG{n}{Dict}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{None}\PYG{p}{,}
+    \PYG{n}{alpha}\PYG{p}{:} \PYG{n+nb}{float} \PYG{o}{=} \PYG{l+m+mf}{0.05}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{DRResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{    Doubly robust ATE estimator.}
+
+\PYG{l+s+sd}{    DR formula:}
+\PYG{l+s+sd}{    ATE = (1/n) * sum[}
+\PYG{l+s+sd}{        T/e(X) * (Y \PYGZhy{} mu1(X)) + mu1(X)}
+\PYG{l+s+sd}{        \PYGZhy{} (1\PYGZhy{}T)/(1\PYGZhy{}e(X)) * (Y \PYGZhy{} mu0(X)) \PYGZhy{} mu0(X)}
+\PYG{l+s+sd}{    ]}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{c+c1}{\PYGZsh{} Step 1: Estimate nuisance functions}
+    \PYG{k}{if} \PYG{n}{propensity} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+        \PYG{n}{propensity} \PYG{o}{=} \PYG{n}{estimate\PYGZus{}propensity}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{,} \PYG{n}{covariates}\PYG{p}{)}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{propensity}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{]}
+
+    \PYG{k}{if} \PYG{n}{outcome\PYGZus{}models} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+        \PYG{n}{outcome\PYGZus{}result} \PYG{o}{=} \PYG{n}{fit\PYGZus{}outcome\PYGZus{}models}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{covariates}\PYG{p}{)}
+        \PYG{n}{mu0}\PYG{p}{,} \PYG{n}{mu1} \PYG{o}{=} \PYG{n}{outcome\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{mu0\PYGZus{}predictions}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{outcome\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{mu1\PYGZus{}predictions}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Step 2: Clip propensity}
+    \PYG{n}{propensity} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{clip}\PYG{p}{(}\PYG{n}{propensity}\PYG{p}{,} \PYG{l+m+mf}{1e\PYGZhy{}6}\PYG{p}{,} \PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1e\PYGZhy{}6}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Step 3: Compute DR components}
+    \PYG{n}{treated\PYGZus{}term} \PYG{o}{=} \PYG{n}{treatment} \PYG{o}{/} \PYG{n}{propensity} \PYG{o}{*} \PYG{p}{(}\PYG{n}{outcomes} \PYG{o}{\PYGZhy{}} \PYG{n}{mu1}\PYG{p}{)} \PYG{o}{+} \PYG{n}{mu1}
+    \PYG{n}{control\PYGZus{}term} \PYG{o}{=} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{treatment}\PYG{p}{)} \PYG{o}{/} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{propensity}\PYG{p}{)} \PYG{o}{*} \PYG{p}{(}\PYG{n}{outcomes} \PYG{o}{\PYGZhy{}} \PYG{n}{mu0}\PYG{p}{)} \PYG{o}{+} \PYG{n}{mu0}
+
+    \PYG{c+c1}{\PYGZsh{} Step 4: Estimate ATE}
+    \PYG{n}{ate} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{treated\PYGZus{}term} \PYG{o}{\PYGZhy{}} \PYG{n}{control\PYGZus{}term}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Step 5: Influence function variance}
+    \PYG{n}{influence} \PYG{o}{=} \PYG{n}{treated\PYGZus{}term} \PYG{o}{\PYGZhy{}} \PYG{n}{control\PYGZus{}term} \PYG{o}{\PYGZhy{}} \PYG{n}{ate}
+    \PYG{n}{se} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n}{influence}\PYG{p}{)} \PYG{o}{/} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{)}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{estimate}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:} \PYG{n}{ate}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{se}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:} \PYG{n}{se}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

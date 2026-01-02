@@ -1,0 +1,19 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{did}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{demonstrate\PYGZus{}twfe\PYGZus{}bias}
+
+\PYG{c+c1}{\PYGZsh{} Generate data with heterogeneous effects}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{demonstrate\PYGZus{}twfe\PYGZus{}bias}\PYG{p}{(}
+    \PYG{n}{n\PYGZus{}units}\PYG{o}{=}\PYG{l+m+mi}{200}\PYG{p}{,}
+    \PYG{n}{true\PYGZus{}effect\PYGZus{}early}\PYG{o}{=}\PYG{l+m+mf}{2.0}\PYG{p}{,}  \PYG{c+c1}{\PYGZsh{} Early adopters effect}
+    \PYG{n}{true\PYGZus{}effect\PYGZus{}late}\PYG{o}{=}\PYG{l+m+mf}{4.0}\PYG{p}{,}   \PYG{c+c1}{\PYGZsh{} Late adopters effect}
+    \PYG{n}{random\PYGZus{}state}\PYG{o}{=}\PYG{l+m+mi}{42}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{True Average Effect: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{true\PYGZus{}average}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{TWFE Estimate: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{twfe\PYGZus{}estimate}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Bias: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bias}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Example output:}
+\PYG{c+c1}{\PYGZsh{} True Average Effect: 3.00}
+\PYG{c+c1}{\PYGZsh{} TWFE Estimate: 2.15}
+\PYG{c+c1}{\PYGZsh{} Bias: \PYGZhy{}0.85}
+\end{MintedVerbatim}

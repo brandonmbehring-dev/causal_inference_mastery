@@ -1,0 +1,28 @@
+# Full test suite - runs on merge to main
+name: Full Test Suite
+
+on:
+  push:
+    branches: [main, master]
+
+jobs:
+  full-test:
+    name: Full Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Run full test suite
+        run: pytest tests/ --tb=short -q
+
+      - name: Run test collection check
+        run: pytest tests/ --collect-only -q

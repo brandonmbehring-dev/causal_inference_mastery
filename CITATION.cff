@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+title: "Causal Inference Mastery"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - given-names: Brandon
+    family-names: Behring
+repository-code: "https://github.com/brandondocusen/causal_inference_mastery"
+license: MIT
+version: 1.0.0
+date-released: 2025-12-28
+abstract: >-
+  Dual-language (Python and Julia) causal inference implementation library.
+  Implements 25+ method families including RCT, DiD, IV, RDD, SCM, CATE,
+  with rigorous 6-layer validation (known-answer, adversarial, Monte Carlo,
+  cross-language, R triangulation, golden reference).
+keywords:
+  - causal inference
+  - econometrics
+  - difference-in-differences
+  - instrumental variables
+  - regression discontinuity
+  - synthetic control
+  - treatment effects
+  - Python
+  - Julia

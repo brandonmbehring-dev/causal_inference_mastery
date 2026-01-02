@@ -1,0 +1,19 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Generate comprehensive summary}
+\PYG{n}{summary} \PYG{o}{=} \PYG{n}{weak\PYGZus{}instrument\PYGZus{}summary}\PYG{p}{(}
+    \PYG{n}{f\PYGZus{}statistic}\PYG{o}{=}\PYG{l+m+mf}{8.5}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}instruments}\PYG{o}{=}\PYG{l+m+mi}{2}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}endogenous}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{,}
+    \PYG{n}{cragg\PYGZus{}donald}\PYG{o}{=}\PYG{l+m+mf}{8.5}\PYG{p}{,}
+    \PYG{n}{ar\PYGZus{}ci}\PYG{o}{=}\PYG{p}{(}\PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{l+m+mf}{3.5}\PYG{p}{)}\PYG{p}{,}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{summary}\PYG{o}{.}\PYG{n}{to\PYGZus{}string}\PYG{p}{(}\PYG{n}{index}\PYG{o}{=}\PYG{k+kc}{False}\PYG{p}{)}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Output:}
+\PYG{c+c1}{\PYGZsh{}                    Diagnostic    Value  Interpretation}
+\PYG{c+c1}{\PYGZsh{}        First\PYGZhy{}Stage F\PYGZhy{}Statistic     8.50  Instruments are severely weak}
+\PYG{c+c1}{\PYGZsh{}  Stock\PYGZhy{}Yogo Critical Value ...    19.93  Reject weak IV if F \PYGZgt{} 19.93}
+\PYG{c+c1}{\PYGZsh{}        Cragg\PYGZhy{}Donald Statistic     8.50  Multivariate weak IV test}
+\PYG{c+c1}{\PYGZsh{}           Anderson\PYGZhy{}Rubin 95\PYGZpc{} CI  [0.500, 3.500]  Robust to weak instruments}
+\PYG{c+c1}{\PYGZsh{}                  Recommendation         Instruments are very weak...}
+\end{MintedVerbatim}

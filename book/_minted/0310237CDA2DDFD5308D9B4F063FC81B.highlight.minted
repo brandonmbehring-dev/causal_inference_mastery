@@ -1,0 +1,12 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Dynamic aggregation: effects by event time}
+\PYG{n}{result\PYGZus{}dynamic} \PYG{o}{=} \PYG{n}{callaway\PYGZus{}santanna\PYGZus{}ate}\PYG{p}{(}
+    \PYG{n}{data}\PYG{o}{=}\PYG{n}{data}\PYG{p}{,}
+    \PYG{n}{aggregation}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{dynamic}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}
+    \PYG{n}{control\PYGZus{}group}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{nevertreated}\PYG{l+s+s2}{\PYGZdq{}}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Plot dynamic effects}
+\PYG{k}{for} \PYG{n}{e}\PYG{p}{,} \PYG{n}{row} \PYG{o+ow}{in} \PYG{n}{result\PYGZus{}dynamic}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{by\PYGZus{}event\PYGZus{}time}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{o}{.}\PYG{n}{iterrows}\PYG{p}{(}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Event time }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{e}\PYG{l+s+si}{:}\PYG{l+s+s2}{+d}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{row}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{att}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (SE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{row}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{se}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

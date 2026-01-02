@@ -1,0 +1,13 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{rct}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{permutation\PYGZus{}test}
+
+\PYG{c+c1}{\PYGZsh{} Exact test for small sample}
+\PYG{n}{small\PYGZus{}treatment} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+\PYG{n}{small\PYGZus{}outcomes} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mi}{7}\PYG{p}{,} \PYG{l+m+mi}{8}\PYG{p}{,} \PYG{l+m+mi}{9}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{]}\PYG{p}{)}
+\PYG{n}{result\PYGZus{}exact} \PYG{o}{=} \PYG{n}{permutation\PYGZus{}test}\PYG{p}{(}\PYG{n}{small\PYGZus{}outcomes}\PYG{p}{,} \PYG{n}{small\PYGZus{}treatment}\PYG{p}{,} \PYG{n}{n\PYGZus{}permutations}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Exact p\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}exact}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{p\PYGZus{}value}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Monte Carlo for larger sample}
+\PYG{n}{result\PYGZus{}mc} \PYG{o}{=} \PYG{n}{permutation\PYGZus{}test}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{n\PYGZus{}permutations}\PYG{o}{=}\PYG{l+m+mi}{10000}\PYG{p}{,} \PYG{n}{random\PYGZus{}seed}\PYG{o}{=}\PYG{l+m+mi}{42}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{MC p\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}mc}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{p\PYGZus{}value}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

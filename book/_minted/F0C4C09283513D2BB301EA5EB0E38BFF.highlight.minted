@@ -1,0 +1,39 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s}{    nearest\PYGZus{}neighbor\PYGZus{}matching(treated\PYGZus{}ps, control\PYGZus{}ps; with\PYGZus{}replacement=true)}
+
+\PYG{l+s}{Match treated units to controls based on propensity score distance.}
+\PYG{l+s}{Returns indices of matched controls for each treated unit.}
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{k}{function}\PYG{+w}{ }\PYG{n}{nearest\PYGZus{}neighbor\PYGZus{}matching}\PYG{p}{(}
+\PYG{+w}{    }\PYG{n}{treated\PYGZus{}ps}\PYG{o}{::}\PYG{k+kt}{Vector}\PYG{p}{\PYGZob{}}\PYG{k+kt}{T}\PYG{p}{\PYGZcb{}}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n}{control\PYGZus{}ps}\PYG{o}{::}\PYG{k+kt}{Vector}\PYG{p}{\PYGZob{}}\PYG{k+kt}{T}\PYG{p}{\PYGZcb{}}\PYG{p}{;}
+\PYG{+w}{    }\PYG{n}{with\PYGZus{}replacement}\PYG{o}{::}\PYG{k+kt}{Bool}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{true}\PYG{p}{,}
+\PYG{+w}{    }\PYG{n}{caliper}\PYG{o}{::}\PYG{k+kt}{Union}\PYG{p}{\PYGZob{}}\PYG{k+kt}{Nothing}\PYG{p}{,}\PYG{+w}{ }\PYG{k+kt}{T}\PYG{p}{\PYGZcb{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{nothing}\PYG{p}{,}
+\PYG{p}{)}\PYG{+w}{ }\PYG{k}{where}\PYG{+w}{ }\PYG{p}{\PYGZob{}}\PYG{k+kt}{T}\PYG{o}{\PYGZlt{}:}\PYG{k+kt}{Real}\PYG{p}{\PYGZcb{}}
+\PYG{+w}{    }\PYG{n}{n\PYGZus{}treated}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{length}\PYG{p}{(}\PYG{n}{treated\PYGZus{}ps}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{matches}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{k+kt}{Vector}\PYG{p}{\PYGZob{}}\PYG{k+kt}{Int}\PYG{p}{\PYGZcb{}}\PYG{p}{(}\PYG{n+nb}{undef}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n\PYGZus{}treated}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{n}{available}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{trues}\PYG{p}{(}\PYG{n}{length}\PYG{p}{(}\PYG{n}{control\PYGZus{}ps}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{k}{for}\PYG{+w}{ }\PYG{n}{i}\PYG{+w}{ }\PYG{k}{in}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{o}{:}\PYG{n}{n\PYGZus{}treated}
+\PYG{+w}{        }\PYG{n}{distances}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{abs}\PYG{o}{.}\PYG{p}{(}\PYG{n}{control\PYGZus{}ps}\PYG{+w}{ }\PYG{o}{.\PYGZhy{}}\PYG{+w}{ }\PYG{n}{treated\PYGZus{}ps}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{p}{)}
+
+\PYG{+w}{        }\PYG{k}{if}\PYG{+w}{ }\PYG{o}{!}\PYG{n}{with\PYGZus{}replacement}
+\PYG{+w}{            }\PYG{n}{distances}\PYG{p}{[}\PYG{o}{.!}\PYG{n}{available}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{.=}\PYG{+w}{ }\PYG{n+nb}{Inf}
+\PYG{+w}{        }\PYG{k}{end}
+
+\PYG{+w}{        }\PYG{n}{best\PYGZus{}idx}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{argmin}\PYG{p}{(}\PYG{n}{distances}\PYG{p}{)}
+
+\PYG{+w}{        }\PYG{c}{\PYGZsh{} Check caliper}
+\PYG{+w}{        }\PYG{k}{if}\PYG{+w}{ }\PYG{o}{!}\PYG{n}{isnothing}\PYG{p}{(}\PYG{n}{caliper}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZam{}\PYGZam{}}\PYG{+w}{ }\PYG{n}{distances}\PYG{p}{[}\PYG{n}{best\PYGZus{}idx}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{n}{caliper}
+\PYG{+w}{            }\PYG{n}{matches}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{  }\PYG{c}{\PYGZsh{} No valid match}
+\PYG{+w}{        }\PYG{k}{else}
+\PYG{+w}{            }\PYG{n}{matches}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{best\PYGZus{}idx}
+\PYG{+w}{            }\PYG{n}{available}\PYG{p}{[}\PYG{n}{best\PYGZus{}idx}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nb}{false}
+\PYG{+w}{        }\PYG{k}{end}
+\PYG{+w}{    }\PYG{k}{end}
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{matches}
+\PYG{k}{end}
+\end{MintedVerbatim}

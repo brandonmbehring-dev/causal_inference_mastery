@@ -1,0 +1,25 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s}{    compute\PYGZus{}e\PYGZus{}value(rr::Real) \PYGZhy{}\PYGZgt{} Float64}
+
+\PYG{l+s}{E\PYGZhy{}value: minimum confounding strength to explain away effect.}
+
+\PYG{l+s}{For RR \PYGZgt{}= 1: E = RR + sqrt(RR * (RR \PYGZhy{} 1))}
+\PYG{l+s}{For RR \PYGZlt{} 1: Apply formula to 1/RR}
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{k}{function}\PYG{+w}{ }\PYG{n}{compute\PYGZus{}e\PYGZus{}value}\PYG{p}{(}\PYG{n}{rr}\PYG{o}{::}\PYG{k+kt}{Real}\PYG{p}{)}\PYG{o}{::}\PYG{k+kt}{Float64}
+\PYG{+w}{    }\PYG{n}{rr}\PYG{+w}{ }\PYG{o}{\PYGZgt{}}\PYG{+w}{ }\PYG{l+m+mi}{0}\PYG{+w}{ }\PYG{o}{||}\PYG{+w}{ }\PYG{n}{throw}\PYG{p}{(}\PYG{k+kt}{ArgumentError}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{RR must be positive}\PYG{l+s}{\PYGZdq{}}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{n}{rr\PYGZus{}use}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{rr}\PYG{+w}{ }\PYG{o}{\PYGZlt{}}\PYG{+w}{ }\PYG{l+m+mf}{1.0}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{l+m+mf}{1.0}\PYG{o}{/}\PYG{n}{rr}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n}{rr}
+
+\PYG{+w}{    }\PYG{k}{if}\PYG{+w}{ }\PYG{n}{isapprox}\PYG{p}{(}\PYG{n}{rr\PYGZus{}use}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mf}{1.0}\PYG{p}{)}
+\PYG{+w}{        }\PYG{k}{return}\PYG{+w}{ }\PYG{l+m+mf}{1.0}\PYG{+w}{  }\PYG{c}{\PYGZsh{} No effect}
+\PYG{+w}{    }\PYG{k}{end}
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{rr\PYGZus{}use}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{rr\PYGZus{}use}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{rr\PYGZus{}use}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{l+m+mf}{1.0}\PYG{p}{)}\PYG{p}{)}
+\PYG{k}{end}
+
+\PYG{c}{\PYGZsh{} Effect type conversions}
+\PYG{n}{smd\PYGZus{}to\PYGZus{}rr}\PYG{p}{(}\PYG{n}{d}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{exp}\PYG{p}{(}\PYG{l+m+mf}{0.91}\PYG{+w}{ }\PYG{o}{*}\PYG{+w}{ }\PYG{n}{d}\PYG{p}{)}\PYG{+w}{  }\PYG{c}{\PYGZsh{} VanderWeele approximation}
+\PYG{n}{ate\PYGZus{}to\PYGZus{}rr}\PYG{p}{(}\PYG{n}{ate}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{p0}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{p0}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{ate}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{/}\PYG{+w}{ }\PYG{n}{p0}
+\end{MintedVerbatim}

@@ -1,0 +1,12 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{rct}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{stratified\PYGZus{}ate}
+
+\PYG{c+c1}{\PYGZsh{} Define strata}
+\PYG{n}{strata} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{repeat}\PYG{p}{(}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{A}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{B}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{C}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{D}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{,} \PYG{n}{n} \PYG{o}{/}\PYG{o}{/} \PYG{l+m+mi}{4}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Stratified estimate}
+\PYG{n}{result\PYGZus{}strat} \PYG{o}{=} \PYG{n}{stratified\PYGZus{}ate}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{strata}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Stratified ATE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}strat}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{estimate}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Number of strata: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}strat}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{n\PYGZus{}strata}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Stratum effects: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}strat}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{stratum\PYGZus{}estimates}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

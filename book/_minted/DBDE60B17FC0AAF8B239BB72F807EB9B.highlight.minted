@@ -1,0 +1,29 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{scm}\PYG{n+nn}{.}\PYG{n+nn}{inference}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{placebo\PYGZus{}test\PYGZus{}in\PYGZus{}space}\PYG{p}{,}
+    \PYG{n}{placebo\PYGZus{}test\PYGZus{}in\PYGZus{}time}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} In\PYGZhy{}space placebo test}
+\PYG{n}{placebo\PYGZus{}results} \PYG{o}{=} \PYG{n}{placebo\PYGZus{}test\PYGZus{}in\PYGZus{}space}\PYG{p}{(}
+    \PYG{n}{Y}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{,}
+    \PYG{n}{T0}\PYG{o}{=}\PYG{n}{T0}\PYG{p}{,}
+    \PYG{n}{treated\PYGZus{}unit}\PYG{o}{=}\PYG{l+m+mi}{0}\PYG{p}{,}
+    \PYG{n}{pre\PYGZus{}rmse\PYGZus{}threshold}\PYG{o}{=}\PYG{l+m+mf}{2.0}  \PYG{c+c1}{\PYGZsh{} Exclude poor\PYGZhy{}fit placebos}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Treated RMSPE ratio: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{placebo\PYGZus{}results}\PYG{o}{.}\PYG{n}{treated\PYGZus{}ratio}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{P\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{placebo\PYGZus{}results}\PYG{o}{.}\PYG{n}{pvalue}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Rank: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{placebo\PYGZus{}results}\PYG{o}{.}\PYG{n}{rank}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ / }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{placebo\PYGZus{}results}\PYG{o}{.}\PYG{n}{n\PYGZus{}placebos}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} In\PYGZhy{}time placebo test}
+\PYG{n}{time\PYGZus{}placebo} \PYG{o}{=} \PYG{n}{placebo\PYGZus{}test\PYGZus{}in\PYGZus{}time}\PYG{p}{(}
+    \PYG{n}{Y\PYGZus{}treated}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,}
+    \PYG{n}{Y\PYGZus{}donors}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{p}{]}\PYG{p}{,}
+    \PYG{n}{T0}\PYG{o}{=}\PYG{n}{T0}\PYG{p}{,}
+    \PYG{n}{placebo\PYGZus{}T0}\PYG{o}{=}\PYG{l+m+mi}{5}  \PYG{c+c1}{\PYGZsh{} Fake treatment at period 5}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Placebo effect (periods 5\PYGZhy{}10): }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{time\PYGZus{}placebo}\PYG{o}{.}\PYG{n}{placebo\PYGZus{}effect}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Placebo p\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{time\PYGZus{}placebo}\PYG{o}{.}\PYG{n}{pvalue}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

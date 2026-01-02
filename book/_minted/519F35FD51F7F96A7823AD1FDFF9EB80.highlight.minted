@@ -1,0 +1,50 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{s\PYGZus{}learner}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{covariates}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{model}\PYG{p}{:} \PYG{n+nb}{str} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{linear}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{CATEResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}S\PYGZhy{}Learner: Single model approach.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{c+c1}{\PYGZsh{} Augment features with treatment}
+    \PYG{n}{X\PYGZus{}aug} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{column\PYGZus{}stack}\PYG{p}{(}\PYG{p}{[}\PYG{n}{covariates}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{]}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Fit single model}
+    \PYG{n}{learner} \PYG{o}{=} \PYG{n}{get\PYGZus{}model}\PYG{p}{(}\PYG{n}{model}\PYG{p}{)}
+    \PYG{n}{learner}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{X\PYGZus{}aug}\PYG{p}{,} \PYG{n}{outcomes}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Predict counterfactuals}
+    \PYG{n}{X\PYGZus{}treated} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{column\PYGZus{}stack}\PYG{p}{(}\PYG{p}{[}\PYG{n}{covariates}\PYG{p}{,} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ones}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{p}{]}\PYG{p}{)}
+    \PYG{n}{X\PYGZus{}control} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{column\PYGZus{}stack}\PYG{p}{(}\PYG{p}{[}\PYG{n}{covariates}\PYG{p}{,} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}\PYG{p}{]}\PYG{p}{)}
+
+    \PYG{n}{mu\PYGZus{}1} \PYG{o}{=} \PYG{n}{learner}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{X\PYGZus{}treated}\PYG{p}{)}
+    \PYG{n}{mu\PYGZus{}0} \PYG{o}{=} \PYG{n}{learner}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{X\PYGZus{}control}\PYG{p}{)}
+
+    \PYG{n}{cate} \PYG{o}{=} \PYG{n}{mu\PYGZus{}1} \PYG{o}{\PYGZhy{}} \PYG{n}{mu\PYGZus{}0}
+    \PYG{n}{ate} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{cate}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{n}{CATEResult}\PYG{p}{(}\PYG{n}{cate}\PYG{o}{=}\PYG{n}{cate}\PYG{p}{,} \PYG{n}{ate}\PYG{o}{=}\PYG{n}{ate}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}
+
+
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{t\PYGZus{}learner}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{covariates}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{model}\PYG{p}{:} \PYG{n+nb}{str} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{linear}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{CATEResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}T\PYGZhy{}Learner: Two separate models.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{c+c1}{\PYGZsh{} Split by treatment}
+    \PYG{n}{X\PYGZus{}1}\PYG{p}{,} \PYG{n}{Y\PYGZus{}1} \PYG{o}{=} \PYG{n}{covariates}\PYG{p}{[}\PYG{n}{treatment} \PYG{o}{==} \PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{,} \PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{treatment} \PYG{o}{==} \PYG{l+m+mi}{1}\PYG{p}{]}
+    \PYG{n}{X\PYGZus{}0}\PYG{p}{,} \PYG{n}{Y\PYGZus{}0} \PYG{o}{=} \PYG{n}{covariates}\PYG{p}{[}\PYG{n}{treatment} \PYG{o}{==} \PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,} \PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{treatment} \PYG{o}{==} \PYG{l+m+mi}{0}\PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Fit separate models}
+    \PYG{n}{model\PYGZus{}1} \PYG{o}{=} \PYG{n}{get\PYGZus{}model}\PYG{p}{(}\PYG{n}{model}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{X\PYGZus{}1}\PYG{p}{,} \PYG{n}{Y\PYGZus{}1}\PYG{p}{)}
+    \PYG{n}{model\PYGZus{}0} \PYG{o}{=} \PYG{n}{get\PYGZus{}model}\PYG{p}{(}\PYG{n}{model}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{X\PYGZus{}0}\PYG{p}{,} \PYG{n}{Y\PYGZus{}0}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Predict for all units}
+    \PYG{n}{mu\PYGZus{}1} \PYG{o}{=} \PYG{n}{model\PYGZus{}1}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{)}
+    \PYG{n}{mu\PYGZus{}0} \PYG{o}{=} \PYG{n}{model\PYGZus{}0}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{)}
+
+    \PYG{n}{cate} \PYG{o}{=} \PYG{n}{mu\PYGZus{}1} \PYG{o}{\PYGZhy{}} \PYG{n}{mu\PYGZus{}0}
+    \PYG{k}{return} \PYG{n}{CATEResult}\PYG{p}{(}\PYG{n}{cate}\PYG{o}{=}\PYG{n}{cate}\PYG{p}{,} \PYG{n}{ate}\PYG{o}{=}\PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{cate}\PYG{p}{)}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}
+\end{MintedVerbatim}

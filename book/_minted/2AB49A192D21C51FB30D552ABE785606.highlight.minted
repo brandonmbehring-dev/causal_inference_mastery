@@ -1,0 +1,19 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{dgp\PYGZus{}simple\PYGZus{}rct}\PYG{p}{(}\PYG{n}{n}\PYG{o}{=}\PYG{l+m+mi}{100}\PYG{p}{,} \PYG{n}{true\PYGZus{}ate}\PYG{o}{=}\PYG{l+m+mf}{2.0}\PYG{p}{,} \PYG{n}{random\PYGZus{}state}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Simple RCT with homoskedastic errors.}
+
+\PYG{l+s+sd}{    DGP:}
+\PYG{l+s+sd}{        Y(1) \PYGZti{} N(2, 1), Y(0) \PYGZti{} N(0, 1)}
+\PYG{l+s+sd}{        T \PYGZti{} Bernoulli(0.5)}
+\PYG{l+s+sd}{        Y = T*Y(1) + (1\PYGZhy{}T)*Y(0)}
+
+\PYG{l+s+sd}{    True ATE = 2.0}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{rng} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{RandomState}\PYG{p}{(}\PYG{n}{random\PYGZus{}state}\PYG{p}{)}
+    \PYG{n}{treatment} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{array}\PYG{p}{(}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{*}\PYG{p}{(}\PYG{n}{n}\PYG{o}{/}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{)} \PYG{o}{+} \PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{*}\PYG{p}{(}\PYG{n}{n} \PYG{o}{\PYGZhy{}} \PYG{n}{n}\PYG{o}{/}\PYG{o}{/}\PYG{l+m+mi}{2}\PYG{p}{)}\PYG{p}{)}
+    \PYG{n}{rng}\PYG{o}{.}\PYG{n}{shuffle}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{)}
+    \PYG{n}{y1} \PYG{o}{=} \PYG{n}{rng}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{n}{true\PYGZus{}ate}\PYG{p}{,} \PYG{l+m+mf}{1.0}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+    \PYG{n}{y0} \PYG{o}{=} \PYG{n}{rng}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mf}{0.0}\PYG{p}{,} \PYG{l+m+mf}{1.0}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+    \PYG{n}{outcomes} \PYG{o}{=} \PYG{n}{treatment} \PYG{o}{*} \PYG{n}{y1} \PYG{o}{+} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{treatment}\PYG{p}{)} \PYG{o}{*} \PYG{n}{y0}
+    \PYG{k}{return} \PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}
+\end{MintedVerbatim}

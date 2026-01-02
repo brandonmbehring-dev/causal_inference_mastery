@@ -1,0 +1,505 @@
+\chapter{Dynamic Treatment Regimes}
+\label{ch:dtr}
+
+\section{Introduction}
+
+Dynamic Treatment Regimes (DTRs) formalize sequential treatment decision-making.
+\begin{definition}[Dynamic Treatment Regime]
+A DTR $d = (d_1, \ldots, d_K)$ is a sequence of decision rules mapping patient history $H_k$ to treatment actions:
+\begin{equation}
+d_k: \mathcal{H}_k \to \{0, 1\}
+\end{equation}
+\end{definition}
+
+Key applications:
+\begin{itemize}
+\item \textbf{Chronic disease management}: Treatment adaptation based on response
+\item \textbf{Mental health}: Sequential medication adjustments
+\item \textbf{Cancer treatment}: Multi-phase chemotherapy protocols
+\item \textbf{Behavioral interventions}: Step-up/step-down care
+\end{itemize}
+
+This chapter develops Q-learning and A-learning methods following \textcite{murphy2003optimal} and \textcite{robins2004optimal}.
+
+
+\section{Framework and Notation}
+
+\subsection{Multi-Stage Setup}
+
+Consider $K$ decision stages, each with:
+\begin{itemize}
+\item $X_k$: Covariates available at stage $k$ (before treatment)
+\item $A_k \in \{0, 1\}$: Treatment decision at stage $k$
+\item $Y_k$: Outcome observed after treatment $A_k$
+\item $H_k = (X_1, A_1, Y_1, \ldots, X_{k-1}, A_{k-1}, Y_{k-1}, X_k)$: History at stage $k$
+\end{itemize}
+
+\subsection{Potential Outcomes Framework}
+
+For a regime $d$, define:
+\begin{equation}
+Y^d = \sum_{k=1}^K Y_k(d_1(H_1), \ldots, d_k(H_k))
+\end{equation}
+the total outcome under regime $d$.
+
+\begin{definition}[Optimal Dynamic Treatment Regime]
+The optimal regime $d^*$ maximizes expected total outcome:
+\begin{equation}
+d^* = \arg\max_d E[Y^d]
+\end{equation}
+\end{definition}
+
+\subsection{Value Functions}
+
+\begin{definition}[Q-Function]
+The Q-function at stage $k$ is:
+\begin{equation}
+Q_k(H_k, a) = E\left[\sum_{j=k}^K Y_j^{d^*_{j+1:K}} \mid H_k, A_k = a\right]
+\end{equation}
+Expected future outcome under treatment $a$ at stage $k$, optimal thereafter.
+\end{definition}
+
+\begin{definition}[Value Function]
+The value function at stage $k$:
+\begin{equation}
+V_k(H_k) = \max_a Q_k(H_k, a)
+\end{equation}
+Expected outcome under optimal decisions from stage $k$ onward.
+\end{definition}
+
+\subsection{The Blip Function}
+
+\begin{definition}[Blip Function]
+The blip function measures the treatment advantage:
+\begin{equation}
+\gamma_k(H_k) = Q_k(H_k, 1) - Q_k(H_k, 0) = E[Y(1) - Y(0) \mid H_k]
+\end{equation}
+\end{definition}
+
+The optimal decision rule follows directly:
+\begin{equation}
+d^*_k(H_k) = \mathbf{1}\{\gamma_k(H_k) > 0\}
+\end{equation}
+
+
+\section{Q-Learning}
+
+\subsection{The Algorithm}
+
+Q-learning estimates optimal DTRs via backward induction, using the Bellman optimality principle.
+
+\begin{algorithm}[Q-Learning]
+\label{alg:q-learning}
+\begin{enumerate}
+\item \textbf{Initialize}: Set $\hat{V}_{K+1}(H_{K+1}) = 0$
+\item \textbf{For $k = K$ down to $1$}:
+\begin{enumerate}
+\item Compute pseudo-outcome: $\tilde{Y}_k = Y_k + \hat{V}_{k+1}(H_{k+1})$
+\item Model Q-function:
+\begin{equation}
+Q_k(H_k, a) = H_k'\beta_k + a \cdot H_k'\psi_k
+\end{equation}
+\item Fit via OLS on pseudo-outcome:
+\begin{equation}
+\tilde{Y}_k = H_k'\beta_k + A_k \cdot H_k'\psi_k + \varepsilon_k
+\end{equation}
+\item Extract blip coefficients $\hat{\psi}_k$
+\item Compute value function:
+\begin{equation}
+\hat{V}_k(H_k) = H_k'\hat{\beta}_k + \max(0, H_k'\hat{\psi}_k)
+\end{equation}
+\end{enumerate}
+\item \textbf{Output}: Optimal regime $\hat{d}^*_k(H_k) = \mathbf{1}\{H_k'\hat{\psi}_k > 0\}$
+\end{enumerate}
+\end{algorithm}
+
+\subsection{Implementation}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.dtr import DTRData, q_learning
+
+# Multi-stage data
+data = DTRData(
+    outcomes=[Y1, Y2],         # Outcomes at each stage
+    treatments=[A1, A2],       # Treatments at each stage
+    covariates=[X1, X2],       # Covariates at each stage
+)
+
+result = q_learning(
+    data=data,
+    model="ols",
+    se_method="sandwich",      # or "bootstrap"
+    alpha=0.05,
+)
+
+# Results
+print(f"Optimal value: {result.value_estimate:.4f}")
+print(f"SE: {result.value_se:.4f}")
+print(f"95% CI: [{result.value_ci_lower:.4f}, {result.value_ci_upper:.4f}]")
+
+# Blip coefficients by stage
+for k in range(result.n_stages):
+    print(f"\nStage {k+1} blip coefficients:")
+    for j, (coef, se) in enumerate(zip(result.blip_coefficients[k],
+                                       result.blip_se[k])):
+        print(f"  psi[{j}]: {coef:.4f} (SE: {se:.4f})")
+
+# Predict optimal treatment for new patient
+H_new = np.array([0.5, -0.3, 1.2])
+optimal_A = result.optimal_regime(H_new, stage=1)
+print(f"\nOptimal treatment for H_new: A* = {optimal_A}")
+\end{minted}
+
+\subsection{Single-Stage Convenience}
+
+For single-stage problems (equivalent to CATE estimation):
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.dtr import q_learning_single_stage
+
+result = q_learning_single_stage(
+    outcome=Y,
+    treatment=A,
+    covariates=X,
+    se_method="sandwich",
+)
+
+# Blip intercept approximates ATE
+print(f"Blip intercept (~ ATE): {result.blip_coefficients[0][0]:.4f}")
+\end{minted}
+
+\subsection{Limitations of Q-Learning}
+
+\begin{enumerate}
+\item \textbf{Model misspecification}: If Q-function model is wrong, regime is biased
+\item \textbf{Non-regularity}: At boundaries where $\gamma(H) = 0$, inference is non-standard
+\item \textbf{Not doubly robust}: No protection against misspecification
+\end{enumerate}
+
+
+\section{A-Learning (Advantage Learning)}
+
+\subsection{The Doubly Robust Approach}
+
+A-learning provides robustness to model misspecification by solving the estimating equation:
+\begin{equation}
+E\left[(A - \pi(H)) \cdot (Y - m(H) - A \cdot H'\psi) \cdot H\right] = 0
+\end{equation}
+
+where:
+\begin{itemize}
+\item $\pi(H) = P(A = 1 \mid H)$: Propensity score
+\item $m(H) = E[Y \mid H, A = 0]$: Baseline outcome
+\item $H'\psi$: Blip function
+\end{itemize}
+
+\begin{proposition}[Double Robustness]
+A-learning is consistent if EITHER:
+\begin{enumerate}
+\item The propensity model $\pi(H)$ is correctly specified, OR
+\item The baseline model $m(H)$ is correctly specified
+\end{enumerate}
+Only one needs to be correct---double robustness.
+\end{proposition}
+
+\subsection{Algorithm}
+
+\begin{algorithm}[A-Learning]
+\label{alg:a-learning}
+\begin{enumerate}
+\item \textbf{For $k = K$ down to $1$}:
+\begin{enumerate}
+\item Compute pseudo-outcome: $\tilde{Y}_k = Y_k + \hat{V}_{k+1}(H_{k+1})$
+\item Fit propensity model: $\hat{\pi}_k(H_k) = P(A_k = 1 \mid H_k)$
+\item Fit baseline model: $\hat{m}_k(H_k) = E[\tilde{Y}_k \mid H_k, A_k = 0]$
+\item Solve A-learning equation:
+\begin{equation}
+\hat{\psi}_k = \arg\min_\psi \sum_i w_i(\tilde{Y}_{ik} - \hat{m}_k(H_{ik}) - A_{ik} H_{ik}'\psi)^2
+\end{equation}
+where $w_i = (A_{ik} - \hat{\pi}_k(H_{ik}))^2$
+\item Compute value: $\hat{V}_k(H_k) = \hat{m}_k(H_k) + \max(0, H_k'\hat{\psi}_k)$
+\end{enumerate}
+\item \textbf{Output}: Optimal regime $\hat{d}^*_k(H_k) = \mathbf{1}\{H_k'\hat{\psi}_k > 0\}$
+\end{enumerate}
+\end{algorithm}
+
+\subsection{Implementation}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.dtr import DTRData, a_learning
+
+result = a_learning(
+    data=data,
+    propensity_model="logit",   # or "probit"
+    outcome_model="ols",        # or "ridge"
+    doubly_robust=True,         # Use DR estimation
+    se_method="sandwich",
+    propensity_trim=0.01,       # Avoid extreme weights
+    alpha=0.05,
+)
+
+# Results
+print(f"Optimal value: {result.value_estimate:.4f}")
+print(f"Doubly robust: {result.doubly_robust}")
+
+# Compare Q-learning vs A-learning
+q_result = q_learning(data)
+a_result = a_learning(data)
+
+print(f"\nQ-learning value: {q_result.value_estimate:.4f}")
+print(f"A-learning value: {a_result.value_estimate:.4f}")
+\end{minted}
+
+
+\section{Comparison: Q-Learning vs A-Learning}
+
+\begin{table}[h]
+\centering
+\caption{Q-Learning vs A-Learning Comparison}
+\begin{tabular}{lll}
+\toprule
+Property & Q-Learning & A-Learning \\
+\midrule
+Model requirement & Q-function correct & Propensity OR outcome correct \\
+Double robustness & No & Yes \\
+Efficiency & Higher if model correct & Lower but robust \\
+Complexity & Simpler & More complex \\
+Recommended & Model confidence high & Model uncertainty \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{When to Use Each}
+
+\begin{itemize}
+\item \textbf{Q-learning}: When confident in outcome model specification
+\item \textbf{A-learning}: When uncertain about either model, want robustness
+\end{itemize}
+
+
+\section{Data Structure}
+
+\subsection{The DTRData Class}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.dtr import DTRData
+import numpy as np
+
+# Single-stage example
+n = 500
+X = np.random.randn(n, 3)
+A = np.random.binomial(1, 0.5, n)
+Y = X[:, 0] + 2.0 * A + np.random.randn(n)
+
+single_stage = DTRData(
+    outcomes=[Y],
+    treatments=[A],
+    covariates=[X],
+)
+print(f"Stages: {single_stage.n_stages}")  # 1
+
+# Two-stage example
+X1 = np.random.randn(n, 3)
+A1 = np.random.binomial(1, 0.5, n)
+Y1 = X1[:, 0] + A1 + np.random.randn(n)
+
+# Stage 2 history includes prior treatment and outcome
+X2 = np.column_stack([X1, A1.reshape(-1, 1), Y1.reshape(-1, 1)])
+A2 = np.random.binomial(1, 0.5, n)
+Y2 = Y1 + X2[:, 0] + 2.0 * A2 + np.random.randn(n)
+
+two_stage = DTRData(
+    outcomes=[Y1, Y2],
+    treatments=[A1, A2],
+    covariates=[X1, X2],
+)
+print(f"Stages: {two_stage.n_stages}")  # 2
+
+# Get history at stage 2
+H2 = two_stage.get_history(stage=2)
+print(f"H2 shape: {H2.shape}")  # (n, 3 + 1 + 1 + 5) = (n, 10)
+\end{minted}
+
+
+\section{Methodological Considerations}
+
+\subsection{Non-Regularity at Decision Boundaries}
+
+When $\gamma(H) = 0$, the treatment decision is indifferent. This creates:
+\begin{itemize}
+\item Non-standard asymptotics
+\item Infinite-dimensional target parameter
+\item Bootstrap may fail
+\end{itemize}
+
+\textbf{Solutions}:
+\begin{enumerate}
+\item Hard-threshold bootstrap with perturbation
+\item Adaptive confidence intervals
+\item Report decision boundary regions
+\end{enumerate}
+
+\subsection{Propensity Score Overlap}
+
+A-learning requires $\pi(H) \in (\epsilon, 1-\epsilon)$ for some $\epsilon > 0$.
+
+\begin{minted}[fontsize=\small]{python}
+# Propensity trimming
+result = a_learning(
+    data=data,
+    propensity_trim=0.05,  # Trim to [0.05, 0.95]
+)
+\end{minted}
+
+\subsection{Multi-Stage Dependence}
+
+Backward induction creates correlation across stages:
+\begin{itemize}
+\item Stage $k$ blip estimate affects pseudo-outcome at stage $k-1$
+\item Standard errors must account for this propagation
+\item Bootstrap addresses this naturally
+\end{itemize}
+
+
+\section{Implementation Details}
+
+\subsection{Complete Example}
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+from causal_inference.dtr import DTRData, q_learning, a_learning
+
+# Simulate two-stage data with known optimal regime
+np.random.seed(42)
+n = 1000
+
+# Stage 1
+X1 = np.random.randn(n, 2)
+# True propensity: 50% randomization
+A1 = np.random.binomial(1, 0.5, n)
+# True blip: gamma_1 = 1 + X1[:,0]
+true_blip_1 = 1.0 + X1[:, 0]
+Y1 = X1[:, 0] + A1 * true_blip_1 + np.random.randn(n) * 0.5
+
+# Stage 2
+X2 = np.column_stack([X1, A1.reshape(-1, 1), Y1.reshape(-1, 1)])
+A2 = np.random.binomial(1, 0.5, n)
+# True blip: gamma_2 = 0.5 + 0.5*Y1
+true_blip_2 = 0.5 + 0.5 * Y1
+Y2 = Y1 + X2[:, 0] + A2 * true_blip_2 + np.random.randn(n) * 0.5
+
+# Total outcome
+Y_total = Y1 + Y2
+
+data = DTRData(outcomes=[Y1, Y2], treatments=[A1, A2], covariates=[X1, X2])
+
+# Q-learning
+q_result = q_learning(data, se_method="bootstrap", n_bootstrap=200)
+print("=== Q-Learning ===")
+print(f"Optimal value: {q_result.value_estimate:.4f}")
+print(f"SE: {q_result.value_se:.4f}")
+
+# A-learning (doubly robust)
+a_result = a_learning(data, doubly_robust=True, se_method="bootstrap", n_bootstrap=200)
+print("\n=== A-Learning ===")
+print(f"Optimal value: {a_result.value_estimate:.4f}")
+print(f"SE: {a_result.value_se:.4f}")
+
+# Compare to observed mean under random assignment
+print(f"\nObserved mean (random): {np.mean(Y_total):.4f}")
+print(f"Improvement from optimal: {q_result.value_estimate - np.mean(Y_total):.4f}")
+
+# Validate regime on new data
+def true_optimal_regime(H, stage):
+    if stage == 1:
+        blip = 1.0 + H[0]  # X1[:,0]
+    else:
+        blip = 0.5 + 0.5 * H[-1]  # Y1
+    return int(blip > 0)
+
+# Compare estimated vs true regime agreement
+agreements = []
+for i in range(n):
+    H1 = X1[i]
+    est = q_result.optimal_regime(H1, stage=1)
+    true = true_optimal_regime(H1, stage=1)
+    agreements.append(est == true)
+print(f"\nRegime agreement (stage 1): {np.mean(agreements):.1%}")
+\end{minted}
+
+
+\section{Monte Carlo Validation}
+
+\subsection{Test 1: Q-Learning Consistency}
+
+\begin{table}[h]
+\centering
+\caption{Q-Learning Monte Carlo ($n=500$, 2 stages, 500 runs)}
+\begin{tabular}{lccc}
+\toprule
+Metric & True & Mean Est. & SE \\
+\midrule
+Optimal Value & 3.45 & 3.42 & 0.12 \\
+Stage 1 Blip[0] & 1.00 & 0.98 & 0.08 \\
+Stage 2 Blip[0] & 0.50 & 0.49 & 0.06 \\
+Regime Agreement & --- & 94.2\% & 1.8\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Test 2: A-Learning Double Robustness}
+
+\begin{table}[h]
+\centering
+\caption{A-Learning Under Misspecification ($n=1000$, 500 runs)}
+\begin{tabular}{lccc}
+\toprule
+Misspecification & Value Bias & Coverage & Notes \\
+\midrule
+Both correct & 0.02 & 95.4\% & Optimal \\
+Propensity wrong & 0.03 & 94.8\% & DR protects \\
+Outcome wrong & 0.04 & 93.9\% & DR protects \\
+Both wrong & 0.31 & 67.2\% & DR fails \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Discussion}
+
+\subsection{Key Takeaways}
+
+\begin{enumerate}
+\item \textbf{Backward induction}: Q-learning uses dynamic programming principle
+\item \textbf{Blip function}: Treatment advantage, determines optimal rule
+\item \textbf{Double robustness}: A-learning protects against single-model misspecification
+\item \textbf{Value function}: Expected outcome under optimal regime
+\end{enumerate}
+
+\subsection{Practical Recommendations}
+
+\begin{enumerate}
+\item Use Q-learning when confident in outcome model
+\item Use A-learning when uncertain about model specification
+\item Always compare both methods for sensitivity analysis
+\item Bootstrap for standard errors in multi-stage settings
+\item Report regime agreement across methods
+\end{enumerate}
+
+\subsection{Extensions}
+
+\begin{itemize}
+\item \textbf{Continuous treatments}: Requires nonparametric methods
+\item \textbf{Survival outcomes}: Time-to-event DTRs
+\item \textbf{Reinforcement learning}: Off-policy evaluation with function approximation
+\item \textbf{High-dimensional tailoring}: LASSO/elastic net for blip coefficients
+\end{itemize}
+
+\subsection{Connection to Other Methods}
+
+\begin{itemize}
+\item \textbf{CATE} (Chapter~\ref{ch:cate}): Single-stage DTR is CATE estimation
+\item \textbf{Mediation} (Chapter~\ref{ch:mediation}): Sequential mechanisms
+\item \textbf{IV}: When treatment assignment is confounded
+\item \textbf{Reinforcement learning}: DTR is offline RL in causal inference
+\end{itemize}

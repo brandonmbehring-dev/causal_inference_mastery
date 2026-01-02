@@ -1,0 +1,5 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} Test parity with Python}
+\PYG{n+nd}{@test}\PYG{+w}{ }\PYG{n}{isapprox}\PYG{p}{(}\PYG{n}{julia\PYGZus{}ate}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{python\PYGZus{}ate}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{rtol}\PYG{o}{=}\PYG{l+m+mf}{1e\PYGZhy{}10}\PYG{p}{)}
+\PYG{n+nd}{@test}\PYG{+w}{ }\PYG{n}{isapprox}\PYG{p}{(}\PYG{n}{julia\PYGZus{}se}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{python\PYGZus{}se}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{rtol}\PYG{o}{=}\PYG{l+m+mf}{1e\PYGZhy{}10}\PYG{p}{)}
+\end{MintedVerbatim}

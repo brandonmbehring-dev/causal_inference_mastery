@@ -1,0 +1,33 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{bounds}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{lee\PYGZus{}bounds}\PYG{p}{,} \PYG{n}{check\PYGZus{}monotonicity}
+
+\PYG{c+c1}{\PYGZsh{} Simulate selection problem}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{2000}
+\PYG{n}{treatment} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{binomial}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Treatment increases observation probability (positive monotonicity)}
+\PYG{n}{p\PYGZus{}observed} \PYG{o}{=} \PYG{l+m+mf}{0.7} \PYG{o}{+} \PYG{l+m+mf}{0.2} \PYG{o}{*} \PYG{n}{treatment}
+\PYG{n}{observed} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{binomial}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{p\PYGZus{}observed}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} True outcome (only observed when selected)}
+\PYG{n}{outcome} \PYG{o}{=} \PYG{l+m+mf}{2.0} \PYG{o}{*} \PYG{n}{treatment} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{randn}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Check monotonicity assumption}
+\PYG{n}{mono\PYGZus{}check} \PYG{o}{=} \PYG{n}{check\PYGZus{}monotonicity}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{,} \PYG{n}{observed}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Suggested monotonicity: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mono\PYGZus{}check}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{suggested\PYGZus{}monotonicity}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Obs rate treated: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mono\PYGZus{}check}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{obs\PYGZus{}rate\PYGZus{}treated}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.1\PYGZpc{}}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Obs rate control: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{mono\PYGZus{}check}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{obs\PYGZus{}rate\PYGZus{}control}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.1\PYGZpc{}}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Compute Lee bounds}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{lee\PYGZus{}bounds}\PYG{p}{(}
+    \PYG{n}{outcome}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{observed}\PYG{p}{,}
+    \PYG{n}{monotonicity}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{positive}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{1000}\PYG{p}{,}
+    \PYG{n}{random\PYGZus{}state}\PYG{o}{=}\PYG{l+m+mi}{42}\PYG{p}{,}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+se}{\PYGZbs{}n}\PYG{l+s+s2}{Lee Bounds: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}lower}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}upper}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{95\PYGZpc{} CI: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{ci\PYGZus{}lower}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{ci\PYGZus{}upper}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Width: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bounds\PYGZus{}width}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Trimmed }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{n\PYGZus{}trimmed}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ from }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{trimmed\PYGZus{}group}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ group}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

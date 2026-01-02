@@ -1,0 +1,662 @@
+\chapter{Statistical Inference for Treatment Effects}
+\label{ch:inference}
+
+% ============================================================================
+% Chapter 3: Statistical Inference
+% Status: COMPLETE
+% Est. Pages: 20
+% Note: This chapter establishes the Monte Carlo validation methodology
+%       referenced throughout the book
+% ============================================================================
+
+\section{Introduction}
+\label{sec:inference_intro}
+
+Causal inference requires more than point estimates---we need measures of uncertainty that quantify how confident we can be in our conclusions. This chapter develops the statistical foundations for inference about treatment effects, including variance estimation, hypothesis testing, confidence intervals, and power analysis.
+
+\subsection{The Role of Statistical Inference}
+
+Given an estimator $\hat{\tau}$ of the ATE, statistical inference addresses three questions:
+\begin{enumerate}
+    \item \textbf{Uncertainty}: How precise is our estimate? (Standard errors, confidence intervals)
+    \item \textbf{Significance}: Is the effect statistically distinguishable from zero? (Hypothesis tests)
+    \item \textbf{Design}: How large a sample do we need? (Power analysis)
+\end{enumerate}
+
+\subsection{Two Sources of Randomness}
+
+In causal inference, uncertainty arises from two sources:
+
+\begin{enumerate}
+    \item \textbf{Sampling variation}: Units are drawn from a larger population (superpopulation inference)
+    \item \textbf{Treatment assignment}: Randomness comes from which units receive treatment (randomization inference)
+\end{enumerate}
+
+The Neyman framework (Chapter~\ref{ch:rct}) treats potential outcomes as fixed and derives inference from the randomization distribution. This chapter extends that approach and connects it to the more familiar superpopulation framework.
+
+\subsection{Chapter Overview}
+
+\begin{itemize}
+    \item Section~\ref{sec:var_estimation}: Variance estimation methods
+    \item Section~\ref{sec:hypothesis_testing}: Hypothesis testing for treatment effects
+    \item Section~\ref{sec:confidence_intervals}: Construction of confidence intervals
+    \item Section~\ref{sec:power_analysis}: Sample size and power calculations
+    \item Section~\ref{sec:mc_methodology}: Monte Carlo validation methodology
+    \item Section~\ref{sec:inference_summary}: Summary
+\end{itemize}
+
+
+% ============================================================================
+\section{Variance Estimation}
+\label{sec:var_estimation}
+% ============================================================================
+
+The variance of an estimator determines the precision of our estimates and drives the width of confidence intervals. Different variance estimators are appropriate in different settings.
+
+\subsection{The Neyman Variance}
+
+For randomized experiments, the Neyman variance (Chapter~\ref{ch:rct}) provides a conservative estimate:
+
+\begin{equation}
+\hat{V}_{\text{Neyman}} = \frac{s_1^2}{n_1} + \frac{s_0^2}{n_0}
+\label{eq:neyman_var_ch3}
+\end{equation}
+
+where $s_t^2$ is the sample variance of outcomes in group $t$.
+
+\begin{proposition}[Properties of Neyman Variance]
+\label{prop:neyman_properties}
+The Neyman variance estimator:
+\begin{enumerate}
+    \item Is unbiased for the true variance under homogeneous treatment effects
+    \item Is conservative (upward biased) under heterogeneous effects
+    \item Is robust to heteroskedasticity
+\end{enumerate}
+\end{proposition}
+
+\subsection{Heteroskedasticity-Robust Variance}
+
+In observational studies and regression contexts, we use heteroskedasticity-consistent (HC) variance estimators. The most common is the ``sandwich'' estimator:
+
+\begin{definition}[HC Robust Variance]
+\label{def:hc_var}
+For the OLS estimator $\hat{\beta}$ with design matrix $X$ and residuals $\hat{e}_i$, the HC robust variance is:
+\begin{equation}
+\hat{V}_{\text{HC}} = (X'X)^{-1} \left(\sum_{i=1}^{n} \hat{e}_i^2 x_i x_i'\right) (X'X)^{-1}
+\label{eq:hc_var}
+\end{equation}
+\end{definition}
+
+Several variants exist with different finite-sample corrections:
+
+\begin{table}[ht]
+\centering
+\caption{Heteroskedasticity-Consistent Variance Estimators}
+\label{tab:hc_variants}
+\begin{tabular}{lll}
+\toprule
+\textbf{Variant} & \textbf{Adjustment} & \textbf{Use Case} \\
+\midrule
+HC0 & None & Large samples \\
+HC1 & $\frac{n}{n-k}$ & Degrees of freedom \\
+HC2 & $(1-h_{ii})^{-1}$ & Leverage \\
+HC3 & $(1-h_{ii})^{-2}$ & Small samples (recommended) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+where $h_{ii}$ is the leverage (diagonal of the hat matrix).
+
+\begin{insight}
+HC3 is recommended for most applications because it provides conservative standard errors in small samples. It is the default in our implementations (e.g., \texttt{regression\_adjusted\_ate}).
+\end{insight}
+
+\subsection{Cluster-Robust Variance}
+
+For clustered data, standard errors require adjustment:
+
+\begin{definition}[Cluster-Robust Variance]
+\label{def:cluster_var}
+Let $G$ denote the number of clusters and $\tilde{e}_g = \sum_{i \in g} e_i x_i$ be the cluster-level score. The cluster-robust variance is:
+\begin{equation}
+\hat{V}_{\text{cluster}} = (X'X)^{-1} \left(\sum_{g=1}^{G} \tilde{e}_g \tilde{e}_g'\right) (X'X)^{-1}
+\label{eq:cluster_var}
+\end{equation}
+\end{definition}
+
+\begin{theorem}[Consistency of Cluster-Robust Variance]
+\label{thm:cluster_consistent}
+The cluster-robust variance estimator is consistent as the number of clusters $G \to \infty$, even with arbitrary within-cluster correlation. However:
+\begin{itemize}
+    \item Requires $G \geq 40$ for reliable inference (rule of thumb)
+    \item Can be severely biased with few clusters
+\end{itemize}
+\end{theorem}
+
+\begin{remark}[Few Clusters Problem]
+With fewer than 40 clusters, consider:
+\begin{itemize}
+    \item Wild cluster bootstrap \cite{cameron2008bootstrap}
+    \item Cluster-jackknife
+    \item Aggregation to cluster level
+\end{itemize}
+See \texttt{docs/METHODOLOGICAL\_CONCERNS.md} (CONCERN-13) for detailed guidance.
+\end{remark}
+
+\subsection{The Bootstrap}
+
+The bootstrap provides general-purpose variance estimation and inference.
+
+\begin{definition}[Bootstrap]
+\label{def:bootstrap}
+Given data $(Y_i, T_i)_{i=1}^{n}$:
+\begin{enumerate}
+    \item Draw $B$ bootstrap samples by sampling with replacement
+    \item Compute $\hat{\tau}^{(b)}$ for each bootstrap sample
+    \item Estimate variance as: $\hat{V}_{\text{boot}} = \frac{1}{B-1} \sum_{b=1}^{B} (\hat{\tau}^{(b)} - \bar{\tau}^*)^2$
+\end{enumerate}
+where $\bar{\tau}^* = \frac{1}{B} \sum_b \hat{\tau}^{(b)}$.
+\end{definition}
+
+\begin{proposition}[Bootstrap Consistency]
+Under regularity conditions, the bootstrap provides consistent variance estimates and asymptotically valid confidence intervals.
+\end{proposition}
+
+\begin{remark}[Bootstrap Caution for Matching]
+The naive bootstrap is invalid for matching estimators with replacement. Special methods (Abadie-Imbens bootstrap) are required. See Chapter~\ref{ch:propensity} and CONCERN-5 in the methodological concerns documentation.
+\end{remark}
+
+
+% ============================================================================
+\section{Hypothesis Testing}
+\label{sec:hypothesis_testing}
+% ============================================================================
+
+Hypothesis testing formalizes the question: ``Is there evidence of a treatment effect?''
+
+\subsection{The Null Hypothesis}
+
+The standard null hypothesis for the ATE is:
+\begin{equation}
+H_0: \tau = 0 \quad \text{vs.} \quad H_1: \tau \neq 0
+\label{eq:null_hypothesis}
+\end{equation}
+
+This is a \emph{weak} null---it only requires the average effect to be zero, allowing individual effects to be non-zero.
+
+\subsection{The $t$-Test}
+
+The most common test is the $t$-test based on the difference-in-means:
+
+\begin{definition}[$t$-Statistic for ATE]
+\label{def:t_stat}
+The $t$-statistic is:
+\begin{equation}
+t = \frac{\hat{\tau}}{\sqrt{\hat{V}}}
+\label{eq:t_stat}
+\end{equation}
+where $\hat{V}$ is a variance estimator.
+\end{definition}
+
+Under the null hypothesis and regularity conditions:
+\begin{equation}
+t \xrightarrow{d} N(0, 1) \quad \text{as } n \to \infty
+\label{eq:t_asymptotic}
+\end{equation}
+
+For finite samples, we use the $t$-distribution with degrees of freedom determined by the Satterthwaite approximation~\eqref{eq:satterthwaite}.
+
+\subsection{Permutation Tests}
+
+As discussed in Section~\ref{sec:rand_inference}, permutation tests provide exact inference under the sharp null:
+\begin{equation}
+H_0^{\text{sharp}}: \poty{1}_i = \poty{0}_i \quad \text{for all } i
+\label{eq:sharp_null_ch3}
+\end{equation}
+
+\begin{proposition}[Exactness of Permutation Tests]
+Under the sharp null hypothesis and random treatment assignment, the permutation test has exact size $\alpha$ for any finite sample size $n$.
+\end{proposition}
+
+The p-value is computed as:
+\begin{equation}
+p = \frac{\#\{|\hat{\tau}^{\pi}| \geq |\hat{\tau}|\} + 1}{B + 1}
+\label{eq:perm_pvalue_ch3}
+\end{equation}
+where $\hat{\tau}^{\pi}$ denotes the test statistic under permutation $\pi$, and the ``+1'' smoothing prevents $p = 0$ \cite{phipson2010permutation}.
+
+\subsection{Multiple Testing}
+
+When testing multiple hypotheses (e.g., effects on multiple outcomes), we must control the family-wise error rate (FWER) or false discovery rate (FDR).
+
+\begin{definition}[Multiple Testing Corrections]
+\label{def:multiple_testing}
+Common corrections include:
+\begin{itemize}
+    \item \textbf{Bonferroni}: Reject if $p_j < \alpha/m$ for $m$ tests (controls FWER)
+    \item \textbf{Holm}: Step-down procedure (more powerful than Bonferroni)
+    \item \textbf{Benjamini-Hochberg}: Controls FDR at level $\alpha$
+\end{itemize}
+\end{definition}
+
+\begin{insight}
+Multiple testing corrections are especially important in exploratory analyses with many outcomes. Pre-registration of primary outcomes helps distinguish confirmatory from exploratory analyses.
+\end{insight}
+
+
+% ============================================================================
+\section{Confidence Intervals}
+\label{sec:confidence_intervals}
+% ============================================================================
+
+Confidence intervals provide a range of plausible values for the treatment effect, conveying both the point estimate and its uncertainty.
+
+\subsection{Wald Confidence Intervals}
+
+The most common approach is the Wald (normal approximation) interval:
+
+\begin{definition}[Wald Confidence Interval]
+\label{def:wald_ci}
+The $(1-\alpha)$ Wald confidence interval is:
+\begin{equation}
+\text{CI}_{1-\alpha} = \hat{\tau} \pm z_{1-\alpha/2} \cdot \sqrt{\hat{V}}
+\label{eq:wald_ci}
+\end{equation}
+where $z_{1-\alpha/2}$ is the standard normal quantile (e.g., $z_{0.975} = 1.96$).
+\end{definition}
+
+For small samples, we replace the normal quantile with $t_{1-\alpha/2, \nu}$ using appropriate degrees of freedom.
+
+\subsection{Bootstrap Confidence Intervals}
+
+The bootstrap provides several methods for constructing confidence intervals:
+
+\begin{definition}[Bootstrap CI Methods]
+\label{def:bootstrap_ci}
+Let $\hat{\tau}^{(1)}, \ldots, \hat{\tau}^{(B)}$ be bootstrap estimates:
+\begin{enumerate}
+    \item \textbf{Percentile}: $[\hat{\tau}^{(\alpha/2)}, \hat{\tau}^{(1-\alpha/2)}]$ (quantiles of bootstrap distribution)
+    \item \textbf{Basic}: $[2\hat{\tau} - \hat{\tau}^{(1-\alpha/2)}, 2\hat{\tau} - \hat{\tau}^{(\alpha/2)}]$ (reflects around $\hat{\tau}$)
+    \item \textbf{BCa}: Bias-corrected and accelerated (adjusts for bias and skewness)
+\end{enumerate}
+\end{definition}
+
+\begin{proposition}[Bootstrap Methods]
+\begin{itemize}
+    \item Percentile: Simple, biased
+    \item Basic: Better coverage
+    \item BCa: Best coverage, costly
+\end{itemize}
+\end{proposition}
+
+\subsection{Confidence Intervals from Inverting Tests}
+
+Confidence intervals can be constructed by inverting hypothesis tests:
+\begin{equation}
+\text{CI}_{1-\alpha} = \{\tau_0 : \text{do not reject } H_0: \tau = \tau_0 \text{ at level } \alpha\}
+\label{eq:ci_inversion}
+\end{equation}
+
+This approach is particularly useful for permutation-based inference, yielding exact confidence intervals.
+
+
+% ============================================================================
+\section{Power Analysis}
+\label{sec:power_analysis}
+% ============================================================================
+
+Power analysis determines the sample size needed to detect a treatment effect of a given magnitude.
+
+\subsection{Statistical Power}
+
+\begin{definition}[Statistical Power]
+\label{def:power}
+The power of a test is the probability of rejecting $H_0$ when the alternative is true:
+\begin{equation}
+\text{Power} = \Prob(\text{Reject } H_0 \mid H_1 \text{ true}) = 1 - \beta
+\label{eq:power}
+\end{equation}
+where $\beta$ is the Type II error rate.
+\end{definition}
+
+Conventional targets are 80\% or 90\% power.
+
+\subsection{Sample Size Formula}
+
+For the difference-in-means estimator with equal group sizes:
+
+\begin{theorem}[Sample Size for ATE]
+\label{thm:sample_size}
+To detect effect size $\tau$ with significance level $\alpha$ and power $1-\beta$, the required sample size per group is:
+\begin{equation}
+n = \frac{2(z_{1-\alpha/2} + z_{1-\beta})^2 \sigma^2}{\tau^2}
+\label{eq:sample_size}
+\end{equation}
+where $\sigma^2 = (\sigma_1^2 + \sigma_0^2)/2$ is the average variance.
+\end{theorem}
+
+\begin{proof}
+Under $H_0$, $\hat{\tau} \sim N(0, 2\sigma^2/n)$. Under $H_1$ with true effect $\tau$, $\hat{\tau} \sim N(\tau, 2\sigma^2/n)$. Setting power equal to $1-\beta$ and solving yields the formula.
+\end{proof}
+
+\subsection{Minimum Detectable Effect}
+
+Alternatively, given a fixed sample size, we can compute the minimum detectable effect (MDE):
+
+\begin{definition}[Minimum Detectable Effect]
+\label{def:mde}
+The MDE is the smallest effect detectable with specified power:
+\begin{equation}
+\text{MDE} = (z_{1-\alpha/2} + z_{1-\beta}) \cdot \sqrt{\frac{2\sigma^2}{n}}
+\label{eq:mde}
+\end{equation}
+\end{definition}
+
+\begin{example}[Power Calculation]
+With $n = 200$ per group, $\sigma = 1$, $\alpha = 0.05$, and target power $= 0.80$:
+\begin{align*}
+\text{MDE} &= (1.96 + 0.84) \cdot \sqrt{\frac{2 \cdot 1}{200}} \\
+&= 2.80 \cdot 0.10 = 0.28
+\end{align*}
+We can detect effects of magnitude 0.28 standard deviations or larger.
+\end{example}
+
+\subsection{Design Effects}
+
+Clustering and stratification affect power:
+
+\begin{itemize}
+    \item \textbf{Clustering}: Effective sample size is $n_{\text{eff}} = n / (1 + (m-1)\rho)$ where $m$ is cluster size and $\rho$ is the intra-cluster correlation
+    \item \textbf{Stratification}: Reduces variance by factor $(1 - R^2)$ where $R^2$ is variance explained by strata
+    \item \textbf{Covariate adjustment}: Reduces variance by factor $(1 - R^2_Y)$ where $R^2_Y$ is variance explained by covariates
+\end{itemize}
+
+
+% ============================================================================
+\section{Monte Carlo Validation Methodology}
+\label{sec:mc_methodology}
+% ============================================================================
+
+This book validates all estimators through Monte Carlo simulation. This section establishes the methodology that will be referenced throughout.
+
+\subsection{Motivation}
+
+Monte Carlo validation serves several purposes:
+\begin{enumerate}
+    \item \textbf{Verify implementations}: Ensure code correctly implements the intended estimator
+    \item \textbf{Check finite-sample properties}: Asymptotic theory may not hold in realistic sample sizes
+    \item \textbf{Compare methods}: Evaluate relative performance under various conditions
+    \item \textbf{Establish baselines}: Document expected bias and coverage for each method
+\end{enumerate}
+
+\subsection{Data Generating Processes}
+
+A well-designed Monte Carlo study requires realistic data generating processes (DGPs). Our DGPs share common structure:
+
+\begin{definition}[DGP Structure]
+\label{def:dgp}
+Each DGP generates $(Y_i, T_i, X_i)$ with:
+\begin{itemize}
+    \item Known true ATE $\tau_0$ (typically $\tau_0 = 2.0$)
+    \item Configurable sample size $n$
+    \item Reproducible via random seed
+\end{itemize}
+\end{definition}
+
+Example DGPs for RCT validation:
+
+\begin{minted}{python}
+def dgp_simple_rct(n=100, true_ate=2.0, random_state=None):
+    """Simple RCT with homoskedastic errors.
+
+    DGP:
+        Y(1) ~ N(2, 1), Y(0) ~ N(0, 1)
+        T ~ Bernoulli(0.5)
+        Y = T*Y(1) + (1-T)*Y(0)
+
+    True ATE = 2.0
+    """
+    rng = np.random.RandomState(random_state)
+    treatment = np.array([1]*(n//2) + [0]*(n - n//2))
+    rng.shuffle(treatment)
+    y1 = rng.normal(true_ate, 1.0, n)
+    y0 = rng.normal(0.0, 1.0, n)
+    outcomes = treatment * y1 + (1 - treatment) * y0
+    return outcomes, treatment
+\end{minted}
+
+\subsection{Simulation Design}
+
+Our standard simulation protocol:
+
+\begin{enumerate}
+    \item \textbf{Number of replications}: $B = 5{,}000$ (sufficient for precise coverage estimates)
+    \item \textbf{Sample sizes}: Vary $n \in \{50, 100, 200, 500, 1000\}$ to assess finite-sample behavior
+    \item \textbf{DGP variants}: Heteroskedasticity, non-normality
+    \item \textbf{Seeds}: Use deterministic seeds $\{0, 1, \ldots, B-1\}$ for reproducibility
+\end{enumerate}
+
+\subsection{Performance Metrics}
+
+We evaluate estimators on three key metrics:
+
+\subsubsection{Bias}
+
+\begin{definition}[Bias]
+\label{def:bias_metric}
+The bias is the average deviation from the true parameter:
+\begin{equation}
+\text{Bias} = \frac{1}{B} \sum_{b=1}^{B} \hat{\tau}^{(b)} - \tau_0
+\label{eq:bias}
+\end{equation}
+\end{definition}
+
+\textbf{Acceptance criterion}: $|\text{Bias}| < 0.05$ (in units of the parameter)
+
+For methods with known bias (e.g., PSM with residual imbalance), we adjust thresholds accordingly.
+
+\subsubsection{Coverage}
+
+\begin{definition}[Coverage]
+\label{def:coverage_metric}
+The coverage rate is the fraction of confidence intervals containing the true parameter:
+\begin{equation}
+\text{Coverage} = \frac{1}{B} \sum_{b=1}^{B} \indicator{\tau_0 \in \text{CI}^{(b)}}
+\label{eq:coverage}
+\end{equation}
+\end{definition}
+
+\textbf{Acceptance criterion}: Coverage $\in [0.93, 0.97]$ for nominal 95\% CIs
+
+This range accounts for simulation error: with $B = 5{,}000$ and true coverage 0.95, the standard error is $\sqrt{0.95 \cdot 0.05 / 5000} \approx 0.003$, so the 99\% interval is approximately $[0.94, 0.96]$.
+
+\subsubsection{Standard Error Accuracy}
+
+\begin{definition}[SE Accuracy]
+\label{def:se_accuracy}
+SE accuracy measures how well the estimated SE tracks the true sampling variability:
+\begin{equation}
+\text{SE Accuracy} = \frac{|\text{mean}(\hat{\text{SE}}) - \text{SD}(\hat{\tau})|}{\text{SD}(\hat{\tau})}
+\label{eq:se_accuracy}
+\end{equation}
+\end{definition}
+
+\textbf{Acceptance criterion}: SE accuracy $< 10\%$ (estimated SE within 10\% of true SD)
+
+\subsection{Validation Results Table}
+
+Each chapter presents validation results in a standard format:
+
+\begin{table}[ht]
+\centering
+\caption{Monte Carlo Validation Template}
+\label{tab:mc_template}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{$n$} & \textbf{Bias} & \textbf{Coverage} & \textbf{SE Accuracy} & \textbf{Pass?} \\
+\midrule
+Estimator A & 100 & 0.002 & 95.1\% & 3.2\% & \checkmark \\
+Estimator A & 200 & 0.001 & 95.0\% & 2.1\% & \checkmark \\
+Estimator B & 100 & 0.015 & 94.3\% & 5.8\% & \checkmark \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Method-Specific Thresholds}
+
+Different methods have different expected performance:
+
+\begin{table}[ht]
+\centering
+\caption{Monte Carlo Thresholds by Method Type}
+\label{tab:mc_thresholds}
+\begin{tabular}{lccc}
+\toprule
+\textbf{Method} & \textbf{Bias} & \textbf{Coverage} & \textbf{SE Acc.} \\
+\midrule
+RCT & $< 0.05$ & 93--97\% & $< 10\%$ \\
+Observational & $< 0.10$ & 93--97.5\% & $< 15\%$ \\
+PSM & $< 0.30$ & $\geq 95\%$ & $< 150\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{insight}
+Matching estimators have higher thresholds because:
+\begin{enumerate}
+    \item Residual covariate imbalance creates unavoidable bias
+    \item Bootstrap SE estimation is approximate for matching
+    \item The conservative bias bound ensures we're not overstating precision
+\end{enumerate}
+\end{insight}
+
+\subsection{Implementation}
+
+Our Monte Carlo framework is implemented in \texttt{tests/validation/monte\_carlo/}:
+
+\begin{minted}{python}
+def validate_monte_carlo_results(estimates, ses, ci_lowers, ci_uppers, true_value):
+    """Validate Monte Carlo simulation results.
+
+    Parameters
+    ----------
+    estimates : list
+        Point estimates from each replication
+    ses : list
+        Standard error estimates
+    ci_lowers, ci_uppers : list
+        Confidence interval bounds
+    true_value : float
+        Known true parameter value
+
+    Returns
+    -------
+    dict with keys: bias, coverage, se_accuracy, bias_ok, coverage_ok, se_accuracy_ok, all_pass
+    """
+    bias = np.mean(estimates) - true_value
+    coverage = np.mean((ci_lowers <= true_value) & (true_value <= ci_uppers))
+    se_accuracy = abs(np.mean(ses) - np.std(estimates)) / np.std(estimates)
+
+    return {
+        'bias': bias,
+        'coverage': coverage,
+        'se_accuracy': se_accuracy,
+        'bias_ok': abs(bias) < 0.05,
+        'coverage_ok': 0.93 <= coverage <= 0.97,
+        'se_accuracy_ok': se_accuracy < 0.10,
+        'all_pass': all([...])
+    }
+\end{minted}
+
+
+% ============================================================================
+\section{Implementation}
+\label{sec:inference_implementation}
+% ============================================================================
+
+\subsection{Variance Estimation}
+
+\begin{minted}{python}
+import numpy as np
+from scipy import stats
+
+def neyman_variance(outcomes, treatment):
+    """Compute Neyman (heteroskedasticity-robust) variance."""
+    y1 = outcomes[treatment == 1]
+    y0 = outcomes[treatment == 0]
+    var1 = np.var(y1, ddof=1)
+    var0 = np.var(y0, ddof=1)
+    return var1 / len(y1) + var0 / len(y0)
+
+def bootstrap_variance(outcomes, treatment, n_bootstrap=1000):
+    """Compute bootstrap variance estimate."""
+    n = len(outcomes)
+    estimates = []
+    for _ in range(n_bootstrap):
+        idx = np.random.choice(n, n, replace=True)
+        y_boot = outcomes[idx]
+        t_boot = treatment[idx]
+        est = y_boot[t_boot == 1].mean() - y_boot[t_boot == 0].mean()
+        estimates.append(est)
+    return np.var(estimates)
+\end{minted}
+
+\subsection{Power Analysis}
+
+\begin{minted}{python}
+def required_sample_size(effect_size, sigma, alpha=0.05, power=0.80):
+    """Compute required sample size per group for ATE estimation."""
+    z_alpha = stats.norm.ppf(1 - alpha/2)
+    z_beta = stats.norm.ppf(power)
+    n = 2 * (z_alpha + z_beta)**2 * sigma**2 / effect_size**2
+    return int(np.ceil(n))
+
+def minimum_detectable_effect(n, sigma, alpha=0.05, power=0.80):
+    """Compute MDE given sample size."""
+    z_alpha = stats.norm.ppf(1 - alpha/2)
+    z_beta = stats.norm.ppf(power)
+    return (z_alpha + z_beta) * np.sqrt(2 * sigma**2 / n)
+\end{minted}
+
+
+% ============================================================================
+\section{Summary}
+\label{sec:inference_summary}
+% ============================================================================
+
+This chapter developed the statistical foundations for inference about treatment effects.
+
+\subsection{Key Results}
+
+\begin{enumerate}
+    \item \textbf{Variance Estimation}: Neyman variance for RCTs; HC robust for regression; cluster-robust for correlated data
+
+    \item \textbf{Hypothesis Testing}: $t$-tests for parametric inference; permutation tests for exact inference
+
+    \item \textbf{Confidence Intervals}: Wald CIs from standard errors; bootstrap CIs for robustness
+
+    \item \textbf{Power Analysis}: Sample size depends on effect size, variance, and desired power
+
+    \item \textbf{Monte Carlo Validation}: Standard methodology with 5,000 replications, bias $< 0.05$, coverage 93--97\%
+\end{enumerate}
+
+\subsection{Notation Reference}
+
+\begin{center}
+\begin{tabular}{ll}
+$\hat{V}$ & Variance estimator \\
+$t = \hat{\tau}/\sqrt{\hat{V}}$ & $t$-statistic \\
+$\alpha$ & Significance level (typically 0.05) \\
+$1 - \beta$ & Statistical power \\
+MDE & Minimum detectable effect \\
+$B$ & Number of Monte Carlo replications
+\end{tabular}
+\end{center}
+
+\subsection{Looking Ahead}
+
+Part~\ref{part:selection_observables} applies these inferential tools to observational studies where treatment is not randomly assigned. The Monte Carlo methodology established here will validate each estimator.
+
+\begin{insight}
+Statistical inference quantifies uncertainty, but the key assumptions (randomization, unconfoundedness, etc.) cannot be tested directly. Sensitivity analysis (Chapter~\ref{ch:sensitivity}) addresses robustness to assumption violations.
+\end{insight}

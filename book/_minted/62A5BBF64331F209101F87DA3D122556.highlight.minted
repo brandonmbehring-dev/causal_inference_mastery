@@ -1,0 +1,24 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{scipy}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{stats}
+
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{neyman\PYGZus{}variance}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Compute Neyman (heteroskedasticity\PYGZhy{}robust) variance.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{y1} \PYG{o}{=} \PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{treatment} \PYG{o}{==} \PYG{l+m+mi}{1}\PYG{p}{]}
+    \PYG{n}{y0} \PYG{o}{=} \PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{treatment} \PYG{o}{==} \PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{var1} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n}{y1}\PYG{p}{,} \PYG{n}{ddof}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+    \PYG{n}{var0} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n}{y0}\PYG{p}{,} \PYG{n}{ddof}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+    \PYG{k}{return} \PYG{n}{var1} \PYG{o}{/} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{y1}\PYG{p}{)} \PYG{o}{+} \PYG{n}{var0} \PYG{o}{/} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{y0}\PYG{p}{)}
+
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{bootstrap\PYGZus{}variance}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{1000}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Compute bootstrap variance estimate.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{n} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{)}
+    \PYG{n}{estimates} \PYG{o}{=} \PYG{p}{[}\PYG{p}{]}
+    \PYG{k}{for} \PYG{n}{\PYGZus{}} \PYG{o+ow}{in} \PYG{n+nb}{range}\PYG{p}{(}\PYG{n}{n\PYGZus{}bootstrap}\PYG{p}{)}\PYG{p}{:}
+        \PYG{n}{idx} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{choice}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{n}{n}\PYG{p}{,} \PYG{n}{replace}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+        \PYG{n}{y\PYGZus{}boot} \PYG{o}{=} \PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{idx}\PYG{p}{]}
+        \PYG{n}{t\PYGZus{}boot} \PYG{o}{=} \PYG{n}{treatment}\PYG{p}{[}\PYG{n}{idx}\PYG{p}{]}
+        \PYG{n}{est} \PYG{o}{=} \PYG{n}{y\PYGZus{}boot}\PYG{p}{[}\PYG{n}{t\PYGZus{}boot} \PYG{o}{==} \PYG{l+m+mi}{1}\PYG{p}{]}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{y\PYGZus{}boot}\PYG{p}{[}\PYG{n}{t\PYGZus{}boot} \PYG{o}{==} \PYG{l+m+mi}{0}\PYG{p}{]}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{p}{)}
+        \PYG{n}{estimates}\PYG{o}{.}\PYG{n}{append}\PYG{p}{(}\PYG{n}{est}\PYG{p}{)}
+    \PYG{k}{return} \PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n}{estimates}\PYG{p}{)}
+\end{MintedVerbatim}

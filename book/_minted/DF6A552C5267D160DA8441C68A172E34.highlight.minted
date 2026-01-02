@@ -1,0 +1,33 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{rdd}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{SharpRDD}
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{rdd}\PYG{n+nn}{.}\PYG{n+nn}{bandwidth}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{imbens\PYGZus{}kalyanaraman\PYGZus{}bandwidth}\PYG{p}{,}
+    \PYG{n}{cct\PYGZus{}bandwidth}
+\PYG{p}{)}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+
+\PYG{c+c1}{\PYGZsh{} Generate example data}
+\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{seed}\PYG{p}{(}\PYG{l+m+mi}{42}\PYG{p}{)}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{1000}
+\PYG{n}{X} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{uniform}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} Running variable}
+\PYG{n}{c} \PYG{o}{=} \PYG{l+m+mi}{0}  \PYG{c+c1}{\PYGZsh{} Cutoff}
+\PYG{n}{D} \PYG{o}{=} \PYG{p}{(}\PYG{n}{X} \PYG{o}{\PYGZgt{}}\PYG{o}{=} \PYG{n}{c}\PYG{p}{)}\PYG{o}{.}\PYG{n}{astype}\PYG{p}{(}\PYG{n+nb}{int}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} Sharp treatment}
+\PYG{n}{Y} \PYG{o}{=} \PYG{l+m+mf}{0.5} \PYG{o}{+} \PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{D} \PYG{o}{+} \PYG{l+m+mf}{0.3} \PYG{o}{*} \PYG{n}{X} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mf}{0.5}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} Outcome with tau=2}
+
+\PYG{c+c1}{\PYGZsh{} Compute optimal bandwidth}
+\PYG{n}{h\PYGZus{}ik} \PYG{o}{=} \PYG{n}{imbens\PYGZus{}kalyanaraman\PYGZus{}bandwidth}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{X}\PYG{p}{,} \PYG{n}{c}\PYG{p}{)}
+\PYG{n}{h\PYGZus{}cct} \PYG{o}{=} \PYG{n}{cct\PYGZus{}bandwidth}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{X}\PYG{p}{,} \PYG{n}{c}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{IK bandwidth: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{h\PYGZus{}ik}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{CCT bandwidth: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{h\PYGZus{}cct}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Fit Sharp RDD}
+\PYG{n}{rdd} \PYG{o}{=} \PYG{n}{SharpRDD}\PYG{p}{(}\PYG{n}{cutoff}\PYG{o}{=}\PYG{n}{c}\PYG{p}{,} \PYG{n}{bandwidth}\PYG{o}{=}\PYG{n}{h\PYGZus{}ik}\PYG{p}{,} \PYG{n}{kernel}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{triangular}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{rdd}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{X}\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Treatment effect: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{tau}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Standard error: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{se}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{95\PYGZpc{} CI: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{ci\PYGZus{}lower}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{ci\PYGZus{}upper}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{P\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{pvalue}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{N effective (left): }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{n\PYGZus{}left}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{N effective (right): }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{n\PYGZus{}right}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

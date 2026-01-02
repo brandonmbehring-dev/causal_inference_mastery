@@ -1,0 +1,57 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{e\PYGZus{}value}\PYG{p}{(}
+    \PYG{n}{estimate}\PYG{p}{:} \PYG{n+nb}{float}\PYG{p}{,}
+    \PYG{n}{ci\PYGZus{}lower}\PYG{p}{:} \PYG{n}{Optional}\PYG{p}{[}\PYG{n+nb}{float}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{None}\PYG{p}{,}
+    \PYG{n}{ci\PYGZus{}upper}\PYG{p}{:} \PYG{n}{Optional}\PYG{p}{[}\PYG{n+nb}{float}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{None}\PYG{p}{,}
+    \PYG{n}{effect\PYGZus{}type}\PYG{p}{:} \PYG{n}{Literal}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{rr}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{or}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{hr}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{smd}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{ate}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{]} \PYG{o}{=} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{rr}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}
+    \PYG{n}{baseline\PYGZus{}risk}\PYG{p}{:} \PYG{n}{Optional}\PYG{p}{[}\PYG{n+nb}{float}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{None}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{EValueResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Compute E\PYGZhy{}value for sensitivity to unmeasured confounding.}
+
+\PYG{l+s+sd}{    Parameters}
+\PYG{l+s+sd}{    \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{l+s+sd}{    estimate : float}
+\PYG{l+s+sd}{        Point estimate of the effect.}
+\PYG{l+s+sd}{    ci\PYGZus{}lower, ci\PYGZus{}upper : float, optional}
+\PYG{l+s+sd}{        Confidence interval bounds.}
+\PYG{l+s+sd}{    effect\PYGZus{}type : str}
+\PYG{l+s+sd}{        Type of effect: \PYGZdq{}rr\PYGZdq{}, \PYGZdq{}or\PYGZdq{}, \PYGZdq{}hr\PYGZdq{}, \PYGZdq{}smd\PYGZdq{}, \PYGZdq{}ate\PYGZdq{}.}
+\PYG{l+s+sd}{    baseline\PYGZus{}risk : float, optional}
+\PYG{l+s+sd}{        Required if effect\PYGZus{}type=\PYGZdq{}ate\PYGZdq{}.}
+
+\PYG{l+s+sd}{    Returns}
+\PYG{l+s+sd}{    \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{l+s+sd}{    EValueResult}
+\PYG{l+s+sd}{        e\PYGZus{}value: E\PYGZhy{}value for point estimate}
+\PYG{l+s+sd}{        e\PYGZus{}value\PYGZus{}ci: E\PYGZhy{}value for CI bound closest to null}
+\PYG{l+s+sd}{        rr\PYGZus{}equivalent: Effect converted to RR scale}
+\PYG{l+s+sd}{        interpretation: Human\PYGZhy{}readable interpretation}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{c+c1}{\PYGZsh{} Convert to risk ratio scale}
+    \PYG{k}{if} \PYG{n}{effect\PYGZus{}type} \PYG{o}{==} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{rr}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:}
+        \PYG{n}{rr} \PYG{o}{=} \PYG{n}{estimate}
+    \PYG{k}{elif} \PYG{n}{effect\PYGZus{}type} \PYG{o}{==} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{smd}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:}
+        \PYG{n}{rr} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{exp}\PYG{p}{(}\PYG{l+m+mf}{0.91} \PYG{o}{*} \PYG{n}{estimate}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} VanderWeele approximation}
+    \PYG{k}{elif} \PYG{n}{effect\PYGZus{}type} \PYG{o}{==} \PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{ate}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:}
+        \PYG{n}{rr} \PYG{o}{=} \PYG{p}{(}\PYG{n}{baseline\PYGZus{}risk} \PYG{o}{+} \PYG{n}{estimate}\PYG{p}{)} \PYG{o}{/} \PYG{n}{baseline\PYGZus{}risk}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{n}{rr} \PYG{o}{=} \PYG{n}{estimate}  \PYG{c+c1}{\PYGZsh{} OR, HR approximate RR}
+
+    \PYG{c+c1}{\PYGZsh{} E\PYGZhy{}value formula (flip if protective effect)}
+    \PYG{k}{if} \PYG{n}{rr} \PYG{o}{\PYGZgt{}}\PYG{o}{=} \PYG{l+m+mi}{1}\PYG{p}{:}
+        \PYG{n}{e\PYGZus{}val} \PYG{o}{=} \PYG{n}{rr} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{rr} \PYG{o}{*} \PYG{p}{(}\PYG{n}{rr} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{n}{e\PYGZus{}val} \PYG{o}{=} \PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{rr}\PYG{p}{)} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{rr}\PYG{p}{)} \PYG{o}{*} \PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{rr} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} E\PYGZhy{}value for CI (bound closest to null)}
+    \PYG{n}{e\PYGZus{}val\PYGZus{}ci} \PYG{o}{=} \PYG{l+m+mf}{1.0}  \PYG{c+c1}{\PYGZsh{} Default if CI includes null}
+    \PYG{k}{if} \PYG{n}{ci\PYGZus{}lower} \PYG{o+ow}{is} \PYG{o+ow}{not} \PYG{k+kc}{None} \PYG{o+ow}{and} \PYG{n}{ci\PYGZus{}upper} \PYG{o+ow}{is} \PYG{o+ow}{not} \PYG{k+kc}{None}\PYG{p}{:}
+        \PYG{c+c1}{\PYGZsh{} Check if CI includes null (RR = 1)}
+        \PYG{k}{if} \PYG{o+ow}{not} \PYG{p}{(}\PYG{n}{ci\PYGZus{}lower} \PYG{o}{\PYGZlt{}}\PYG{o}{=} \PYG{l+m+mf}{1.0} \PYG{o}{\PYGZlt{}}\PYG{o}{=} \PYG{n}{ci\PYGZus{}upper}\PYG{p}{)}\PYG{p}{:}
+            \PYG{k}{if} \PYG{n}{rr} \PYG{o}{\PYGZgt{}}\PYG{o}{=} \PYG{l+m+mi}{1}\PYG{p}{:}
+                \PYG{n}{e\PYGZus{}val\PYGZus{}ci} \PYG{o}{=} \PYG{n}{ci\PYGZus{}lower} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{ci\PYGZus{}lower} \PYG{o}{*} \PYG{p}{(}\PYG{n}{ci\PYGZus{}lower} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}
+            \PYG{k}{else}\PYG{p}{:}
+                \PYG{n}{e\PYGZus{}val\PYGZus{}ci} \PYG{o}{=} \PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{ci\PYGZus{}upper}\PYG{p}{)} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{ci\PYGZus{}upper}\PYG{p}{)} \PYG{o}{*} \PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{/}\PYG{n}{ci\PYGZus{}upper} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{n}{EValueResult}\PYG{p}{(}\PYG{n}{e\PYGZus{}value}\PYG{o}{=}\PYG{n}{e\PYGZus{}val}\PYG{p}{,} \PYG{n}{e\PYGZus{}value\PYGZus{}ci}\PYG{o}{=}\PYG{n}{e\PYGZus{}val\PYGZus{}ci}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}
+\end{MintedVerbatim}

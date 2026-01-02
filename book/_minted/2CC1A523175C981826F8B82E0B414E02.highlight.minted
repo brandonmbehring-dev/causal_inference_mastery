@@ -1,0 +1,23 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{using}\PYG{+w}{ }\PYG{n}{PyCall}
+
+\PYG{n}{econml}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{pyimport}\PYG{p}{(}\PYG{l+s}{\PYGZdq{}}\PYG{l+s}{econml.dml}\PYG{l+s}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{k}{function}\PYG{+w}{ }\PYG{n}{causal\PYGZus{}forest}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{covariates}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{n\PYGZus{}estimators}\PYG{o}{=}\PYG{l+m+mi}{100}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{honest}\PYG{o}{=}\PYG{n+nb}{true}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{model}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{econml}\PYG{o}{.}\PYG{n}{CausalForestDML}\PYG{p}{(}
+\PYG{+w}{        }\PYG{n}{n\PYGZus{}estimators}\PYG{o}{=}\PYG{n}{n\PYGZus{}estimators}\PYG{p}{,}
+\PYG{+w}{        }\PYG{n}{honest}\PYG{o}{=}\PYG{n}{honest}\PYG{p}{,}
+\PYG{+w}{        }\PYG{n}{cv}\PYG{o}{=}\PYG{l+m+mi}{5}\PYG{p}{,}
+\PYG{+w}{    }\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{model}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{o}{=}\PYG{n}{outcomes}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{T}\PYG{o}{=}\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{X}\PYG{o}{=}\PYG{n}{covariates}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{n}{cate}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{model}\PYG{o}{.}\PYG{n}{effect}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{ate\PYGZus{}inf}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{model}\PYG{o}{.}\PYG{n}{ate\PYGZus{}inference}\PYG{p}{(}\PYG{n}{X}\PYG{o}{=}\PYG{n}{covariates}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{p}{(}
+\PYG{+w}{        }\PYG{n}{cate}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{vec}\PYG{p}{(}\PYG{n}{cate}\PYG{p}{)}\PYG{p}{,}
+\PYG{+w}{        }\PYG{n}{ate}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{mean}\PYG{p}{(}\PYG{n}{cate}\PYG{p}{)}\PYG{p}{,}
+\PYG{+w}{        }\PYG{n}{ate\PYGZus{}se}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{ate\PYGZus{}inf}\PYG{o}{.}\PYG{n}{stderr\PYGZus{}mean}\PYG{p}{,}
+\PYG{+w}{    }\PYG{p}{)}
+\PYG{k}{end}
+\end{MintedVerbatim}

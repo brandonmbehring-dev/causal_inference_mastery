@@ -1,0 +1,19 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{generate\PYGZus{}heterogeneous\PYGZus{}dgp}\PYG{p}{(}\PYG{n}{n}\PYG{p}{:} \PYG{n+nb}{int} \PYG{o}{=} \PYG{l+m+mi}{500}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}DGP with heterogeneous treatment effects.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{X} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{randn}\PYG{p}{(}\PYG{n}{n}\PYG{p}{,} \PYG{l+m+mi}{2}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Confounded propensity}
+    \PYG{n}{logit} \PYG{o}{=} \PYG{l+m+mf}{0.5} \PYG{o}{*} \PYG{n}{X}\PYG{p}{[}\PYG{p}{:}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{e\PYGZus{}X} \PYG{o}{=} \PYG{l+m+mi}{1} \PYG{o}{/} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{exp}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{n}{logit}\PYG{p}{)}\PYG{p}{)}
+    \PYG{n}{T} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{binomial}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{e\PYGZus{}X}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Heterogeneous CATE: tau(X) = 2 + X[:, 0]}
+    \PYG{n}{true\PYGZus{}cate} \PYG{o}{=} \PYG{l+m+mi}{2} \PYG{o}{+} \PYG{n}{X}\PYG{p}{[}\PYG{p}{:}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{true\PYGZus{}ate} \PYG{o}{=} \PYG{l+m+mf}{2.0}  \PYG{c+c1}{\PYGZsh{} Mean of tau(X)}
+
+    \PYG{c+c1}{\PYGZsh{} Outcome with heterogeneity}
+    \PYG{n}{Y} \PYG{o}{=} \PYG{n}{true\PYGZus{}cate} \PYG{o}{*} \PYG{n}{T} \PYG{o}{+} \PYG{n}{X}\PYG{p}{[}\PYG{p}{:}\PYG{p}{,} \PYG{l+m+mi}{0}\PYG{p}{]} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{randn}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{n}{Y}\PYG{p}{,} \PYG{n}{T}\PYG{p}{,} \PYG{n}{X}\PYG{p}{,} \PYG{n}{true\PYGZus{}ate}
+\end{MintedVerbatim}

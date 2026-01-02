@@ -1,0 +1,18 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{did}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{check\PYGZus{}parallel\PYGZus{}trends}
+
+\PYG{c+c1}{\PYGZsh{} Test parallel trends with multiple pre\PYGZhy{}periods}
+\PYG{n}{pretrends\PYGZus{}result} \PYG{o}{=} \PYG{n}{check\PYGZus{}parallel\PYGZus{}trends}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{o}{=}\PYG{n}{D}\PYG{p}{,}
+    \PYG{n}{time}\PYG{o}{=}\PYG{n}{time\PYGZus{}periods}\PYG{p}{,}
+    \PYG{n}{unit\PYGZus{}id}\PYG{o}{=}\PYG{n}{unit\PYGZus{}ids}\PYG{p}{,}
+    \PYG{n}{treatment\PYGZus{}time}\PYG{o}{=}\PYG{n}{T\PYGZus{}star}\PYG{p}{,}  \PYG{c+c1}{\PYGZsh{} When treatment begins}
+    \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Pre\PYGZhy{}trends F\PYGZhy{}statistic: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{pretrends\PYGZus{}result}\PYG{o}{.}\PYG{n}{f\PYGZus{}stat}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Pre\PYGZhy{}trends p\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{pretrends\PYGZus{}result}\PYG{o}{.}\PYG{n}{p\PYGZus{}value}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{k}{if} \PYG{n}{pretrends\PYGZus{}result}\PYG{o}{.}\PYG{n}{p\PYGZus{}value} \PYG{o}{\PYGZlt{}} \PYG{l+m+mf}{0.05}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{WARNING: Evidence of pre\PYGZhy{}trends detected!}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

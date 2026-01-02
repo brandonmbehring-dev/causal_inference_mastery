@@ -1,0 +1,12 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{did}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{sun\PYGZus{}abraham\PYGZus{}ate}
+
+\PYG{n}{result\PYGZus{}sa} \PYG{o}{=} \PYG{n}{sun\PYGZus{}abraham\PYGZus{}ate}\PYG{p}{(}
+    \PYG{n}{data}\PYG{o}{=}\PYG{n}{data}\PYG{p}{,}
+    \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,}
+    \PYG{n}{cluster\PYGZus{}se}\PYG{o}{=}\PYG{k+kc}{True}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{SA Estimate: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result\PYGZus{}sa}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{estimate}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Cohort\PYGZhy{}event coefficients: }\PYG{l+s+si}{\PYGZob{}}\PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{result\PYGZus{}sa}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{coefficients}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{p}{)}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

@@ -1,0 +1,302 @@
+\begin{thebibliography}{46}
+\providecommand{\natexlab}[1]{#1}
+\providecommand{\url}[1]{\texttt{#1}}
+\expandafter\ifx\csname urlstyle\endcsname\relax
+  \providecommand{\doi}[1]{doi: #1}\else
+  \providecommand{\doi}{doi: \begingroup \urlstyle{rm}\Url}\fi
+
+\bibitem[Abadie and Gardeazabal(2003)]{abadie2003economic}
+Alberto Abadie and Javier Gardeazabal.
+\newblock The economic costs of conflict: A case study of the basque country.
+\newblock \emph{American Economic Review}, 93\penalty0 (1):\penalty0 113--132,
+  2003.
+
+\bibitem[Abadie and Imbens(2016)]{abadie2016matching}
+Alberto Abadie and Guido~W Imbens.
+\newblock Matching on the estimated propensity score.
+\newblock \emph{Econometrica}, 84\penalty0 (2):\penalty0 781--807, 2016.
+
+\bibitem[Abadie et~al.(2010)Abadie, Diamond, and
+  Hainmueller]{abadie2010synthetic}
+Alberto Abadie, Alexis Diamond, and Jens Hainmueller.
+\newblock Synthetic control methods for comparative case studies: Estimating
+  the effect of california's tobacco control program.
+\newblock \emph{Journal of the American Statistical Association}, 105\penalty0
+  (490):\penalty0 493--505, 2010.
+
+\bibitem[Abadie et~al.(2015)Abadie, Diamond, and
+  Hainmueller]{abadie2015comparative}
+Alberto Abadie, Alexis Diamond, and Jens Hainmueller.
+\newblock Comparative politics and the synthetic control method.
+\newblock \emph{American Journal of Political Science}, 59\penalty0
+  (2):\penalty0 495--510, 2015.
+
+\bibitem[Angrist and Krueger(1991)]{angrist1991draft}
+Joshua~D Angrist and Alan~B Krueger.
+\newblock Does compulsory school attendance affect schooling and earnings?
+\newblock \emph{Quarterly Journal of Economics}, 106\penalty0 (4):\penalty0
+  979--1014, 1991.
+
+\bibitem[Aronow and Samii(2017)]{aronow2017estimating}
+Peter~M Aronow and Cyrus Samii.
+\newblock Estimating average causal effects under general interference, with
+  application to a social network experiment.
+\newblock \emph{The Annals of Applied Statistics}, 11\penalty0 (4):\penalty0
+  1912--1947, 2017.
+
+\bibitem[Athey and Imbens(2016)]{athey2016recursive}
+Susan Athey and Guido Imbens.
+\newblock Recursive partitioning for heterogeneous causal effects.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 113\penalty0
+  (27):\penalty0 7353--7360, 2016.
+
+\bibitem[Bang and Robins(2005)]{bang2005doubly}
+Heejung Bang and James~M Robins.
+\newblock Doubly robust estimation in missing data and causal inference models.
+\newblock \emph{Biometrics}, 61\penalty0 (4):\penalty0 962--973, 2005.
+
+\bibitem[Ben-Michael et~al.(2021)Ben-Michael, Feller, and
+  Rothstein]{benmichael2021augmented}
+Eli Ben-Michael, Avi Feller, and Jesse Rothstein.
+\newblock The augmented synthetic control method.
+\newblock \emph{Journal of the American Statistical Association}, 116\penalty0
+  (536):\penalty0 1789--1803, 2021.
+
+\bibitem[Callaway and Sant'Anna(2021)]{callaway2021difference}
+Brantly Callaway and Pedro H~C Sant'Anna.
+\newblock Difference-in-differences with multiple time periods.
+\newblock \emph{Journal of Econometrics}, 225\penalty0 (2):\penalty0 200--230,
+  2021.
+
+\bibitem[Calonico et~al.(2014)Calonico, Cattaneo, and
+  Titiunik]{calonico2014robust}
+Sebastian Calonico, Matias~D Cattaneo, and Roc{\'\i}o Titiunik.
+\newblock Robust nonparametric confidence intervals for
+  regression-discontinuity designs.
+\newblock \emph{Econometrica}, 82\penalty0 (6):\penalty0 2295--2326, 2014.
+
+\bibitem[Cameron et~al.(2008)Cameron, Gelbach, and
+  Miller]{cameron2008bootstrap}
+A~Colin Cameron, Jonah~B Gelbach, and Douglas~L Miller.
+\newblock Bootstrap-based improvements for inference with clustered errors.
+\newblock \emph{Review of Economics and Statistics}, 90\penalty0 (3):\penalty0
+  414--427, 2008.
+
+\bibitem[Card et~al.(2015)Card, Lee, Pei, and Weber]{card2015inference}
+David Card, David~S Lee, Zhuan Pei, and Andrea Weber.
+\newblock Inference on causal effects in a generalized regression kink design.
+\newblock \emph{Econometrica}, 83\penalty0 (6):\penalty0 2453--2483, 2015.
+
+\bibitem[Chernozhukov et~al.(2018)Chernozhukov, Chetverikov, Demirer, Duflo,
+  Hansen, Newey, and Robins]{chernozhukov2018dml}
+Victor Chernozhukov, Denis Chetverikov, Mert Demirer, Esther Duflo, Christian
+  Hansen, Whitney Newey, and James Robins.
+\newblock Double/debiased machine learning for treatment and structural
+  parameters.
+\newblock \emph{The Econometrics Journal}, 21\penalty0 (1):\penalty0 C1--C68,
+  2018.
+
+\bibitem[Chernozhukov et~al.(2021)Chernozhukov, W{\"u}thrich, and
+  Zhu]{chernozhukov2021exact}
+Victor Chernozhukov, Kaspar W{\"u}thrich, and Yinchu Zhu.
+\newblock An exact and robust conformal inference method for counterfactual and
+  synthetic controls.
+\newblock \emph{Journal of the American Statistical Association}, 116\penalty0
+  (536):\penalty0 1849--1864, 2021.
+
+\bibitem[Chetty et~al.(2011)Chetty, Friedman, Olsen, and
+  Pistaferri]{chetty2011adjustment}
+Raj Chetty, John~N Friedman, Tore Olsen, and Luigi Pistaferri.
+\newblock Adjustment costs, firm responses, and micro vs. macro labor supply
+  elasticities: Evidence from danish tax records.
+\newblock \emph{Quarterly Journal of Economics}, 126\penalty0 (2):\penalty0
+  749--804, 2011.
+
+\bibitem[Firpo(2007)]{firpo2007efficient}
+Sergio Firpo.
+\newblock Efficient semiparametric estimation of quantile treatment effects.
+\newblock \emph{Econometrica}, 75\penalty0 (1):\penalty0 259--276, 2007.
+
+\bibitem[Firpo et~al.(2009)Firpo, Fortin, and Lemieux]{firpo2009unconditional}
+Sergio Firpo, Nicole~M Fortin, and Thomas Lemieux.
+\newblock Unconditional quantile regressions.
+\newblock \emph{Econometrica}, 77\penalty0 (3):\penalty0 953--973, 2009.
+
+\bibitem[Fisher(1935)]{fisher1935design}
+Ronald~A Fisher.
+\newblock The design of experiments.
+\newblock 1935.
+
+\bibitem[Gelman and Imbens(2019)]{gelman2019high}
+Andrew Gelman and Guido Imbens.
+\newblock Why high-order polynomials should not be used in regression
+  discontinuity designs.
+\newblock \emph{Journal of Business \& Economic Statistics}, 37\penalty0
+  (3):\penalty0 447--456, 2019.
+
+\bibitem[Goodman-Bacon(2021)]{goodman2021difference}
+Andrew Goodman-Bacon.
+\newblock Difference-in-differences with variation in treatment timing.
+\newblock \emph{Journal of Econometrics}, 225\penalty0 (2):\penalty0 254--277,
+  2021.
+
+\bibitem[Heckman and Vytlacil(1999)]{heckman1999local}
+James~J Heckman and Edward~J Vytlacil.
+\newblock Local instrumental variables and latent variable models for
+  identifying and bounding treatment effects.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 96\penalty0
+  (8):\penalty0 4730--4734, 1999.
+
+\bibitem[Heckman and Vytlacil(2005)]{heckman2005structural}
+James~J Heckman and Edward~J Vytlacil.
+\newblock Structural equations, treatment effects, and econometric policy
+  evaluation.
+\newblock \emph{Econometrica}, 73\penalty0 (3):\penalty0 669--738, 2005.
+
+\bibitem[Hirano et~al.(2003)Hirano, Imbens, and Ridder]{hirano2003efficient}
+Keisuke Hirano, Guido~W Imbens, and Geert Ridder.
+\newblock Efficient estimation of average treatment effects using the estimated
+  propensity score.
+\newblock \emph{Econometrica}, 71\penalty0 (4):\penalty0 1161--1189, 2003.
+
+\bibitem[Holland(1986)]{holland1986statistics}
+Paul~W Holland.
+\newblock Statistics and causal inference.
+\newblock \emph{Journal of the American Statistical Association}, 81\penalty0
+  (396):\penalty0 945--960, 1986.
+
+\bibitem[Imbens and Kalyanaraman(2012)]{imbens2012optimal}
+Guido Imbens and Karthik Kalyanaraman.
+\newblock Optimal bandwidth choice for the regression discontinuity estimator.
+\newblock \emph{Review of Economic Studies}, 79\penalty0 (3):\penalty0
+  933--959, 2012.
+
+\bibitem[Imbens and Angrist(1994)]{imbens1994identification}
+Guido~W Imbens and Joshua~D Angrist.
+\newblock Identification and estimation of local average treatment effects.
+\newblock \emph{Econometrica}, 62\penalty0 (2):\penalty0 467--475, 1994.
+
+\bibitem[Imbens and Rubin(2015)]{imbens2015causal}
+Guido~W Imbens and Donald~B Rubin.
+\newblock \emph{Causal Inference for Statistics, Social, and Biomedical
+  Sciences: An Introduction}.
+\newblock Cambridge University Press, 2015.
+
+\bibitem[Koenker and Bassett~Jr(1978)]{koenker1978regression}
+Roger Koenker and Gilbert Bassett~Jr.
+\newblock Regression quantiles.
+\newblock \emph{Econometrica}, 46\penalty0 (1):\penalty0 33--50, 1978.
+
+\bibitem[K{\"u}nzel et~al.(2019)K{\"u}nzel, Sekhon, Bickel, and
+  Yu]{kunzel2019metalearners}
+S{\"o}ren~R K{\"u}nzel, Jasjeet~S Sekhon, Peter~J Bickel, and Bin Yu.
+\newblock Metalearners for estimating heterogeneous treatment effects using
+  machine learning.
+\newblock \emph{Proceedings of the National Academy of Sciences}, 116\penalty0
+  (10):\penalty0 4156--4165, 2019.
+
+\bibitem[Lee(2008)]{lee2008randomized}
+David~S Lee.
+\newblock Randomized experiments from non-random selection in u.s. house
+  elections.
+\newblock \emph{Journal of Econometrics}, 142\penalty0 (2):\penalty0 675--697,
+  2008.
+
+\bibitem[Lin(2013)]{lin2013agnostic}
+Winston Lin.
+\newblock Agnostic notes on regression adjustments to experimental data:
+  Reexamining freedman's critique.
+\newblock \emph{The Annals of Applied Statistics}, 7\penalty0 (1):\penalty0
+  295--318, 2013.
+
+\bibitem[McCrary(2008)]{mccrary2008manipulation}
+Justin McCrary.
+\newblock Manipulation of the running variable in the regression discontinuity
+  design: A density test.
+\newblock \emph{Journal of Econometrics}, 142\penalty0 (2):\penalty0 698--714,
+  2008.
+
+\bibitem[Neyman(1990)]{neyman1923application}
+Jerzy Neyman.
+\newblock On the application of probability theory to agricultural experiments.
+\newblock \emph{Statistical Science}, 5\penalty0 (4):\penalty0 465--472, 1990.
+\newblock Translated from Polish original of 1923.
+
+\bibitem[Phipson and Smyth(2010)]{phipson2010permutation}
+Belinda Phipson and Gordon~K Smyth.
+\newblock Permutation p-values should never be zero: Calculating exact p-values
+  when permutations are randomly drawn.
+\newblock \emph{Statistical Applications in Genetics and Molecular Biology},
+  9\penalty0 (1), 2010.
+
+\bibitem[Robins et~al.(1994)Robins, Rotnitzky, and Zhao]{robins1994estimation}
+James~M Robins, Andrea Rotnitzky, and Lue~Ping Zhao.
+\newblock Estimation of regression coefficients when some regressors are not
+  always observed.
+\newblock \emph{Journal of the American Statistical Association}, 89\penalty0
+  (427):\penalty0 846--866, 1994.
+
+\bibitem[Robinson(1988)]{robinson1988root}
+Peter~M Robinson.
+\newblock Root-n-consistent semiparametric regression.
+\newblock \emph{Econometrica}, 56\penalty0 (4):\penalty0 931--954, 1988.
+
+\bibitem[Rosenbaum(2002)]{rosenbaum2002observational}
+Paul~R Rosenbaum.
+\newblock \emph{Observational Studies}.
+\newblock Springer, 2nd edition, 2002.
+
+\bibitem[Rubin(1974)]{rubin1974estimating}
+Donald~B Rubin.
+\newblock Estimating causal effects of treatments in randomized and
+  nonrandomized studies.
+\newblock \emph{Journal of Educational Psychology}, 66\penalty0 (5):\penalty0
+  688--701, 1974.
+
+\bibitem[Rubin(1978)]{rubin1978bayesian}
+Donald~B Rubin.
+\newblock Bayesian inference for causal effects: The role of randomization.
+\newblock \emph{The Annals of Statistics}, 6\penalty0 (1):\penalty0 34--58,
+  1978.
+
+\bibitem[Rubin(1980)]{rubin1980comment}
+Donald~B Rubin.
+\newblock Comment on ``randomization analysis of experimental data: The fisher
+  randomization test''.
+\newblock \emph{Journal of the American Statistical Association}, 75\penalty0
+  (371):\penalty0 591--593, 1980.
+
+\bibitem[Saez(2010)]{saez2010taxpayers}
+Emmanuel Saez.
+\newblock Do taxpayers bunch at kink points?
+\newblock \emph{American Economic Journal: Economic Policy}, 2\penalty0
+  (3):\penalty0 180--212, 2010.
+
+\bibitem[Sun and Abraham(2021)]{sun2021estimating}
+Liyang Sun and Sarah Abraham.
+\newblock Estimating dynamic treatment effects in event studies with
+  heterogeneous treatment effects.
+\newblock \emph{Journal of Econometrics}, 225\penalty0 (2):\penalty0 175--199,
+  2021.
+
+\bibitem[van~der Laan and Rubin(2006)]{vdl2011tmle}
+Mark~J van~der Laan and Daniel Rubin.
+\newblock Targeted maximum likelihood estimation.
+\newblock \emph{The International Journal of Biostatistics}, 2\penalty0 (1),
+  2006.
+
+\bibitem[VanderWeele and Ding(2017)]{vanderweele2017sensitivity}
+Tyler~J VanderWeele and Peng Ding.
+\newblock Sensitivity analysis in observational research: Introducing the
+  e-value.
+\newblock \emph{Annals of Internal Medicine}, 167\penalty0 (4):\penalty0
+  268--274, 2017.
+
+\bibitem[Wager and Athey(2018)]{wager2018estimation}
+Stefan Wager and Susan Athey.
+\newblock Estimation and inference of heterogeneous treatment effects using
+  random forests.
+\newblock \emph{Journal of the American Statistical Association}, 113\penalty0
+  (523):\penalty0 1228--1242, 2018.
+
+\end{thebibliography}

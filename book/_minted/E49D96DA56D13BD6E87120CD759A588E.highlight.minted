@@ -1,0 +1,16 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{balance\PYGZus{}summary}\PYG{p}{(}\PYG{n}{smd\PYGZus{}after}\PYG{p}{,} \PYG{n}{vr\PYGZus{}after}\PYG{p}{,} \PYG{n}{smd\PYGZus{}before}\PYG{p}{,} \PYG{n}{vr\PYGZus{}before}\PYG{p}{,} \PYG{n}{threshold}\PYG{o}{=}\PYG{l+m+mf}{0.1}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Summarize covariate balance improvement.}
+
+\PYG{l+s+sd}{    Returns dict with:}
+\PYG{l+s+sd}{    \PYGZhy{} n\PYGZus{}balanced: Covariates with |SMD| \PYGZlt{} threshold after matching}
+\PYG{l+s+sd}{    \PYGZhy{} improvement: Reduction in mean |SMD|}
+\PYG{l+s+sd}{    \PYGZhy{} all\PYGZus{}balanced: True if ALL covariates balanced}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{n\PYGZus{}balanced} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{smd\PYGZus{}after}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{threshold}\PYG{p}{)}
+    \PYG{n}{mean\PYGZus{}before} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{smd\PYGZus{}before}\PYG{p}{)}\PYG{p}{)}
+    \PYG{n}{mean\PYGZus{}after} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{smd\PYGZus{}after}\PYG{p}{)}\PYG{p}{)}
+    \PYG{n}{improvement} \PYG{o}{=} \PYG{p}{(}\PYG{n}{mean\PYGZus{}before} \PYG{o}{\PYGZhy{}} \PYG{n}{mean\PYGZus{}after}\PYG{p}{)} \PYG{o}{/} \PYG{n}{mean\PYGZus{}before}
+    \PYG{n}{all\PYGZus{}balanced} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{all}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{smd\PYGZus{}after}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{n}{threshold}\PYG{p}{)}
+    \PYG{k}{return} \PYG{p}{\PYGZob{}}\PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

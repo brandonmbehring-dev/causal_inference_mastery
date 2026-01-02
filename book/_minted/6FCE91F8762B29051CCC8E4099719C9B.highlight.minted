@@ -1,0 +1,38 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{bunching}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{bunching\PYGZus{}estimator}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+
+\PYG{c+c1}{\PYGZsh{} Simulate income distribution with bunching}
+\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{seed}\PYG{p}{(}\PYG{l+m+mi}{42}\PYG{p}{)}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{10000}
+\PYG{n}{kink} \PYG{o}{=} \PYG{l+m+mi}{50000}  \PYG{c+c1}{\PYGZsh{} Tax kink at \PYGZdl{}50k}
+\PYG{n}{t1}\PYG{p}{,} \PYG{n}{t2} \PYG{o}{=} \PYG{l+m+mf}{0.25}\PYG{p}{,} \PYG{l+m+mf}{0.35}  \PYG{c+c1}{\PYGZsh{} Tax rates below/above kink}
+
+\PYG{c+c1}{\PYGZsh{} Counterfactual income (log\PYGZhy{}normal)}
+\PYG{n}{z\PYGZus{}star} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{exp}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{log}\PYG{p}{(}\PYG{l+m+mi}{45000}\PYG{p}{)}\PYG{p}{,} \PYG{l+m+mf}{0.4}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Behavioral response: those above kink may bunch}
+\PYG{n}{elasticity\PYGZus{}true} \PYG{o}{=} \PYG{l+m+mf}{0.3}
+\PYG{n}{log\PYGZus{}ntr\PYGZus{}change} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{log}\PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{t1}\PYG{p}{)} \PYG{o}{/} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{t2}\PYG{p}{)}\PYG{p}{)}
+\PYG{n}{delta\PYGZus{}z} \PYG{o}{=} \PYG{n}{kink} \PYG{o}{*} \PYG{n}{elasticity\PYGZus{}true} \PYG{o}{*} \PYG{n}{log\PYGZus{}ntr\PYGZus{}change}
+
+\PYG{c+c1}{\PYGZsh{} Bunchers: those in [kink, kink + delta\PYGZus{}z] move to kink}
+\PYG{n}{bunchers} \PYG{o}{=} \PYG{p}{(}\PYG{n}{z\PYGZus{}star} \PYG{o}{\PYGZgt{}}\PYG{o}{=} \PYG{n}{kink}\PYG{p}{)} \PYG{o}{\PYGZam{}} \PYG{p}{(}\PYG{n}{z\PYGZus{}star} \PYG{o}{\PYGZlt{}}\PYG{o}{=} \PYG{n}{kink} \PYG{o}{+} \PYG{n}{delta\PYGZus{}z}\PYG{p}{)}
+\PYG{n}{z\PYGZus{}observed} \PYG{o}{=} \PYG{n}{z\PYGZus{}star}\PYG{o}{.}\PYG{n}{copy}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{z\PYGZus{}observed}\PYG{p}{[}\PYG{n}{bunchers}\PYG{p}{]} \PYG{o}{=} \PYG{n}{kink}
+
+\PYG{c+c1}{\PYGZsh{} Estimate bunching}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{bunching\PYGZus{}estimator}\PYG{p}{(}
+    \PYG{n}{z}\PYG{o}{=}\PYG{n}{z\PYGZus{}observed}\PYG{p}{,}
+    \PYG{n}{kink}\PYG{o}{=}\PYG{n}{kink}\PYG{p}{,}
+    \PYG{n}{t1}\PYG{o}{=}\PYG{n}{t1}\PYG{p}{,}
+    \PYG{n}{t2}\PYG{o}{=}\PYG{n}{t2}\PYG{p}{,}
+    \PYG{n}{poly\PYGZus{}degree}\PYG{o}{=}\PYG{l+m+mi}{7}\PYG{p}{,}
+    \PYG{n}{bunching\PYGZus{}window}\PYG{o}{=}\PYG{p}{(}\PYG{n}{kink} \PYG{o}{\PYGZhy{}} \PYG{l+m+mi}{2000}\PYG{p}{,} \PYG{n}{kink} \PYG{o}{+} \PYG{l+m+mi}{500}\PYG{p}{)}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Excess mass: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{excess\PYGZus{}mass}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Normalized bunching: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{normalized\PYGZus{}b}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Estimated elasticity: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{elasticity}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (true: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{elasticity\PYGZus{}true}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Standard error: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{se}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

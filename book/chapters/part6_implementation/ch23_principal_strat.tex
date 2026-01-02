@@ -1,0 +1,429 @@
+\chapter{Principal Stratification}
+\label{ch:principal-strat}
+
+\section{Introduction}
+
+Principal stratification \parencite{frangakis2002principal} classifies units by their joint potential outcomes for intermediate or mediating variables, enabling causal inference in the presence of post-treatment complications.
+
+\begin{definition}[Principal Stratum]
+For treatment $Z$ and intermediate variable $D$, the principal stratum is defined by the pair $(D(0), D(1))$---the potential values of $D$ under control and treatment.
+\end{definition}
+
+This chapter develops:
+\begin{enumerate}
+\item \textbf{CACE}: Complier Average Causal Effect (IV setting)
+\item \textbf{SACE}: Survivor Average Causal Effect (truncation by death)
+\item \textbf{Bounds}: Partial identification without full assumptions
+\end{enumerate}
+
+
+\section{The Four Principal Strata}
+
+\subsection{Classification}
+
+With binary assignment $Z$ and binary treatment receipt $D$:
+
+\begin{table}[h]
+\centering
+\caption{Principal Strata with Binary D}
+\begin{tabular}{lccl}
+\toprule
+Stratum & $D(0)$ & $D(1)$ & Behavior \\
+\midrule
+Compliers (C) & 0 & 1 & Take treatment iff assigned \\
+Always-Takers (AT) & 1 & 1 & Always take treatment \\
+Never-Takers (NT) & 0 & 0 & Never take treatment \\
+Defiers (D) & 1 & 0 & Do opposite of assignment \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Identification from Data}
+
+Stratum membership is partially observable:
+
+\begin{table}[h]
+\centering
+\caption{Observable Groups and Strata Mixtures}
+\begin{tabular}{ccl}
+\toprule
+$Z$ & $D$ & Possible Strata \\
+\midrule
+1 & 1 & Complier \textit{or} Always-Taker \\
+1 & 0 & Never-Taker \textit{or} Defier \\
+0 & 1 & Always-Taker \textit{or} Defier \\
+0 & 0 & Complier \textit{or} Never-Taker \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{insight}
+Key identification cases:
+\begin{itemize}
+\item $(Z=0, D=1)$: Definitely Always-Taker or Defier
+\item $(Z=1, D=0)$: Definitely Never-Taker or Defier
+\end{itemize}
+Under monotonicity (no defiers), these become definitive identifications.
+\end{insight}
+
+
+\section{CACE: Complier Average Causal Effect}
+
+\subsection{Definition}
+
+\begin{definition}[Complier Average Causal Effect]
+\begin{equation}
+\text{CACE} = E[Y(1) - Y(0) \mid D(0) = 0, D(1) = 1]
+\end{equation}
+The treatment effect for units who comply with their assignment.
+\end{definition}
+
+\subsection{Identification Assumptions}
+
+\begin{assumption}[CACE Identification]
+\label{ass:cace}
+\begin{enumerate}
+\item \textbf{Independence}: $Z \perp\!\!\!\perp (Y(0), Y(1), D(0), D(1))$
+\item \textbf{Exclusion}: $Y(d, z) = Y(d)$ for all $d, z$ (assignment affects outcome only through treatment)
+\item \textbf{Monotonicity}: $D(1) \geq D(0)$ for all units (no defiers)
+\item \textbf{Relevance}: $P(D(1) = 1, D(0) = 0) > 0$ (some compliers exist)
+\end{enumerate}
+\end{assumption}
+
+\begin{proposition}[CACE = LATE]
+Under Assumption~\ref{ass:cace}:
+\begin{equation}
+\text{CACE} = \frac{E[Y \mid Z = 1] - E[Y \mid Z = 0]}{E[D \mid Z = 1] - E[D \mid Z = 0]} = \frac{\text{Reduced Form}}{\text{First Stage}}
+\end{equation}
+\end{proposition}
+
+\subsection{Strata Proportions}
+
+Under monotonicity, strata proportions are identified:
+\begin{align}
+\pi_C &= P(D = 1 \mid Z = 1) - P(D = 1 \mid Z = 0) \label{eq:pi-c}\\
+\pi_{AT} &= P(D = 1 \mid Z = 0) \label{eq:pi-at}\\
+\pi_{NT} &= 1 - P(D = 1 \mid Z = 1) \label{eq:pi-nt}
+\end{align}
+
+Note: $\pi_C + \pi_{AT} + \pi_{NT} = 1$ (defiers ruled out).
+
+\subsection{Implementation: 2SLS Approach}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.principal_stratification import cace_2sls
+
+result = cace_2sls(
+    outcome=Y,
+    treatment=D,            # Actual treatment received
+    instrument=Z,           # Random assignment
+    covariates=X,           # Optional controls
+    alpha=0.05,
+    inference="robust",     # HC robust SEs
+)
+
+# CACE estimate
+print(f"CACE: {result['cace']:.4f}")
+print(f"SE: {result['se']:.4f}")
+print(f"95% CI: [{result['ci_lower']:.4f}, {result['ci_upper']:.4f}]")
+
+# Strata proportions
+strata = result['strata_proportions']
+print(f"\nCompliers: {strata['compliers']:.1%}")
+print(f"Always-takers: {strata['always_takers']:.1%}")
+print(f"Never-takers: {strata['never_takers']:.1%}")
+
+# First-stage diagnostics
+print(f"\nFirst-stage F: {result['first_stage_f']:.1f}")
+\end{minted}
+
+\subsection{Wald Estimator (Simple Case)}
+
+For the simple case without covariates:
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.principal_stratification import wald_estimator
+
+result = wald_estimator(
+    outcome=Y,
+    treatment=D,
+    instrument=Z,
+)
+
+# Direct ratio: (E[Y|Z=1] - E[Y|Z=0]) / (E[D|Z=1] - E[D|Z=0])
+print(f"Wald CACE: {result['cace']:.4f}")
+print(f"Reduced form: {result['reduced_form']:.4f}")
+print(f"First stage: {result['first_stage_coef']:.4f}")
+\end{minted}
+
+\subsection{EM Algorithm for CACE}
+
+For maximum likelihood estimation with latent strata:
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.principal_stratification import cace_em
+
+result = cace_em(
+    outcome=Y,
+    treatment=D,
+    instrument=Z,
+    max_iter=100,
+    tol=1e-6,
+)
+
+print(f"CACE (EM): {result['cace']:.4f}")
+print(f"SE (Louis formula): {result['se']:.4f}")
+\end{minted}
+
+The EM algorithm:
+\begin{enumerate}
+\item \textbf{E-step}: Compute posterior strata probabilities given data and current parameters
+\item \textbf{M-step}: Update strata proportions and outcome means
+\item Repeat until convergence
+\end{enumerate}
+
+
+\section{SACE: Survivor Average Causal Effect}
+
+\subsection{The Truncation by Death Problem}
+
+When outcomes are undefined for non-survivors:
+\begin{itemize}
+\item $S_i = 1$: Unit survives, $Y_i$ observed
+\item $S_i = 0$: Unit dies, $Y_i$ undefined
+\end{itemize}
+
+\begin{definition}[SACE]
+\begin{equation}
+\text{SACE} = E[Y(1) - Y(0) \mid S(0) = 1, S(1) = 1]
+\end{equation}
+The treatment effect for ``always-survivors''---those who would survive under both treatment conditions.
+\end{definition}
+
+\subsection{Survival Strata}
+
+\begin{table}[h]
+\centering
+\caption{Principal Strata for Survival}
+\begin{tabular}{lccl}
+\toprule
+Stratum & $S(0)$ & $S(1)$ & Interpretation \\
+\midrule
+Always-Survivors (AS) & 1 & 1 & Would survive regardless \\
+Protected (P) & 0 & 1 & Treatment enables survival \\
+Harmed (H) & 1 & 0 & Treatment causes death \\
+Never-Survivors (NS) & 0 & 0 & Would not survive regardless \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Identification Challenge}
+
+SACE is generally not point-identified:
+\begin{itemize}
+\item $E[Y(0) \mid \text{AS}]$: Need survivors under $D=0$ who would also survive under $D=1$
+\item $E[Y(1) \mid \text{AS}]$: Need survivors under $D=1$ who would also survive under $D=0$
+\item Selection into survival confounds identification
+\end{itemize}
+
+\subsection{SACE Bounds}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.principal_stratification import sace_bounds
+
+result = sace_bounds(
+    outcome=Y,           # NaN for non-survivors
+    treatment=D,
+    survival=S,          # 1 if survived, 0 otherwise
+    instrument=Z,        # Optional
+    monotonicity="selection",  # Assume S(1) >= S(0)
+)
+
+print(f"SACE bounds: [{result['lower_bound']:.3f}, {result['upper_bound']:.3f}]")
+print(f"Point estimate: {result['sace']:.3f}")
+print(f"Survival rate (treated): {result['proportion_survivors_treat']:.1%}")
+print(f"Survival rate (control): {result['proportion_survivors_control']:.1%}")
+\end{minted}
+
+\subsection{Monotonicity Assumptions}
+
+\begin{table}[h]
+\centering
+\caption{SACE Bounds by Assumption}
+\begin{tabular}{lll}
+\toprule
+Assumption & Effect & Interpretation \\
+\midrule
+None & Widest bounds (Lee) & No restrictions \\
+Selection: $S(1) \geq S(0)$ & Tighter & Treatment never harms survival \\
+Both (+ treatment mono) & Tightest & Combined restrictions \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Sensitivity Analysis}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.principal_stratification import sace_sensitivity
+
+sens = sace_sensitivity(
+    outcome=Y,
+    treatment=D,
+    survival=S,
+    alpha_range=(0.0, 1.0),  # Sensitivity parameter range
+    n_points=50,
+)
+
+# Plot bounds as function of sensitivity parameter
+import matplotlib.pyplot as plt
+plt.fill_between(sens['alpha'], sens['lower_bound'], sens['upper_bound'],
+                 alpha=0.3, label='Bounds')
+plt.plot(sens['alpha'], sens['sace'], 'k--', label='Midpoint')
+plt.xlabel(r'$\alpha$ (Selection strength)')
+plt.ylabel('SACE')
+plt.legend()
+\end{minted}
+
+
+\section{Partial Identification and Bounds}
+
+\subsection{When Point Identification Fails}
+
+Without monotonicity or with weaker instruments:
+\begin{itemize}
+\item Defiers may exist
+\item Strata proportions not uniquely identified
+\item Only bounds on CACE available
+\end{itemize}
+
+\subsection{Manski-Type Bounds}
+
+The worst-case bounds use the outcome support:
+\begin{align}
+\text{CACE}_{\text{lower}} &= \frac{E[Y \mid Z = 1] - Y_{\max} \cdot P(D = 0 \mid Z = 1) - E[Y \mid Z = 0]}{\pi_C} \\
+\text{CACE}_{\text{upper}} &= \frac{E[Y \mid Z = 1] - Y_{\min} \cdot P(D = 0 \mid Z = 1) - E[Y \mid Z = 0]}{\pi_C}
+\end{align}
+
+
+\section{Implementation Details}
+
+\subsection{Complete CACE Example}
+
+\begin{minted}[fontsize=\small]{python}
+import numpy as np
+from causal_inference.principal_stratification import (
+    cace_2sls,
+    wald_estimator,
+    cace_em,
+)
+
+# Simulate data with known strata
+np.random.seed(42)
+n = 1000
+
+# Random assignment
+Z = np.random.binomial(1, 0.5, n)
+
+# True strata: 70% compliers, 15% always-takers, 15% never-takers
+strata = np.random.choice([0, 1, 2], n, p=[0.70, 0.15, 0.15])
+
+# Treatment based on stratum
+D = np.where(strata == 0, Z,       # Compliers: follow Z
+     np.where(strata == 1, 1,       # Always-takers: D=1
+              0))                    # Never-takers: D=0
+
+# Outcome with true CACE = 2.0 (for compliers only)
+true_cace = 2.0
+Y = 1.0 + true_cace * D + np.random.normal(0, 1, n)
+
+# Compare estimators
+wald = wald_estimator(Y, D, Z)
+tsls = cace_2sls(Y, D, Z)
+em = cace_em(Y, D, Z)
+
+print("=== CACE Estimates (true = 2.00) ===")
+print(f"Wald:  {wald['cace']:.4f} (SE: {wald['se']:.4f})")
+print(f"2SLS:  {tsls['cace']:.4f} (SE: {tsls['se']:.4f})")
+print(f"EM:    {em['cace']:.4f} (SE: {em['se']:.4f})")
+
+# Strata proportions
+print("\n=== Strata Proportions (true: C=70%, AT=15%, NT=15%) ===")
+print(f"Compliers:     {tsls['strata_proportions']['compliers']:.1%}")
+print(f"Always-takers: {tsls['strata_proportions']['always_takers']:.1%}")
+print(f"Never-takers:  {tsls['strata_proportions']['never_takers']:.1%}")
+\end{minted}
+
+
+\section{Monte Carlo Validation}
+
+\subsection{Test 1: CACE via 2SLS}
+
+\begin{table}[h]
+\centering
+\caption{CACE Monte Carlo Results ($n=500$, 1,000 runs)}
+\begin{tabular}{lccccc}
+\toprule
+Estimator & True & Mean Est. & Bias & Coverage & SE Accuracy \\
+\midrule
+Wald & 2.00 & 2.01 & 0.01 & 94.8\% & 3.1\% \\
+2SLS & 2.00 & 2.00 & 0.00 & 95.2\% & 2.4\% \\
+EM & 2.00 & 2.01 & 0.01 & 94.1\% & 5.8\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Test 2: SACE Bounds Coverage}
+
+\begin{table}[h]
+\centering
+\caption{SACE Bounds ($n=1000$, 500 runs)}
+\begin{tabular}{lcccc}
+\toprule
+Monotonicity & True SACE & Avg Lower & Avg Upper & Contains True \\
+\midrule
+None & 1.50 & 0.82 & 2.31 & 99.4\% \\
+Selection & 1.50 & 1.21 & 1.89 & 96.8\% \\
+Both & 1.50 & 1.38 & 1.72 & 95.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Discussion}
+
+\subsection{Key Takeaways}
+
+\begin{enumerate}
+\item \textbf{Principal strata}: Classification by joint potential outcomes
+\item \textbf{CACE = LATE}: Under monotonicity, effect for compliers equals IV estimand
+\item \textbf{SACE}: Requires bounds without strong assumptions on survival selection
+\item \textbf{Strata proportions}: Identified from first-stage under monotonicity
+\end{enumerate}
+
+\subsection{Practical Recommendations}
+
+\begin{enumerate}
+\item Report strata proportions alongside CACE---they determine external validity
+\item Check first-stage F $> 10$ for weak instrument diagnostics
+\item Consider EM for efficiency when normality is plausible
+\item Always report bounds when assumptions are questionable
+\item Use sensitivity analysis to assess robustness to violations
+\end{enumerate}
+
+\subsection{Limitations}
+
+\begin{itemize}
+\item \textbf{Monotonicity untestable}: Cannot verify no defiers from data alone
+\item \textbf{Exclusion untestable}: Direct effect of $Z$ on $Y$ not refutable
+\item \textbf{External validity}: CACE is local to compliers, not ATE
+\item \textbf{Covariate adjustment}: EM algorithm doesn't incorporate covariates
+\end{itemize}
+
+\subsection{Connection to Other Methods}
+
+\begin{itemize}
+\item \textbf{IV} (Chapter~\ref{ch:iv}): Principal stratification provides interpretation for LATE
+\item \textbf{Mediation} (Chapter~\ref{ch:mediation}): Principal strata address post-treatment confounding
+\item \textbf{Bounds} (Chapter~\ref{ch:bounds}): Partial identification when strata are ambiguous
+\item \textbf{Bayesian}: Full posterior on strata membership (Chapter~\ref{ch:bayesian})
+\end{itemize}

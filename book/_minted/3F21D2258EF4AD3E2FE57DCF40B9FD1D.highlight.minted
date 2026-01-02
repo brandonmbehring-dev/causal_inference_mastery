@@ -1,0 +1,33 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{validate\PYGZus{}monte\PYGZus{}carlo\PYGZus{}results}\PYG{p}{(}\PYG{n}{estimates}\PYG{p}{,} \PYG{n}{ses}\PYG{p}{,} \PYG{n}{ci\PYGZus{}lowers}\PYG{p}{,} \PYG{n}{ci\PYGZus{}uppers}\PYG{p}{,} \PYG{n}{true\PYGZus{}value}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Validate Monte Carlo simulation results.}
+
+\PYG{l+s+sd}{    Parameters}
+\PYG{l+s+sd}{    \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{l+s+sd}{    estimates : list}
+\PYG{l+s+sd}{        Point estimates from each replication}
+\PYG{l+s+sd}{    ses : list}
+\PYG{l+s+sd}{        Standard error estimates}
+\PYG{l+s+sd}{    ci\PYGZus{}lowers, ci\PYGZus{}uppers : list}
+\PYG{l+s+sd}{        Confidence interval bounds}
+\PYG{l+s+sd}{    true\PYGZus{}value : float}
+\PYG{l+s+sd}{        Known true parameter value}
+
+\PYG{l+s+sd}{    Returns}
+\PYG{l+s+sd}{    \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{l+s+sd}{    dict with keys: bias, coverage, se\PYGZus{}accuracy, bias\PYGZus{}ok, coverage\PYGZus{}ok, se\PYGZus{}accuracy\PYGZus{}ok, all\PYGZus{}pass}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{bias} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{estimates}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{true\PYGZus{}value}
+    \PYG{n}{coverage} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{p}{(}\PYG{n}{ci\PYGZus{}lowers} \PYG{o}{\PYGZlt{}}\PYG{o}{=} \PYG{n}{true\PYGZus{}value}\PYG{p}{)} \PYG{o}{\PYGZam{}} \PYG{p}{(}\PYG{n}{true\PYGZus{}value} \PYG{o}{\PYGZlt{}}\PYG{o}{=} \PYG{n}{ci\PYGZus{}uppers}\PYG{p}{)}\PYG{p}{)}
+    \PYG{n}{se\PYGZus{}accuracy} \PYG{o}{=} \PYG{n+nb}{abs}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{ses}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n}{estimates}\PYG{p}{)}\PYG{p}{)} \PYG{o}{/} \PYG{n}{np}\PYG{o}{.}\PYG{n}{std}\PYG{p}{(}\PYG{n}{estimates}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{p}{\PYGZob{}}
+        \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bias}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{:} \PYG{n}{bias}\PYG{p}{,}
+        \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{coverage}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{:} \PYG{n}{coverage}\PYG{p}{,}
+        \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{se\PYGZus{}accuracy}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{:} \PYG{n}{se\PYGZus{}accuracy}\PYG{p}{,}
+        \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{bias\PYGZus{}ok}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{:} \PYG{n+nb}{abs}\PYG{p}{(}\PYG{n}{bias}\PYG{p}{)} \PYG{o}{\PYGZlt{}} \PYG{l+m+mf}{0.05}\PYG{p}{,}
+        \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{coverage\PYGZus{}ok}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{:} \PYG{l+m+mf}{0.93} \PYG{o}{\PYGZlt{}}\PYG{o}{=} \PYG{n}{coverage} \PYG{o}{\PYGZlt{}}\PYG{o}{=} \PYG{l+m+mf}{0.97}\PYG{p}{,}
+        \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{se\PYGZus{}accuracy\PYGZus{}ok}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{:} \PYG{n}{se\PYGZus{}accuracy} \PYG{o}{\PYGZlt{}} \PYG{l+m+mf}{0.10}\PYG{p}{,}
+        \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{all\PYGZus{}pass}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{:} \PYG{n+nb}{all}\PYG{p}{(}\PYG{p}{[}\PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{]}\PYG{p}{)}
+    \PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

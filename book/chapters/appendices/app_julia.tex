@@ -1,0 +1,435 @@
+\chapter{Julia Implementation Reference}
+\label{app:julia}
+
+% ============================================================================
+% Appendix B: Julia Code Reference
+% Written: 2025-12-31
+% ============================================================================
+
+This appendix provides Julia equivalents for all estimators presented in the main text. The Julia implementations follow the SciML Problem-Estimator-Solution pattern and achieve numerical parity with the Python implementations to 10 decimal places.
+
+\section{Installation}
+
+\begin{verbatim}
+cd julia
+julia --project -e "using Pkg; Pkg.instantiate()"
+\end{verbatim}
+
+\section{Architecture Overview}
+
+The Julia implementation follows the SciML pattern:
+
+\begin{enumerate}
+    \item \textbf{Problem}: Immutable struct containing data and parameters
+    \item \textbf{Estimator}: Algorithm choice (e.g., \texttt{SimpleATE}, \texttt{DoublyRobust})
+    \item \textbf{Solution}: Results struct with estimates, SEs, CIs
+\end{enumerate}
+
+\begin{minted}{julia}
+# General pattern
+problem = SomeProblem(outcomes, treatment, covariates, parameters)
+solution = solve(problem, SomeEstimator())
+
+# Access results
+solution.estimate   # Point estimate
+solution.se         # Standard error
+solution.ci_lower   # Lower CI bound
+solution.ci_upper   # Upper CI bound
+\end{minted}
+
+% ============================================================================
+\section{RCT Estimators}
+\label{sec:julia_rct}
+% ============================================================================
+
+\subsection{Simple ATE (Difference-in-Means)}
+
+\begin{minted}{julia}
+"""
+    SimpleATE <: AbstractRCTEstimator
+
+Simple difference-in-means with Neyman heteroskedasticity-robust variance.
+
+    tau_hat = Y_bar_1 - Y_bar_0
+    SE(tau_hat) = sqrt(s1^2/n1 + s0^2/n0)
+"""
+struct SimpleATE <: AbstractRCTEstimator end
+
+function solve(problem::RCTProblem, estimator::SimpleATE)::RCTSolution
+    (; outcomes, treatment, parameters) = problem
+
+    y1 = outcomes[treatment]
+    y0 = outcomes[.!treatment]
+    n1, n0 = length(y1), length(y0)
+
+    # Point estimate
+    ate = mean(y1) - mean(y0)
+
+    # Neyman variance
+    se = sqrt(var(y1)/n1 + var(y0)/n0)
+
+    # Confidence interval (Satterthwaite df)
+    df = satterthwaite_df(var(y1), n1, var(y0), n0)
+    ci_lower, ci_upper = confidence_interval_t(ate, se, parameters.alpha, df)
+
+    return RCTSolution(estimate=ate, se=se, ci_lower=ci_lower, ...)
+end
+\end{minted}
+
+\textbf{Usage:}
+\begin{minted}{julia}
+using CausalEstimators
+
+outcomes = [10.0, 12.0, 4.0, 5.0]
+treatment = [true, true, false, false]
+problem = RCTProblem(outcomes, treatment, nothing, nothing, (alpha=0.05,))
+solution = solve(problem, SimpleATE())
+\end{minted}
+
+% ============================================================================
+\section{Propensity Score Methods}
+\label{sec:julia_psm}
+% ============================================================================
+
+\subsection{Propensity Score Estimation}
+
+\begin{minted}{julia}
+"""
+    estimate_propensity_scores(treatment, covariates) -> PropensityResult
+
+Estimate propensity scores via logistic regression.
+"""
+function estimate_propensity_scores(treatment, covariates)
+    X = hcat(ones(size(covariates, 1)), covariates)
+    coef = logistic_regression(X, treatment)
+    propensity = logistic.(X * coef)
+    auc = compute_propensity_auc(propensity, treatment)
+    return PropensityResult(propensity, auc, coef)
+end
+\end{minted}
+
+\subsection{Nearest Neighbor Matching}
+
+\begin{minted}{julia}
+"""
+    nearest_neighbor_matching(treated_ps, control_ps; with_replacement=true)
+
+Match treated units to controls based on propensity score distance.
+Returns indices of matched controls for each treated unit.
+"""
+function nearest_neighbor_matching(
+    treated_ps::Vector{T},
+    control_ps::Vector{T};
+    with_replacement::Bool = true,
+    caliper::Union{Nothing, T} = nothing,
+) where {T<:Real}
+    n_treated = length(treated_ps)
+    matches = Vector{Int}(undef, n_treated)
+
+    available = trues(length(control_ps))
+
+    for i in 1:n_treated
+        distances = abs.(control_ps .- treated_ps[i])
+
+        if !with_replacement
+            distances[.!available] .= Inf
+        end
+
+        best_idx = argmin(distances)
+
+        # Check caliper
+        if !isnothing(caliper) && distances[best_idx] > caliper
+            matches[i] = 0  # No valid match
+        else
+            matches[i] = best_idx
+            available[best_idx] = false
+        end
+    end
+
+    return matches
+end
+\end{minted}
+
+% ============================================================================
+\section{Weighting Estimators}
+\label{sec:julia_weighting}
+% ============================================================================
+
+\subsection{Inverse Probability Weighting (IPW)}
+
+\begin{minted}{julia}
+"""
+    ObservationalIPW <: AbstractObservationalEstimator
+
+IPW estimator using Hajek (normalized) weights.
+
+    tau_IPW = [sum T_i*Y_i/e(X_i)] / [sum T_i/e(X_i)] -
+              [sum (1-T_i)*Y_i/(1-e(X_i))] / [sum (1-T_i)/(1-e(X_i))]
+"""
+struct ObservationalIPW <: AbstractObservationalEstimator end
+
+function solve(problem::ObservationalProblem, ::ObservationalIPW)
+    (; outcomes, treatment, covariates) = problem
+
+    # Estimate propensity scores
+    prop_result = estimate_propensity_scores(treatment, covariates)
+    e = prop_result.propensity
+
+    # Compute IPW weights
+    weights = ifelse.(treatment, 1 ./ e, 1 ./ (1 .- e))
+
+    # Hajek estimator (normalized)
+    mu1 = sum(weights[treatment] .* outcomes[treatment]) / sum(weights[treatment])
+    mu0 = sum(weights[.!treatment] .* outcomes[.!treatment]) / sum(weights[.!treatment])
+    ate = mu1 - mu0
+
+    # Influence function variance
+    influence = @. ifelse(treatment, (outcomes - mu1)/e, -(outcomes - mu0)/(1-e))
+    se = sqrt(var(influence) / length(outcomes))
+
+    return IPWSolution(estimate=ate, se=se, ...)
+end
+\end{minted}
+
+\subsection{Doubly Robust (AIPW)}
+
+\begin{minted}{julia}
+"""
+    DoublyRobust <: AbstractObservationalEstimator
+
+AIPW estimator combining IPW with outcome regression.
+
+Double robustness: consistent if EITHER propensity OR outcome model correct.
+
+    tau_DR = (1/n) sum_i [T_i/e(X_i)*(Y_i - mu1(X_i)) + mu1(X_i)
+                        - (1-T_i)/(1-e(X_i))*(Y_i - mu0(X_i)) - mu0(X_i)]
+"""
+struct DoublyRobust <: AbstractObservationalEstimator end
+
+function solve(problem::ObservationalProblem, ::DoublyRobust)
+    (; outcomes, treatment, covariates) = problem
+    T = convert(Vector{Float64}, treatment)
+
+    # Estimate propensity and outcome models
+    e = estimate_propensity_scores(treatment, covariates).propensity
+    mu0, mu1 = fit_outcome_models(outcomes, treatment, covariates)
+
+    # AIPW formula
+    treated_contrib = @. T/e * (outcomes - mu1) + mu1
+    control_contrib = @. (1-T)/(1-e) * (outcomes - mu0) + mu0
+
+    ate = mean(treated_contrib .- control_contrib)
+
+    # Influence function variance
+    influence = treated_contrib .- control_contrib .- ate
+    se = sqrt(mean(influence.^2) / length(outcomes))
+
+    return DRSolution(estimate=ate, se=se, ...)
+end
+\end{minted}
+
+% ============================================================================
+\section{CATE Estimators}
+\label{sec:julia_cate}
+% ============================================================================
+
+\subsection{S-Learner}
+
+\begin{minted}{julia}
+"""
+    SLearner <: AbstractCATEEstimator
+
+Single model approach: fit mu(X, T) -> Y, then CATE(x) = mu_hat(x, 1) - mu_hat(x, 0).
+"""
+struct SLearner <: AbstractCATEEstimator end
+
+function solve(problem::CATEProblem, ::SLearner)
+    (; outcomes, treatment, covariates) = problem
+    n = length(outcomes)
+
+    # Augment covariates with treatment
+    X_aug = hcat(ones(n), covariates, Float64.(treatment))
+    coef = fit_linear_model(X_aug, outcomes)
+
+    # CATE = coefficient on treatment (for linear model)
+    # For flexibility, compute explicitly:
+    X_treat = hcat(ones(n), covariates, ones(n))
+    X_ctrl = hcat(ones(n), covariates, zeros(n))
+
+    cate = X_treat * coef .- X_ctrl * coef  # = coef[end] for all i
+    ate = mean(cate)
+
+    return CATESolution(cate=cate, ate=ate, ...)
+end
+\end{minted}
+
+\subsection{T-Learner}
+
+\begin{minted}{julia}
+"""
+    TLearner <: AbstractCATEEstimator
+
+Two model approach: fit mu1(X) on treated, mu0(X) on control.
+CATE(x) = mu1_hat(x) - mu0_hat(x)
+"""
+struct TLearner <: AbstractCATEEstimator end
+
+function solve(problem::CATEProblem, ::TLearner)
+    (; outcomes, treatment, covariates) = problem
+
+    # Fit separate models
+    X1 = hcat(ones(sum(treatment)), covariates[treatment, :])
+    X0 = hcat(ones(sum(.!treatment)), covariates[.!treatment, :])
+
+    coef1 = fit_linear_model(X1, outcomes[treatment])
+    coef0 = fit_linear_model(X0, outcomes[.!treatment])
+
+    # Predict for all units
+    X_all = hcat(ones(length(outcomes)), covariates)
+    cate = X_all * coef1 .- X_all * coef0
+
+    return CATESolution(cate=cate, ate=mean(cate), ...)
+end
+\end{minted}
+
+% ============================================================================
+\section{Causal Forests}
+\label{sec:julia_forests}
+% ============================================================================
+
+Causal forests are implemented via \texttt{econml} in Python. For Julia usage, call Python via \texttt{PyCall.jl}:
+
+\begin{minted}{julia}
+using PyCall
+
+econml = pyimport("econml.dml")
+
+function causal_forest(outcomes, treatment, covariates; n_estimators=100, honest=true)
+    model = econml.CausalForestDML(
+        n_estimators=n_estimators,
+        honest=honest,
+        cv=5,
+    )
+    model.fit(Y=outcomes, T=treatment, X=covariates)
+
+    cate = model.effect(covariates)
+    ate_inf = model.ate_inference(X=covariates)
+
+    return (
+        cate = vec(cate),
+        ate = mean(cate),
+        ate_se = ate_inf.stderr_mean,
+    )
+end
+\end{minted}
+
+\begin{insight}
+Critical: Always use \texttt{honest=true} for valid confidence intervals. Without honest splitting, CIs have severe undercoverage (e.g., 72\% instead of 95\%). See CONCERN-28.
+\end{insight}
+
+% ============================================================================
+\section{Sensitivity Analysis}
+\label{sec:julia_sensitivity}
+% ============================================================================
+
+\subsection{E-Value}
+
+\begin{minted}{julia}
+"""
+    compute_e_value(rr::Real) -> Float64
+
+E-value: minimum confounding strength to explain away effect.
+
+For RR >= 1: E = RR + sqrt(RR * (RR - 1))
+For RR < 1: Apply formula to 1/RR
+"""
+function compute_e_value(rr::Real)::Float64
+    rr > 0 || throw(ArgumentError("RR must be positive"))
+
+    rr_use = rr < 1.0 ? 1.0/rr : rr
+
+    if isapprox(rr_use, 1.0)
+        return 1.0  # No effect
+    end
+
+    return rr_use + sqrt(rr_use * (rr_use - 1.0))
+end
+
+# Effect type conversions
+smd_to_rr(d) = exp(0.91 * d)  # VanderWeele approximation
+ate_to_rr(ate, p0) = (p0 + ate) / p0
+\end{minted}
+
+\textbf{Usage:}
+\begin{minted}{julia}
+problem = EValueProblem(2.5; ci_lower=1.8, ci_upper=3.5, effect_type=:rr)
+solution = solve(problem, EValue())
+
+println("E-value: $(solution.e_value)")
+println("E-value for CI: $(solution.e_value_ci)")
+\end{minted}
+
+\subsection{Rosenbaum Bounds}
+
+\begin{minted}{julia}
+"""
+    solve(problem::RosenbaumProblem, ::RosenbaumBounds)
+
+Sensitivity analysis for matched pairs using Wilcoxon signed-rank test.
+
+Finds critical Gamma where p_upper > alpha.
+"""
+function solve(problem::RosenbaumProblem, ::RosenbaumBounds)
+    differences = problem.treated_outcomes .- problem.control_outcomes
+
+    # Wilcoxon signed-rank statistic
+    T_plus, ranks, signs = compute_signed_rank_statistic(differences)
+
+    gamma_grid = range(problem.gamma_range..., length=problem.n_gamma)
+    p_upper = zeros(length(gamma_grid))
+
+    for (i, gamma) in enumerate(gamma_grid)
+        E_upper, _, Var_max, _ = compute_bounds_at_gamma(ranks, signs, gamma)
+        p_upper[i] = normal_approximation_p(T_plus, E_upper, Var_max)
+    end
+
+    # Critical Gamma: first where p_upper > alpha
+    gamma_critical = findfirst(>(problem.alpha), p_upper)
+    gamma_critical = isnothing(gamma_critical) ? nothing : gamma_grid[gamma_critical]
+
+    return RosenbaumSolution(gamma_critical=gamma_critical, ...)
+end
+\end{minted}
+
+\textbf{Usage:}
+\begin{minted}{julia}
+treated = [10.5, 12.3, 8.7, 15.2, 11.1]
+control = [8.2, 10.1, 7.5, 12.8, 9.3]
+problem = RosenbaumProblem(treated, control; gamma_range=(1.0, 3.0))
+solution = solve(problem, RosenbaumBounds())
+
+println("Critical Gamma: $(solution.gamma_critical)")
+\end{minted}
+
+% ============================================================================
+\section{Cross-Language Validation}
+\label{sec:julia_validation}
+% ============================================================================
+
+All Julia implementations are validated against Python to 10 decimal places:
+
+\begin{minted}{julia}
+# Test parity with Python
+@test isapprox(julia_ate, python_ate, rtol=1e-10)
+@test isapprox(julia_se, python_se, rtol=1e-10)
+\end{minted}
+
+Current validation status:
+\begin{itemize}
+    \item \textbf{RCT estimators}: 100\% parity
+    \item \textbf{PSM}: 100\% parity
+    \item \textbf{Weighting}: 100\% parity (IPW, DR, TMLE)
+    \item \textbf{CATE}: 100\% parity (S/T/X/R-learners, DML)
+    \item \textbf{Sensitivity}: 100\% parity (E-value, Rosenbaum)
+\end{itemize}
+

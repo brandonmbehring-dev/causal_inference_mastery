@@ -1,0 +1,37 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{double\PYGZus{}ml}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{covariates}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}folds}\PYG{p}{:} \PYG{n+nb}{int} \PYG{o}{=} \PYG{l+m+mi}{5}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{CATEResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Double Machine Learning with cross\PYGZhy{}fitting.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{n} \PYG{o}{=} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{)}
+    \PYG{n}{m\PYGZus{}hat} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}
+    \PYG{n}{e\PYGZus{}hat} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{(}\PYG{n}{n}\PYG{p}{)}
+
+    \PYG{n}{kf} \PYG{o}{=} \PYG{n}{KFold}\PYG{p}{(}\PYG{n}{n\PYGZus{}splits}\PYG{o}{=}\PYG{n}{n\PYGZus{}folds}\PYG{p}{,} \PYG{n}{shuffle}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Cross\PYGZhy{}fit nuisance models}
+    \PYG{k}{for} \PYG{n}{train\PYGZus{}idx}\PYG{p}{,} \PYG{n}{test\PYGZus{}idx} \PYG{o+ow}{in} \PYG{n}{kf}\PYG{o}{.}\PYG{n}{split}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{)}\PYG{p}{:}
+        \PYG{c+c1}{\PYGZsh{} Train on other folds}
+        \PYG{n}{outcome\PYGZus{}model} \PYG{o}{=} \PYG{n}{Ridge}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{[}\PYG{n}{train\PYGZus{}idx}\PYG{p}{]}\PYG{p}{,} \PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{train\PYGZus{}idx}\PYG{p}{]}\PYG{p}{)}
+        \PYG{n}{prop\PYGZus{}model} \PYG{o}{=} \PYG{n}{LogisticRegression}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{[}\PYG{n}{train\PYGZus{}idx}\PYG{p}{]}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{[}\PYG{n}{train\PYGZus{}idx}\PYG{p}{]}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Predict on this fold (out\PYGZhy{}of\PYGZhy{}sample)}
+        \PYG{n}{m\PYGZus{}hat}\PYG{p}{[}\PYG{n}{test\PYGZus{}idx}\PYG{p}{]} \PYG{o}{=} \PYG{n}{outcome\PYGZus{}model}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{[}\PYG{n}{test\PYGZus{}idx}\PYG{p}{]}\PYG{p}{)}
+        \PYG{n}{e\PYGZus{}hat}\PYG{p}{[}\PYG{n}{test\PYGZus{}idx}\PYG{p}{]} \PYG{o}{=} \PYG{n}{prop\PYGZus{}model}\PYG{o}{.}\PYG{n}{predict\PYGZus{}proba}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{[}\PYG{n}{test\PYGZus{}idx}\PYG{p}{]}\PYG{p}{)}\PYG{p}{[}\PYG{p}{:}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Compute residuals}
+    \PYG{n}{Y\PYGZus{}tilde} \PYG{o}{=} \PYG{n}{outcomes} \PYG{o}{\PYGZhy{}} \PYG{n}{m\PYGZus{}hat}
+    \PYG{n}{T\PYGZus{}tilde} \PYG{o}{=} \PYG{n}{treatment} \PYG{o}{\PYGZhy{}} \PYG{n}{e\PYGZus{}hat}
+
+    \PYG{c+c1}{\PYGZsh{} Estimate ATE}
+    \PYG{n}{ate} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{Y\PYGZus{}tilde} \PYG{o}{*} \PYG{n}{T\PYGZus{}tilde}\PYG{p}{)} \PYG{o}{/} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{T\PYGZus{}tilde} \PYG{o}{*}\PYG{o}{*} \PYG{l+m+mi}{2}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Influence function SE}
+    \PYG{n}{psi} \PYG{o}{=} \PYG{p}{(}\PYG{n}{Y\PYGZus{}tilde} \PYG{o}{\PYGZhy{}} \PYG{n}{ate} \PYG{o}{*} \PYG{n}{T\PYGZus{}tilde}\PYG{p}{)} \PYG{o}{*} \PYG{n}{T\PYGZus{}tilde} \PYG{o}{/} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{T\PYGZus{}tilde} \PYG{o}{*}\PYG{o}{*} \PYG{l+m+mi}{2}\PYG{p}{)}
+    \PYG{n}{se} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{np}\PYG{o}{.}\PYG{n}{var}\PYG{p}{(}\PYG{n}{psi}\PYG{p}{)} \PYG{o}{/} \PYG{n}{n}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{n}{CATEResult}\PYG{p}{(}\PYG{n}{cate}\PYG{o}{=}\PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{,} \PYG{n}{ate}\PYG{o}{=}\PYG{n}{ate}\PYG{p}{,} \PYG{n}{ate\PYGZus{}se}\PYG{o}{=}\PYG{n}{se}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}
+\end{MintedVerbatim}

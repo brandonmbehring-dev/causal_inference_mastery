@@ -1,0 +1,53 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{ipw\PYGZus{}ate\PYGZus{}observational}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{covariates}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{propensity}\PYG{p}{:} \PYG{n}{Optional}\PYG{p}{[}\PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{None}\PYG{p}{,}
+    \PYG{n}{trim\PYGZus{}at}\PYG{p}{:} \PYG{n}{Optional}\PYG{p}{[}\PYG{n}{Tuple}\PYG{p}{[}\PYG{n+nb}{float}\PYG{p}{,} \PYG{n+nb}{float}\PYG{p}{]}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{None}\PYG{p}{,}
+    \PYG{n}{stabilize}\PYG{p}{:} \PYG{n+nb}{bool} \PYG{o}{=} \PYG{k+kc}{False}\PYG{p}{,}
+    \PYG{n}{alpha}\PYG{p}{:} \PYG{n+nb}{float} \PYG{o}{=} \PYG{l+m+mf}{0.05}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{IPWResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s+sd}{    IPW ATE estimator for observational data.}
+
+\PYG{l+s+sd}{    Parameters}
+\PYG{l+s+sd}{    \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{l+s+sd}{    outcomes : Observed outcomes (n,)}
+\PYG{l+s+sd}{    treatment : Binary treatment (n,)}
+\PYG{l+s+sd}{    covariates : Covariate matrix (n, p)}
+\PYG{l+s+sd}{    propensity : Pre\PYGZhy{}computed P(T=1|X), or None to estimate}
+\PYG{l+s+sd}{    trim\PYGZus{}at : Percentiles for trimming, e.g., (0.01, 0.99)}
+\PYG{l+s+sd}{    stabilize : Use stabilized weights}
+
+\PYG{l+s+sd}{    Returns}
+\PYG{l+s+sd}{    \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{l+s+sd}{    dict with estimate, se, ci\PYGZus{}lower, ci\PYGZus{}upper, diagnostics}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{c+c1}{\PYGZsh{} Step 1: Estimate propensity if not provided}
+    \PYG{k}{if} \PYG{n}{propensity} \PYG{o+ow}{is} \PYG{k+kc}{None}\PYG{p}{:}
+        \PYG{n}{prop\PYGZus{}result} \PYG{o}{=} \PYG{n}{estimate\PYGZus{}propensity}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{,} \PYG{n}{covariates}\PYG{p}{)}
+        \PYG{n}{propensity} \PYG{o}{=} \PYG{n}{prop\PYGZus{}result}\PYG{p}{[}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{propensity}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Step 2: Trim extreme propensities}
+    \PYG{k}{if} \PYG{n}{trim\PYGZus{}at} \PYG{o+ow}{is} \PYG{o+ow}{not} \PYG{k+kc}{None}\PYG{p}{:}
+        \PYG{c+c1}{\PYGZsh{} Remove units with propensity outside [trim\PYGZus{}at[0], trim\PYGZus{}at[1]]}
+        \PYG{n}{mask} \PYG{o}{=} \PYG{p}{(}\PYG{n}{propensity} \PYG{o}{\PYGZgt{}}\PYG{o}{=} \PYG{n}{trim\PYGZus{}at}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)} \PYG{o}{\PYGZam{}} \PYG{p}{(}\PYG{n}{propensity} \PYG{o}{\PYGZlt{}}\PYG{o}{=} \PYG{n}{trim\PYGZus{}at}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{)}
+        \PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{propensity} \PYG{o}{=} \PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{mask}\PYG{p}{]}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{[}\PYG{n}{mask}\PYG{p}{]}\PYG{p}{,} \PYG{n}{propensity}\PYG{p}{[}\PYG{n}{mask}\PYG{p}{]}
+
+    \PYG{c+c1}{\PYGZsh{} Step 3: Clip for numerical stability}
+    \PYG{n}{propensity} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{clip}\PYG{p}{(}\PYG{n}{propensity}\PYG{p}{,} \PYG{l+m+mf}{1e\PYGZhy{}6}\PYG{p}{,} \PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{l+m+mf}{1e\PYGZhy{}6}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Step 4: Compute weights}
+    \PYG{k}{if} \PYG{n}{stabilize}\PYG{p}{:}
+        \PYG{n}{p\PYGZus{}t} \PYG{o}{=} \PYG{n}{treatment}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{p}{)}
+        \PYG{n}{weights} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{where}\PYG{p}{(}\PYG{n}{treatment} \PYG{o}{==} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{p\PYGZus{}t} \PYG{o}{/} \PYG{n}{propensity}\PYG{p}{,} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{p\PYGZus{}t}\PYG{p}{)} \PYG{o}{/} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{propensity}\PYG{p}{)}\PYG{p}{)}
+    \PYG{k}{else}\PYG{p}{:}
+        \PYG{n}{weights} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{where}\PYG{p}{(}\PYG{n}{treatment} \PYG{o}{==} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1} \PYG{o}{/} \PYG{n}{propensity}\PYG{p}{,} \PYG{l+m+mi}{1} \PYG{o}{/} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{propensity}\PYG{p}{)}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Step 5: Compute IPW estimate}
+    \PYG{n}{ate} \PYG{o}{=} \PYG{p}{(}\PYG{n}{treatment} \PYG{o}{*} \PYG{n}{outcomes} \PYG{o}{*} \PYG{n}{weights}\PYG{p}{)}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{p}{)} \PYG{o}{/} \PYG{p}{(}\PYG{n}{treatment} \PYG{o}{*} \PYG{n}{weights}\PYG{p}{)}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{p}{)} \PYGZbs{}
+        \PYG{o}{\PYGZhy{}} \PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{treatment}\PYG{p}{)} \PYG{o}{*} \PYG{n}{outcomes} \PYG{o}{*} \PYG{n}{weights}\PYG{p}{)}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{p}{)} \PYG{o}{/} \PYG{p}{(}\PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{treatment}\PYG{p}{)} \PYG{o}{*} \PYG{n}{weights}\PYG{p}{)}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{p}{\PYGZob{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{estimate}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{:} \PYG{n}{ate}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{\PYGZcb{}}
+\end{MintedVerbatim}

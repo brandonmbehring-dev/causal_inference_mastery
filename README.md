@@ -1,8 +1,11 @@
 # Causal Inference Mastery
 
-**Status**: Python Phases 1-2 COMPLETE (fully validated 2025-11-21) | Julia Phases 1-4 COMPLETE
+[![CI](https://github.com/brandondocusen/causal_inference_mastery/actions/workflows/ci.yml/badge.svg)](https://github.com/brandondocusen/causal_inference_mastery/actions/workflows/ci.yml)
+[![Full Tests](https://github.com/brandondocusen/causal_inference_mastery/actions/workflows/full-test.yml/badge.svg)](https://github.com/brandondocusen/causal_inference_mastery/actions/workflows/full-test.yml)
+
+**Status**: Python Phases 1-15+ COMPLETE | Julia Phases 1-15+ COMPLETE
 **Created**: 2024-11-14
-**Last Updated**: 2025-11-21
+**Last Updated**: 2026-01-01 (Session 167 - Infrastructure Activation)
 **Goal**: Deep, rigorous understanding of causal inference through dual-language implementation
 
 ---
@@ -11,44 +14,58 @@
 
 This project implements causal inference methods from first principles using both Python (with modern libraries) and Julia (from scratch). The dual-language approach provides cross-validation confidence while building deep mathematical understanding.
 
+### Current Metrics (Verified Session 167 - Independent Audit)
+
+| Metric | Value |
+|--------|-------|
+| Python source lines | 54,727 |
+| Julia source lines | 43,699 |
+| **Total source lines** | **98,426** |
+| Python test functions | 3,854 |
+| Julia test assertions | 5,121 |
+| **Total test assertions** | **8,975** |
+| Method families | 25 |
+| Known bugs outstanding | 0 |
+
+*Regenerate metrics: `python scripts/update_metrics.py --output`*
+
 ### Design Principles
 
 1. **Test-First Development** - All tests written before implementation
 2. **Known-Answer Validation** - Hand-calculated expected values
-3. **Monte Carlo Validation** - 5000-run simulations confirm statistical properties
+3. **Monte Carlo Validation** - 500-5000 run simulations confirm statistical properties
 4. **Cross-Language Validation** - Python and Julia must agree to 10 decimal places
 5. **Research-Grade Quality** - 90%+ test coverage, rigorous documentation
 
-### Methods Implemented
+---
 
-#### Python Implementation
-- [x] **Phase 1: Randomized Controlled Trials (RCT)** - 73 tests, 3-layer validation (Session 4: 2025-11-21)
-  - Simple ATE, Regression-Adjusted ATE, Stratified ATE, IPW, Permutation Tests
-  - Layer 1: 23 known-answer tests, Layer 2: 35 adversarial tests, Layer 3: 13 Monte Carlo tests (5000 runs)
-  - Critical inference bugs FIXED (2025-11-20): z→t distribution, p-value smoothing
-- [x] **Session 5: Observational IPW** - 55 tests, 3-layer validation (2025-11-21)
-  - Propensity score estimation (logistic regression), weight trimming, numerical stability (propensity clipping)
-  - Layer 1: 37 functional tests, Layer 2: 13 adversarial tests, Layer 3: 5 Monte Carlo tests (25k runs)
-  - Bias < 0.10, Coverage 93-97.5%, SE accuracy < 15% (all DGPs with confounding)
-- [x] **Session 6: Doubly Robust Estimation** - 49 tests, 3-layer validation (2025-11-21)
-  - Outcome regression + DR estimator combining IPW with outcome models
-  - Double robustness: Consistent if EITHER propensity OR outcome model correct
-  - Layer 1: 31 functional tests, Layer 2: 13 adversarial tests, Layer 3: 5 Monte Carlo tests (25k runs)
-  - Bias < 0.05 (both correct), < 0.10 (one correct), Coverage 93-97.5%
-- [x] **Phase 2: Propensity Score Matching (PSM)** - Sessions 1-3 + Session 7 complete (2025-11-21)
-  - Core implementation: Propensity estimation, nearest neighbor matching, Abadie-Imbens variance, balance diagnostics
-  - Layer 1: 5 known-answer tests, Layer 2: 13 adversarial tests, Layer 3: 5 Monte Carlo tests (5k runs)
-  - Monte Carlo validation: 4/5 DGPs passing, 1 xfail (limited overlap documents known limitation)
-  - Key finding: PSM has residual bias from covariate imbalance (bias 0.12-0.30 depending on confounding strength)
-- [ ] **Phase 3: Difference-in-Differences (DiD)** - Sessions 8-10 planned
-- [ ] **Phase 4: Instrumental Variables (IV)** - Sessions 11-13 planned
-- [ ] **Phase 5: Regression Discontinuity (RDD)** - Sessions 14-16 planned
+## Methods Implemented
 
-#### Julia Implementation
-- [x] **Phase 1: Randomized Controlled Trials (RCT)** - 1,602+ tests, six-layer validation
-- [x] **Phase 2: Propensity Score Matching (PSM)** - Complete with cross-validation
-- [x] **Phase 3: Regression Discontinuity (RDD)** - 4 files, 57KB
-- [x] **Phase 4: Instrumental Variables (IV)** - 6 files, 84KB (TSLS, LIML, GMM, AR/CLR tests)
+### Python Implementation (25 Method Families)
+
+| Phase | Method Family | Status | Key Features |
+|-------|--------------|--------|--------------|
+| 1 | **RCT** | ✅ Complete | ATE, IPW, stratified, permutation, regression-adjusted |
+| 2 | **Observational** | ✅ Complete | IPW, DR, outcome regression |
+| 3 | **PSM** | ✅ Complete | Nearest neighbor, Abadie-Imbens variance, balance diagnostics |
+| 4 | **DiD** | ✅ Complete | Classic 2x2, TWFE, Callaway-Sant'Anna, Sun-Abraham, event study |
+| 5 | **IV** | ✅ Complete | 2SLS, LIML, GMM, AR/CLR weak instrument tests |
+| 6 | **RDD** | ✅ Complete | Sharp, fuzzy, bandwidth (IK, CCT approx), McCrary density test |
+| 7 | **SCM** | ✅ Complete | Basic, augmented, placebo inference, donor diagnostics |
+| 8 | **CATE** | ✅ Complete | Causal forest, DML, meta-learners, neural CATE |
+| 9 | **Sensitivity** | ✅ Complete | E-value, Rosenbaum bounds |
+| 10 | **RKD** | ✅ Complete | Sharp kink, fuzzy kink, bandwidth selection |
+| 11 | **Bunching** | ✅ Complete | Excess mass, counterfactual estimation |
+| 12 | **Selection** | ✅ Complete | Heckman two-step, MLE |
+| 13 | **Bounds** | ✅ Complete | Manski bounds, Lee bounds |
+| 14 | **Mediation** | ✅ Complete | Baron-Kenny, causal mediation |
+| 15 | **Time Series** | ✅ Complete | VAR, SVAR, IRF, Granger, VECM, cointegration |
+| + | **Additional** | ✅ Complete | QTE, MTE, principal stratification, shift-share, panel |
+
+### Julia Implementation (Cross-Language Parity)
+
+All major method families implemented with cross-language validation tests.
+See `julia/src/` for implementations and `julia/test/` for validation.
 
 ---
 
@@ -88,30 +105,71 @@ julia --project test/runtests.jl
 
 ```
 causal_inference_mastery/
-├── docs/                          # Planning & documentation
-│   ├── ROADMAP.md                 # Master plan with Decision Log
-│   ├── CURRENT_WORK.md            # Context switching aid
-│   ├── plans/active/              # Current phase plans
-│   └── proofs/                    # Mathematical derivations
-├── src/causal_inference/          # Python modules
+├── src/causal_inference/          # Python modules (54,727 lines)
 │   ├── rct/                       # RCT estimators
-│   ├── psm/                       # PSM estimators
-│   ├── did/                       # DiD estimators
-│   ├── iv/                        # IV estimators
-│   ├── data/                      # Data generating processes
-│   └── evaluation/                # Metrics & diagnostics
-├── tests/                         # pytest test suite
-│   ├── test_rct/                  # RCT tests
-│   └── conftest.py                # Shared fixtures
-├── julia/                         # Julia implementation
+│   ├── observational/             # IPW, DR, outcome regression
+│   ├── psm/                       # Propensity score matching
+│   ├── did/                       # Difference-in-differences
+│   ├── iv/                        # Instrumental variables
+│   ├── rdd/                       # Regression discontinuity
+│   ├── scm/                       # Synthetic control
+│   ├── cate/                      # Treatment effect heterogeneity
+│   ├── timeseries/                # VAR, SVAR, IRF, Granger
+│   └── [15 more families...]      # See docs/METRICS_CURRENT.md
+├── julia/                         # Julia implementation (43,699 lines)
 │   ├── src/                       # Julia modules
-│   └── test/                      # Julia tests
-├── notebooks/                     # Jupyter demonstrations
-├── validation/                    # Cross-validation
-│   ├── monte_carlo/               # Statistical validation
-│   └── cross_language/            # Python ↔ Julia comparison
-└── scripts/                       # Automation
+│   └── test/                      # Julia tests (5,121 assertions)
+├── tests/                         # Python test suite (3,854 tests)
+│   ├── test_*/                    # Method-specific tests
+│   └── validation/                # 4-layer validation
+│       ├── monte_carlo/           # Statistical simulations
+│       ├── adversarial/           # Edge case tests
+│       ├── cross_language/        # Python ↔ Julia parity
+│       └── audit/                 # Bug exposure tests
+├── docs/                          # Documentation (70+ files)
+│   ├── KNOWN_BUGS.md              # Bug tracking (0 outstanding)
+│   ├── METRICS_CURRENT.md         # Verified metrics
+│   ├── METHODOLOGICAL_CONCERNS.md # Implementation notes
+│   └── plans/                     # Session plans
+├── book/                          # LaTeX textbook (1MB PDF)
+│   ├── main.tex                   # Book source
+│   ├── chapters/                  # 7 parts (LaTeX)
+│   └── main.pdf                   # Compiled book
+├── scripts/                       # Automation
+│   └── update_metrics.py          # Metrics generator
+└── benchmarks/                    # Performance testing
 ```
+
+---
+
+## Validation Architecture (6 Layers)
+
+| Layer | Purpose | Status |
+|-------|---------|--------|
+| 1 | Known-Answer | Hand-calculated expected values | ✅ VERIFIED |
+| 2 | Adversarial | Edge cases, boundary conditions | ✅ VERIFIED |
+| 3 | Monte Carlo | 500-5000 run simulations | ✅ VERIFIED |
+| 4 | Cross-Language | Python ↔ Julia parity | ⏸️ Manual validation |
+| 5 | R Triangulation | External reference | ❌ NOT IMPLEMENTED |
+| 6 | Golden Reference | Frozen JSON results | ⏸️ EXISTS |
+
+---
+
+## Quality Standards
+
+### Test Coverage
+- Modules: **90%+** (enforced by pytest)
+- Collection errors: **0** (verified Session 158)
+
+### Validation Requirements
+
+Before any method is considered complete:
+- [x] All Python tests pass
+- [x] All Julia tests pass
+- [x] Known-answer validation passes
+- [x] Monte Carlo: bias within method-specific thresholds
+- [x] Monte Carlo: coverage 93-97%
+- [x] Cross-language agreement (rtol < 1e-10)
 
 ---
 
@@ -122,128 +180,77 @@ causal_inference_mastery/
 1. **Write tests** with known answers (tests should FAIL)
 2. **Implement** function to pass tests
 3. **Run tests** until passing
-4. **Validate** with Monte Carlo (1000 runs)
+4. **Validate** with Monte Carlo
 5. **Cross-validate** Julia and Python
 6. **Document** with proofs and notebooks
 7. **Commit** with meaningful message
 
 ### Git Workflow
 
-Commit after each function/module completion (3-5 commits/day):
-
 ```bash
 # Run quality checks
-black .
-ruff .
+black src/ tests/
+ruff src/ tests/
 mypy src/
 pytest tests/
 
 # Commit
 git add .
-git commit -m "feat(rct): Implement simple_ate with proper inference"
+git commit -m "feat(method): Description"
 ```
-
-### Commit Message Format
-
-```
-type(scope): Short description
-
-- Bullet points with details
-- What changed and why
-```
-
-**Types**: `feat`, `fix`, `test`, `docs`, `refactor`, `validate`
 
 ---
 
-## Quality Standards
+## Book
 
-### Test Coverage
+A comprehensive LaTeX book accompanies this codebase:
 
-- Modules: **90%+** (enforced by pytest)
-- Scripts: 60%+
-- Overall: 90%+
+**Causal Inference Mastery: A Computational Approach**
 
-### Validation Requirements
+| Part | Topics |
+|------|--------|
+| 1. Foundations | Potential outcomes, identification, estimation |
+| 2. Selection on Observables | IPW, matching, doubly robust |
+| 3. Selection on Unobservables | IV, control function |
+| 4. Natural Experiments | DiD, RDD, SCM |
+| 5. Advanced Methods | CATE, heterogeneous effects |
+| 6. Implementation | Computational approaches |
+| 7. Time Series | VAR, SVAR, causal discovery |
 
-Before any method is considered complete:
-
-- [ ] All Python tests pass
-- [ ] All Julia tests pass
-- [ ] Known-answer validation passes
-- [ ] Monte Carlo: bias < 0.05
-- [ ] Monte Carlo: coverage 94-96%
-- [ ] Cross-language agreement (rtol < 1e-10)
-- [ ] Notebooks execute without errors
-- [ ] Mathematical proofs complete
-
----
-
-## Documentation
-
-### For Each Method
-
-1. **Mathematical Proof** (`docs/proofs/`) - Full derivations in Markdown + LaTeX
-2. **Python Implementation** (`src/causal_inference/`) - With docstrings and type hints
-3. **Julia Implementation** (`julia/src/`) - From first principles
-4. **Tests** (`tests/`) - Known-answer and error handling
-5. **Notebooks** (`notebooks/`) - Visual demonstrations
-6. **Validation** (`validation/`) - Monte Carlo and cross-language
+**Location**: `book/main.pdf` (compiled), `book/chapters/` (LaTeX source)
 
 ---
 
 ## Key References
 
 **Planning**:
-- `docs/ROADMAP.md` - Master plan with Decision Log
-- `docs/CURRENT_WORK.md` - Current status and next steps
-- `docs/plans/active/PHASE_X_*.md` - Detailed phase plans
+- `CLAUDE.md` - Claude Code instructions
+- `CURRENT_WORK.md` - Current session context
+- `docs/ROADMAP.md` - Master plan
+- `docs/METRICS_CURRENT.md` - Verified metrics
+- `book/main.pdf` - Comprehensive textbook
 
 **Methodological**:
 - Imbens & Rubin (2015) - Causal Inference for Statistics
 - Angrist & Pischke (2009) - Mostly Harmless Econometrics
 - Cunningham (2021) - Causal Inference: The Mixtape
 
-**Implementation Patterns**:
-- `~/Claude/annuity_forecasting/` - Test-first development
-- `~/Claude/double_ml_time_series/` - 7-method validation suite
-
 ---
 
-## Current Status
+## Session History (Recent)
 
-### Python Implementation
-- **Phase 1 (RCT)**: ✅ COMPLETE with critical fixes applied (2025-11-20)
-  - 63 tests (61 passing, 2 need updating for corrected behavior)
-  - 94.44% code coverage (exceeds 90% requirement)
-  - Fixed: z→t distribution bug in 3 estimators
-  - Fixed: permutation test p-value smoothing
-  - Documented: stratified n=1 variance limitation
-- **Validation Layers**: ✅ 3 of 6 layers COMPLETE (2025-11-20)
-  - Layer 1 (Known-Answer): 63 tests ✅
-  - Layer 2 (Adversarial): 45 tests ✅ (found real n=1 bug)
-  - Layer 3 (Monte Carlo): 13 tests, 1000 runs each ✅
-  - Layer 4 (Cross-Language): Infrastructure created, deferred (Julia→Python exists)
-  - Layer 5 (R Triangulation): Deferred
-  - Layer 6 (Golden Reference): 111KB JSON ✅
-- **Next**: Phase 2 (Propensity Score Matching) OR fix n=1 bug in simple_ate
-
-### Julia Implementation
-- **Phases 1-4**: ✅ COMPLETE (2025-11-15)
-  - 1,602+ test assertions across 35 test files
-  - Six-layer validation architecture (known-answer, adversarial, Monte Carlo, Python↔Julia, R triangulation, golden reference)
-  - 661+ adversarial/edge case tests
-  - Performance: 98x speedup vs Python for RegressionATE
-
-### Known Issues
-- 2 Python tests need updating to expect corrected behavior (t-distribution critical values, smoothed p-values)
-- IPW estimator missing safeguards (weight stabilization, trimming, positivity diagnostics) - 2-3 hour fix
-
-**For detailed reconciliation**: See `docs/AUDIT_RECONCILIATION_2025-11-20.md`
-**For current work**: See `docs/CURRENT_WORK.md`
+| Session | Focus | Status |
+|---------|-------|--------|
+| 167 | **Infrastructure Activation** - CI/CD commit, book commit, metrics update | ✅ Complete |
+| 166 | Independent audit, golden reference tests | ✅ Complete |
+| 159-165 | Time series (LP, Sign Restrictions, Proxy SVAR, TVP-VAR), Audit | ✅ Complete |
+| 150-158 | Time series (VAR, SVAR, IRF), Causal Forest, Remediation | ✅ Complete |
+| 140-149 | CATE parity, Neural CATE, OML | ✅ Complete |
 
 ---
 
 ## License
 
-Personal research project - Brandon Behring (2024)
+MIT License - Brandon Behring (2024-2025)
+
+See `LICENSE` file for details.

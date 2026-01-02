@@ -1,0 +1,16 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{did}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{compare\PYGZus{}did\PYGZus{}methods}
+
+\PYG{n}{comparison} \PYG{o}{=} \PYG{n}{compare\PYGZus{}did\PYGZus{}methods}\PYG{p}{(}
+    \PYG{n}{data}\PYG{o}{=}\PYG{n}{data}\PYG{p}{,}
+    \PYG{n}{true\PYGZus{}effect}\PYG{o}{=}\PYG{l+m+mf}{3.0}\PYG{p}{,}  \PYG{c+c1}{\PYGZsh{} If known (for simulation)}
+    \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{250}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{comparison}\PYG{o}{.}\PYG{n}{to\PYGZus{}string}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{}             Estimate    SE   Bias  Coverage}
+\PYG{c+c1}{\PYGZsh{} TWFE           2.15  0.18  \PYGZhy{}0.85     0.72}
+\PYG{c+c1}{\PYGZsh{} CS (simple)    3.02  0.22   0.02     0.95}
+\PYG{c+c1}{\PYGZsh{} Sun\PYGZhy{}Abraham    2.98  0.21  \PYGZhy{}0.02     0.94}
+\end{MintedVerbatim}

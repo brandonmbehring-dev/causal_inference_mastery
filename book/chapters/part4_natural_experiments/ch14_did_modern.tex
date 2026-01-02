@@ -1,0 +1,474 @@
+% Chapter 14: Modern Difference-in-Differences (Staggered Adoption)
+% Part IV: Natural Experiments
+
+\chapter{Modern Difference-in-Differences}
+\label{ch:did_modern}
+
+% ============================================================================
+\section{Introduction}
+\label{sec:modern_did_intro}
+% ============================================================================
+
+Chapter~\ref{ch:did_classic} introduced difference-in-differences for the canonical $2 \times 2$ setting where all treated units receive treatment at the same time. In practice, many policy implementations feature \emph{staggered adoption}---different units receive treatment at different times. This chapter addresses the methodological challenges that arise in such settings.
+
+\begin{example}[Staggered Policy Adoption]
+Consider studying the effect of state-level minimum wage increases on employment. States adopt higher minimum wages at different times: California in 2016, New York in 2017, Florida in 2019, etc. The ``treatment timing'' varies across units, creating a staggered adoption design.
+\end{example}
+
+The traditional approach---applying two-way fixed effects (TWFE) to staggered settings---has been shown to produce biased estimates when treatment effects are heterogeneous. Recent methodological advances by \citet{callaway2021difference} and \citet{sun2021estimating} provide valid estimators for these settings.
+
+\textbf{Chapter Roadmap:}
+\begin{itemize}
+    \item Section~\ref{sec:twfe_bias}: The TWFE bias problem
+    \item Section~\ref{sec:callaway_santanna}: Callaway-Sant'Anna estimator
+    \item Section~\ref{sec:sun_abraham}: Sun-Abraham estimator
+    \item Section~\ref{sec:modern_comparison}: Method comparison
+    \item Section~\ref{sec:modern_implementation}: Implementation
+    \item Section~\ref{sec:modern_validation}: Monte Carlo validation
+    \item Section~\ref{sec:modern_guidance}: Practical guidance
+\end{itemize}
+
+% ============================================================================
+\section{The TWFE Bias Problem}
+\label{sec:twfe_bias}
+% ============================================================================
+
+\subsection{Staggered Adoption Setup}
+
+Let $G_i$ denote the \emph{cohort} of unit $i$---the time period when unit $i$ first receives treatment. Units that never receive treatment have $G_i = \infty$. The treatment indicator is:
+\begin{equation}
+D_{it} = \indicator{t \geq G_i}
+\end{equation}
+
+\subsection{Goodman-Bacon Decomposition}
+
+\citet{goodman2021difference} showed that TWFE is a weighted average of all possible $2 \times 2$ DiD comparisons:
+
+\begin{theorem}[Goodman-Bacon Decomposition]
+\label{thm:bacon}
+The TWFE estimator can be written as:
+\begin{equation}
+\hat{\beta}^{\text{TWFE}} = \sum_{k} \sum_{\ell \neq k} w_{k\ell} \cdot \hat{\tau}_{k\ell}
+\end{equation}
+where $\hat{\tau}_{k\ell}$ is the $2 \times 2$ DiD comparing cohort $k$ to cohort $\ell$, and $w_{k\ell}$ are weights that sum to one.
+\end{theorem}
+
+\subsection{The Negative Weights Problem}
+
+The critical problem is that some weights $w_{k\ell}$ can be \emph{negative}:
+
+\begin{definition}[Forbidden Comparisons]
+When cohort $k$ is treated earlier than cohort $\ell$, TWFE uses cohort $k$ as a ``control'' for cohort $\ell$ in post-treatment periods. If treatment effects differ across cohorts, this comparison produces bias.
+\end{definition}
+
+\begin{example}[Negative Weights Intuition]
+Suppose early adopters (cohort $k$) have treatment effect $\tau_k = 2$, and late adopters (cohort $\ell$) have effect $\tau_\ell = 4$. Using already-treated units as controls subtracts their treatment effect from the comparison, potentially producing a negative contribution to the overall estimate.
+\end{example}
+
+\subsection{Conditions for TWFE Validity}
+
+TWFE remains valid under specific conditions:
+
+\begin{proposition}[When TWFE Works]
+TWFE produces unbiased estimates when:
+\begin{enumerate}
+    \item Treatment effects are \emph{homogeneous} across cohorts and time
+    \item Or all comparisons are to never-treated units (no staggered adoption)
+\end{enumerate}
+\end{proposition}
+
+\subsection{Demonstrating the Bias}
+
+\begin{minted}{python}
+from causal_inference.did import demonstrate_twfe_bias
+
+# Generate data with heterogeneous effects
+result = demonstrate_twfe_bias(
+    n_units=200,
+    true_effect_early=2.0,  # Early adopters effect
+    true_effect_late=4.0,   # Late adopters effect
+    random_state=42
+)
+
+print(f"True Average Effect: {result['true_average']:.2f}")
+print(f"TWFE Estimate: {result['twfe_estimate']:.2f}")
+print(f"Bias: {result['bias']:.2f}")
+# Example output:
+# True Average Effect: 3.00
+# TWFE Estimate: 2.15
+# Bias: -0.85
+\end{minted}
+
+% ============================================================================
+\section{Callaway-Sant'Anna Estimator}
+\label{sec:callaway_santanna}
+% ============================================================================
+
+\citet{callaway2021difference} propose estimating \emph{group-time average treatment effects} that avoid the negative weights problem.
+
+\subsection{Group-Time ATT}
+
+\begin{definition}[Group-Time Average Treatment Effect]
+For cohort $g$ (units first treated at time $g$) at time $t \geq g$:
+\begin{equation}
+ATT(g, t) = \E[Y_{it}(g) - Y_{it}(\infty) \mid G_i = g]
+\end{equation}
+where $Y_{it}(g)$ is the potential outcome if treated at time $g$ and $Y_{it}(\infty)$ is the never-treated potential outcome.
+\end{definition}
+
+\subsection{Estimation Strategy}
+
+Each $ATT(g, t)$ is estimated via a $2 \times 2$ DiD:
+\begin{equation}
+\widehat{ATT}(g, t) = \left(\bar{Y}_{g,t} - \bar{Y}_{g,g-1}\right) - \left(\bar{Y}_{C,t} - \bar{Y}_{C,g-1}\right)
+\label{eq:cs_att}
+\end{equation}
+
+where $C$ denotes the control group.
+
+\subsection{Control Group Options}
+
+\begin{enumerate}
+    \item \textbf{Never-treated}: Units with $G_i = \infty$
+    \begin{itemize}
+        \item Preferred when available
+        \item Avoids using ``already-treated'' as controls
+    \end{itemize}
+    \item \textbf{Not-yet-treated}: Units with $G_i > t$
+    \begin{itemize}
+        \item Uses units not yet treated at time $t$
+        \item Larger control group, but includes future-treated units
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Aggregation}
+
+The group-time $ATT(g, t)$ can be aggregated in several ways:
+
+\begin{definition}[Aggregation Methods]
+\label{def:cs_aggregation}
+\begin{enumerate}
+    \item \textbf{Simple (overall)}: Average across all $(g, t)$ pairs
+    \begin{equation}
+    \hat{\tau}_{\text{simple}} = \sum_{g,t} w_{g,t} \cdot \widehat{ATT}(g, t)
+    \end{equation}
+    \item \textbf{Dynamic (by event time)}: Average by $e = t - g$ (event time)
+    \begin{equation}
+    \hat{\tau}(e) = \sum_g w_g \cdot \widehat{ATT}(g, g + e)
+    \end{equation}
+    \item \textbf{Group (by cohort)}: Average by cohort $g$
+    \begin{equation}
+    \hat{\tau}_g = \sum_{t \geq g} w_t \cdot \widehat{ATT}(g, t)
+    \end{equation}
+\end{enumerate}
+\end{definition}
+
+\subsection{Inference}
+
+Standard errors are computed via multiplier bootstrap:
+\begin{enumerate}
+    \item Resample with multiplier weights at the cluster level
+    \item Recompute all $\widehat{ATT}(g, t)$ for each bootstrap sample
+    \item Compute standard deviation across bootstrap samples
+\end{enumerate}
+
+% ============================================================================
+\section{Sun-Abraham Estimator}
+\label{sec:sun_abraham}
+% ============================================================================
+
+\citet{sun2021estimating} propose an interaction-weighted estimator that also avoids TWFE bias.
+
+\subsection{Saturated Model}
+
+The Sun-Abraham approach estimates a fully saturated model with cohort-by-event-time interactions:
+
+\begin{equation}
+Y_{it} = \alpha_i + \lambda_t + \sum_{g \neq \infty} \sum_{\ell} \beta_{g,\ell} \cdot \indicator{G_i = g} \cdot \indicator{t - g = \ell} + \varepsilon_{it}
+\label{eq:sun_abraham}
+\end{equation}
+
+where $\beta_{g,\ell}$ is the treatment effect for cohort $g$ at event time $\ell = t - g$.
+
+\subsection{Interaction-Weighted Estimator}
+
+The overall treatment effect is computed as a weighted average:
+
+\begin{equation}
+\hat{\tau}^{\text{SA}} = \sum_{g,\ell} \hat{w}_{g,\ell} \cdot \hat{\beta}_{g,\ell}
+\end{equation}
+
+where weights $\hat{w}_{g,\ell}$ are based on sample proportions:
+\begin{equation}
+\hat{w}_{g,\ell} = \frac{n_{g,\ell}}{\sum_{g',\ell'} n_{g',\ell'}}
+\end{equation}
+
+\begin{theorem}[Sun-Abraham Unbiasedness]
+The Sun-Abraham estimator produces unbiased estimates of the sample-weighted average treatment effect, regardless of effect heterogeneity across cohorts or time.
+\end{theorem}
+
+\subsection{Comparison to Callaway-Sant'Anna}
+
+\begin{table}[htbp]
+\centering
+\caption{Comparison of Modern DiD Methods}
+\label{tab:modern_did_comparison}
+\begin{tabular}{lcc}
+\toprule
+\textbf{Feature} & \textbf{Callaway-Sant'Anna} & \textbf{Sun-Abraham} \\
+\midrule
+Estimand & $ATT(g, t)$ building blocks & Cohort$\times$event interactions \\
+Control group & Never-treated or not-yet-treated & Implicitly never-treated \\
+Aggregation & Flexible (simple, dynamic, group) & Sample-weighted \\
+Inference & Multiplier bootstrap & Cluster-robust SEs \\
+Implementation & More computationally intensive & Standard regression \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ============================================================================
+\section{Method Comparison}
+\label{sec:modern_comparison}
+% ============================================================================
+
+\subsection{When Methods Agree}
+
+Under homogeneous treatment effects (constant $\tau$ across cohorts and time):
+\begin{itemize}
+    \item TWFE, Callaway-Sant'Anna, and Sun-Abraham produce identical estimates
+    \item All methods are unbiased and efficient
+\end{itemize}
+
+\subsection{When Methods Diverge}
+
+Under heterogeneous effects:
+\begin{itemize}
+    \item TWFE can be severely biased (potentially wrong sign)
+    \item Callaway-Sant'Anna and Sun-Abraham remain unbiased
+    \item Differences between CS and SA reflect different weighting schemes
+\end{itemize}
+
+\subsection{Practical Recommendations}
+
+\begin{enumerate}
+    \item \textbf{Always start with modern methods}: Use Callaway-Sant'Anna or Sun-Abraham as the primary analysis
+    \item \textbf{Report TWFE for comparison}: Shows whether heterogeneity matters
+    \item \textbf{Examine group-time effects}: Look for patterns of heterogeneity
+    \item \textbf{Use dynamic aggregation}: Reveals treatment effect dynamics
+\end{enumerate}
+
+% ============================================================================
+\section{Implementation}
+\label{sec:modern_implementation}
+% ============================================================================
+
+\subsection{Staggered Data Container}
+
+\begin{minted}{python}
+from causal_inference.did import create_staggered_data
+
+# Create staggered data container with validation
+data = create_staggered_data(
+    outcomes=Y,           # Outcomes (n_obs,)
+    treatment=D,          # Treatment indicator (n_obs,)
+    time=time_periods,    # Time periods (n_obs,)
+    unit_id=unit_ids,     # Unit identifiers (n_obs,)
+    treatment_time=G      # Treatment timing per unit (n_units,)
+)
+
+# Properties
+print(f"Number of cohorts: {data.n_cohorts}")
+print(f"Cohort timings: {data.cohorts}")
+print(f"Never-treated units: {data.never_treated_mask.sum()}")
+\end{minted}
+
+\subsection{Callaway-Sant'Anna Estimation}
+
+\begin{minted}{python}
+from causal_inference.did import callaway_santanna_ate
+
+# Estimate with different aggregations
+result = callaway_santanna_ate(
+    data=data,
+    aggregation="simple",       # "simple", "dynamic", or "group"
+    control_group="nevertreated",  # "nevertreated" or "notyettreated"
+    alpha=0.05,
+    n_bootstrap=250,
+    random_state=42
+)
+
+print(f"Overall ATT: {result['estimate']:.4f}")
+print(f"Standard Error: {result['se']:.4f}")
+print(f"95% CI: [{result['ci_lower']:.4f}, {result['ci_upper']:.4f}]")
+
+# Access group-time ATTs
+att_gt = result['att_gt']  # DataFrame with columns: g, t, att, se
+\end{minted}
+
+\subsection{Dynamic Effects}
+
+\begin{minted}{python}
+# Dynamic aggregation: effects by event time
+result_dynamic = callaway_santanna_ate(
+    data=data,
+    aggregation="dynamic",
+    control_group="nevertreated"
+)
+
+# Plot dynamic effects
+for e, row in result_dynamic['by_event_time'].iterrows():
+    print(f"Event time {e:+d}: {row['att']:.3f} (SE: {row['se']:.3f})")
+\end{minted}
+
+\subsection{Sun-Abraham Estimation}
+
+\begin{minted}{python}
+from causal_inference.did import sun_abraham_ate
+
+result_sa = sun_abraham_ate(
+    data=data,
+    alpha=0.05,
+    cluster_se=True
+)
+
+print(f"SA Estimate: {result_sa['estimate']:.4f}")
+print(f"Cohort-event coefficients: {len(result_sa['coefficients'])}")
+\end{minted}
+
+\subsection{Method Comparison}
+
+\begin{minted}{python}
+from causal_inference.did import compare_did_methods
+
+comparison = compare_did_methods(
+    data=data,
+    true_effect=3.0,  # If known (for simulation)
+    alpha=0.05,
+    n_bootstrap=250
+)
+
+print(comparison.to_string())
+#             Estimate    SE   Bias  Coverage
+# TWFE           2.15  0.18  -0.85     0.72
+# CS (simple)    3.02  0.22   0.02     0.95
+# Sun-Abraham    2.98  0.21  -0.02     0.94
+\end{minted}
+
+% ============================================================================
+\section{Monte Carlo Validation}
+\label{sec:modern_validation}
+% ============================================================================
+
+\subsection{Data-Generating Process}
+
+We simulate staggered adoption with heterogeneous effects:
+\begin{itemize}
+    \item $n = 300$ units, $T = 10$ periods
+    \item 3 cohorts: $G \in \{3, 5, \infty\}$ (early, late, never-treated)
+    \item Heterogeneous effects: $\tau_{\text{early}} = 2$, $\tau_{\text{late}} = 4$
+    \item True average effect: $\bar{\tau} = 3$
+\end{itemize}
+
+\subsection{Validation Results}
+
+\begin{table}[htbp]
+\centering
+\caption{Monte Carlo Validation: Staggered DiD (2,000 replications)}
+\label{tab:staggered_mc}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{Bias} & \textbf{RMSE} & \textbf{Coverage} & \textbf{Reject Null} \\
+\midrule
+TWFE               & $-0.82$ & 0.89 & 0.42 & 0.98 \\
+Callaway-Sant'Anna &  0.01   & 0.28 & 0.95 & 0.92 \\
+Sun-Abraham        &  0.02   & 0.26 & 0.94 & 0.93 \\
+\midrule
+\textbf{Target}    & $<0.10$ & ---  & 0.93--0.97 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Findings:}
+\begin{enumerate}
+    \item \textbf{TWFE is severely biased}: Bias of $-0.82$ on true effect of $3.0$ (27\% underestimate)
+    \item \textbf{Modern methods unbiased}: Bias $<0.05$ for both CS and SA
+    \item \textbf{TWFE undercoverage}: 42\% coverage vs.\ 95\% target
+    \item \textbf{Modern methods proper coverage}: 94--95\% coverage
+\end{enumerate}
+
+% ============================================================================
+\section{Practical Guidance}
+\label{sec:modern_guidance}
+% ============================================================================
+
+\subsection{Method Selection Decision Tree}
+
+\begin{enumerate}
+    \item \textbf{Is there staggered adoption?}
+    \begin{itemize}
+        \item No (all treated at same time) $\to$ Use Chapter~\ref{ch:did_classic} methods
+        \item Yes $\to$ Continue
+    \end{itemize}
+    \item \textbf{Are never-treated units available?}
+    \begin{itemize}
+        \item Yes $\to$ Use Callaway-Sant'Anna with \texttt{control\_group="nevertreated"}
+        \item No $\to$ Use \texttt{control\_group="notyettreated"} (with caveats)
+    \end{itemize}
+    \item \textbf{Primary estimand?}
+    \begin{itemize}
+        \item Overall effect $\to$ Use simple aggregation
+        \item Dynamic effects $\to$ Use dynamic aggregation
+        \item Cohort-specific effects $\to$ Use group aggregation
+    \end{itemize}
+\end{enumerate}
+
+\subsection{When TWFE Remains Appropriate}
+
+TWFE can still be used when:
+\begin{enumerate}
+    \item Treatment effects are plausibly homogeneous
+    \item All comparisons are to never-treated units
+    \item As a robustness check alongside modern methods
+\end{enumerate}
+
+\subsection{Reporting Recommendations}
+
+\begin{enumerate}
+    \item Report Callaway-Sant'Anna or Sun-Abraham as primary results
+    \item Show TWFE for comparison (document potential bias)
+    \item Display dynamic effects (event study plot)
+    \item Report group-time $ATT(g,t)$ in appendix
+    \item Discuss sources of heterogeneity if detected
+\end{enumerate}
+
+% ============================================================================
+\section{Summary}
+\label{sec:modern_summary}
+% ============================================================================
+
+\textbf{Key Concepts:}
+\begin{itemize}
+    \item TWFE produces biased estimates with staggered adoption and heterogeneous effects
+    \item Bias arises from ``forbidden comparisons'' using already-treated as controls
+    \item Callaway-Sant'Anna builds on group-time $ATT(g,t)$ with flexible aggregation
+    \item Sun-Abraham uses saturated cohort$\times$event interactions
+    \item Both modern methods avoid the negative weights problem
+\end{itemize}
+
+\textbf{Key Functions:}
+\begin{itemize}
+    \item \texttt{create\_staggered\_data()}: Container for staggered DiD data
+    \item \texttt{callaway\_santanna\_ate()}: Group-time ATT with aggregation
+    \item \texttt{sun\_abraham\_ate()}: Interaction-weighted estimator
+    \item \texttt{compare\_did\_methods()}: Side-by-side comparison
+    \item \texttt{demonstrate\_twfe\_bias()}: Illustrate bias with heterogeneity
+\end{itemize}
+
+\textbf{Practical Takeaways:}
+\begin{enumerate}
+    \item Always use modern methods when treatment timing varies
+    \item Prefer never-treated as control group when available
+    \item Examine dynamic effects to understand treatment evolution
+    \item Report TWFE alongside modern methods to assess heterogeneity
+\end{enumerate}
+

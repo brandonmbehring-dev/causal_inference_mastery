@@ -1,0 +1,31 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s}{    SimpleATE \PYGZlt{}: AbstractRCTEstimator}
+
+\PYG{l+s}{Simple difference\PYGZhy{}in\PYGZhy{}means with Neyman heteroskedasticity\PYGZhy{}robust variance.}
+
+\PYG{l+s}{    tau\PYGZus{}hat = Y\PYGZus{}bar\PYGZus{}1 \PYGZhy{} Y\PYGZus{}bar\PYGZus{}0}
+\PYG{l+s}{    SE(tau\PYGZus{}hat) = sqrt(s1\PYGZca{}2/n1 + s0\PYGZca{}2/n0)}
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{k}{struct} \PYG{k+kt}{SimpleATE}\PYG{+w}{ }\PYG{o}{\PYGZlt{}:}\PYG{+w}{ }\PYG{k+kt}{AbstractRCTEstimator}\PYG{+w}{ }\PYG{k}{end}
+
+\PYG{k}{function}\PYG{+w}{ }\PYG{n}{solve}\PYG{p}{(}\PYG{n}{problem}\PYG{o}{::}\PYG{k+kt}{RCTProblem}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{estimator}\PYG{o}{::}\PYG{k+kt}{SimpleATE}\PYG{p}{)}\PYG{o}{::}\PYG{k+kt}{RCTSolution}
+\PYG{+w}{    }\PYG{p}{(}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{outcomes}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{parameters}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{problem}
+
+\PYG{+w}{    }\PYG{n}{y1}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{treatment}\PYG{p}{]}
+\PYG{+w}{    }\PYG{n}{y0}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{outcomes}\PYG{p}{[}\PYG{o}{.!}\PYG{n}{treatment}\PYG{p}{]}
+\PYG{+w}{    }\PYG{n}{n1}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n0}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{length}\PYG{p}{(}\PYG{n}{y1}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{length}\PYG{p}{(}\PYG{n}{y0}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Point estimate}
+\PYG{+w}{    }\PYG{n}{ate}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{mean}\PYG{p}{(}\PYG{n}{y1}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{mean}\PYG{p}{(}\PYG{n}{y0}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Neyman variance}
+\PYG{+w}{    }\PYG{n}{se}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{var}\PYG{p}{(}\PYG{n}{y1}\PYG{p}{)}\PYG{o}{/}\PYG{n}{n1}\PYG{+w}{ }\PYG{o}{+}\PYG{+w}{ }\PYG{n}{var}\PYG{p}{(}\PYG{n}{y0}\PYG{p}{)}\PYG{o}{/}\PYG{n}{n0}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Confidence interval (Satterthwaite df)}
+\PYG{+w}{    }\PYG{n}{df}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{satterthwaite\PYGZus{}df}\PYG{p}{(}\PYG{n}{var}\PYG{p}{(}\PYG{n}{y1}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n1}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{var}\PYG{p}{(}\PYG{n}{y0}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{n0}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{ci\PYGZus{}lower}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{ci\PYGZus{}upper}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{confidence\PYGZus{}interval\PYGZus{}t}\PYG{p}{(}\PYG{n}{ate}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{se}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{parameters}\PYG{o}{.}\PYG{n}{alpha}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{df}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{RCTSolution}\PYG{p}{(}\PYG{n}{estimate}\PYG{o}{=}\PYG{n}{ate}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{se}\PYG{o}{=}\PYG{n}{se}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{ci\PYGZus{}lower}\PYG{o}{=}\PYG{n}{ci\PYGZus{}lower}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{...}\PYG{p}{)}
+\PYG{k}{end}
+\end{MintedVerbatim}

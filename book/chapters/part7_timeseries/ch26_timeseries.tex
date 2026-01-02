@@ -1,0 +1,838 @@
+\chapter{Time Series Causal Methods}
+\label{ch:timeseries}
+
+\section{Introduction}
+
+Time series causal inference addresses a fundamental question: when observing variables evolving over time, can we identify which variables \textit{cause} changes in others? Unlike cross-sectional methods that exploit treatment assignment, time series methods leverage temporal precedence and dynamic structure.
+
+\begin{insight}
+Time series causality differs from cross-sectional causality in two key ways:
+\begin{itemize}
+    \item \textbf{Temporal precedence}: Causes must precede effects
+    \item \textbf{Dynamic structure}: Effects propagate through lagged relationships
+\end{itemize}
+The Granger (1969) framework operationalizes ``causality'' as predictive improvement, while Structural VAR identifies contemporaneous causal effects through economic restrictions.
+\end{insight}
+
+This chapter develops:
+\begin{enumerate}
+    \item \textbf{VAR foundations}: Estimation, stationarity, lag selection
+    \item \textbf{Granger causality}: Predictive causality tests
+    \item \textbf{Cointegration and VECM}: Long-run equilibrium relationships
+    \item \textbf{Structural VAR}: Causal identification through restrictions
+    \item \textbf{Impulse responses}: Dynamic causal effects
+    \item \textbf{Modern methods}: Local projections, proxy SVAR, TVP-VAR
+\end{enumerate}
+
+
+\section{Vector Autoregression (VAR)}
+
+\subsection{The VAR Model}
+
+A VAR($p$) model for $k$-dimensional time series $\mathbf{y}_t$:
+\begin{equation}
+\mathbf{y}_t = \mathbf{c} + \mathbf{A}_1 \mathbf{y}_{t-1} + \mathbf{A}_2 \mathbf{y}_{t-2} + \cdots + \mathbf{A}_p \mathbf{y}_{t-p} + \boldsymbol{\varepsilon}_t
+\label{eq:var-p}
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\mathbf{y}_t \in \R^k$: Vector of endogenous variables
+    \item $\mathbf{c} \in \R^k$: Intercept vector
+    \item $\mathbf{A}_j \in \R^{k \times k}$: Coefficient matrices at lag $j$
+    \item $\boldsymbol{\varepsilon}_t \sim (0, \boldsymbol{\Sigma})$: Reduced-form residuals
+\end{itemize}
+
+\begin{definition}[Stability Condition]
+VAR($p$) is stable if and only if all eigenvalues of the companion matrix $\mathbf{F}$ lie inside the unit circle:
+\begin{equation}
+\mathbf{F} = \begin{pmatrix}
+\mathbf{A}_1 & \mathbf{A}_2 & \cdots & \mathbf{A}_{p-1} & \mathbf{A}_p \\
+\mathbf{I}_k & \mathbf{0} & \cdots & \mathbf{0} & \mathbf{0} \\
+\mathbf{0} & \mathbf{I}_k & \cdots & \mathbf{0} & \mathbf{0} \\
+\vdots & & \ddots & & \vdots \\
+\mathbf{0} & \mathbf{0} & \cdots & \mathbf{I}_k & \mathbf{0}
+\end{pmatrix}
+\end{equation}
+Stability ensures stationarity and finite impulse responses.
+\end{definition}
+
+\subsection{Estimation}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import var_estimate, check_stability
+
+# Estimate VAR(2) on 3-variable system
+import numpy as np
+np.random.seed(42)
+T, k = 200, 3
+data = np.random.randn(T, k)
+
+result = var_estimate(data, lags=2)
+
+print(f"Coefficient A1 shape: {result.coefficients[0].shape}")  # (3, 3)
+print(f"Residual covariance:\n{result.sigma}")
+print(f"Log-likelihood: {result.log_likelihood:.2f}")
+print(f"AIC: {result.aic:.2f}")
+print(f"BIC: {result.bic:.2f}")
+
+# Check stability
+is_stable = check_stability(result)
+print(f"VAR is stable: {is_stable}")
+\end{minted}
+
+\subsection{Stationarity Testing}
+
+Before VAR estimation, verify stationarity of each series.
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import (
+    adf_test,
+    kpss_test,
+    confirmatory_stationarity_test,
+    difference_series,
+)
+
+# ADF test (null: unit root)
+adf_result = adf_test(data[:, 0], lags=4)
+print(f"ADF statistic: {adf_result.statistic:.4f}")
+print(f"p-value: {adf_result.p_value:.4f}")
+print(f"Stationary: {adf_result.is_stationary}")
+
+# KPSS test (null: stationary) - confirmatory
+kpss_result = kpss_test(data[:, 0])
+print(f"KPSS statistic: {kpss_result.statistic:.4f}")
+print(f"Stationary: {kpss_result.is_stationary}")
+
+# Combined test for robustness
+combined = confirmatory_stationarity_test(data[:, 0])
+print(f"Confirmed stationary: {combined.is_stationary}")
+
+# If non-stationary, difference
+if not combined.is_stationary:
+    data_diff = difference_series(data[:, 0], order=1)
+\end{minted}
+
+\begin{table}[h]
+\centering
+\caption{Stationarity Test Interpretation}
+\begin{tabular}{lll}
+\toprule
+Test & Null Hypothesis & Decision Rule \\
+\midrule
+ADF & Unit root (non-stationary) & Reject $\Rightarrow$ stationary \\
+PP & Unit root (non-stationary) & Reject $\Rightarrow$ stationary \\
+KPSS & Stationary & Fail to reject $\Rightarrow$ stationary \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Lag Selection}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import select_lag_order
+
+# Compare information criteria for lags 1-8
+lag_result = select_lag_order(data, max_lag=8)
+
+print(f"Optimal lag by AIC: {lag_result.aic_lag}")
+print(f"Optimal lag by BIC: {lag_result.bic_lag}")
+print(f"Optimal lag by HQC: {lag_result.hqc_lag}")
+
+# Criterion values at each lag
+for lag, (aic, bic) in enumerate(zip(lag_result.aic_values, lag_result.bic_values), 1):
+    print(f"Lag {lag}: AIC={aic:.2f}, BIC={bic:.2f}")
+\end{minted}
+
+\begin{insight}
+Lag selection tradeoffs:
+\begin{itemize}
+    \item \textbf{AIC}: Asymptotically efficient, may overfit in small samples
+    \item \textbf{BIC}: Consistent (selects true order as $T \to \infty$), may underfit
+    \item \textbf{Practical}: Use BIC for policy analysis (parsimony), AIC for forecasting
+\end{itemize}
+\end{insight}
+
+
+\section{Granger Causality}
+
+\subsection{Definition}
+
+\begin{definition}[Granger Causality]
+Variable $X$ Granger-causes $Y$ if past values of $X$ improve prediction of $Y$ beyond what past values of $Y$ alone provide:
+\begin{equation}
+\E[Y_t \mid \mathcal{F}_{t-1}] \neq \E[Y_t \mid \mathcal{F}_{t-1} \setminus \{X_{t-1}, X_{t-2}, \ldots\}]
+\end{equation}
+where $\mathcal{F}_{t-1}$ is the information set at time $t-1$.
+\end{definition}
+
+In VAR context, $X$ does \textbf{not} Granger-cause $Y$ iff all coefficients on lagged $X$ in the $Y$ equation are zero:
+\begin{equation}
+H_0: A_{1,yx} = A_{2,yx} = \cdots = A_{p,yx} = 0
+\end{equation}
+
+\subsection{Pairwise Granger Test}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import granger_causality
+
+# Test: does X Granger-cause Y?
+# Construct data where X -> Y (with lag)
+np.random.seed(42)
+T = 200
+x = np.cumsum(np.random.randn(T))
+y = np.zeros(T)
+for t in range(1, T):
+    y[t] = 0.6 * x[t-1] + 0.3 * y[t-1] + np.random.randn()
+
+data = np.column_stack([y, x])  # Column 0: Y, Column 1: X
+
+result = granger_causality(data, lags=2)
+
+print(f"X Granger-causes Y: {result.granger_causes}")
+print(f"F-statistic: {result.f_statistic:.4f}")
+print(f"p-value: {result.p_value:.6f}")
+\end{minted}
+
+\subsection{Granger Causality Matrix}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import granger_causality_matrix
+
+# Test all pairwise Granger relationships
+gc_matrix = granger_causality_matrix(data, lags=2, alpha=0.05)
+
+# gc_matrix.causes[i, j] = True means variable j Granger-causes variable i
+print("Granger causality matrix (row <- column):")
+print(gc_matrix.causes)
+print("\nP-values:")
+print(gc_matrix.p_values)
+\end{minted}
+
+\subsection{Limitations}
+
+\begin{enumerate}
+    \item \textbf{Not true causality}: Granger causality is \textit{predictive}, not \textit{structural}
+    \item \textbf{Omitted variables}: May find spurious causality if common cause omitted
+    \item \textbf{Instantaneous effects}: Cannot detect contemporaneous causation
+    \item \textbf{Nonlinear dynamics}: Linear test may miss nonlinear relationships
+\end{enumerate}
+
+
+\section{Cointegration and VECM}
+
+\subsection{Cointegration}
+
+When individual series are $I(1)$ (integrated of order 1) but a linear combination is $I(0)$ (stationary), the series are \textit{cointegrated}.
+
+\begin{definition}[Cointegration]
+Variables $\mathbf{y}_t = (y_{1t}, \ldots, y_{kt})'$ are cointegrated with cointegrating rank $r$ if:
+\begin{enumerate}
+    \item Each $y_{it}$ is $I(1)$
+    \item There exist $r$ linearly independent vectors $\boldsymbol{\beta}_1, \ldots, \boldsymbol{\beta}_r$ such that $\boldsymbol{\beta}_j' \mathbf{y}_t$ is $I(0)$
+\end{enumerate}
+\end{definition}
+
+\subsection{Johansen Cointegration Test}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import johansen_test
+
+# Test for cointegration among 3 I(1) series
+result = johansen_test(data, lags=2, deterministic='c')
+
+print(f"Cointegrating rank: {result.rank}")
+print(f"\nTrace statistics:")
+for r, (stat, cv) in enumerate(zip(result.trace_stats, result.trace_critical)):
+    print(f"  r={r}: stat={stat:.2f}, 5% cv={cv:.2f}")
+
+print(f"\nCointegrating vectors (normalized):")
+print(result.beta[:, :result.rank])
+\end{minted}
+
+\subsection{Vector Error Correction Model (VECM)}
+
+If cointegration exists, use VECM rather than VAR in differences:
+\begin{equation}
+\Delta \mathbf{y}_t = \boldsymbol{\alpha} \boldsymbol{\beta}' \mathbf{y}_{t-1} + \sum_{j=1}^{p-1} \boldsymbol{\Gamma}_j \Delta \mathbf{y}_{t-j} + \boldsymbol{\varepsilon}_t
+\end{equation}
+
+where:
+\begin{itemize}
+    \item $\boldsymbol{\beta}$: Cointegrating vectors (long-run equilibrium)
+    \item $\boldsymbol{\alpha}$: Adjustment coefficients (speed of correction)
+    \item $\boldsymbol{\beta}' \mathbf{y}_{t-1}$: Error correction term
+\end{itemize}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import vecm_estimate, vecm_granger_causality
+
+# Estimate VECM with rank 1
+vecm_result = vecm_estimate(data, lags=2, rank=1)
+
+print(f"Cointegrating vector beta:\n{vecm_result.beta}")
+print(f"Adjustment coefficients alpha:\n{vecm_result.alpha}")
+
+# Granger causality in VECM framework
+gc_result = vecm_granger_causality(vecm_result, cause_idx=1, effect_idx=0)
+print(f"Granger-causes in VECM: {gc_result.granger_causes}")
+\end{minted}
+
+
+\section{Structural VAR (SVAR)}
+
+\subsection{From Reduced Form to Structural Form}
+
+The reduced-form VAR:
+\begin{equation}
+\mathbf{y}_t = \mathbf{c} + \sum_{j=1}^{p} \mathbf{A}_j \mathbf{y}_{t-j} + \boldsymbol{\varepsilon}_t, \quad \boldsymbol{\varepsilon}_t \sim (0, \boldsymbol{\Sigma})
+\end{equation}
+
+The structural form recovers \textit{orthogonal} structural shocks $\mathbf{u}_t$:
+\begin{equation}
+\mathbf{B}_0 \mathbf{y}_t = \mathbf{d} + \sum_{j=1}^{p} \mathbf{B}_j \mathbf{y}_{t-j} + \mathbf{u}_t, \quad \mathbf{u}_t \sim (0, \mathbf{I}_k)
+\end{equation}
+
+The relationship: $\boldsymbol{\varepsilon}_t = \mathbf{B}_0^{-1} \mathbf{u}_t$, so $\boldsymbol{\Sigma} = \mathbf{B}_0^{-1} (\mathbf{B}_0^{-1})'$.
+
+\begin{insight}
+The identification problem: $\boldsymbol{\Sigma}$ has $k(k+1)/2$ unique elements, but $\mathbf{B}_0^{-1}$ has $k^2$ elements. We need $k(k-1)/2$ additional restrictions to achieve just-identification.
+\end{insight}
+
+\subsection{Cholesky Identification}
+
+The Cholesky decomposition provides a recursive structure: $\boldsymbol{\Sigma} = \mathbf{P}\mathbf{P}'$ where $\mathbf{P}$ is lower-triangular.
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import var_estimate, cholesky_svar
+
+# Estimate reduced-form VAR
+var_result = var_estimate(data, lags=2)
+
+# Cholesky identification
+svar_result = cholesky_svar(var_result)
+
+print(f"Impact matrix (B0^{-1}):\n{svar_result.B0_inv}")
+print(f"Identification method: {svar_result.identification_method}")
+\end{minted}
+
+The ordering matters: variable $j$ can be contemporaneously affected by variables $1, \ldots, j-1$ but not by $j+1, \ldots, k$.
+
+\subsection{Short-Run Restrictions}
+
+General short-run restrictions on $\mathbf{B}_0^{-1}$:
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import short_run_svar
+
+# Define restrictions: None = unrestricted, 0 = zero restriction
+# Example: Variable 2 doesn't respond contemporaneously to shock 1
+restrictions = np.array([
+    [None, 0,    0   ],
+    [None, None, 0   ],
+    [None, None, None],
+])
+
+svar_result = short_run_svar(var_result, restrictions)
+
+print(f"Short-run impact matrix:\n{svar_result.B0_inv}")
+\end{minted}
+
+\subsection{Long-Run Restrictions (Blanchard-Quah)}
+
+For permanent vs. transitory shock identification, impose that certain shocks have no long-run effect.
+
+\begin{theorem}[Long-Run Multiplier]
+The long-run effect of structural shocks on levels is:
+\begin{equation}
+\boldsymbol{\Xi} = (\mathbf{I}_k - \mathbf{A}_1 - \cdots - \mathbf{A}_p)^{-1} \mathbf{B}_0^{-1}
+\end{equation}
+Long-run restrictions impose zeros on $\boldsymbol{\Xi}$.
+\end{theorem}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import long_run_svar
+
+# Blanchard-Quah: Supply shock has permanent effect, demand shock doesn't
+# For 2-variable system: [output, unemployment]
+# Demand shock (shock 2) has zero long-run effect on output
+
+long_run_restrictions = np.array([
+    [None, 0],     # Demand shock has no long-run effect on output
+    [None, None],  # Both shocks can affect unemployment
+])
+
+svar_bq = long_run_svar(var_result, long_run_restrictions)
+
+print(f"Long-run impact matrix:\n{svar_bq.long_run_impact}")
+\end{minted}
+
+
+\section{Impulse Response Functions}
+
+\subsection{Definition}
+
+\begin{definition}[Impulse Response Function]
+The IRF measures the response of variable $i$ at horizon $h$ to a one-unit structural shock to variable $j$:
+\begin{equation}
+\text{IRF}_{ij}(h) = \frac{\partial y_{i,t+h}}{\partial u_{j,t}} = \mathbf{e}_i' \boldsymbol{\Phi}_h \mathbf{B}_0^{-1} \mathbf{e}_j
+\end{equation}
+where $\boldsymbol{\Phi}_h$ is the $h$-step VMA coefficient matrix.
+\end{definition}
+
+\subsection{Computing IRFs}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import compute_irf, bootstrap_irf
+
+# Compute structural IRFs
+irf_result = compute_irf(svar_result, horizons=20)
+
+print(f"IRF shape: {irf_result.irf.shape}")  # (k, k, horizons+1)
+
+# Response of variable 0 to shock 1 at each horizon
+response_0_to_shock_1 = irf_result.irf[0, 1, :]
+print(f"Response of Y0 to shock 1: {response_0_to_shock_1[:5]}")
+
+# Bootstrap confidence intervals
+irf_boot = bootstrap_irf(var_result, svar_result, horizons=20, n_bootstrap=500)
+
+print(f"95% CI at horizon 5: [{irf_boot.ci_lower[0,1,5]:.4f}, {irf_boot.ci_upper[0,1,5]:.4f}]")
+\end{minted}
+
+\subsection{Plotting IRFs}
+
+\begin{minted}[fontsize=\small]{python}
+import matplotlib.pyplot as plt
+
+horizons = np.arange(irf_result.horizons + 1)
+
+fig, ax = plt.subplots(figsize=(8, 4))
+ax.plot(horizons, irf_result.irf[0, 1, :], 'b-', label='Point estimate')
+ax.fill_between(horizons, irf_boot.ci_lower[0, 1, :], irf_boot.ci_upper[0, 1, :],
+                alpha=0.3, label='95% CI')
+ax.axhline(0, color='k', linestyle='--', linewidth=0.5)
+ax.set_xlabel('Horizon')
+ax.set_ylabel('Response')
+ax.set_title('Response of Y0 to Structural Shock 1')
+ax.legend()
+plt.tight_layout()
+\end{minted}
+
+
+\section{Forecast Error Variance Decomposition}
+
+\subsection{Definition}
+
+FEVD decomposes the $h$-step forecast error variance of each variable into contributions from each structural shock.
+
+\begin{definition}[FEVD]
+The fraction of $h$-step forecast error variance in variable $i$ explained by shock $j$:
+\begin{equation}
+\text{FEVD}_{ij}(h) = \frac{\sum_{\ell=0}^{h-1} (\mathbf{e}_i' \boldsymbol{\Phi}_\ell \mathbf{B}_0^{-1} \mathbf{e}_j)^2}{\sum_{\ell=0}^{h-1} \mathbf{e}_i' \boldsymbol{\Phi}_\ell \boldsymbol{\Sigma} \boldsymbol{\Phi}_\ell' \mathbf{e}_i}
+\end{equation}
+By construction, $\sum_j \text{FEVD}_{ij}(h) = 1$ for all $i, h$.
+\end{definition}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import compute_fevd, variance_contribution_table
+
+# Compute FEVD
+fevd_result = compute_fevd(svar_result, horizons=20)
+
+print(f"FEVD shape: {fevd_result.fevd.shape}")  # (k, k, horizons+1)
+
+# At horizon 10, what fraction of Y0 variance is from each shock?
+print(f"FEVD for Y0 at h=10: {fevd_result.fevd[0, :, 10]}")
+
+# Summary table
+table = variance_contribution_table(fevd_result, horizons=[1, 5, 10, 20])
+print(table)
+\end{minted}
+
+\subsection{Historical Decomposition}
+
+Decompose the actual series into contributions from each structural shock:
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import historical_decomposition
+
+hd_result = historical_decomposition(svar_result, var_result.data)
+
+# Contribution of shock 1 to variable 0 over time
+shock1_contribution = hd_result.contributions[:, 0, 1]  # (T, k, k)
+print(f"Shock 1 contribution to Y0: shape {shock1_contribution.shape}")
+\end{minted}
+
+
+\section{Modern Identification Methods}
+
+\subsection{Sign Restrictions (Uhlig 2005)}
+
+When theory provides only inequality restrictions (e.g., ``monetary contraction reduces output''), use sign restrictions for set identification.
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import (
+    sign_restriction_svar,
+    SignRestrictionConstraint,
+    create_monetary_policy_constraints,
+)
+
+# Define constraints: shock 0 (monetary policy) must:
+# - Increase interest rate (variable 0) on impact: positive
+# - Decrease output (variable 1) for horizons 0-3: negative
+# - Decrease prices (variable 2) for horizons 0-3: negative
+
+constraints = [
+    SignRestrictionConstraint(shock_idx=0, variable_idx=0, horizon=0, sign="+"),
+    SignRestrictionConstraint(shock_idx=0, variable_idx=1, horizon=0, sign="-"),
+    SignRestrictionConstraint(shock_idx=0, variable_idx=1, horizon=1, sign="-"),
+    SignRestrictionConstraint(shock_idx=0, variable_idx=2, horizon=0, sign="-"),
+]
+
+# Or use built-in monetary policy constraints
+constraints = create_monetary_policy_constraints(
+    rate_idx=0, output_idx=1, price_idx=2, max_horizon=4
+)
+
+# Estimate via rejection sampling
+result = sign_restriction_svar(
+    var_result,
+    constraints=constraints,
+    n_draws=10000,
+    n_accept=500,
+)
+
+print(f"Accepted {result.n_accepted} draws out of {result.n_draws}")
+print(f"IRF median at h=0: {result.irf_median[:, 0, 0]}")
+print(f"IRF 16th percentile: {result.irf_16[:, 0, 0]}")
+print(f"IRF 84th percentile: {result.irf_84[:, 0, 0]}")
+\end{minted}
+
+\subsection{Proxy SVAR (Stock \& Watson 2012)}
+
+Use external instruments (proxies) correlated with structural shocks but uncorrelated with other shocks.
+
+\begin{assumption}[Proxy SVAR Assumptions]
+For proxy $z_t$ identifying shock $u_{1,t}$:
+\begin{enumerate}
+    \item \textbf{Relevance}: $\E[z_t u_{1,t}] \neq 0$
+    \item \textbf{Exogeneity}: $\E[z_t u_{j,t}] = 0$ for $j \neq 1$
+\end{enumerate}
+\end{assumption}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import proxy_svar, weak_instrument_diagnostics
+
+# z is an external instrument for the first structural shock
+# E.g., narrative monetary policy shocks, oil price news
+
+result = proxy_svar(var_result, proxy=z, shock_idx=0)
+
+print(f"First-stage F: {result.first_stage_f:.2f}")
+print(f"Impact response:\n{result.impact_response}")
+
+# Check instrument strength
+diag = weak_instrument_diagnostics(result)
+print(f"Robust F-statistic: {diag.robust_f:.2f}")
+print(f"Weak instrument: {diag.is_weak}")
+\end{minted}
+
+\subsection{Local Projections (Jord\`{a} 2005)}
+
+Direct projection method that doesn't require VAR specification:
+\begin{equation}
+y_{i,t+h} = \alpha^h + \beta^h_i \text{shock}_t + \gamma^h \mathbf{X}_t + \varepsilon_{t+h}
+\label{eq:local-projection}
+\end{equation}
+
+Advantages over VAR-based IRFs:
+\begin{itemize}
+    \item Robust to VAR misspecification
+    \item Easier to incorporate nonlinearities and state-dependence
+    \item Simpler inference (OLS at each horizon)
+\end{itemize}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import (
+    local_projection_irf,
+    compare_lp_var_irf,
+    state_dependent_lp,
+)
+
+# Standard LP-IRF
+lp_result = local_projection_irf(
+    data=data,
+    shock_idx=0,           # Which variable is shocked
+    response_idx=1,        # Which variable responds
+    horizons=20,
+    lags=4,                # Control lags
+    newey_west_lags=4,     # HAC standard errors
+)
+
+print(f"LP-IRF at horizon 5: {lp_result.coefficients[5]:.4f}")
+print(f"SE: {lp_result.standard_errors[5]:.4f}")
+print(f"95% CI: [{lp_result.ci_lower[5]:.4f}, {lp_result.ci_upper[5]:.4f}]")
+
+# Compare LP vs VAR-based IRF
+comparison = compare_lp_var_irf(data, lags=2, horizons=20)
+# comparison.lp_irf, comparison.var_irf
+
+# State-dependent LP (e.g., recession vs expansion)
+# state = 1 if recession, 0 otherwise
+state = (data[:, 1] < np.median(data[:, 1])).astype(float)
+
+sdlp_result = state_dependent_lp(
+    data=data,
+    shock_idx=0,
+    response_idx=1,
+    state=state,
+    horizons=20,
+)
+
+print(f"IRF in low state (recession): {sdlp_result.coefficients_low}")
+print(f"IRF in high state (expansion): {sdlp_result.coefficients_high}")
+\end{minted}
+
+
+\section{Time-Varying Parameter VAR (TVP-VAR)}
+
+\subsection{Model}
+
+Allow VAR coefficients to evolve over time (Primiceri 2005):
+\begin{align}
+\mathbf{y}_t &= \mathbf{c}_t + \mathbf{A}_{1,t} \mathbf{y}_{t-1} + \cdots + \mathbf{A}_{p,t} \mathbf{y}_{t-p} + \boldsymbol{\varepsilon}_t \\
+\boldsymbol{\theta}_t &= \boldsymbol{\theta}_{t-1} + \boldsymbol{\eta}_t, \quad \boldsymbol{\eta}_t \sim N(0, \mathbf{Q})
+\end{align}
+
+where $\boldsymbol{\theta}_t$ stacks all time-varying parameters.
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import (
+    tvp_var_estimate,
+    compute_tvp_irf,
+    coefficient_change_test,
+)
+
+# Estimate TVP-VAR via Kalman filter
+tvp_result = tvp_var_estimate(
+    data,
+    lags=2,
+    state_var=0.01,    # Prior on state variance Q
+)
+
+print(f"Coefficients shape: {tvp_result.coefficients.shape}")  # (T, k*k*p + k)
+print(f"Smoothed coefficients available: {tvp_result.smoothed is not None}")
+
+# IRF at specific time point
+irf_t100 = compute_tvp_irf(tvp_result, time_idx=100, horizons=20)
+print(f"IRF at t=100, h=5: {irf_t100.irf[0, 1, 5]:.4f}")
+
+# Test for significant time variation
+test = coefficient_change_test(tvp_result)
+print(f"Time-varying coefficients: {test.reject_constant}")
+print(f"p-value: {test.p_value:.4f}")
+\end{minted}
+
+\subsection{Time-Varying IRFs}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import compute_tvp_irf_all_times
+
+# IRFs at each time point
+all_irfs = compute_tvp_irf_all_times(tvp_result, horizons=20)
+
+# Plot evolution of impact response over time
+plt.figure(figsize=(10, 4))
+impact_over_time = all_irfs[:, 0, 1, 0]  # Response of 0 to shock 1, impact
+plt.plot(impact_over_time)
+plt.xlabel('Time')
+plt.ylabel('Impact response')
+plt.title('Time-varying impact of shock 1 on variable 0')
+\end{minted}
+
+
+\section{PCMCI: Causal Discovery for Time Series}
+
+The PCMCI algorithm (Runge et al., 2019) combines PC algorithm principles with momentary conditional independence for time series causal discovery.
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import pcmci, pcmci_plus
+
+# Discover lagged causal structure
+result = pcmci(
+    data,
+    max_lag=3,
+    alpha=0.05,
+    ci_test='parcorr',  # Partial correlation test
+)
+
+print(f"Discovered {len(result.links)} causal links:")
+for link in result.links:
+    print(f"  {link.source} (lag {link.lag}) -> {link.target}: p={link.p_value:.4f}")
+
+# PCMCI+ for contemporaneous effects
+result_plus = pcmci_plus(data, max_lag=3, alpha=0.05)
+print(f"\nContemporaneous links: {len(result_plus.contemporaneous_links)}")
+\end{minted}
+
+
+\section{Monte Carlo Validation}
+
+\subsection{VAR Estimation}
+
+\begin{table}[h]
+\centering
+\caption{VAR Coefficient Recovery ($T=200$, 1,000 simulations)}
+\begin{tabular}{lcccc}
+\toprule
+Coefficient & True & Mean Est. & Bias & RMSE \\
+\midrule
+$A_{1,11}$ & 0.50 & 0.498 & -0.002 & 0.071 \\
+$A_{1,12}$ & 0.30 & 0.301 & 0.001 & 0.068 \\
+$A_{1,21}$ & 0.00 & -0.003 & -0.003 & 0.065 \\
+$A_{1,22}$ & 0.40 & 0.399 & -0.001 & 0.067 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{IRF Coverage}
+
+\begin{table}[h]
+\centering
+\caption{IRF Bootstrap Coverage ($T=200$, 500 simulations)}
+\begin{tabular}{lccc}
+\toprule
+Horizon & Bootstrap Method & Coverage & SE Accuracy \\
+\midrule
+1 & Residual & 94.6\% & 5.2\% \\
+5 & Residual & 93.8\% & 7.1\% \\
+10 & Residual & 92.4\% & 9.8\% \\
+1 & Moving Block & 95.1\% & 4.8\% \\
+5 & Moving Block & 94.2\% & 6.5\% \\
+10 & Moving Block & 93.6\% & 8.2\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Granger Causality Power}
+
+\begin{table}[h]
+\centering
+\caption{Granger Causality Power ($\alpha=0.05$, true effect $\beta=0.5$)}
+\begin{tabular}{lccc}
+\toprule
+Sample Size & Size (no effect) & Power (with effect) & Type I Error \\
+\midrule
+$T=100$ & 5.2\% & 68.4\% & 5.2\% \\
+$T=200$ & 4.8\% & 89.2\% & 4.8\% \\
+$T=500$ & 5.1\% & 99.1\% & 5.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Practical Workflow}
+
+\subsection{Complete Analysis Pipeline}
+
+\begin{minted}[fontsize=\small]{python}
+from causal_inference.timeseries import (
+    confirmatory_stationarity_test,
+    difference_series,
+    johansen_test,
+    select_lag_order,
+    var_estimate,
+    vecm_estimate,
+    cholesky_svar,
+    compute_irf,
+    bootstrap_irf,
+    compute_fevd,
+)
+
+# Step 1: Check stationarity of each series
+stationary = []
+for i in range(data.shape[1]):
+    result = confirmatory_stationarity_test(data[:, i])
+    stationary.append(result.is_stationary)
+    print(f"Variable {i}: {'stationary' if result.is_stationary else 'non-stationary'}")
+
+# Step 2: Test for cointegration if non-stationary
+if not all(stationary):
+    coint = johansen_test(data, lags=2)
+    print(f"Cointegrating rank: {coint.rank}")
+
+    if coint.rank > 0:
+        # Use VECM
+        model = vecm_estimate(data, lags=2, rank=coint.rank)
+        print("Using VECM")
+    else:
+        # Difference and use VAR
+        data_diff = np.column_stack([difference_series(data[:, i]) for i in range(data.shape[1])])
+        model = var_estimate(data_diff, lags=select_lag_order(data_diff).bic_lag)
+        print("Using VAR on differenced data")
+else:
+    # Use VAR in levels
+    optimal_lag = select_lag_order(data).bic_lag
+    model = var_estimate(data, lags=optimal_lag)
+    print(f"Using VAR({optimal_lag}) in levels")
+
+# Step 3: Structural identification
+svar = cholesky_svar(model)
+
+# Step 4: Compute IRFs with inference
+irf = compute_irf(svar, horizons=20)
+irf_boot = bootstrap_irf(model, svar, horizons=20, n_bootstrap=1000)
+
+# Step 5: FEVD
+fevd = compute_fevd(svar, horizons=20)
+
+print("\n=== Results ===")
+print(f"Impact response of Y0 to shock 1: {irf.irf[0, 1, 0]:.4f}")
+print(f"Cumulative response at h=10: {np.sum(irf.irf[0, 1, :11]):.4f}")
+print(f"FEVD of Y0 at h=10: shock contributions = {fevd.fevd[0, :, 10]}")
+\end{minted}
+
+
+\section{Discussion}
+
+\subsection{Key Takeaways}
+
+\begin{enumerate}
+    \item \textbf{Granger $\neq$ structural causality}: Predictive improvement, not mechanism
+    \item \textbf{Identification is crucial}: SVAR requires economic restrictions (Cholesky, long-run, sign, proxy)
+    \item \textbf{Cointegration matters}: Use VECM for $I(1)$ series with equilibrium relationships
+    \item \textbf{Robustness checks}: Compare VAR-IRF vs LP-IRF; use multiple identification strategies
+    \item \textbf{Time variation}: Consider TVP-VAR when structural breaks suspected
+\end{enumerate}
+
+\subsection{Method Selection}
+
+\begin{table}[h]
+\centering
+\caption{Time Series Causal Method Selection}
+\begin{tabular}{lll}
+\toprule
+Question & Method & Key Assumption \\
+\midrule
+Does $X$ predict $Y$? & Granger causality & VAR correctly specified \\
+Long-run equilibrium? & VECM & Cointegration exists \\
+Dynamic causal effects? & SVAR + IRF & Identification valid \\
+Robust to misspecification? & Local Projections & Shock exogeneity \\
+External instrument? & Proxy SVAR & Relevance + exogeneity \\
+Agnostic on effects? & Sign restrictions & Inequality constraints \\
+Structural change? & TVP-VAR & Random walk coefficients \\
+Discover structure? & PCMCI & Faithfulness \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Connection to Other Methods}
+
+\begin{itemize}
+    \item \textbf{IV} (Chapter~\ref{ch:iv}): Proxy SVAR uses IV logic for shock identification
+    \item \textbf{RDD} (Chapter~\ref{ch:rdd}): Event studies combine DiD with time series structure
+    \item \textbf{Causal Discovery} (Appendix~\ref{app:discovery}): PCMCI extends PC algorithm to time series
+    \item \textbf{Bounds} (Chapter~\ref{ch:bounds}): Sign restrictions provide set identification
+\end{itemize}
+

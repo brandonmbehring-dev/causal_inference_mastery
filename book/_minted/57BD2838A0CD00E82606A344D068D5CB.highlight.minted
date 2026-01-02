@@ -1,0 +1,33 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s}{    ObservationalIPW \PYGZlt{}: AbstractObservationalEstimator}
+
+\PYG{l+s}{IPW estimator using Hajek (normalized) weights.}
+
+\PYG{l+s}{    tau\PYGZus{}IPW = [sum T\PYGZus{}i*Y\PYGZus{}i/e(X\PYGZus{}i)] / [sum T\PYGZus{}i/e(X\PYGZus{}i)] \PYGZhy{}}
+\PYG{l+s}{              [sum (1\PYGZhy{}T\PYGZus{}i)*Y\PYGZus{}i/(1\PYGZhy{}e(X\PYGZus{}i))] / [sum (1\PYGZhy{}T\PYGZus{}i)/(1\PYGZhy{}e(X\PYGZus{}i))]}
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{k}{struct} \PYG{k+kt}{ObservationalIPW}\PYG{+w}{ }\PYG{o}{\PYGZlt{}:}\PYG{+w}{ }\PYG{k+kt}{AbstractObservationalEstimator}\PYG{+w}{ }\PYG{k}{end}
+
+\PYG{k}{function}\PYG{+w}{ }\PYG{n}{solve}\PYG{p}{(}\PYG{n}{problem}\PYG{o}{::}\PYG{k+kt}{ObservationalProblem}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{::}\PYG{k+kt}{ObservationalIPW}\PYG{p}{)}
+\PYG{+w}{    }\PYG{p}{(}\PYG{p}{;}\PYG{+w}{ }\PYG{n}{outcomes}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{covariates}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{problem}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Estimate propensity scores}
+\PYG{+w}{    }\PYG{n}{prop\PYGZus{}result}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{estimate\PYGZus{}propensity\PYGZus{}scores}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{covariates}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{e}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{prop\PYGZus{}result}\PYG{o}{.}\PYG{n}{propensity}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Compute IPW weights}
+\PYG{+w}{    }\PYG{n}{weights}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{ifelse}\PYG{o}{.}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{./}\PYG{+w}{ }\PYG{n}{e}\PYG{p}{,}\PYG{+w}{ }\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{./}\PYG{+w}{ }\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{+w}{ }\PYG{o}{.\PYGZhy{}}\PYG{+w}{ }\PYG{n}{e}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Hajek estimator (normalized)}
+\PYG{+w}{    }\PYG{n}{mu1}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{(}\PYG{n}{weights}\PYG{p}{[}\PYG{n}{treatment}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{.*}\PYG{+w}{ }\PYG{n}{outcomes}\PYG{p}{[}\PYG{n}{treatment}\PYG{p}{]}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{/}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{(}\PYG{n}{weights}\PYG{p}{[}\PYG{n}{treatment}\PYG{p}{]}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{mu0}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{(}\PYG{n}{weights}\PYG{p}{[}\PYG{o}{.!}\PYG{n}{treatment}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{.*}\PYG{+w}{ }\PYG{n}{outcomes}\PYG{p}{[}\PYG{o}{.!}\PYG{n}{treatment}\PYG{p}{]}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{/}\PYG{+w}{ }\PYG{n}{sum}\PYG{p}{(}\PYG{n}{weights}\PYG{p}{[}\PYG{o}{.!}\PYG{n}{treatment}\PYG{p}{]}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{ate}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{mu1}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{mu0}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Influence function variance}
+\PYG{+w}{    }\PYG{n}{influence}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n+nd}{@.}\PYG{+w}{ }\PYG{n}{ifelse}\PYG{p}{(}\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{outcomes}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{mu1}\PYG{p}{)}\PYG{o}{/}\PYG{n}{e}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{p}{(}\PYG{n}{outcomes}\PYG{+w}{ }\PYG{o}{\PYGZhy{}}\PYG{+w}{ }\PYG{n}{mu0}\PYG{p}{)}\PYG{o}{/}\PYG{p}{(}\PYG{l+m+mi}{1}\PYG{o}{\PYGZhy{}}\PYG{n}{e}\PYG{p}{)}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{se}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{var}\PYG{p}{(}\PYG{n}{influence}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{/}\PYG{+w}{ }\PYG{n}{length}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{IPWSolution}\PYG{p}{(}\PYG{n}{estimate}\PYG{o}{=}\PYG{n}{ate}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{se}\PYG{o}{=}\PYG{n}{se}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{...}\PYG{p}{)}
+\PYG{k}{end}
+\end{MintedVerbatim}

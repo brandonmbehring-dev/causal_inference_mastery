@@ -1,0 +1,742 @@
+\contentsline {chapter}{\tocchapter {Chapter}{1}{Preface}}{ix}{chapter.1}%
+\contentsline {part}{Part\ 1. \enspace \noindent Foundations}{1}{part.1}%
+\contentsline {chapter}{\tocchapter {Chapter}{2}{The Potential Outcomes Framework}}{2}{chapter.2}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{2}{section.2.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{Correlation Is Not Causation}}{2}{subsection.2.1.1}%
+\contentsline {subsection}{\tocsubsection {}{1.2}{The Role of Formalization}}{2}{subsection.2.1.2}%
+\contentsline {subsection}{\tocsubsection {}{1.3}{Chapter Overview}}{3}{subsection.2.1.3}%
+\contentsline {section}{\tocsection {}{2}{The Potential Outcomes Framework}}{3}{section.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Units, Treatments, and Outcomes}}{3}{subsection.2.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Individual Treatment Effects}}{4}{subsection.2.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{The Switching Equation}}{4}{subsection.2.2.3}%
+\contentsline {subsection}{\tocsubsection {}{2.4}{Notation Summary}}{5}{subsection.2.2.4}%
+\contentsline {section}{\tocsection {}{3}{The Fundamental Problem of Causal Inference}}{5}{section.2.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{The Missing Data Problem}}{5}{subsection.2.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Why Naive Comparisons Fail}}{5}{subsection.2.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{The Role of Identification}}{6}{subsection.2.3.3}%
+\contentsline {section}{\tocsection {}{4}{Average Treatment Effects}}{6}{section.2.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{The Average Treatment Effect}}{6}{subsection.2.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{The Average Treatment Effect on the Treated}}{7}{subsection.2.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{The Average Treatment Effect on the Control}}{7}{subsection.2.4.3}%
+\contentsline {subsection}{\tocsubsection {}{4.4}{Relationships Between Estimands}}{7}{subsection.2.4.4}%
+\contentsline {subsection}{\tocsubsection {}{4.5}{Which Estimand?}}{8}{subsection.2.4.5}%
+\contentsline {section}{\tocsection {}{5}{The SUTVA Assumption}}{8}{section.2.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Statement of SUTVA}}{8}{subsection.2.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{When SUTVA Fails: Interference}}{9}{subsection.2.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Hidden Versions Problem}}{9}{subsection.2.5.3}%
+\contentsline {subsection}{\tocsubsection {}{5.4}{Implications for Study Design}}{10}{subsection.2.5.4}%
+\contentsline {section}{\tocsection {}{6}{Identification Strategies}}{10}{section.2.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Randomization as Identification}}{10}{subsection.2.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Selection on Observables}}{11}{subsection.2.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Selection on Unobservables}}{11}{subsection.2.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{The Identification--Estimation Distinction}}{11}{subsection.2.6.4}%
+\contentsline {section}{\tocsection {}{7}{Summary}}{12}{section.2.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Key Concepts}}{12}{subsection.2.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Notation Reference}}{12}{subsection.2.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Looking Ahead}}{12}{subsection.2.7.3}%
+\contentsline {chapter}{\tocchapter {Chapter}{3}{Randomized Experiments}}{13}{chapter.3}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{13}{section.3.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{Historical Development}}{13}{subsection.3.1.1}%
+\contentsline {subsection}{\tocsubsection {}{1.2}{Why Randomization Works}}{13}{subsection.3.1.2}%
+\contentsline {subsection}{\tocsubsection {}{1.3}{Types of Randomized Experiments}}{14}{subsection.3.1.3}%
+\contentsline {section}{\tocsection {}{2}{Complete Randomization}}{14}{section.3.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{The Randomization Distribution}}{14}{subsection.3.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Balance in Expectation}}{14}{subsection.3.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{Finite-Sample vs. Superpopulation Inference}}{15}{subsection.3.2.3}%
+\contentsline {section}{\tocsection {}{3}{Estimation}}{15}{section.3.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{The Difference-in-Means Estimator}}{15}{subsection.3.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{The Neyman Variance Estimator}}{15}{subsection.3.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{Confidence Intervals}}{16}{subsection.3.3.3}%
+\contentsline {section}{\tocsection {}{4}{Stratified Randomization}}{17}{section.3.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Design}}{17}{subsection.3.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Benefits of Stratification}}{17}{subsection.3.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{The Stratified Estimator}}{17}{subsection.3.4.3}%
+\contentsline {subsection}{\tocsubsection {}{4.4}{Variance of Stratified Estimator}}{17}{subsection.3.4.4}%
+\contentsline {section}{\tocsection {}{5}{Covariate Adjustment}}{18}{section.3.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{The Basic ANCOVA Model}}{18}{subsection.3.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Lin's Estimator}}{18}{subsection.3.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Machine Learning Adjustments}}{19}{subsection.3.5.3}%
+\contentsline {section}{\tocsection {}{6}{Randomization Inference}}{19}{section.3.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{The Sharp Null Hypothesis}}{19}{subsection.3.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{The Permutation Distribution}}{19}{subsection.3.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Computing the P-value}}{20}{subsection.3.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Advantages of Randomization Inference}}{20}{subsection.3.6.4}%
+\contentsline {section}{\tocsection {}{7}{Implementation}}{20}{section.3.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Difference-in-Means}}{20}{subsection.3.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Regression Adjustment}}{21}{subsection.3.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Stratified Estimation}}{21}{subsection.3.7.3}%
+\contentsline {subsection}{\tocsubsection {}{7.4}{Permutation Tests}}{21}{subsection.3.7.4}%
+\contentsline {section}{\tocsection {}{8}{Validation}}{22}{section.3.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Monte Carlo Design}}{22}{subsection.3.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Results}}{22}{table.caption.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Efficiency Comparison}}{22}{subsection.3.8.3}%
+\contentsline {section}{\tocsection {}{9}{Practical Guidance}}{22}{section.3.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{When to Use Each Method}}{22}{subsection.3.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Common Pitfalls}}{23}{subsection.3.9.2}%
+\contentsline {subsection}{\tocsubsection {}{9.3}{Pre-Analysis Plans}}{23}{subsection.3.9.3}%
+\contentsline {section}{\tocsection {}{10}{Summary}}{23}{section.3.10}%
+\contentsline {subsection}{\tocsubsection {}{10.1}{Key Results}}{23}{subsection.3.10.1}%
+\contentsline {subsection}{\tocsubsection {}{10.2}{Notation Reference}}{24}{subsection.3.10.2}%
+\contentsline {subsection}{\tocsubsection {}{10.3}{Looking Ahead}}{24}{subsection.3.10.3}%
+\contentsline {chapter}{\tocchapter {Chapter}{4}{Statistical Inference for Treatment Effects}}{25}{chapter.4}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{25}{section.4.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{The Role of Statistical Inference}}{25}{subsection.4.1.1}%
+\contentsline {subsection}{\tocsubsection {}{1.2}{Two Sources of Randomness}}{25}{subsection.4.1.2}%
+\contentsline {subsection}{\tocsubsection {}{1.3}{Chapter Overview}}{25}{subsection.4.1.3}%
+\contentsline {section}{\tocsection {}{2}{Variance Estimation}}{26}{section.4.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{The Neyman Variance}}{26}{subsection.4.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Heteroskedasticity-Robust Variance}}{26}{subsection.4.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{Cluster-Robust Variance}}{27}{subsection.4.2.3}%
+\contentsline {subsection}{\tocsubsection {}{2.4}{The Bootstrap}}{27}{subsection.4.2.4}%
+\contentsline {section}{\tocsection {}{3}{Hypothesis Testing}}{27}{section.4.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{The Null Hypothesis}}{28}{subsection.4.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{The $t$-Test}}{28}{subsection.4.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{Permutation Tests}}{28}{subsection.4.3.3}%
+\contentsline {subsection}{\tocsubsection {}{3.4}{Multiple Testing}}{28}{subsection.4.3.4}%
+\contentsline {section}{\tocsection {}{4}{Confidence Intervals}}{29}{section.4.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Wald Confidence Intervals}}{29}{subsection.4.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Bootstrap Confidence Intervals}}{29}{subsection.4.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Confidence Intervals from Inverting Tests}}{29}{subsection.4.4.3}%
+\contentsline {section}{\tocsection {}{5}{Power Analysis}}{29}{section.4.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Statistical Power}}{29}{subsection.4.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Sample Size Formula}}{30}{subsection.4.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Minimum Detectable Effect}}{30}{subsection.4.5.3}%
+\contentsline {subsection}{\tocsubsection {}{5.4}{Design Effects}}{30}{subsection.4.5.4}%
+\contentsline {section}{\tocsection {}{6}{Monte Carlo Validation Methodology}}{30}{section.4.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Motivation}}{30}{subsection.4.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Data Generating Processes}}{31}{subsection.4.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Simulation Design}}{31}{subsection.4.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Performance Metrics}}{32}{subsection.4.6.4}%
+\contentsline {subsubsection}{\tocsubsubsection {}{6.4.1}{Bias}}{32}{subsubsection.4.6.4.1}%
+\contentsline {subsubsection}{\tocsubsubsection {}{6.4.2}{Coverage}}{32}{subsubsection.4.6.4.2}%
+\contentsline {subsubsection}{\tocsubsubsection {}{6.4.3}{Standard Error Accuracy}}{32}{subsubsection.4.6.4.3}%
+\contentsline {subsection}{\tocsubsection {}{6.5}{Validation Results Table}}{32}{subsection.4.6.5}%
+\contentsline {subsection}{\tocsubsection {}{6.6}{Method-Specific Thresholds}}{33}{subsection.4.6.6}%
+\contentsline {subsection}{\tocsubsection {}{6.7}{Implementation}}{33}{subsection.4.6.7}%
+\contentsline {section}{\tocsection {}{7}{Implementation}}{34}{section.4.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Variance Estimation}}{34}{subsection.4.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Power Analysis}}{35}{subsection.4.7.2}%
+\contentsline {section}{\tocsection {}{8}{Summary}}{35}{section.4.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Key Results}}{35}{subsection.4.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Notation Reference}}{35}{subsection.4.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Looking Ahead}}{36}{subsection.4.8.3}%
+\contentsline {part}{Part\ 2. \enspace \noindent Selection on Observables}{37}{part.2}%
+\contentsline {chapter}{\tocchapter {Chapter}{5}{Propensity Score Methods}}{38}{chapter.5}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{38}{section.5.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{From Randomization to Observational Studies}}{38}{subsection.5.1.1}%
+\contentsline {subsection}{\tocsubsection {}{1.2}{The Key Insight}}{38}{subsection.5.1.2}%
+\contentsline {subsection}{\tocsubsection {}{1.3}{Chapter Overview}}{38}{subsection.5.1.3}%
+\contentsline {section}{\tocsection {}{2}{The Propensity Score}}{38}{section.5.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Definition and Identification}}{38}{subsection.5.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Identification Assumptions}}{39}{subsection.5.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{The Balancing Property}}{39}{subsection.5.2.3}%
+\contentsline {subsection}{\tocsubsection {}{2.4}{Dimension Reduction}}{40}{subsection.5.2.4}%
+\contentsline {section}{\tocsection {}{3}{Propensity Score Estimation}}{40}{section.5.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Logistic Regression}}{40}{subsection.5.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Common Support}}{40}{subsection.5.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{Perfect Separation}}{40}{subsection.5.3.3}%
+\contentsline {section}{\tocsection {}{4}{Matching Algorithms}}{41}{section.5.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Nearest Neighbor Matching}}{41}{subsection.5.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{With vs. Without Replacement}}{41}{subsection.5.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Caliper Matching}}{41}{subsection.5.4.3}%
+\contentsline {subsection}{\tocsubsection {}{4.4}{M:1 Matching}}{42}{subsection.5.4.4}%
+\contentsline {section}{\tocsection {}{5}{Balance Diagnostics}}{42}{section.5.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Standardized Mean Difference}}{42}{subsection.5.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Variance Ratio}}{43}{subsection.5.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Comprehensive Balance Check}}{43}{subsection.5.5.3}%
+\contentsline {section}{\tocsection {}{6}{Variance Estimation}}{43}{section.5.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{The Bootstrap Problem}}{43}{subsection.5.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Abadie-Imbens Variance}}{44}{subsection.5.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Implementation}}{44}{subsection.5.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Alternative for 1:1 Matching}}{45}{subsection.5.6.4}%
+\contentsline {section}{\tocsection {}{7}{Implementation}}{45}{section.5.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{The PSM Pipeline}}{45}{subsection.5.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{The High-Level Interface}}{46}{subsection.5.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Balance Verification}}{47}{subsection.5.7.3}%
+\contentsline {section}{\tocsection {}{8}{Validation}}{47}{section.5.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Data Generating Process}}{47}{subsection.5.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Monte Carlo Results}}{48}{table.caption.8}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Key Observations}}{48}{subsection.5.8.3}%
+\contentsline {section}{\tocsection {}{9}{Practical Guidance}}{48}{section.5.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{When to Use PSM}}{48}{subsection.5.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{When to Avoid PSM}}{49}{subsection.5.9.2}%
+\contentsline {subsection}{\tocsubsection {}{9.3}{Common Pitfalls}}{49}{subsection.5.9.3}%
+\contentsline {subsection}{\tocsubsection {}{9.4}{Comparison with Weighting}}{49}{table.caption.9}%
+\contentsline {section}{\tocsection {}{10}{Summary}}{49}{section.5.10}%
+\contentsline {subsection}{\tocsubsection {}{10.1}{Key Results}}{49}{subsection.5.10.1}%
+\contentsline {subsection}{\tocsubsection {}{10.2}{Notation Reference}}{50}{subsection.5.10.2}%
+\contentsline {subsection}{\tocsubsection {}{10.3}{Looking Ahead}}{50}{subsection.5.10.3}%
+\contentsline {chapter}{\tocchapter {Chapter}{6}{Weighting Estimators}}{51}{chapter.6}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{51}{section.6.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{Chapter Overview}}{51}{subsection.6.1.1}%
+\contentsline {subsection}{\tocsubsection {}{1.2}{Assumptions}}{51}{subsection.6.1.2}%
+\contentsline {section}{\tocsection {}{2}{Inverse Probability Weighting}}{52}{section.6.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{The IPW Estimator}}{52}{subsection.6.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Stabilized Weights}}{52}{subsection.6.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{Weight Diagnostics}}{52}{subsection.6.2.3}%
+\contentsline {subsection}{\tocsubsection {}{2.4}{Propensity Trimming}}{53}{subsection.6.2.4}%
+\contentsline {section}{\tocsection {}{3}{Outcome Regression}}{53}{section.6.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Limitations}}{53}{subsection.6.3.1}%
+\contentsline {section}{\tocsection {}{4}{Doubly Robust Estimation}}{53}{section.6.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{The AIPW Estimator}}{53}{subsection.6.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{The Double Robustness Property}}{54}{subsection.6.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{When Both Models Are Wrong}}{54}{subsection.6.4.3}%
+\contentsline {section}{\tocsection {}{5}{Targeted Maximum Likelihood Estimation}}{55}{section.6.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Motivation}}{55}{subsection.6.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{The TMLE Algorithm}}{55}{subsection.6.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{The Clever Covariate}}{55}{subsection.6.5.3}%
+\contentsline {subsection}{\tocsubsection {}{5.4}{TMLE vs Standard DR}}{56}{subsection.6.5.4}%
+\contentsline {section}{\tocsection {}{6}{Variance Estimation}}{56}{section.6.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Influence Function Approach}}{56}{subsection.6.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Influence Functions by Estimator}}{56}{subsection.6.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Bootstrap Alternative}}{56}{subsection.6.6.3}%
+\contentsline {section}{\tocsection {}{7}{Implementation}}{57}{section.6.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{IPW Implementation}}{57}{subsection.6.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Doubly Robust Implementation}}{58}{subsection.6.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{TMLE Implementation}}{59}{subsection.6.7.3}%
+\contentsline {section}{\tocsection {}{8}{Monte Carlo Validation}}{61}{section.6.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Data Generating Process}}{61}{subsection.6.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Results}}{61}{subsection.6.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Robustness to Misspecification}}{61}{subsection.6.8.3}%
+\contentsline {section}{\tocsection {}{9}{Practical Guidance}}{62}{section.6.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{Method Selection}}{62}{subsection.6.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Common Pitfalls}}{62}{subsection.6.9.2}%
+\contentsline {subsection}{\tocsubsection {}{9.3}{Diagnostics Checklist}}{62}{subsection.6.9.3}%
+\contentsline {section}{\tocsection {}{10}{Summary}}{62}{section.6.10}%
+\contentsline {subsection}{\tocsubsection {}{10.1}{Key Results}}{62}{subsection.6.10.1}%
+\contentsline {subsection}{\tocsubsection {}{10.2}{Notation Reference}}{63}{subsection.6.10.2}%
+\contentsline {subsection}{\tocsubsection {}{10.3}{Key References}}{63}{subsection.6.10.3}%
+\contentsline {chapter}{\tocchapter {Chapter}{7}{Conditional Average Treatment Effects}}{64}{chapter.7}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{64}{section.7.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{Chapter Overview}}{64}{subsection.7.1.1}%
+\contentsline {section}{\tocsection {}{2}{Heterogeneous Treatment Effects}}{64}{section.7.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{From ATE to CATE}}{64}{subsection.7.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Identification}}{64}{subsection.7.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{The Fundamental Challenge}}{65}{subsection.7.2.3}%
+\contentsline {section}{\tocsection {}{3}{Meta-learners}}{65}{section.7.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{S-Learner (Single Model)}}{65}{subsection.7.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{T-Learner (Two Models)}}{66}{subsection.7.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{X-Learner}}{66}{subsection.7.3.3}%
+\contentsline {subsection}{\tocsubsection {}{3.4}{R-Learner (Robinson Transformation)}}{67}{subsection.7.3.4}%
+\contentsline {subsection}{\tocsubsection {}{3.5}{Meta-learner Comparison}}{67}{subsection.7.3.5}%
+\contentsline {section}{\tocsection {}{4}{Double Machine Learning}}{67}{section.7.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{The Regularization Bias Problem}}{68}{subsection.7.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Neyman Orthogonality}}{68}{subsection.7.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Cross-Fitting}}{68}{subsection.7.4.3}%
+\contentsline {subsection}{\tocsubsection {}{4.4}{The DML Estimator}}{69}{subsection.7.4.4}%
+\contentsline {subsection}{\tocsubsection {}{4.5}{Key Properties}}{69}{subsection.7.4.5}%
+\contentsline {subsection}{\tocsubsection {}{4.6}{DML vs R-Learner}}{69}{subsection.7.4.6}%
+\contentsline {section}{\tocsection {}{5}{Implementation}}{70}{section.7.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Meta-learner Implementation}}{70}{subsection.7.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{X-Learner Implementation}}{71}{subsection.7.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{DML Implementation}}{72}{subsection.7.5.3}%
+\contentsline {section}{\tocsection {}{6}{Monte Carlo Validation}}{73}{section.7.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Data Generating Process}}{73}{subsection.7.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{ATE Recovery Results}}{73}{subsection.7.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{CATE Accuracy}}{74}{subsection.7.6.3}%
+\contentsline {section}{\tocsection {}{7}{Practical Guidance}}{74}{section.7.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Method Selection}}{74}{subsection.7.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Common Pitfalls}}{74}{subsection.7.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Diagnostics}}{74}{subsection.7.7.3}%
+\contentsline {section}{\tocsection {}{8}{Summary}}{74}{section.7.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Key Results}}{74}{subsection.7.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Notation Reference}}{75}{subsection.7.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Key References}}{75}{subsection.7.8.3}%
+\contentsline {chapter}{\tocchapter {Chapter}{8}{Causal Forests}}{76}{chapter.8}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{76}{section.8.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{From Random Forests to Causal Forests}}{76}{subsection.8.1.1}%
+\contentsline {section}{\tocsection {}{2}{From CART to Causal Trees}}{76}{section.8.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Splitting Criterion}}{76}{subsection.8.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Leaf Estimation}}{77}{subsection.8.2.2}%
+\contentsline {section}{\tocsection {}{3}{Honest Estimation}}{77}{section.8.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Why Honesty Matters}}{77}{subsection.8.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{The Trade-off}}{77}{subsection.8.3.2}%
+\contentsline {section}{\tocsection {}{4}{Generalized Random Forests}}{77}{section.8.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Local Moment Conditions}}{77}{subsection.8.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Forest-Based Weighting}}{78}{subsection.8.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Variance Estimation}}{78}{subsection.8.4.3}%
+\contentsline {section}{\tocsection {}{5}{Inference}}{78}{section.8.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Asymptotic Normality}}{78}{subsection.8.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Confidence Intervals}}{78}{subsection.8.5.2}%
+\contentsline {section}{\tocsection {}{6}{Implementation}}{79}{section.8.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Using econml}}{79}{subsection.8.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Key Parameters}}{80}{subsection.8.6.2}%
+\contentsline {section}{\tocsection {}{7}{Validation}}{80}{section.8.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Monte Carlo Results}}{80}{subsection.8.7.1}%
+\contentsline {section}{\tocsection {}{8}{Practical Guidance}}{80}{section.8.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{When to Use}}{80}{subsection.8.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Tuning}}{80}{subsection.8.8.2}%
+\contentsline {section}{\tocsection {}{9}{Summary}}{81}{section.8.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{Key Results}}{81}{subsection.8.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Key References}}{81}{subsection.8.9.2}%
+\contentsline {chapter}{\tocchapter {Chapter}{9}{Sensitivity Analysis}}{82}{chapter.9}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{82}{section.9.1}%
+\contentsline {section}{\tocsection {}{2}{The Problem of Unmeasured Confounding}}{82}{section.9.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Why Unconfoundedness Is Untestable}}{82}{subsection.9.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{The Role of Sensitivity Analysis}}{82}{subsection.9.2.2}%
+\contentsline {section}{\tocsection {}{3}{E-Values}}{83}{section.9.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Definition}}{83}{subsection.9.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Intuition}}{83}{subsection.9.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{Effect Type Conversions}}{83}{subsection.9.3.3}%
+\contentsline {subsection}{\tocsubsection {}{3.4}{E-Value for Confidence Intervals}}{83}{subsection.9.3.4}%
+\contentsline {subsection}{\tocsubsection {}{3.5}{Interpretation Scale}}{84}{subsection.9.3.5}%
+\contentsline {section}{\tocsection {}{4}{Rosenbaum Bounds}}{84}{section.9.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{The Sensitivity Parameter $\Gamma $}}{84}{subsection.9.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Computing Bounds}}{84}{subsection.9.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Mathematical Details}}{85}{subsection.9.4.3}%
+\contentsline {subsection}{\tocsubsection {}{4.4}{Critical $\Gamma $}}{85}{subsection.9.4.4}%
+\contentsline {subsection}{\tocsubsection {}{4.5}{Interpretation Scale}}{85}{subsection.9.4.5}%
+\contentsline {section}{\tocsection {}{5}{Implementation}}{86}{section.9.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{E-Value Computation}}{86}{subsection.9.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Rosenbaum Bounds Computation}}{87}{subsection.9.5.2}%
+\contentsline {section}{\tocsection {}{6}{Comparing E-Values and Rosenbaum Bounds}}{89}{section.9.6}%
+\contentsline {section}{\tocsection {}{7}{Practical Guidance}}{89}{section.9.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Reporting Recommendations}}{89}{subsection.9.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Interpreting Results}}{89}{subsection.9.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Limitations}}{89}{subsection.9.7.3}%
+\contentsline {section}{\tocsection {}{8}{Summary}}{90}{section.9.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Key Results}}{90}{subsection.9.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Key References}}{90}{subsection.9.8.2}%
+\contentsline {part}{Part\ 3. \enspace \noindent Selection on Unobservables}{91}{part.3}%
+\contentsline {chapter}{\tocchapter {Chapter}{10}{Instrumental Variables}}{92}{chapter.10}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{92}{section.10.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{The Endogeneity Problem}}{92}{subsection.10.1.1}%
+\contentsline {subsection}{\tocsubsection {}{1.2}{The IV Solution}}{92}{subsection.10.1.2}%
+\contentsline {subsection}{\tocsubsection {}{1.3}{Historical Examples}}{92}{subsection.10.1.3}%
+\contentsline {subsection}{\tocsubsection {}{1.4}{Chapter Roadmap}}{93}{subsection.10.1.4}%
+\contentsline {section}{\tocsection {}{2}{Identification}}{93}{section.10.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{The Structural and Reduced Form Equations}}{93}{subsection.10.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Identification Conditions}}{93}{subsection.10.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{DAG Representation}}{93}{subsection.10.2.3}%
+\contentsline {section}{\tocsection {}{3}{The Wald Estimator}}{94}{section.10.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Binary Instrument Case}}{94}{subsection.10.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Interpretation}}{94}{subsection.10.3.2}%
+\contentsline {section}{\tocsection {}{4}{Two-Stage Least Squares}}{94}{section.10.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{The 2SLS Procedure}}{94}{subsection.10.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Matrix Formulation}}{94}{subsection.10.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Variance Estimation}}{95}{subsection.10.4.3}%
+\contentsline {subsection}{\tocsubsection {}{4.4}{Just-Identified vs. Over-Identified}}{95}{subsection.10.4.4}%
+\contentsline {section}{\tocsection {}{5}{LIML and Fuller Estimators}}{95}{section.10.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{k-Class Estimators}}{95}{subsection.10.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{LIML Estimator}}{95}{subsection.10.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Fuller Estimator}}{96}{subsection.10.5.3}%
+\contentsline {subsection}{\tocsubsection {}{5.4}{When to Use Each Estimator}}{96}{table.caption.10}%
+\contentsline {section}{\tocsection {}{6}{GMM Estimation}}{96}{section.10.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Moment Conditions}}{96}{subsection.10.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{GMM Objective}}{96}{subsection.10.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{One-Step vs. Two-Step GMM}}{96}{subsection.10.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Hansen J-Test}}{97}{subsection.10.6.4}%
+\contentsline {section}{\tocsection {}{7}{Inference}}{97}{section.10.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Standard Errors}}{97}{subsection.10.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{First-Stage F-Statistic}}{97}{subsection.10.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Confidence Intervals}}{97}{subsection.10.7.3}%
+\contentsline {section}{\tocsection {}{8}{Implementation}}{97}{section.10.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Python API}}{97}{subsection.10.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Robust Standard Errors}}{98}{subsection.10.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Complete Example}}{98}{subsection.10.8.3}%
+\contentsline {section}{\tocsection {}{9}{Monte Carlo Validation}}{99}{section.10.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{Data Generating Process}}{99}{subsection.10.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Validation Results}}{99}{table.caption.11}%
+\contentsline {section}{\tocsection {}{10}{Practical Guidance}}{100}{section.10.10}%
+\contentsline {subsection}{\tocsubsection {}{10.1}{Assessing Instrument Validity}}{100}{subsection.10.10.1}%
+\contentsline {subsection}{\tocsubsection {}{10.2}{Common Mistakes}}{100}{subsection.10.10.2}%
+\contentsline {subsection}{\tocsubsection {}{10.3}{Reporting Recommendations}}{100}{subsection.10.10.3}%
+\contentsline {section}{\tocsection {}{11}{Summary}}{100}{section.10.11}%
+\contentsline {chapter}{\tocchapter {Chapter}{11}{Weak Instruments}}{102}{chapter.11}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{102}{section.11.1}%
+\contentsline {section}{\tocsection {}{2}{Diagnosing Weak Instruments}}{103}{section.11.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{First-Stage F-Statistic}}{103}{subsection.11.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Stock-Yogo Critical Values}}{103}{subsection.11.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{Instrument Strength Classification}}{104}{subsection.11.2.3}%
+\contentsline {subsection}{\tocsubsection {}{2.4}{Cragg-Donald Statistic}}{104}{subsection.11.2.4}%
+\contentsline {section}{\tocsection {}{3}{Bias and Size Distortion}}{104}{section.11.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Finite-Sample Bias of 2SLS}}{104}{subsection.11.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Size Distortion of Wald Tests}}{105}{subsection.11.3.2}%
+\contentsline {section}{\tocsection {}{4}{Anderson-Rubin Test}}{105}{section.11.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Test Construction}}{105}{subsection.11.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Confidence Intervals by Test Inversion}}{106}{subsection.11.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Properties of the AR Test}}{106}{subsection.11.4.3}%
+\contentsline {section}{\tocsection {}{5}{Conditional Likelihood Ratio Test}}{106}{section.11.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Motivation}}{106}{subsection.11.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Test Statistic}}{107}{subsection.11.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{CLR vs. Anderson-Rubin}}{107}{table.caption.14}%
+\contentsline {section}{\tocsection {}{6}{Recommended Testing Protocol}}{107}{section.11.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Decision Tree}}{107}{subsection.11.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Reporting Recommendations}}{108}{subsection.11.6.2}%
+\contentsline {section}{\tocsection {}{7}{Implementation}}{108}{section.11.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Stock-Yogo Classification}}{108}{subsection.11.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Cragg-Donald Statistic}}{108}{subsection.11.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Anderson-Rubin Test}}{109}{subsection.11.7.3}%
+\contentsline {subsection}{\tocsubsection {}{7.4}{Comprehensive Diagnostic Summary}}{109}{subsection.11.7.4}%
+\contentsline {section}{\tocsection {}{8}{Monte Carlo Validation}}{110}{section.11.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Simulation Design}}{110}{subsection.11.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Validation Results}}{110}{table.caption.15}%
+\contentsline {section}{\tocsection {}{9}{Practical Guidance}}{111}{section.11.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{When Instruments Are Weak}}{111}{subsection.11.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Common Mistakes}}{111}{subsection.11.9.2}%
+\contentsline {subsection}{\tocsubsection {}{9.3}{Reporting Checklist}}{111}{subsection.11.9.3}%
+\contentsline {section}{\tocsection {}{10}{Summary}}{111}{section.11.10}%
+\contentsline {chapter}{\tocchapter {Chapter}{12}{Control Function Approach}}{113}{chapter.12}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{113}{section.12.1}%
+\contentsline {section}{\tocsection {}{2}{The Control Function Idea}}{113}{section.12.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Endogeneity as Omitted Variable}}{113}{subsection.12.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{The Key Decomposition}}{114}{subsection.12.2.2}%
+\contentsline {section}{\tocsection {}{3}{Linear Control Function}}{114}{section.12.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Two-Step Estimation}}{114}{subsection.12.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Endogeneity Test}}{115}{subsection.12.3.2}%
+\contentsline {section}{\tocsection {}{4}{Nonlinear Control Function}}{115}{section.12.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Why 2SLS Fails for Binary Outcomes}}{115}{subsection.12.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Rivers-Vuong Estimator}}{115}{subsection.12.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Average Marginal Effects}}{116}{subsection.12.4.3}%
+\contentsline {section}{\tocsection {}{5}{Inference}}{116}{section.12.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{The Generated Regressor Problem}}{116}{subsection.12.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Murphy-Topel Correction}}{116}{subsection.12.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Bootstrap Inference}}{116}{subsection.12.5.3}%
+\contentsline {section}{\tocsection {}{6}{Implementation}}{117}{section.12.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Linear Control Function}}{117}{subsection.12.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Nonlinear Control Function (Probit)}}{118}{subsection.12.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Interpreting Results}}{118}{subsection.12.6.3}%
+\contentsline {section}{\tocsection {}{7}{Monte Carlo Validation}}{119}{section.12.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Simulation Design}}{119}{subsection.12.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Results}}{119}{table.caption.18}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Nonlinear Model Validation}}{119}{table.caption.19}%
+\contentsline {section}{\tocsection {}{8}{Practical Guidance}}{120}{section.12.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{When to Use Control Function}}{120}{subsection.12.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{When to Use 2SLS Instead}}{120}{subsection.12.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Common Mistakes}}{120}{subsection.12.8.3}%
+\contentsline {section}{\tocsection {}{9}{Summary}}{120}{section.12.9}%
+\contentsline {chapter}{\tocchapter {Chapter}{13}{Partial Identification}}{122}{chapter.13}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{122}{section.13.1}%
+\contentsline {section}{\tocsection {}{2}{Manski Worst-Case Bounds}}{123}{section.13.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{The Fundamental Problem Revisited}}{123}{subsection.13.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Deriving Worst-Case Bounds}}{123}{subsection.13.2.2}%
+\contentsline {section}{\tocsection {}{3}{Monotone Treatment Response (MTR)}}{124}{section.13.3}%
+\contentsline {section}{\tocsection {}{4}{Monotone Treatment Selection (MTS)}}{124}{section.13.4}%
+\contentsline {section}{\tocsection {}{5}{Combined MTR + MTS}}{125}{section.13.5}%
+\contentsline {section}{\tocsection {}{6}{Manski IV Bounds}}{125}{section.13.6}%
+\contentsline {section}{\tocsection {}{7}{Lee Bounds for Sample Selection}}{125}{section.13.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{The Selection Problem}}{126}{subsection.13.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Monotonicity Assumption}}{126}{subsection.13.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{The Trimming Procedure}}{126}{subsection.13.7.3}%
+\contentsline {subsection}{\tocsubsection {}{7.4}{Tightening with Covariates}}{126}{subsection.13.7.4}%
+\contentsline {section}{\tocsection {}{8}{Inference for Bounds}}{127}{section.13.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Confidence Intervals for Partially Identified Parameters}}{127}{subsection.13.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Bootstrap Approach}}{127}{subsection.13.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Imbens-Manski Approach}}{127}{subsection.13.8.3}%
+\contentsline {section}{\tocsection {}{9}{Implementation}}{127}{section.13.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{Manski Bounds}}{127}{subsection.13.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Lee Bounds}}{128}{subsection.13.9.2}%
+\contentsline {section}{\tocsection {}{10}{Monte Carlo Validation}}{129}{section.13.10}%
+\contentsline {subsection}{\tocsubsection {}{10.1}{Simulation Design}}{129}{subsection.13.10.1}%
+\contentsline {subsection}{\tocsubsection {}{10.2}{Results}}{130}{table.caption.22}%
+\contentsline {section}{\tocsection {}{11}{Practical Guidance}}{130}{section.13.11}%
+\contentsline {subsection}{\tocsubsection {}{11.1}{When to Use Bounds}}{130}{subsection.13.11.1}%
+\contentsline {subsection}{\tocsubsection {}{11.2}{Interpreting Bounds}}{130}{subsection.13.11.2}%
+\contentsline {subsection}{\tocsubsection {}{11.3}{Choosing Assumptions}}{131}{table.caption.23}%
+\contentsline {section}{\tocsection {}{12}{Summary}}{131}{section.13.12}%
+\contentsline {part}{Part\ 4. \enspace \noindent Natural Experiments}{132}{part.4}%
+\contentsline {chapter}{\tocchapter {Chapter}{14}{Difference-in-Differences}}{133}{chapter.14}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{133}{section.14.1}%
+\contentsline {section}{\tocsection {}{2}{The $2 \times 2$ Design}}{134}{section.14.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Setup and Notation}}{134}{subsection.14.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Regression Formulation}}{134}{subsection.14.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{Manual vs.\ Regression Computation}}{135}{subsection.14.2.3}%
+\contentsline {section}{\tocsection {}{3}{The Parallel Trends Assumption}}{135}{section.14.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{When Parallel Trends Fails}}{135}{subsection.14.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Pre-Trends Testing}}{136}{subsection.14.3.2}%
+\contentsline {section}{\tocsection {}{4}{Two-Way Fixed Effects}}{136}{section.14.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{TWFE as Generalized DiD}}{136}{subsection.14.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Benefits of TWFE}}{136}{subsection.14.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{The TWFE Bias Problem (Preview)}}{137}{subsection.14.4.3}%
+\contentsline {section}{\tocsection {}{5}{Standard Error Estimation}}{137}{section.14.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{The Serial Correlation Problem}}{137}{subsection.14.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Cluster-Robust Standard Errors}}{137}{subsection.14.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Wild Cluster Bootstrap}}{137}{subsection.14.5.3}%
+\contentsline {section}{\tocsection {}{6}{Event Studies}}{138}{section.14.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Event Study Specification}}{138}{subsection.14.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Interpretation}}{138}{subsection.14.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Joint Test for Pre-Trends}}{138}{subsection.14.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Visualization}}{138}{subsection.14.6.4}%
+\contentsline {section}{\tocsection {}{7}{Implementation}}{138}{section.14.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Basic $2 \times 2$ DiD}}{139}{subsection.14.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Parallel Trends Check}}{139}{subsection.14.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Event Study}}{140}{subsection.14.7.3}%
+\contentsline {subsection}{\tocsubsection {}{7.4}{Return Value Structure}}{140}{subsection.14.7.4}%
+\contentsline {section}{\tocsection {}{8}{Monte Carlo Validation}}{141}{section.14.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Data-Generating Process}}{141}{subsection.14.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Validation Results}}{141}{table.caption.25}%
+\contentsline {section}{\tocsection {}{9}{Practical Guidance}}{141}{section.14.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{When to Use DiD}}{141}{subsection.14.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Common Pitfalls}}{142}{subsection.14.9.2}%
+\contentsline {subsection}{\tocsubsection {}{9.3}{Reporting Recommendations}}{142}{subsection.14.9.3}%
+\contentsline {subsection}{\tocsubsection {}{9.4}{Decision Tree}}{142}{subsection.14.9.4}%
+\contentsline {section}{\tocsection {}{10}{Summary}}{142}{section.14.10}%
+\contentsline {chapter}{\tocchapter {Chapter}{15}{Modern Difference-in-Differences}}{144}{chapter.15}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{144}{section.15.1}%
+\contentsline {section}{\tocsection {}{2}{The TWFE Bias Problem}}{144}{section.15.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Staggered Adoption Setup}}{144}{subsection.15.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Goodman-Bacon Decomposition}}{144}{subsection.15.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{The Negative Weights Problem}}{145}{subsection.15.2.3}%
+\contentsline {subsection}{\tocsubsection {}{2.4}{Conditions for TWFE Validity}}{145}{subsection.15.2.4}%
+\contentsline {subsection}{\tocsubsection {}{2.5}{Demonstrating the Bias}}{145}{subsection.15.2.5}%
+\contentsline {section}{\tocsection {}{3}{Callaway-Sant'Anna Estimator}}{146}{section.15.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Group-Time ATT}}{146}{subsection.15.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Estimation Strategy}}{146}{subsection.15.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{Control Group Options}}{146}{subsection.15.3.3}%
+\contentsline {subsection}{\tocsubsection {}{3.4}{Aggregation}}{146}{subsection.15.3.4}%
+\contentsline {subsection}{\tocsubsection {}{3.5}{Inference}}{147}{subsection.15.3.5}%
+\contentsline {section}{\tocsection {}{4}{Sun-Abraham Estimator}}{147}{section.15.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Saturated Model}}{147}{subsection.15.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Interaction-Weighted Estimator}}{147}{subsection.15.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Comparison to Callaway-Sant'Anna}}{147}{table.caption.26}%
+\contentsline {section}{\tocsection {}{5}{Method Comparison}}{148}{section.15.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{When Methods Agree}}{148}{subsection.15.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{When Methods Diverge}}{148}{subsection.15.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Practical Recommendations}}{148}{subsection.15.5.3}%
+\contentsline {section}{\tocsection {}{6}{Implementation}}{148}{section.15.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Staggered Data Container}}{148}{subsection.15.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Callaway-Sant'Anna Estimation}}{149}{subsection.15.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Dynamic Effects}}{149}{subsection.15.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Sun-Abraham Estimation}}{149}{subsection.15.6.4}%
+\contentsline {subsection}{\tocsubsection {}{6.5}{Method Comparison}}{150}{subsection.15.6.5}%
+\contentsline {section}{\tocsection {}{7}{Monte Carlo Validation}}{150}{section.15.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Data-Generating Process}}{150}{subsection.15.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Validation Results}}{150}{table.caption.27}%
+\contentsline {section}{\tocsection {}{8}{Practical Guidance}}{151}{section.15.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Method Selection Decision Tree}}{151}{subsection.15.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{When TWFE Remains Appropriate}}{151}{subsection.15.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Reporting Recommendations}}{151}{subsection.15.8.3}%
+\contentsline {section}{\tocsection {}{9}{Summary}}{151}{section.15.9}%
+\contentsline {chapter}{\tocchapter {Chapter}{16}{Regression Discontinuity Design}}{153}{chapter.16}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{153}{section.16.1}%
+\contentsline {paragraph}{\tocparagraph {}{}{Chapter Roadmap.}}{153}{section*.28}%
+\contentsline {section}{\tocsection {}{2}{Sharp RDD Identification}}{153}{section.16.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Identification Assumptions}}{154}{subsection.16.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Graphical Intuition}}{154}{subsection.16.2.2}%
+\contentsline {section}{\tocsection {}{3}{Local Polynomial Estimation}}{154}{section.16.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Why Local Estimation?}}{155}{subsection.16.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Local Linear Regression}}{155}{subsection.16.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{Matrix Formulation}}{156}{subsection.16.3.3}%
+\contentsline {subsection}{\tocsubsection {}{3.4}{Bias-Variance Tradeoff}}{156}{subsection.16.3.4}%
+\contentsline {section}{\tocsection {}{4}{Bandwidth Selection}}{156}{section.16.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Imbens-Kalyanaraman Bandwidth}}{156}{subsection.16.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{CCT Robust Bandwidth}}{157}{subsection.16.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Cross-Validation Bandwidth}}{157}{subsection.16.4.3}%
+\contentsline {subsection}{\tocsubsection {}{4.4}{Sensitivity Analysis}}{157}{subsection.16.4.4}%
+\contentsline {section}{\tocsection {}{5}{Fuzzy RDD}}{157}{section.16.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{2SLS Interpretation}}{158}{subsection.16.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{First-Stage Strength}}{158}{subsection.16.5.2}%
+\contentsline {section}{\tocsection {}{6}{McCrary Density Test}}{158}{section.16.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Implementation}}{158}{subsection.16.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Limitations}}{159}{subsection.16.6.2}%
+\contentsline {section}{\tocsection {}{7}{Additional Diagnostics}}{159}{section.16.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Covariate Balance}}{159}{subsection.16.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Placebo Cutoffs}}{159}{subsection.16.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Donut-Hole RDD}}{160}{subsection.16.7.3}%
+\contentsline {subsection}{\tocsubsection {}{7.4}{Bandwidth Sensitivity}}{160}{subsection.16.7.4}%
+\contentsline {section}{\tocsection {}{8}{Implementation}}{160}{section.16.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Sharp RDD}}{160}{subsection.16.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Fuzzy RDD}}{161}{subsection.16.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{McCrary Test}}{161}{subsection.16.8.3}%
+\contentsline {subsection}{\tocsubsection {}{8.4}{Comprehensive Diagnostics}}{162}{subsection.16.8.4}%
+\contentsline {section}{\tocsection {}{9}{Monte Carlo Validation}}{163}{section.16.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{Data-Generating Process}}{163}{subsection.16.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Validation Results}}{163}{subsection.16.9.2}%
+\contentsline {subsection}{\tocsubsection {}{9.3}{Fuzzy RDD Validation}}{163}{subsection.16.9.3}%
+\contentsline {section}{\tocsection {}{10}{Practical Guidance}}{164}{section.16.10}%
+\contentsline {subsection}{\tocsubsection {}{10.1}{When RDD Is Appropriate}}{164}{subsection.16.10.1}%
+\contentsline {subsection}{\tocsubsection {}{10.2}{When RDD May Fail}}{164}{subsection.16.10.2}%
+\contentsline {subsection}{\tocsubsection {}{10.3}{Reporting Recommendations}}{164}{subsection.16.10.3}%
+\contentsline {subsection}{\tocsubsection {}{10.4}{Common Pitfalls}}{164}{subsection.16.10.4}%
+\contentsline {section}{\tocsection {}{11}{Summary}}{165}{section.16.11}%
+\contentsline {subsection}{\tocsubsection {}{11.1}{Key Formulas}}{165}{subsection.16.11.1}%
+\contentsline {subsection}{\tocsubsection {}{11.2}{Software Reference}}{165}{subsection.16.11.2}%
+\contentsline {chapter}{\tocchapter {Chapter}{17}{Synthetic Control Method}}{166}{chapter.17}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{166}{section.17.1}%
+\contentsline {paragraph}{\tocparagraph {}{}{Chapter Roadmap.}}{166}{section*.32}%
+\contentsline {section}{\tocsection {}{2}{The SCM Framework}}{166}{section.17.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Setup and Notation}}{166}{subsection.17.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{The Synthetic Control Estimator}}{167}{subsection.17.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{Identification}}{167}{subsection.17.2.3}%
+\contentsline {section}{\tocsection {}{3}{Weight Optimization}}{168}{section.17.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Objective Function}}{168}{subsection.17.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Choice of Predictor Variables}}{168}{subsection.17.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{Choice of V Matrix}}{168}{subsection.17.3.3}%
+\contentsline {subsection}{\tocsubsection {}{3.4}{Solving the Optimization}}{169}{subsection.17.3.4}%
+\contentsline {section}{\tocsection {}{4}{Pre-Treatment Fit Diagnostics}}{169}{section.17.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Fit Metrics}}{169}{subsection.17.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Weight Properties}}{169}{subsection.17.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Covariate Balance}}{169}{subsection.17.4.3}%
+\contentsline {section}{\tocsection {}{5}{Augmented Synthetic Control}}{170}{section.17.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Ridge Augmentation}}{170}{subsection.17.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Choosing Lambda}}{170}{subsection.17.5.2}%
+\contentsline {section}{\tocsection {}{6}{Inference}}{170}{section.17.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{In-Space Placebo Test}}{171}{subsection.17.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{In-Time Placebo Test}}{171}{subsection.17.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Confidence Intervals}}{171}{subsection.17.6.3}%
+\contentsline {section}{\tocsection {}{7}{Implementation}}{172}{section.17.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Basic Synthetic Control}}{172}{subsection.17.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Augmented Synthetic Control}}{172}{subsection.17.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Placebo Inference}}{173}{subsection.17.7.3}%
+\contentsline {subsection}{\tocsubsection {}{7.4}{Diagnostics}}{174}{subsection.17.7.4}%
+\contentsline {section}{\tocsection {}{8}{Monte Carlo Validation}}{174}{section.17.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Data-Generating Process}}{174}{subsection.17.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Validation Results}}{175}{subsection.17.8.2}%
+\contentsline {section}{\tocsection {}{9}{Practical Guidance}}{175}{section.17.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{When SCM Is Appropriate}}{175}{subsection.17.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{When SCM May Fail}}{175}{subsection.17.9.2}%
+\contentsline {subsection}{\tocsubsection {}{9.3}{Reporting Recommendations}}{176}{subsection.17.9.3}%
+\contentsline {subsection}{\tocsubsection {}{9.4}{Common Pitfalls}}{176}{subsection.17.9.4}%
+\contentsline {section}{\tocsection {}{10}{Summary}}{176}{section.17.10}%
+\contentsline {subsection}{\tocsubsection {}{10.1}{Key Formulas}}{176}{subsection.17.10.1}%
+\contentsline {subsection}{\tocsubsection {}{10.2}{Software Reference}}{176}{subsection.17.10.2}%
+\contentsline {chapter}{\tocchapter {Chapter}{18}{Kink Designs and Bunching}}{178}{chapter.18}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{178}{section.18.1}%
+\contentsline {paragraph}{\tocparagraph {}{}{Chapter Roadmap.}}{178}{section*.35}%
+\contentsline {section}{\tocsection {}{2}{Sharp Regression Kink Design}}{178}{section.18.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Setup}}{179}{subsection.18.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Identification}}{179}{subsection.18.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{Estimation}}{179}{subsection.18.2.3}%
+\contentsline {subsection}{\tocsubsection {}{2.4}{Standard Errors}}{180}{subsection.18.2.4}%
+\contentsline {section}{\tocsection {}{3}{Fuzzy RKD}}{180}{section.18.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{2SLS Estimation}}{180}{subsection.18.3.1}%
+\contentsline {section}{\tocsection {}{4}{RKD Bandwidth Selection}}{180}{section.18.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Rate of Convergence}}{180}{subsection.18.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{IK-Style Bandwidth for RKD}}{181}{subsection.18.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Rule of Thumb}}{181}{subsection.18.4.3}%
+\contentsline {section}{\tocsection {}{5}{RKD Diagnostics}}{181}{section.18.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Density Smoothness Test}}{181}{subsection.18.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Covariate Smoothness}}{181}{subsection.18.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{First-Stage Strength}}{181}{subsection.18.5.3}%
+\contentsline {section}{\tocsection {}{6}{Bunching Estimation}}{181}{section.18.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{The Bunching Framework}}{182}{subsection.18.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{The Saez (2010) Framework}}{182}{subsection.18.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{Elasticity Estimation}}{182}{subsection.18.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Counterfactual Estimation}}{183}{subsection.18.6.4}%
+\contentsline {section}{\tocsection {}{7}{Bunching with Optimization Frictions}}{183}{section.18.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{The Chetty et al. (2011) Framework}}{183}{subsection.18.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Bounds on Elasticities}}{183}{subsection.18.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Estimating Frictions}}{183}{subsection.18.7.3}%
+\contentsline {section}{\tocsection {}{8}{Implementation}}{184}{section.18.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Sharp RKD}}{184}{subsection.18.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Fuzzy RKD}}{184}{subsection.18.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Bunching Estimation}}{185}{subsection.18.8.3}%
+\contentsline {subsection}{\tocsubsection {}{8.4}{RKD Diagnostics}}{186}{subsection.18.8.4}%
+\contentsline {section}{\tocsection {}{9}{Monte Carlo Validation}}{186}{section.18.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{RKD Validation}}{186}{subsection.18.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Bunching Validation}}{187}{subsection.18.9.2}%
+\contentsline {section}{\tocsection {}{10}{Practical Guidance}}{187}{section.18.10}%
+\contentsline {subsection}{\tocsubsection {}{10.1}{RKD vs. Bunching}}{187}{subsection.18.10.1}%
+\contentsline {subsection}{\tocsubsection {}{10.2}{When RKD Is Appropriate}}{188}{subsection.18.10.2}%
+\contentsline {subsection}{\tocsubsection {}{10.3}{When Bunching Is Appropriate}}{188}{subsection.18.10.3}%
+\contentsline {subsection}{\tocsubsection {}{10.4}{Common Pitfalls}}{188}{subsection.18.10.4}%
+\contentsline {subsection}{\tocsubsection {}{10.5}{Reporting Recommendations}}{188}{subsection.18.10.5}%
+\contentsline {section}{\tocsection {}{11}{Summary}}{189}{section.18.11}%
+\contentsline {subsection}{\tocsubsection {}{11.1}{Key Formulas}}{189}{subsection.18.11.1}%
+\contentsline {subsection}{\tocsubsection {}{11.2}{Software Reference}}{189}{subsection.18.11.2}%
+\contentsline {part}{Part\ 5. \enspace \noindent Advanced Methods}{190}{part.5}%
+\contentsline {chapter}{\tocchapter {Chapter}{19}{Quantile Treatment Effects}}{191}{chapter.19}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{191}{section.19.1}%
+\contentsline {subsection}{\tocsubsection {}{1.1}{Applications}}{191}{subsection.19.1.1}%
+\contentsline {subsection}{\tocsubsection {}{1.2}{Unconditional vs. Conditional QTE}}{191}{subsection.19.1.2}%
+\contentsline {subsection}{\tocsubsection {}{1.3}{Chapter Roadmap}}{192}{subsection.19.1.3}%
+\contentsline {section}{\tocsection {}{2}{Unconditional QTE}}{192}{section.19.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Identification}}{192}{subsection.19.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Estimation}}{192}{subsection.19.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{Bootstrap Inference}}{193}{subsection.19.2.3}%
+\contentsline {section}{\tocsection {}{3}{Conditional QTE via Quantile Regression}}{193}{section.19.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{The Quantile Regression Model}}{193}{subsection.19.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Estimation via Check Function}}{193}{subsection.19.3.2}%
+\contentsline {subsection}{\tocsubsection {}{3.3}{Interpretation Caveat}}{194}{subsection.19.3.3}%
+\contentsline {section}{\tocsection {}{4}{RIF-OLS for Unconditional QTE}}{194}{section.19.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{The Influence Function}}{194}{subsection.19.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{RIF-OLS Estimation}}{195}{subsection.19.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Density Estimation}}{195}{subsection.19.4.3}%
+\contentsline {section}{\tocsection {}{5}{Inference for QTE}}{195}{section.19.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Pointwise Confidence Intervals}}{195}{subsection.19.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Joint Confidence Bands}}{195}{subsection.19.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Multiple Testing Correction}}{196}{subsection.19.5.3}%
+\contentsline {section}{\tocsection {}{6}{Implementation}}{196}{section.19.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Unconditional QTE}}{196}{subsection.19.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Conditional QTE}}{197}{subsection.19.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{RIF-OLS}}{197}{subsection.19.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Method Comparison}}{198}{table.caption.38}%
+\contentsline {section}{\tocsection {}{7}{Monte Carlo Validation}}{198}{section.19.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Data Generating Process}}{198}{subsection.19.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Validation Results}}{198}{table.caption.39}%
+\contentsline {section}{\tocsection {}{8}{Practical Guidance}}{199}{section.19.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{When to Use QTE}}{199}{subsection.19.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Method Selection}}{199}{subsection.19.8.2}%
+\contentsline {subsection}{\tocsubsection {}{8.3}{Common Pitfalls}}{199}{subsection.19.8.3}%
+\contentsline {section}{\tocsection {}{9}{Summary}}{199}{section.19.9}%
+\contentsline {chapter}{\tocchapter {Chapter}{20}{Marginal Treatment Effects}}{201}{chapter.20}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{201}{section.20.1}%
+\contentsline {section}{\tocsection {}{2}{The MTE Framework}}{201}{section.20.2}%
+\contentsline {subsection}{\tocsubsection {}{2.1}{Selection Model}}{201}{subsection.20.2.1}%
+\contentsline {subsection}{\tocsubsection {}{2.2}{Interpreting $U_D$: Resistance to Treatment}}{202}{subsection.20.2.2}%
+\contentsline {subsection}{\tocsubsection {}{2.3}{From MTE to Population Parameters}}{202}{subsection.20.2.3}%
+\contentsline {section}{\tocsection {}{3}{Identification}}{203}{section.20.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Identifying Assumptions}}{203}{subsection.20.3.1}%
+\contentsline {subsection}{\tocsubsection {}{3.2}{Support Restrictions}}{203}{subsection.20.3.2}%
+\contentsline {section}{\tocsection {}{4}{Estimation}}{203}{section.20.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Local Instrumental Variables}}{203}{subsection.20.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Kernel Weighting}}{204}{subsection.20.4.2}%
+\contentsline {subsection}{\tocsubsection {}{4.3}{Bandwidth Selection}}{204}{subsection.20.4.3}%
+\contentsline {subsection}{\tocsubsection {}{4.4}{Polynomial MTE}}{204}{subsection.20.4.4}%
+\contentsline {section}{\tocsection {}{5}{From MTE to Policy Parameters}}{205}{section.20.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Average Treatment Effect}}{205}{subsection.20.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Treatment Effect on the Treated}}{205}{subsection.20.5.2}%
+\contentsline {subsection}{\tocsubsection {}{5.3}{Treatment Effect on the Untreated}}{205}{subsection.20.5.3}%
+\contentsline {subsection}{\tocsubsection {}{5.4}{Policy-Relevant Treatment Effects}}{206}{subsection.20.5.4}%
+\contentsline {subsection}{\tocsubsection {}{5.5}{LATE from MTE}}{206}{subsection.20.5.5}%
+\contentsline {section}{\tocsection {}{6}{Diagnostics}}{206}{section.20.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{Common Support Check}}{206}{subsection.20.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{Monotonicity Test}}{207}{subsection.20.6.2}%
+\contentsline {subsection}{\tocsubsection {}{6.3}{MTE Shape Tests}}{207}{subsection.20.6.3}%
+\contentsline {subsection}{\tocsubsection {}{6.4}{Sensitivity to Trimming}}{207}{subsection.20.6.4}%
+\contentsline {section}{\tocsection {}{7}{Implementation}}{207}{section.20.7}%
+\contentsline {subsection}{\tocsubsection {}{7.1}{Local IV Estimation}}{207}{subsection.20.7.1}%
+\contentsline {subsection}{\tocsubsection {}{7.2}{Policy Parameter Computation}}{208}{subsection.20.7.2}%
+\contentsline {subsection}{\tocsubsection {}{7.3}{Diagnostics}}{209}{subsection.20.7.3}%
+\contentsline {subsection}{\tocsubsection {}{7.4}{Result Structures}}{210}{subsection.20.7.4}%
+\contentsline {section}{\tocsection {}{8}{Monte Carlo Validation}}{211}{section.20.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{Data Generating Process}}{211}{subsection.20.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Validation Results}}{211}{table.caption.41}%
+\contentsline {section}{\tocsection {}{9}{Practical Guidance}}{211}{section.20.9}%
+\contentsline {subsection}{\tocsubsection {}{9.1}{When to Use MTE}}{211}{subsection.20.9.1}%
+\contentsline {subsection}{\tocsubsection {}{9.2}{Limitations}}{212}{subsection.20.9.2}%
+\contentsline {subsection}{\tocsubsection {}{9.3}{Reporting Recommendations}}{212}{subsection.20.9.3}%
+\contentsline {section}{\tocsection {}{10}{Summary}}{212}{section.20.10}%
+\contentsline {chapter}{\tocchapter {Chapter}{21}{Mediation Analysis}}{214}{chapter.21}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{214}{section.21.1}%
+\contentsline {chapter}{\tocchapter {Chapter}{22}{Selection and Panel Methods}}{215}{chapter.22}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{215}{section.22.1}%
+\contentsline {chapter}{\tocchapter {Chapter}{23}{Dynamic Treatment Regimes}}{216}{chapter.23}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{216}{section.23.1}%
+\contentsline {part}{Part\ 6. \enspace \noindent Implementation}{217}{part.6}%
+\contentsline {chapter}{\tocchapter {Chapter}{24}{Principal Stratification}}{218}{chapter.24}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{218}{section.24.1}%
+\contentsline {chapter}{\tocchapter {Chapter}{25}{Bayesian Causal Inference}}{219}{chapter.25}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{219}{section.25.1}%
+\contentsline {chapter}{\tocchapter {Chapter}{26}{Cross-Language Validation}}{220}{chapter.26}%
+\contentsline {section}{\tocsection {}{1}{Introduction}}{220}{section.26.1}%
+\contentsline {chapter}{\tocappendix {Appendix}{A}{Julia Implementation Reference}}{221}{appendix.A}%
+\contentsline {section}{\tocsection {}{1}{Installation}}{221}{section.A.1}%
+\contentsline {section}{\tocsection {}{2}{Architecture Overview}}{221}{section.A.2}%
+\contentsline {section}{\tocsection {}{3}{RCT Estimators}}{221}{section.A.3}%
+\contentsline {subsection}{\tocsubsection {}{3.1}{Simple ATE (Difference-in-Means)}}{221}{subsection.A.3.1}%
+\contentsline {section}{\tocsection {}{4}{Propensity Score Methods}}{223}{section.A.4}%
+\contentsline {subsection}{\tocsubsection {}{4.1}{Propensity Score Estimation}}{223}{subsection.A.4.1}%
+\contentsline {subsection}{\tocsubsection {}{4.2}{Nearest Neighbor Matching}}{223}{subsection.A.4.2}%
+\contentsline {section}{\tocsection {}{5}{Weighting Estimators}}{224}{section.A.5}%
+\contentsline {subsection}{\tocsubsection {}{5.1}{Inverse Probability Weighting (IPW)}}{224}{subsection.A.5.1}%
+\contentsline {subsection}{\tocsubsection {}{5.2}{Doubly Robust (AIPW)}}{225}{subsection.A.5.2}%
+\contentsline {section}{\tocsection {}{6}{CATE Estimators}}{226}{section.A.6}%
+\contentsline {subsection}{\tocsubsection {}{6.1}{S-Learner}}{226}{subsection.A.6.1}%
+\contentsline {subsection}{\tocsubsection {}{6.2}{T-Learner}}{227}{subsection.A.6.2}%
+\contentsline {section}{\tocsection {}{7}{Causal Forests}}{227}{section.A.7}%
+\contentsline {section}{\tocsection {}{8}{Sensitivity Analysis}}{228}{section.A.8}%
+\contentsline {subsection}{\tocsubsection {}{8.1}{E-Value}}{228}{subsection.A.8.1}%
+\contentsline {subsection}{\tocsubsection {}{8.2}{Rosenbaum Bounds}}{229}{subsection.A.8.2}%
+\contentsline {section}{\tocsection {}{9}{Cross-Language Validation}}{230}{section.A.9}%
+\contentsline {chapter}{\tocappendix {Appendix}{}{Bibliography}}{231}{appendix*.43}%

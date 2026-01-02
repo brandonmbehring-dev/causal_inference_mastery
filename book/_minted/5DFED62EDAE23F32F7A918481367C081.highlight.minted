@@ -1,0 +1,12 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Heteroskedasticity\PYGZhy{}robust SEs}
+\PYG{n}{tsls\PYGZus{}robust} \PYG{o}{=} \PYG{n}{TwoStageLeastSquares}\PYG{p}{(}\PYG{n}{inference}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{robust}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{tsls\PYGZus{}robust}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{p}{,} \PYG{n}{X}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Cluster\PYGZhy{}robust SEs}
+\PYG{n}{tsls\PYGZus{}cluster} \PYG{o}{=} \PYG{n}{TwoStageLeastSquares}\PYG{p}{(}
+    \PYG{n}{inference}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{clustered}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,}
+    \PYG{n}{clusters}\PYG{o}{=}\PYG{n}{cluster\PYGZus{}ids}
+\PYG{p}{)}
+\PYG{n}{tsls\PYGZus{}cluster}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{p}{,} \PYG{n}{X}\PYG{p}{)}
+\end{MintedVerbatim}

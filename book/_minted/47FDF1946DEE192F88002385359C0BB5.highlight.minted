@@ -1,0 +1,29 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{l+s}{    solve(problem::RosenbaumProblem, ::RosenbaumBounds)}
+
+\PYG{l+s}{Sensitivity analysis for matched pairs using Wilcoxon signed\PYGZhy{}rank test.}
+
+\PYG{l+s}{Finds critical Gamma where p\PYGZus{}upper \PYGZgt{} alpha.}
+\PYG{l+s}{\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+\PYG{k}{function}\PYG{+w}{ }\PYG{n}{solve}\PYG{p}{(}\PYG{n}{problem}\PYG{o}{::}\PYG{k+kt}{RosenbaumProblem}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{::}\PYG{k+kt}{RosenbaumBounds}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{differences}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{problem}\PYG{o}{.}\PYG{n}{treated\PYGZus{}outcomes}\PYG{+w}{ }\PYG{o}{.\PYGZhy{}}\PYG{+w}{ }\PYG{n}{problem}\PYG{o}{.}\PYG{n}{control\PYGZus{}outcomes}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Wilcoxon signed\PYGZhy{}rank statistic}
+\PYG{+w}{    }\PYG{n}{T\PYGZus{}plus}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{ranks}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{signs}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{compute\PYGZus{}signed\PYGZus{}rank\PYGZus{}statistic}\PYG{p}{(}\PYG{n}{differences}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{n}{gamma\PYGZus{}grid}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{range}\PYG{p}{(}\PYG{n}{problem}\PYG{o}{.}\PYG{n}{gamma\PYGZus{}range}\PYG{o}{...}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{length}\PYG{o}{=}\PYG{n}{problem}\PYG{o}{.}\PYG{n}{n\PYGZus{}gamma}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{p\PYGZus{}upper}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{zeros}\PYG{p}{(}\PYG{n}{length}\PYG{p}{(}\PYG{n}{gamma\PYGZus{}grid}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{+w}{    }\PYG{k}{for}\PYG{+w}{ }\PYG{p}{(}\PYG{n}{i}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{gamma}\PYG{p}{)}\PYG{+w}{ }\PYG{k}{in}\PYG{+w}{ }\PYG{n}{enumerate}\PYG{p}{(}\PYG{n}{gamma\PYGZus{}grid}\PYG{p}{)}
+\PYG{+w}{        }\PYG{n}{E\PYGZus{}upper}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{\PYGZus{}}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Var\PYGZus{}max}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{\PYGZus{}}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{compute\PYGZus{}bounds\PYGZus{}at\PYGZus{}gamma}\PYG{p}{(}\PYG{n}{ranks}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{signs}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{gamma}\PYG{p}{)}
+\PYG{+w}{        }\PYG{n}{p\PYGZus{}upper}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{normal\PYGZus{}approximation\PYGZus{}p}\PYG{p}{(}\PYG{n}{T\PYGZus{}plus}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{E\PYGZus{}upper}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{Var\PYGZus{}max}\PYG{p}{)}
+\PYG{+w}{    }\PYG{k}{end}
+
+\PYG{+w}{    }\PYG{c}{\PYGZsh{} Critical Gamma: first where p\PYGZus{}upper \PYGZgt{} alpha}
+\PYG{+w}{    }\PYG{n}{gamma\PYGZus{}critical}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{findfirst}\PYG{p}{(}\PYG{o}{\PYGZgt{}}\PYG{p}{(}\PYG{n}{problem}\PYG{o}{.}\PYG{n}{alpha}\PYG{p}{)}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{p\PYGZus{}upper}\PYG{p}{)}
+\PYG{+w}{    }\PYG{n}{gamma\PYGZus{}critical}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{isnothing}\PYG{p}{(}\PYG{n}{gamma\PYGZus{}critical}\PYG{p}{)}\PYG{+w}{ }\PYG{o}{?}\PYG{+w}{ }\PYG{n+nb}{nothing}\PYG{+w}{ }\PYG{o}{:}\PYG{+w}{ }\PYG{n}{gamma\PYGZus{}grid}\PYG{p}{[}\PYG{n}{gamma\PYGZus{}critical}\PYG{p}{]}
+
+\PYG{+w}{    }\PYG{k}{return}\PYG{+w}{ }\PYG{n}{RosenbaumSolution}\PYG{p}{(}\PYG{n}{gamma\PYGZus{}critical}\PYG{o}{=}\PYG{n}{gamma\PYGZus{}critical}\PYG{p}{,}\PYG{+w}{ }\PYG{o}{...}\PYG{p}{)}
+\PYG{k}{end}
+\end{MintedVerbatim}

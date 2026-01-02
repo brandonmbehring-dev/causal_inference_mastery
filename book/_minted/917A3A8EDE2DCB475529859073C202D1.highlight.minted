@@ -1,0 +1,16 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{n+nd}{@dataclass}
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{DiD2x2Result}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Result container for 2x2 DiD estimation.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{n}{estimate}\PYG{p}{:} \PYG{n+nb}{float}        \PYG{c+c1}{\PYGZsh{} DiD point estimate}
+    \PYG{n}{se}\PYG{p}{:} \PYG{n+nb}{float}              \PYG{c+c1}{\PYGZsh{} Standard error}
+    \PYG{n}{t\PYGZus{}stat}\PYG{p}{:} \PYG{n+nb}{float}          \PYG{c+c1}{\PYGZsh{} t\PYGZhy{}statistic}
+    \PYG{n}{p\PYGZus{}value}\PYG{p}{:} \PYG{n+nb}{float}         \PYG{c+c1}{\PYGZsh{} Two\PYGZhy{}sided p\PYGZhy{}value}
+    \PYG{n}{ci\PYGZus{}lower}\PYG{p}{:} \PYG{n+nb}{float}        \PYG{c+c1}{\PYGZsh{} Lower CI bound}
+    \PYG{n}{ci\PYGZus{}upper}\PYG{p}{:} \PYG{n+nb}{float}        \PYG{c+c1}{\PYGZsh{} Upper CI bound}
+    \PYG{n}{n\PYGZus{}treated}\PYG{p}{:} \PYG{n+nb}{int}         \PYG{c+c1}{\PYGZsh{} Number of treated units}
+    \PYG{n}{n\PYGZus{}control}\PYG{p}{:} \PYG{n+nb}{int}         \PYG{c+c1}{\PYGZsh{} Number of control units}
+    \PYG{n}{n\PYGZus{}clusters}\PYG{p}{:} \PYG{n+nb}{int}        \PYG{c+c1}{\PYGZsh{} Number of clusters}
+    \PYG{n}{se\PYGZus{}method}\PYG{p}{:} \PYG{n+nb}{str}         \PYG{c+c1}{\PYGZsh{} SE method used}
+    \PYG{n}{diagnostics}\PYG{p}{:} \PYG{n+nb}{dict}      \PYG{c+c1}{\PYGZsh{} Additional diagnostics}
+\end{MintedVerbatim}

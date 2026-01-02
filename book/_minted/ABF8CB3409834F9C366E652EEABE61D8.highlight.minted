@@ -1,0 +1,19 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{did}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{did\PYGZus{}2x2}
+
+\PYG{c+c1}{\PYGZsh{} Estimate 2x2 DiD with cluster\PYGZhy{}robust SEs}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{did\PYGZus{}2x2}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{,}           \PYG{c+c1}{\PYGZsh{} Outcome array (n\PYGZus{}obs,)}
+    \PYG{n}{treatment}\PYG{o}{=}\PYG{n}{D}\PYG{p}{,}          \PYG{c+c1}{\PYGZsh{} Treatment group indicator (n\PYGZus{}obs,)}
+    \PYG{n}{post}\PYG{o}{=}\PYG{n}{Post}\PYG{p}{,}            \PYG{c+c1}{\PYGZsh{} Post\PYGZhy{}period indicator (n\PYGZus{}obs,)}
+    \PYG{n}{unit\PYGZus{}id}\PYG{o}{=}\PYG{n}{unit\PYGZus{}ids}\PYG{p}{,}     \PYG{c+c1}{\PYGZsh{} Unit identifiers for clustering}
+    \PYG{n}{cluster\PYGZus{}se}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,}      \PYG{c+c1}{\PYGZsh{} Use cluster\PYGZhy{}robust SEs}
+    \PYG{n}{se\PYGZus{}method}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{cluster}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}  \PYG{c+c1}{\PYGZsh{} Options: \PYGZdq{}cluster\PYGZdq{}, \PYGZdq{}wild\PYGZus{}bootstrap\PYGZdq{}, \PYGZdq{}naive\PYGZdq{}}
+    \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}            \PYG{c+c1}{\PYGZsh{} Significance level}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{DiD Estimate: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{estimate}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Standard Error: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{se}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{95\PYGZpc{} CI: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{ci\PYGZus{}lower}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{ci\PYGZus{}upper}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{p\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{p\PYGZus{}value}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

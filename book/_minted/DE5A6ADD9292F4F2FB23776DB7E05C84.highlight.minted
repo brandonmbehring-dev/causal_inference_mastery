@@ -1,0 +1,24 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} MTEResult TypedDict}
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{MTEResult}\PYG{p}{(}\PYG{n}{TypedDict}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{mte\PYGZus{}grid}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}      \PYG{c+c1}{\PYGZsh{} MTE(u) at grid points}
+    \PYG{n}{u\PYGZus{}grid}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}        \PYG{c+c1}{\PYGZsh{} Evaluation grid [p\PYGZus{}min, p\PYGZus{}max]}
+    \PYG{n}{se\PYGZus{}grid}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}       \PYG{c+c1}{\PYGZsh{} Bootstrap standard errors}
+    \PYG{n}{ci\PYGZus{}lower}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}      \PYG{c+c1}{\PYGZsh{} Lower 95\PYGZpc{} CI}
+    \PYG{n}{ci\PYGZus{}upper}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}      \PYG{c+c1}{\PYGZsh{} Upper 95\PYGZpc{} CI}
+    \PYG{n}{propensity\PYGZus{}support}\PYG{p}{:} \PYG{n}{Tuple}\PYG{p}{[}\PYG{n+nb}{float}\PYG{p}{,} \PYG{n+nb}{float}\PYG{p}{]}  \PYG{c+c1}{\PYGZsh{} (p\PYGZus{}min, p\PYGZus{}max)}
+    \PYG{n}{n\PYGZus{}obs}\PYG{p}{:} \PYG{n+nb}{int}                \PYG{c+c1}{\PYGZsh{} Sample size}
+    \PYG{n}{n\PYGZus{}trimmed}\PYG{p}{:} \PYG{n+nb}{int}            \PYG{c+c1}{\PYGZsh{} Units trimmed}
+    \PYG{n}{bandwidth}\PYG{p}{:} \PYG{n+nb}{float}          \PYG{c+c1}{\PYGZsh{} Kernel bandwidth}
+    \PYG{n}{method}\PYG{p}{:} \PYG{n+nb}{str}               \PYG{c+c1}{\PYGZsh{} \PYGZdq{}local\PYGZus{}iv\PYGZdq{} or \PYGZdq{}polynomial\PYGZdq{}}
+
+\PYG{c+c1}{\PYGZsh{} PolicyResult TypedDict}
+\PYG{k}{class}\PYG{+w}{ }\PYG{n+nc}{PolicyResult}\PYG{p}{(}\PYG{n}{TypedDict}\PYG{p}{)}\PYG{p}{:}
+    \PYG{n}{estimate}\PYG{p}{:} \PYG{n+nb}{float}           \PYG{c+c1}{\PYGZsh{} Parameter estimate (ATE, ATT, etc.)}
+    \PYG{n}{se}\PYG{p}{:} \PYG{n+nb}{float}                 \PYG{c+c1}{\PYGZsh{} Standard error}
+    \PYG{n}{ci\PYGZus{}lower}\PYG{p}{:} \PYG{n+nb}{float}           \PYG{c+c1}{\PYGZsh{} Lower 95\PYGZpc{} CI}
+    \PYG{n}{ci\PYGZus{}upper}\PYG{p}{:} \PYG{n+nb}{float}           \PYG{c+c1}{\PYGZsh{} Upper 95\PYGZpc{} CI}
+    \PYG{n}{parameter}\PYG{p}{:} \PYG{n+nb}{str}            \PYG{c+c1}{\PYGZsh{} \PYGZdq{}ate\PYGZdq{}, \PYGZdq{}att\PYGZdq{}, \PYGZdq{}atu\PYGZdq{}, \PYGZdq{}prte\PYGZdq{}, \PYGZdq{}late\PYGZdq{}}
+    \PYG{n}{weights\PYGZus{}used}\PYG{p}{:} \PYG{n+nb}{str}         \PYG{c+c1}{\PYGZsh{} Description of weighting}
+    \PYG{n}{n\PYGZus{}obs}\PYG{p}{:} \PYG{n+nb}{int}                \PYG{c+c1}{\PYGZsh{} Sample size}
+\end{MintedVerbatim}

@@ -1,0 +1,28 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{abadie\PYGZus{}imbens\PYGZus{}variance}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{matches}\PYG{p}{,} \PYG{n}{M}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Abadie\PYGZhy{}Imbens (2006) analytic variance for PSM.}
+
+\PYG{l+s+sd}{    Algorithm:}
+\PYG{l+s+sd}{    1. Compute imputed potential outcomes for all units}
+\PYG{l+s+sd}{    2. Compute conditional variances sigma\PYGZus{}i\PYGZca{}2}
+\PYG{l+s+sd}{    3. Aggregate with K\PYGZus{}M factor}
+
+\PYG{l+s+sd}{    Returns: (variance, se)}
+
+\PYG{l+s+sd}{    Note: This is the ONLY valid variance estimator for PSM}
+\PYG{l+s+sd}{    with replacement. Bootstrap FAILS.}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{c+c1}{\PYGZsh{} Step 1: Impute potential outcomes}
+    \PYG{n}{imputed\PYGZus{}y0}\PYG{p}{,} \PYG{n}{imputed\PYGZus{}y1} \PYG{o}{=} \PYG{n}{impute\PYGZus{}potential\PYGZus{}outcomes}\PYG{p}{(}\PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Step 2: Conditional variances}
+    \PYG{n}{sigma\PYGZus{}sq\PYGZus{}treated} \PYG{o}{=} \PYG{p}{(}\PYG{n}{y1\PYGZus{}obs} \PYG{o}{\PYGZhy{}} \PYG{n}{y0\PYGZus{}imp}\PYG{p}{)}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}
+    \PYG{n}{sigma\PYGZus{}sq\PYGZus{}control} \PYG{o}{=} \PYG{p}{(}\PYG{n}{y0\PYGZus{}obs} \PYG{o}{\PYGZhy{}} \PYG{n}{y1\PYGZus{}imp}\PYG{p}{)}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2}
+
+    \PYG{c+c1}{\PYGZsh{} Step 3: Aggregate with K\PYGZus{}M}
+    \PYG{n}{K\PYGZus{}M} \PYG{o}{=} \PYG{n+nb}{float}\PYG{p}{(}\PYG{n}{M}\PYG{p}{)}
+    \PYG{n}{variance} \PYG{o}{=} \PYG{n}{mean}\PYG{p}{(}\PYG{n}{sigma\PYGZus{}sq\PYGZus{}treated}\PYG{p}{)} \PYG{o}{+} \PYG{p}{(}\PYG{n}{K\PYGZus{}M}\PYG{o}{/}\PYG{n}{n\PYGZus{}control}\PYG{p}{)}\PYG{o}{*}\PYG{n+nb}{sum}\PYG{p}{(}\PYG{n}{sigma\PYGZus{}sq\PYGZus{}control}\PYG{p}{)}
+    \PYG{n}{variance} \PYG{o}{=} \PYG{n}{variance} \PYG{o}{/} \PYG{n}{n\PYGZus{}matched}
+
+    \PYG{k}{return} \PYG{n}{variance}\PYG{p}{,} \PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{variance}\PYG{p}{)}
+\end{MintedVerbatim}

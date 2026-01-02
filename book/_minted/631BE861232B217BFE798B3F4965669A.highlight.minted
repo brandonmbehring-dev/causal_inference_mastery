@@ -1,0 +1,61 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{rosenbaum\PYGZus{}bounds}\PYG{p}{(}
+    \PYG{n}{treated\PYGZus{}outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{control\PYGZus{}outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{gamma\PYGZus{}range}\PYG{p}{:} \PYG{n}{Tuple}\PYG{p}{[}\PYG{n+nb}{float}\PYG{p}{,} \PYG{n+nb}{float}\PYG{p}{]} \PYG{o}{=} \PYG{p}{(}\PYG{l+m+mf}{1.0}\PYG{p}{,} \PYG{l+m+mf}{3.0}\PYG{p}{)}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}gamma}\PYG{p}{:} \PYG{n+nb}{int} \PYG{o}{=} \PYG{l+m+mi}{20}\PYG{p}{,}
+    \PYG{n}{alpha}\PYG{p}{:} \PYG{n+nb}{float} \PYG{o}{=} \PYG{l+m+mf}{0.05}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{RosenbaumResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Compute Rosenbaum sensitivity bounds for matched pairs.}
+
+\PYG{l+s+sd}{    Parameters}
+\PYG{l+s+sd}{    \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{l+s+sd}{    treated\PYGZus{}outcomes : np.ndarray}
+\PYG{l+s+sd}{        Outcomes for treated units in matched pairs.}
+\PYG{l+s+sd}{    control\PYGZus{}outcomes : np.ndarray}
+\PYG{l+s+sd}{        Outcomes for matched control units.}
+\PYG{l+s+sd}{    gamma\PYGZus{}range : Tuple[float, float]}
+\PYG{l+s+sd}{        Range of Gamma values to evaluate.}
+\PYG{l+s+sd}{    alpha : float}
+\PYG{l+s+sd}{        Significance level for gamma\PYGZus{}critical.}
+
+\PYG{l+s+sd}{    Returns}
+\PYG{l+s+sd}{    \PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}\PYGZhy{}}
+\PYG{l+s+sd}{    RosenbaumResult}
+\PYG{l+s+sd}{        gamma\PYGZus{}values: Array of Gamma values evaluated}
+\PYG{l+s+sd}{        p\PYGZus{}upper: Upper bound p\PYGZhy{}values at each Gamma}
+\PYG{l+s+sd}{        p\PYGZus{}lower: Lower bound p\PYGZhy{}values at each Gamma}
+\PYG{l+s+sd}{        gamma\PYGZus{}critical: Smallest Gamma where p\PYGZus{}upper \PYGZgt{} alpha}
+\PYG{l+s+sd}{    \PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{c+c1}{\PYGZsh{} Compute pair differences}
+    \PYG{n}{differences} \PYG{o}{=} \PYG{n}{treated\PYGZus{}outcomes} \PYG{o}{\PYGZhy{}} \PYG{n}{control\PYGZus{}outcomes}
+
+    \PYG{c+c1}{\PYGZsh{} Wilcoxon signed\PYGZhy{}rank statistic}
+    \PYG{n}{nonzero} \PYG{o}{=} \PYG{n}{differences} \PYG{o}{!=} \PYG{l+m+mi}{0}
+    \PYG{n}{abs\PYGZus{}diffs} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{abs}\PYG{p}{(}\PYG{n}{differences}\PYG{p}{[}\PYG{n}{nonzero}\PYG{p}{]}\PYG{p}{)}
+    \PYG{n}{ranks} \PYG{o}{=} \PYG{n}{stats}\PYG{o}{.}\PYG{n}{rankdata}\PYG{p}{(}\PYG{n}{abs\PYGZus{}diffs}\PYG{p}{)}
+    \PYG{n}{t\PYGZus{}plus} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{ranks}\PYG{p}{[}\PYG{n}{differences}\PYG{p}{[}\PYG{n}{nonzero}\PYG{p}{]} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Evaluate at each Gamma}
+    \PYG{n}{gamma\PYGZus{}values} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{linspace}\PYG{p}{(}\PYG{n}{gamma\PYGZus{}range}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,} \PYG{n}{gamma\PYGZus{}range}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{p}{,} \PYG{n}{n\PYGZus{}gamma}\PYG{p}{)}
+    \PYG{n}{p\PYGZus{}upper} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{zeros}\PYG{p}{(}\PYG{n}{n\PYGZus{}gamma}\PYG{p}{)}
+
+    \PYG{k}{for} \PYG{n}{i}\PYG{p}{,} \PYG{n}{gamma} \PYG{o+ow}{in} \PYG{n+nb}{enumerate}\PYG{p}{(}\PYG{n}{gamma\PYGZus{}values}\PYG{p}{)}\PYG{p}{:}
+        \PYG{c+c1}{\PYGZsh{} Probability bounds under Gamma\PYGZhy{}confounding}
+        \PYG{n}{p\PYGZus{}low} \PYG{o}{=} \PYG{l+m+mi}{1} \PYG{o}{/} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{+} \PYG{n}{gamma}\PYG{p}{)}
+        \PYG{n}{p\PYGZus{}high} \PYG{o}{=} \PYG{n}{gamma} \PYG{o}{/} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{+} \PYG{n}{gamma}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Expectation and variance bounds}
+        \PYG{n}{e\PYGZus{}upper} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{ranks} \PYG{o}{*} \PYG{n}{p\PYGZus{}high}\PYG{p}{)}
+        \PYG{n}{var\PYGZus{}upper} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sum}\PYG{p}{(}\PYG{n}{ranks}\PYG{o}{*}\PYG{o}{*}\PYG{l+m+mi}{2} \PYG{o}{*} \PYG{n}{p\PYGZus{}high} \PYG{o}{*} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{p\PYGZus{}high}\PYG{p}{)}\PYG{p}{)}
+
+        \PYG{c+c1}{\PYGZsh{} Normal approximation p\PYGZhy{}value}
+        \PYG{n}{z} \PYG{o}{=} \PYG{p}{(}\PYG{n}{t\PYGZus{}plus} \PYG{o}{\PYGZhy{}} \PYG{n}{e\PYGZus{}upper}\PYG{p}{)} \PYG{o}{/} \PYG{n}{np}\PYG{o}{.}\PYG{n}{sqrt}\PYG{p}{(}\PYG{n}{var\PYGZus{}upper}\PYG{p}{)}
+        \PYG{n}{p\PYGZus{}upper}\PYG{p}{[}\PYG{n}{i}\PYG{p}{]} \PYG{o}{=} \PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{stats}\PYG{o}{.}\PYG{n}{norm}\PYG{o}{.}\PYG{n}{cdf}\PYG{p}{(}\PYG{n}{z}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Find critical Gamma}
+    \PYG{n}{critical\PYGZus{}idx} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{where}\PYG{p}{(}\PYG{n}{p\PYGZus{}upper} \PYG{o}{\PYGZgt{}} \PYG{n}{alpha}\PYG{p}{)}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}
+    \PYG{n}{gamma\PYGZus{}critical} \PYG{o}{=} \PYG{n}{gamma\PYGZus{}values}\PYG{p}{[}\PYG{n}{critical\PYGZus{}idx}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{]} \PYG{k}{if} \PYG{n+nb}{len}\PYG{p}{(}\PYG{n}{critical\PYGZus{}idx}\PYG{p}{)} \PYG{o}{\PYGZgt{}} \PYG{l+m+mi}{0} \PYG{k}{else} \PYG{k+kc}{None}
+
+    \PYG{k}{return} \PYG{n}{RosenbaumResult}\PYG{p}{(}\PYG{n}{gamma\PYGZus{}critical}\PYG{o}{=}\PYG{n}{gamma\PYGZus{}critical}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}
+\end{MintedVerbatim}

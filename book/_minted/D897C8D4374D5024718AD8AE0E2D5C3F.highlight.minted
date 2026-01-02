@@ -1,0 +1,42 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{causal\PYGZus{}forest}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{covariates}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}estimators}\PYG{p}{:} \PYG{n+nb}{int} \PYG{o}{=} \PYG{l+m+mi}{100}\PYG{p}{,}
+    \PYG{n}{min\PYGZus{}samples\PYGZus{}leaf}\PYG{p}{:} \PYG{n+nb}{int} \PYG{o}{=} \PYG{l+m+mi}{5}\PYG{p}{,}
+    \PYG{n}{max\PYGZus{}depth}\PYG{p}{:} \PYG{n}{Optional}\PYG{p}{[}\PYG{n+nb}{int}\PYG{p}{]} \PYG{o}{=} \PYG{k+kc}{None}\PYG{p}{,}
+    \PYG{n}{honest}\PYG{p}{:} \PYG{n+nb}{bool} \PYG{o}{=} \PYG{k+kc}{True}\PYG{p}{,}  \PYG{c+c1}{\PYGZsh{} CRITICAL for valid inference}
+    \PYG{n}{cv}\PYG{p}{:} \PYG{n+nb}{int} \PYG{o}{=} \PYG{l+m+mi}{5}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{CATEResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}Causal Forest with honest splitting.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{econml}\PYG{n+nn}{.}\PYG{n+nn}{dml}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{CausalForestDML}
+    \PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{sklearn}\PYG{n+nn}{.}\PYG{n+nn}{linear\PYGZus{}model}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{LogisticRegression}\PYG{p}{,} \PYG{n}{Ridge}
+
+    \PYG{c+c1}{\PYGZsh{} Configure model}
+    \PYG{n}{model} \PYG{o}{=} \PYG{n}{CausalForestDML}\PYG{p}{(}
+        \PYG{n}{model\PYGZus{}y}\PYG{o}{=}\PYG{n}{Ridge}\PYG{p}{(}\PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{1.0}\PYG{p}{)}\PYG{p}{,}
+        \PYG{n}{model\PYGZus{}t}\PYG{o}{=}\PYG{n}{LogisticRegression}\PYG{p}{(}\PYG{n}{max\PYGZus{}iter}\PYG{o}{=}\PYG{l+m+mi}{1000}\PYG{p}{)}\PYG{p}{,}
+        \PYG{n}{discrete\PYGZus{}treatment}\PYG{o}{=}\PYG{k+kc}{True}\PYG{p}{,}
+        \PYG{n}{n\PYGZus{}estimators}\PYG{o}{=}\PYG{n}{n\PYGZus{}estimators}\PYG{p}{,}
+        \PYG{n}{min\PYGZus{}samples\PYGZus{}leaf}\PYG{o}{=}\PYG{n}{min\PYGZus{}samples\PYGZus{}leaf}\PYG{p}{,}
+        \PYG{n}{max\PYGZus{}depth}\PYG{o}{=}\PYG{n}{max\PYGZus{}depth}\PYG{p}{,}
+        \PYG{n}{honest}\PYG{o}{=}\PYG{n}{honest}\PYG{p}{,}
+        \PYG{n}{cv}\PYG{o}{=}\PYG{n}{cv}\PYG{p}{,}
+        \PYG{n}{random\PYGZus{}state}\PYG{o}{=}\PYG{l+m+mi}{42}\PYG{p}{,}
+    \PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Fit}
+    \PYG{n}{model}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{o}{=}\PYG{n}{outcomes}\PYG{p}{,} \PYG{n}{T}\PYG{o}{=}\PYG{n}{treatment}\PYG{p}{,} \PYG{n}{X}\PYG{o}{=}\PYG{n}{covariates}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Extract estimates}
+    \PYG{n}{cate} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{effect}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{)}\PYG{o}{.}\PYG{n}{flatten}\PYG{p}{(}\PYG{p}{)}
+    \PYG{n}{ate} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{cate}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Inference}
+    \PYG{n}{ate\PYGZus{}inf} \PYG{o}{=} \PYG{n}{model}\PYG{o}{.}\PYG{n}{ate\PYGZus{}inference}\PYG{p}{(}\PYG{n}{X}\PYG{o}{=}\PYG{n}{covariates}\PYG{p}{)}
+    \PYG{n}{ate\PYGZus{}se} \PYG{o}{=} \PYG{n+nb}{float}\PYG{p}{(}\PYG{n}{ate\PYGZus{}inf}\PYG{o}{.}\PYG{n}{stderr\PYGZus{}mean}\PYG{p}{)}
+    \PYG{n}{ci\PYGZus{}lower}\PYG{p}{,} \PYG{n}{ci\PYGZus{}upper} \PYG{o}{=} \PYG{n}{ate\PYGZus{}inf}\PYG{o}{.}\PYG{n}{conf\PYGZus{}int\PYGZus{}mean}\PYG{p}{(}\PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{)}
+
+    \PYG{k}{return} \PYG{n}{CATEResult}\PYG{p}{(}\PYG{n}{cate}\PYG{o}{=}\PYG{n}{cate}\PYG{p}{,} \PYG{n}{ate}\PYG{o}{=}\PYG{n}{ate}\PYG{p}{,} \PYG{n}{ate\PYGZus{}se}\PYG{o}{=}\PYG{n}{ate\PYGZus{}se}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}
+\end{MintedVerbatim}

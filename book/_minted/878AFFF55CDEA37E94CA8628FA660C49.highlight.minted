@@ -1,0 +1,20 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Simulate weak instrument scenario}
+\PYG{n}{n} \PYG{o}{=} \PYG{l+m+mi}{500}
+\PYG{n}{Z} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}
+\PYG{n}{D} \PYG{o}{=} \PYG{l+m+mf}{0.1} \PYG{o}{*} \PYG{n}{Z} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} Weak: pi = 0.1}
+\PYG{n}{Y} \PYG{o}{=} \PYG{l+m+mf}{2.0} \PYG{o}{*} \PYG{n}{D} \PYG{o}{+} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{normal}\PYG{p}{(}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{,} \PYG{n}{n}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} True beta = 2.0}
+
+\PYG{c+c1}{\PYGZsh{} AR test for H0: beta = 0}
+\PYG{n}{ar\PYGZus{}stat}\PYG{p}{,} \PYG{n}{p\PYGZus{}value}\PYG{p}{,} \PYG{n}{ar\PYGZus{}ci} \PYG{o}{=} \PYG{n}{anderson\PYGZus{}rubin\PYGZus{}test}\PYG{p}{(}
+    \PYG{n}{Y}\PYG{p}{,} \PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{o}{.}\PYG{n}{reshape}\PYG{p}{(}\PYG{o}{\PYGZhy{}}\PYG{l+m+mi}{1}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{)}\PYG{p}{,}
+    \PYG{n}{X}\PYG{o}{=}\PYG{k+kc}{None}\PYG{p}{,}
+    \PYG{n}{alpha}\PYG{o}{=}\PYG{l+m+mf}{0.05}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}grid}\PYG{o}{=}\PYG{l+m+mi}{200}\PYG{p}{,}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{AR statistic: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ar\PYGZus{}stat}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{P\PYGZhy{}value (H0: beta=0): }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{p\PYGZus{}value}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{AR 95\PYGZpc{} CI: [}\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ar\PYGZus{}ci}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{, }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{ar\PYGZus{}ci}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{]}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{c+c1}{\PYGZsh{} Note: AR CI will be much wider than standard 2SLS CI}
+\end{MintedVerbatim}

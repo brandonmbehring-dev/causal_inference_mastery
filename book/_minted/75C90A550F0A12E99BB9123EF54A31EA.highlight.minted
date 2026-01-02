@@ -1,0 +1,32 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{scm}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{synthetic\PYGZus{}control}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{numpy}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{np}
+\PYG{k+kn}{import}\PYG{+w}{ }\PYG{n+nn}{pandas}\PYG{+w}{ }\PYG{k}{as}\PYG{+w}{ }\PYG{n+nn}{pd}
+
+\PYG{c+c1}{\PYGZsh{} Panel data: units x time}
+\PYG{c+c1}{\PYGZsh{} Unit 0 is treated, units 1\PYGZhy{}10 are donors}
+\PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{seed}\PYG{p}{(}\PYG{l+m+mi}{42}\PYG{p}{)}
+\PYG{n}{n\PYGZus{}units}\PYG{p}{,} \PYG{n}{n\PYGZus{}periods} \PYG{o}{=} \PYG{l+m+mi}{11}\PYG{p}{,} \PYG{l+m+mi}{20}
+\PYG{n}{T0} \PYG{o}{=} \PYG{l+m+mi}{10}  \PYG{c+c1}{\PYGZsh{} Treatment at period 10}
+
+\PYG{c+c1}{\PYGZsh{} Generate data with treatment effect}
+\PYG{n}{Y} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{randn}\PYG{p}{(}\PYG{n}{n\PYGZus{}units}\PYG{p}{,} \PYG{n}{n\PYGZus{}periods}\PYG{p}{)}\PYG{o}{.}\PYG{n}{cumsum}\PYG{p}{(}\PYG{n}{axis}\PYG{o}{=}\PYG{l+m+mi}{1}\PYG{p}{)}
+\PYG{n}{Y}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{,} \PYG{n}{T0}\PYG{p}{:}\PYG{p}{]} \PYG{o}{+}\PYG{o}{=} \PYG{l+m+mf}{2.0}  \PYG{c+c1}{\PYGZsh{} True effect = 2.0}
+
+\PYG{c+c1}{\PYGZsh{} Covariates (optional)}
+\PYG{n}{X} \PYG{o}{=} \PYG{n}{np}\PYG{o}{.}\PYG{n}{random}\PYG{o}{.}\PYG{n}{randn}\PYG{p}{(}\PYG{n}{n\PYGZus{}units}\PYG{p}{,} \PYG{l+m+mi}{3}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Fit synthetic control}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{synthetic\PYGZus{}control}\PYG{p}{(}
+    \PYG{n}{Y\PYGZus{}treated}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,}           \PYG{c+c1}{\PYGZsh{} Treated unit outcomes}
+    \PYG{n}{Y\PYGZus{}donors}\PYG{o}{=}\PYG{n}{Y}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{p}{]}\PYG{p}{,}           \PYG{c+c1}{\PYGZsh{} Donor pool outcomes}
+    \PYG{n}{T0}\PYG{o}{=}\PYG{n}{T0}\PYG{p}{,}                    \PYG{c+c1}{\PYGZsh{} Pre\PYGZhy{}treatment periods}
+    \PYG{n}{X\PYGZus{}treated}\PYG{o}{=}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,}           \PYG{c+c1}{\PYGZsh{} Treated covariates (optional)}
+    \PYG{n}{X\PYGZus{}donors}\PYG{o}{=}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{p}{]}\PYG{p}{,}           \PYG{c+c1}{\PYGZsh{} Donor covariates (optional)}
+    \PYG{n}{V}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{optimal}\PYG{l+s+s1}{\PYGZsq{}}               \PYG{c+c1}{\PYGZsh{} V matrix choice}
+\PYG{p}{)}
+
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Pre\PYGZhy{}treatment RMSE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{pre\PYGZus{}rmse}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Post\PYGZhy{}treatment ATT: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{att}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Weights: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{o}{.}\PYG{n}{weights}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

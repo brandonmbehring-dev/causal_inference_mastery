@@ -1,0 +1,17 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{qte}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{rif\PYGZus{}qte}\PYG{p}{,} \PYG{n}{rif\PYGZus{}qte\PYGZus{}band}
+
+\PYG{c+c1}{\PYGZsh{} RIF\PYGZhy{}OLS: unconditional QTE with covariate adjustment}
+\PYG{n}{result} \PYG{o}{=} \PYG{n}{rif\PYGZus{}qte}\PYG{p}{(}
+    \PYG{n}{outcome}\PYG{o}{=}\PYG{n}{y}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{o}{=}\PYG{n}{t}\PYG{p}{,}
+    \PYG{n}{covariates}\PYG{o}{=}\PYG{n}{X}\PYG{p}{,}        \PYG{c+c1}{\PYGZsh{} Controls for confounding}
+    \PYG{n}{quantile}\PYG{o}{=}\PYG{l+m+mf}{0.5}\PYG{p}{,}
+    \PYG{n}{bandwidth}\PYG{o}{=}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{silverman}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{,}
+    \PYG{n}{n\PYGZus{}bootstrap}\PYG{o}{=}\PYG{l+m+mi}{1000}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Interpretation: effect on the marginal 50th percentile}
+\PYG{c+c1}{\PYGZsh{} while controlling for X}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Unconditional QTE (RIF): }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{result}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{tau\PYGZus{}q}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

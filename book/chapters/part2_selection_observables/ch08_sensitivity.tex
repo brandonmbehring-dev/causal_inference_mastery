@@ -1,0 +1,445 @@
+\chapter{Sensitivity Analysis}
+\label{ch:sensitivity}
+
+% ============================================================================
+% Chapter 8: Sensitivity Analysis
+% Written: 2025-12-31
+% Target: ~15 pages, ~400 lines
+% ============================================================================
+
+\section{Introduction}
+\label{sec:sens_intro}
+
+Every observational study rests on the assumption of no unmeasured confounding---and this assumption is \emph{untestable}. We can never verify from the data alone that all confounders have been measured. Sensitivity analysis quantifies how robust our conclusions are to potential violations of this assumption.
+
+This chapter presents two complementary approaches:
+\begin{enumerate}
+    \item \textbf{E-values}: Minimum confounding strength to explain away an effect
+    \item \textbf{Rosenbaum bounds}: Critical confounding level for matched studies
+\end{enumerate}
+
+\begin{insight}
+Sensitivity analysis does not prove an effect is causal. It quantifies: ``How strong would confounding need to be to change our conclusion?'' If the answer is ``implausibly strong,'' we gain confidence in our findings.
+\end{insight}
+
+% ============================================================================
+\section{The Problem of Unmeasured Confounding}
+\label{sec:unmeasured}
+% ============================================================================
+
+\subsection{Why Unconfoundedness Is Untestable}
+
+The unconfoundedness assumption states:
+\begin{equation}
+(Y(1), Y(0)) \independent T \mid X
+\end{equation}
+
+This requires that \emph{all} confounders are measured in $X$. But:
+\begin{itemize}
+    \item We cannot observe both potential outcomes for any unit
+    \item Statistical balance on measured covariates does not guarantee balance on unmeasured ones
+    \item Placebo tests can detect some confounding patterns but cannot rule out all
+\end{itemize}
+
+\subsection{The Role of Sensitivity Analysis}
+
+Since we cannot test unconfoundedness directly, we ask:
+\begin{quote}
+``If there were an unmeasured confounder $U$, how strong would its associations with treatment and outcome need to be to explain away our estimated effect?''
+\end{quote}
+
+If the required confounding strength exceeds what is plausible given domain knowledge, we have greater confidence in our findings.
+
+% ============================================================================
+\section{E-Values}
+\label{sec:e_value}
+% ============================================================================
+
+The E-value (VanderWeele \& Ding, 2017) provides a simple summary of robustness to unmeasured confounding.
+
+\subsection{Definition}
+
+\begin{definition}[E-Value]
+\label{def:e_value}
+The E-value is the minimum strength of association, on the risk ratio scale, that an unmeasured confounder would need to have with both the treatment and outcome to fully explain away the observed causal effect.
+\end{definition}
+
+For a risk ratio $\text{RR} \geq 1$:
+\begin{equation}
+\label{eq:e_value}
+\boxed{E = \text{RR} + \sqrt{\text{RR} \cdot (\text{RR} - 1)}}
+\end{equation}
+
+For protective effects ($\text{RR} < 1$), first convert to $1/\text{RR}$, then apply the formula.
+
+\subsection{Intuition}
+
+The E-value formula derives from bounds on confounding bias. An unmeasured confounder $U$ can bias the estimated RR by at most:
+\begin{equation}
+\text{Bias} \leq \frac{R_{TU} \cdot R_{UY}}{R_{TU} + R_{UY} - 1}
+\end{equation}
+where $R_{TU}$ is the confounder-treatment RR and $R_{UY}$ is the confounder-outcome RR.
+
+The E-value is the point where $\text{RR}_{TU} = \text{RR}_{UY}$---the \emph{minimum} strength when both associations are equal.
+
+\subsection{Effect Type Conversions}
+
+The E-value formula assumes a risk ratio. For other effect measures:
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Effect Type & Conversion & Notes \\
+\midrule
+RR & Direct & None \\
+OR & $\approx \text{OR}$ & Rare outcomes \\
+HR & $\approx \text{HR}$ & Proportional hazards \\
+SMD & $\exp(0.91 d)$ & VanderWeele \\
+ATE & $(p_0 + \text{ATE})/p_0$ & Needs $p_0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{E-Value for Confidence Intervals}
+
+Beyond the point estimate, we can compute an E-value for the confidence interval bound closest to the null:
+\begin{itemize}
+    \item For $\text{RR} > 1$: Use the lower CI bound
+    \item For $\text{RR} < 1$: Use the upper CI bound
+    \item If CI includes 1.0: $E_{\text{CI}} = 1.0$ (no confounding needed)
+\end{itemize}
+
+This answers: ``How much confounding would make the effect statistically non-significant?''
+
+\subsection{Interpretation Scale}
+
+\begin{center}
+\begin{tabular}{lp{8cm}}
+\toprule
+E-Value & Interpretation \\
+\midrule
+$\approx 1.0$ & Not robust (effect is at or near null) \\
+$1.0$--$1.5$ & Weakly robust (modest confounding could explain) \\
+$1.5$--$2.5$ & Moderately robust \\
+$2.5$--$4.0$ & Strongly robust \\
+$> 4.0$ & Very robust to unmeasured confounding \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{example}[E-Value Calculation]
+Suppose we estimate RR = 2.0 (treatment doubles risk). The E-value is:
+\begin{align}
+E &= 2.0 + \sqrt{2.0 \cdot (2.0 - 1)} \\
+  &= 2.0 + \sqrt{2.0} \\
+  &\approx 3.41
+\end{align}
+
+Interpretation: An unmeasured confounder would need to be associated with both treatment and outcome by at least 3.41-fold (on the RR scale) to fully explain away this effect.
+\end{example}
+
+% ============================================================================
+\section{Rosenbaum Bounds}
+\label{sec:rosenbaum}
+% ============================================================================
+
+For matched studies, Rosenbaum bounds (1987, 2002) provide a different approach: systematically varying the assumed confounding level and observing when conclusions change.
+
+\subsection{The Sensitivity Parameter $\Gamma$}
+
+\begin{definition}[Sensitivity Parameter]
+\label{def:gamma}
+The parameter $\Gamma \geq 1$ represents how much more likely similar (matched) units could be to receive treatment due to an unmeasured confounder.
+\end{definition}
+
+Specifically, for matched pair $(i, j)$ with similar observed covariates:
+\begin{equation}
+\frac{1}{\Gamma} \leq \frac{P(T_i = 1 \mid X)}{P(T_j = 1 \mid X)} \leq \Gamma
+\end{equation}
+
+Interpretation:
+\begin{itemize}
+    \item $\Gamma = 1$: No unmeasured confounding (matched units equally likely to be treated)
+    \item $\Gamma = 2$: One unit could be twice as likely to be treated as its match
+    \item $\Gamma = 3$: One unit could be three times as likely
+\end{itemize}
+
+\subsection{Computing Bounds}
+
+For matched pairs with outcomes $(Y_T, Y_C)$:
+
+\textbf{Algorithm (Rosenbaum Bounds):}
+\begin{enumerate}
+    \item Compute pair differences: $D_i = Y_{\text{treated},i} - Y_{\text{control},i}$
+    \item Rank the absolute differences $|D_i|$
+    \item Compute the Wilcoxon signed-rank statistic $T^+ = \sum_{\{i: D_i > 0\}} R_i$
+    \item For each $\Gamma$ value:
+    \begin{itemize}
+        \item Under $\Gamma$-confounding, each positive difference has probability $p_i \in [1/(1+\Gamma), \Gamma/(1+\Gamma)]$
+        \item Compute upper and lower bounds on the expected $T^+$
+        \item Use normal approximation for p-value bounds
+    \end{itemize}
+    \item Find $\Gamma^*$: smallest $\Gamma$ where upper bound p-value $> \alpha$
+\end{enumerate}
+
+\subsection{Mathematical Details}
+
+Under $\Gamma$-confounding, the expectation and variance of $T^+$ are bounded:
+
+\textbf{Expectation bounds:}
+\begin{align}
+E_{\text{lower}}[T^+] &= \sum_i R_i \cdot \frac{1}{1+\Gamma} \\
+E_{\text{upper}}[T^+] &= \sum_i R_i \cdot \frac{\Gamma}{1+\Gamma}
+\end{align}
+
+\textbf{Variance bounds:}
+\begin{equation}
+\Var[T^+] = \sum_i R_i^2 \cdot p_i \cdot (1 - p_i)
+\end{equation}
+
+The upper bound p-value uses the distribution most favorable to the null hypothesis; the lower bound uses the distribution most favorable to the alternative.
+
+\subsection{Critical $\Gamma$}
+
+\begin{definition}[Critical $\Gamma$]
+The critical $\Gamma^*$ is the smallest value of $\Gamma$ at which the upper bound p-value exceeds the significance level $\alpha$.
+\end{definition}
+
+This answers: ``How much confounding would be needed to make the treatment effect statistically non-significant?''
+
+\subsection{Interpretation Scale}
+
+\begin{center}
+\begin{tabular}{lp{8cm}}
+\toprule
+$\Gamma^*$ & Interpretation \\
+\midrule
+$1.0$--$1.2$ & Very sensitive (small confounding overturns result) \\
+$1.2$--$1.5$ & Sensitive \\
+$1.5$--$2.0$ & Moderately robust \\
+$2.0$--$3.0$ & Reasonably robust \\
+$> 3.0$ & Quite robust to unmeasured confounding \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\begin{example}[Rosenbaum Bounds]
+In a matched study with 50 pairs, suppose the Wilcoxon test yields p = 0.001. Rosenbaum bounds analysis finds $\Gamma^* = 2.85$.
+
+Interpretation: The treatment effect would remain significant (at $\alpha = 0.05$) even if an unmeasured confounder made matched units differ in treatment probability by up to 2.85-fold. Only confounding stronger than this would overturn the finding.
+\end{example}
+
+% ============================================================================
+\section{Implementation}
+\label{sec:sens_implementation}
+% ============================================================================
+
+\subsection{E-Value Computation}
+
+\begin{minted}{python}
+def e_value(
+    estimate: float,
+    ci_lower: Optional[float] = None,
+    ci_upper: Optional[float] = None,
+    effect_type: Literal["rr", "or", "hr", "smd", "ate"] = "rr",
+    baseline_risk: Optional[float] = None,
+) -> EValueResult:
+    """Compute E-value for sensitivity to unmeasured confounding.
+
+    Parameters
+    ----------
+    estimate : float
+        Point estimate of the effect.
+    ci_lower, ci_upper : float, optional
+        Confidence interval bounds.
+    effect_type : str
+        Type of effect: "rr", "or", "hr", "smd", "ate".
+    baseline_risk : float, optional
+        Required if effect_type="ate".
+
+    Returns
+    -------
+    EValueResult
+        e_value: E-value for point estimate
+        e_value_ci: E-value for CI bound closest to null
+        rr_equivalent: Effect converted to RR scale
+        interpretation: Human-readable interpretation
+    """
+    # Convert to risk ratio scale
+    if effect_type == "rr":
+        rr = estimate
+    elif effect_type == "smd":
+        rr = np.exp(0.91 * estimate)  # VanderWeele approximation
+    elif effect_type == "ate":
+        rr = (baseline_risk + estimate) / baseline_risk
+    else:
+        rr = estimate  # OR, HR approximate RR
+
+    # E-value formula (flip if protective effect)
+    if rr >= 1:
+        e_val = rr + np.sqrt(rr * (rr - 1))
+    else:
+        e_val = (1/rr) + np.sqrt((1/rr) * (1/rr - 1))
+
+    # E-value for CI (bound closest to null)
+    e_val_ci = 1.0  # Default if CI includes null
+    if ci_lower is not None and ci_upper is not None:
+        # Check if CI includes null (RR = 1)
+        if not (ci_lower <= 1.0 <= ci_upper):
+            if rr >= 1:
+                e_val_ci = ci_lower + np.sqrt(ci_lower * (ci_lower - 1))
+            else:
+                e_val_ci = (1/ci_upper) + np.sqrt((1/ci_upper) * (1/ci_upper - 1))
+
+    return EValueResult(e_value=e_val, e_value_ci=e_val_ci, ...)
+\end{minted}
+
+\subsection{Rosenbaum Bounds Computation}
+
+\begin{minted}{python}
+def rosenbaum_bounds(
+    treated_outcomes: np.ndarray,
+    control_outcomes: np.ndarray,
+    gamma_range: Tuple[float, float] = (1.0, 3.0),
+    n_gamma: int = 20,
+    alpha: float = 0.05,
+) -> RosenbaumResult:
+    """Compute Rosenbaum sensitivity bounds for matched pairs.
+
+    Parameters
+    ----------
+    treated_outcomes : np.ndarray
+        Outcomes for treated units in matched pairs.
+    control_outcomes : np.ndarray
+        Outcomes for matched control units.
+    gamma_range : Tuple[float, float]
+        Range of Gamma values to evaluate.
+    alpha : float
+        Significance level for gamma_critical.
+
+    Returns
+    -------
+    RosenbaumResult
+        gamma_values: Array of Gamma values evaluated
+        p_upper: Upper bound p-values at each Gamma
+        p_lower: Lower bound p-values at each Gamma
+        gamma_critical: Smallest Gamma where p_upper > alpha
+    """
+    # Compute pair differences
+    differences = treated_outcomes - control_outcomes
+
+    # Wilcoxon signed-rank statistic
+    nonzero = differences != 0
+    abs_diffs = np.abs(differences[nonzero])
+    ranks = stats.rankdata(abs_diffs)
+    t_plus = np.sum(ranks[differences[nonzero] > 0])
+
+    # Evaluate at each Gamma
+    gamma_values = np.linspace(gamma_range[0], gamma_range[1], n_gamma)
+    p_upper = np.zeros(n_gamma)
+
+    for i, gamma in enumerate(gamma_values):
+        # Probability bounds under Gamma-confounding
+        p_low = 1 / (1 + gamma)
+        p_high = gamma / (1 + gamma)
+
+        # Expectation and variance bounds
+        e_upper = np.sum(ranks * p_high)
+        var_upper = np.sum(ranks**2 * p_high * (1 - p_high))
+
+        # Normal approximation p-value
+        z = (t_plus - e_upper) / np.sqrt(var_upper)
+        p_upper[i] = 1 - stats.norm.cdf(z)
+
+    # Find critical Gamma
+    critical_idx = np.where(p_upper > alpha)[0]
+    gamma_critical = gamma_values[critical_idx[0]] if len(critical_idx) > 0 else None
+
+    return RosenbaumResult(gamma_critical=gamma_critical, ...)
+\end{minted}
+
+% ============================================================================
+\section{Comparing E-Values and Rosenbaum Bounds}
+\label{sec:comparison}
+% ============================================================================
+
+\begin{center}
+\begin{tabular}{lp{4.5cm}p{4.5cm}}
+\toprule
+Aspect & E-Value & Rosenbaum Bounds \\
+\midrule
+Input & Any point estimate & Matched pair outcomes \\
+Output & Min confounding strength & Critical $\Gamma$ \\
+Assumptions & Single confounder & Matched pairs design \\
+Framework & Bounds on bias & Permutation inference \\
+Best for & Any observational study & Matched studies \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{When to use each}:
+\begin{itemize}
+    \item \textbf{E-value}: Universal; use for any observational study
+    \item \textbf{Rosenbaum}: More nuanced for matched designs; provides p-value trajectory
+\end{itemize}
+
+% ============================================================================
+\section{Practical Guidance}
+\label{sec:sens_guidance}
+% ============================================================================
+
+\subsection{Reporting Recommendations}
+
+\begin{enumerate}
+    \item \textbf{Always report sensitivity analysis} for observational studies
+    \item Report both E-value for point estimate AND for CI bound
+    \item Contextualize: compare to known confounder strengths in the field
+    \item For matched studies, consider both E-value and Rosenbaum bounds
+\end{enumerate}
+
+\subsection{Interpreting Results}
+
+\textbf{What makes a result ``robust''?}
+\begin{itemize}
+    \item Compare E-value to the strongest known confounders in your domain
+    \item If E-value exceeds plausible confounding, the finding is robust
+    \item If E-value is achievable by known confounders, be cautious
+\end{itemize}
+
+\textbf{Common benchmarks}:
+\begin{itemize}
+    \item Smoking and lung cancer: RR $\approx$ 10--30
+    \item Many social/behavioral confounders: RR $\approx$ 1.5--3
+    \item If E-value $> 4$, most measured confounders in social sciences would be insufficient
+\end{itemize}
+
+\subsection{Limitations}
+
+\begin{itemize}
+    \item Sensitivity analysis assumes a \emph{single} unmeasured confounder
+    \item Multiple weak confounders could jointly explain the effect
+    \item Does not account for measurement error in confounders
+    \item A high E-value does not \emph{prove} causation
+\end{itemize}
+
+% ============================================================================
+\section{Summary}
+\label{sec:sens_summary}
+% ============================================================================
+
+\subsection{Key Results}
+
+\begin{enumerate}
+    \item \textbf{Unconfoundedness is untestable}: We can never verify all confounders are measured
+    \item \textbf{E-value}: $E = \text{RR} + \sqrt{\text{RR}(\text{RR}-1)}$ gives minimum confounding to explain effect
+    \item \textbf{Rosenbaum bounds}: $\Gamma^*$ gives critical confounding for matched studies
+    \item \textbf{Always report}: Sensitivity analysis is essential for observational studies
+\end{enumerate}
+
+\subsection{Key References}
+
+\begin{itemize}
+    \item \cite{vanderweele2017sensitivity}: E-values
+    \item \cite{rosenbaum2002observational}: Rosenbaum bounds
+\end{itemize}
+

@@ -1,0 +1,32 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{iv}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{n}{TwoStageLeastSquares}\PYG{p}{,} \PYG{n}{LIML}\PYG{p}{,} \PYG{n}{Fuller}\PYG{p}{,} \PYG{n}{GMM}
+
+\PYG{c+c1}{\PYGZsh{} Prepare data}
+\PYG{n}{Y} \PYG{o}{=} \PYG{n}{outcome\PYGZus{}data}      \PYG{c+c1}{\PYGZsh{} n x 1}
+\PYG{n}{D} \PYG{o}{=} \PYG{n}{treatment\PYGZus{}data}    \PYG{c+c1}{\PYGZsh{} n x 1 (endogenous)}
+\PYG{n}{Z} \PYG{o}{=} \PYG{n}{instrument\PYGZus{}data}   \PYG{c+c1}{\PYGZsh{} n x q}
+\PYG{n}{X} \PYG{o}{=} \PYG{n}{covariate\PYGZus{}data}    \PYG{c+c1}{\PYGZsh{} n x p (optional)}
+
+\PYG{c+c1}{\PYGZsh{} 2SLS estimation}
+\PYG{n}{tsls} \PYG{o}{=} \PYG{n}{TwoStageLeastSquares}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{p}{,} \PYG{n}{X}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Estimate: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{coef\PYGZus{}}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{SE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{se\PYGZus{}}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{First\PYGZhy{}stage F: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{tsls}\PYG{o}{.}\PYG{n}{first\PYGZus{}stage\PYGZus{}f\PYGZus{}}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} LIML for potentially weak instruments}
+\PYG{n}{liml} \PYG{o}{=} \PYG{n}{LIML}\PYG{p}{(}\PYG{p}{)}
+\PYG{n}{liml}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{p}{,} \PYG{n}{X}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{LIML estimate: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{liml}\PYG{o}{.}\PYG{n}{coef\PYGZus{}}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{LIML kappa: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{liml}\PYG{o}{.}\PYG{n}{kappa\PYGZus{}}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Fuller\PYGZhy{}1 (balanced bias\PYGZhy{}variance)}
+\PYG{n}{fuller} \PYG{o}{=} \PYG{n}{Fuller}\PYG{p}{(}\PYG{n}{alpha\PYGZus{}param}\PYG{o}{=}\PYG{l+m+mf}{1.0}\PYG{p}{)}
+\PYG{n}{fuller}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{p}{,} \PYG{n}{X}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Two\PYGZhy{}step GMM with J\PYGZhy{}test}
+\PYG{n}{gmm} \PYG{o}{=} \PYG{n}{GMM}\PYG{p}{(}\PYG{n}{steps}\PYG{o}{=}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{two}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{)}
+\PYG{n}{gmm}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{Y}\PYG{p}{,} \PYG{n}{D}\PYG{p}{,} \PYG{n}{Z}\PYG{p}{,} \PYG{n}{X}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{J\PYGZhy{}statistic: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{gmm}\PYG{o}{.}\PYG{n}{j\PYGZus{}statistic\PYGZus{}}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{J p\PYGZhy{}value: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{gmm}\PYG{o}{.}\PYG{n}{j\PYGZus{}pvalue\PYGZus{}}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

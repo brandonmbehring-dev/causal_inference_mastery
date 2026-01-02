@@ -1,0 +1,28 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k+kn}{from}\PYG{+w}{ }\PYG{n+nn}{causal\PYGZus{}inference}\PYG{n+nn}{.}\PYG{n+nn}{scm}\PYG{n+nn}{.}\PYG{n+nn}{diagnostics}\PYG{+w}{ }\PYG{k+kn}{import} \PYG{p}{(}
+    \PYG{n}{check\PYGZus{}pre\PYGZus{}treatment\PYGZus{}fit}\PYG{p}{,}
+    \PYG{n}{check\PYGZus{}weight\PYGZus{}properties}\PYG{p}{,}
+    \PYG{n}{covariate\PYGZus{}balance\PYGZus{}table}
+\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Pre\PYGZhy{}treatment fit}
+\PYG{n}{fit\PYGZus{}diagnostics} \PYG{o}{=} \PYG{n}{check\PYGZus{}pre\PYGZus{}treatment\PYGZus{}fit}\PYG{p}{(}\PYG{n}{result}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{RMSE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{fit\PYGZus{}diagnostics}\PYG{o}{.}\PYG{n}{rmse}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{MAPE: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{fit\PYGZus{}diagnostics}\PYG{o}{.}\PYG{n}{mape}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZpc{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{R\PYGZhy{}squared: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{fit\PYGZus{}diagnostics}\PYG{o}{.}\PYG{n}{r\PYGZus{}squared}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Weight properties}
+\PYG{n}{weight\PYGZus{}diagnostics} \PYG{o}{=} \PYG{n}{check\PYGZus{}weight\PYGZus{}properties}\PYG{p}{(}\PYG{n}{result}\PYG{o}{.}\PYG{n}{weights}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Effective N: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{weight\PYGZus{}diagnostics}\PYG{o}{.}\PYG{n}{effective\PYGZus{}n}\PYG{l+s+si}{:}\PYG{l+s+s2}{.2f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{HHI: }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{weight\PYGZus{}diagnostics}\PYG{o}{.}\PYG{n}{hhi}\PYG{l+s+si}{:}\PYG{l+s+s2}{.4f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Sparse donors (w \PYGZgt{} 0.01): }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{weight\PYGZus{}diagnostics}\PYG{o}{.}\PYG{n}{n\PYGZus{}positive}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+
+\PYG{c+c1}{\PYGZsh{} Balance table}
+\PYG{n}{balance} \PYG{o}{=} \PYG{n}{covariate\PYGZus{}balance\PYGZus{}table}\PYG{p}{(}
+    \PYG{n}{X\PYGZus{}treated}\PYG{o}{=}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{0}\PYG{p}{]}\PYG{p}{,}
+    \PYG{n}{X\PYGZus{}donors}\PYG{o}{=}\PYG{n}{X}\PYG{p}{[}\PYG{l+m+mi}{1}\PYG{p}{:}\PYG{p}{]}\PYG{p}{,}
+    \PYG{n}{weights}\PYG{o}{=}\PYG{n}{result}\PYG{o}{.}\PYG{n}{weights}\PYG{p}{,}
+    \PYG{n}{covariate\PYGZus{}names}\PYG{o}{=}\PYG{p}{[}\PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{GDP}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{Pop}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{,} \PYG{l+s+s1}{\PYGZsq{}}\PYG{l+s+s1}{Trend}\PYG{l+s+s1}{\PYGZsq{}}\PYG{p}{]}
+\PYG{p}{)}
+\PYG{n+nb}{print}\PYG{p}{(}\PYG{n}{balance}\PYG{p}{)}
+\end{MintedVerbatim}

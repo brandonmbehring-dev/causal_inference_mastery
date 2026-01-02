@@ -1,0 +1,11 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c}{\PYGZsh{} General pattern}
+\PYG{n}{problem}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{SomeProblem}\PYG{p}{(}\PYG{n}{outcomes}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{treatment}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{covariates}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{parameters}\PYG{p}{)}
+\PYG{n}{solution}\PYG{+w}{ }\PYG{o}{=}\PYG{+w}{ }\PYG{n}{solve}\PYG{p}{(}\PYG{n}{problem}\PYG{p}{,}\PYG{+w}{ }\PYG{n}{SomeEstimator}\PYG{p}{(}\PYG{p}{)}\PYG{p}{)}
+
+\PYG{c}{\PYGZsh{} Access results}
+\PYG{n}{solution}\PYG{o}{.}\PYG{n}{estimate}\PYG{+w}{   }\PYG{c}{\PYGZsh{} Point estimate}
+\PYG{n}{solution}\PYG{o}{.}\PYG{n}{se}\PYG{+w}{         }\PYG{c}{\PYGZsh{} Standard error}
+\PYG{n}{solution}\PYG{o}{.}\PYG{n}{ci\PYGZus{}lower}\PYG{+w}{   }\PYG{c}{\PYGZsh{} Lower CI bound}
+\PYG{n}{solution}\PYG{o}{.}\PYG{n}{ci\PYGZus{}upper}\PYG{+w}{   }\PYG{c}{\PYGZsh{} Upper CI bound}
+\end{MintedVerbatim}

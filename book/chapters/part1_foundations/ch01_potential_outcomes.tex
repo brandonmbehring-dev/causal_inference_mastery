@@ -1,0 +1,551 @@
+\chapter{The Potential Outcomes Framework}
+\label{ch:potential_outcomes}
+
+% ============================================================================
+% Chapter 1: Potential Outcomes Framework
+% Status: COMPLETE
+% Est. Pages: 20
+% ============================================================================
+
+\section{Introduction}
+\label{sec:po_intro}
+
+Causal inference is the science of answering ``what if'' questions. When we ask whether a medical treatment reduces mortality, whether a job training program increases wages, or whether a policy intervention affects economic outcomes, we are asking causal questions. These questions differ fundamentally from descriptive or predictive questions because they concern the \emph{effect} of an intervention---what would happen if we changed something in the world.
+
+The challenge is that causal effects are inherently unobservable. We cannot simultaneously observe what happens to a patient who receives a drug and what would have happened to that \emph{same} patient had they not received it. This ``fundamental problem of causal inference'' \cite{holland1986statistics} motivates the entire machinery we develop in this book.
+
+\subsection{Correlation Is Not Causation}
+
+The adage ``correlation is not causation'' captures a deep truth about empirical research. Consider the observation that hospital patients who receive a particular treatment have higher mortality rates than those who do not. Does this mean the treatment is harmful? Not necessarily---patients receiving the treatment may be sicker to begin with. The correlation between treatment and mortality confounds the treatment effect with selection into treatment.
+
+\begin{example}[Selection Bias in Observational Data]
+\label{ex:selection_bias}
+Suppose we observe outcomes $Y_i$ and treatment status $T_i$ for $n$ patients. A naive comparison of means yields:
+\begin{equation}
+\underbrace{\E[Y_i \mid T_i = 1] - \E[Y_i \mid T_i = 0]}_{\text{Observed difference}} = \underbrace{\text{Causal Effect}}_{\text{What we want}} + \underbrace{\text{Selection Bias}}_{\text{Confounding}}
+\end{equation}
+The selection bias arises because treated and untreated groups differ systematically in ways that also affect outcomes.
+\end{example}
+
+\subsection{The Role of Formalization}
+
+The potential outcomes framework, also known as the Rubin Causal Model \cite{rubin1974estimating}, provides a formal mathematical language for defining causal effects and stating the assumptions under which they can be identified from data. This formalization serves several purposes:
+
+\begin{enumerate}
+    \item \textbf{Precision}: It forces us to state exactly what we mean by a ``causal effect.''
+    \item \textbf{Transparency}: It makes assumptions explicit and scrutinizable.
+    \item \textbf{Generality}: It provides a unified framework for analyzing diverse study designs.
+    \item \textbf{Computation}: It connects theoretical estimands to practical estimators.
+\end{enumerate}
+
+The framework builds on foundational work by \cite{neyman1923application} in the context of randomized experiments and was extended to observational studies by \cite{rubin1974estimating, rubin1978bayesian}. The synthesis presented by \cite{imbens2015causal} provides the modern treatment we follow here.
+
+\subsection{Chapter Overview}
+
+This chapter develops the core concepts of the potential outcomes framework:
+\begin{itemize}
+    \item Section~\ref{sec:po_framework}: Defines potential outcomes and individual treatment effects
+    \item Section~\ref{sec:fundamental_problem}: Explains why causal effects are fundamentally unobservable
+    \item Section~\ref{sec:ate}: Introduces population-level causal estimands (ATE, ATT, ATC)
+    \item Section~\ref{sec:sutva}: Presents the Stable Unit Treatment Value Assumption
+    \item Section~\ref{sec:identification}: Previews identification strategies developed in later chapters
+    \item Section~\ref{sec:po_summary}: Summarizes key concepts and notation
+\end{itemize}
+
+
+% ============================================================================
+\section{The Potential Outcomes Framework}
+\label{sec:po_framework}
+% ============================================================================
+
+\subsection{Units, Treatments, and Outcomes}
+
+Consider a study with $n$ units indexed by $i = 1, \ldots, n$. Each unit could be an individual, a firm, a geographic region, or any entity to which a treatment might be applied. We consider a binary treatment where each unit either receives the treatment ($T_i = 1$) or does not ($T_i = 0$).
+
+\begin{definition}[Potential Outcomes]
+\label{def:potential_outcomes}
+For each unit $i$, we define two \emph{potential outcomes}:
+\begin{itemize}
+    \item $\poty{1}_i$: the outcome that would be observed if unit $i$ receives treatment
+    \item $\poty{0}_i$: the outcome that would be observed if unit $i$ does not receive treatment
+\end{itemize}
+These potential outcomes are considered fixed attributes of the unit, existing conceptually whether or not we observe them.
+\end{definition}
+
+The notation $\poty{t}_i$ emphasizes that potential outcomes are \emph{functions} of the treatment. They represent what \emph{would} happen under different hypothetical interventions, not what we actually observe.
+
+\begin{remark}
+Some authors use $Y_i(t)$ or $Y_i^t$ instead of $\poty{t}_i$. We adopt the parenthetical superscript notation to distinguish potential outcomes from observed outcomes clearly.
+\end{remark}
+
+\subsection{Individual Treatment Effects}
+
+Given the two potential outcomes, the causal effect of treatment for unit $i$ is naturally defined as their difference.
+
+\begin{definition}[Individual Treatment Effect]
+\label{def:ite}
+The \emph{individual treatment effect} (ITE) for unit $i$ is:
+\begin{equation}
+\tau_i \equiv \poty{1}_i - \poty{0}_i
+\label{eq:ite}
+\end{equation}
+This represents the change in outcome that would result from switching unit $i$ from control to treatment.
+\end{definition}
+
+The individual treatment effect $\tau_i$ is a \emph{causal} quantity because it compares outcomes for the \emph{same} unit under different treatments. There is no selection bias when comparing $\poty{1}_i$ to $\poty{0}_i$ because we are comparing the same unit to itself.
+
+\begin{example}[Heterogeneous Treatment Effects]
+\label{ex:heterogeneous}
+Consider a job training program. Individual treatment effects might vary across workers:
+\begin{itemize}
+    \item Worker A (low skills): $\tau_A = \$5{,}000$ (large benefit from training)
+    \item Worker B (high skills): $\tau_B = \$500$ (small marginal benefit)
+    \item Worker C (wrong field): $\tau_C = -\$200$ (training is counterproductive)
+\end{itemize}
+This \emph{treatment effect heterogeneity} is the focus of Chapters~\ref{ch:cate} and~\ref{ch:forests}.
+\end{example}
+
+\subsection{The Switching Equation}
+
+While both potential outcomes exist conceptually, we only observe one of them for each unit. The \emph{observed outcome} $Y_i$ is determined by the treatment received:
+
+\begin{equation}
+Y_i = T_i \cdot \poty{1}_i + (1 - T_i) \cdot \poty{0}_i =
+\begin{cases}
+\poty{1}_i & \text{if } T_i = 1 \\
+\poty{0}_i & \text{if } T_i = 0
+\end{cases}
+\label{eq:switching}
+\end{equation}
+
+This is the \emph{switching equation} or \emph{consistency assumption}---the observed outcome equals the potential outcome corresponding to the treatment actually received.
+
+\begin{definition}[Consistency]
+\label{def:consistency}
+The \emph{consistency assumption} states that for each unit:
+\begin{equation}
+Y_i = \poty{T_i}_i
+\end{equation}
+That is, the observed outcome equals the potential outcome indexed by the treatment received.
+\end{definition}
+
+The switching equation connects the conceptual (potential outcomes) to the observable (realized outcomes). It is sometimes called ``SUTVA Part 2'' and is discussed further in Section~\ref{sec:sutva}.
+
+\subsection{Notation Summary}
+
+Table~\ref{tab:notation} summarizes the core notation used throughout this book.
+
+\begin{table}[ht]
+\centering
+\caption{Core Notation for the Potential Outcomes Framework}
+\label{tab:notation}
+\begin{tabular}{cl}
+\toprule
+\textbf{Symbol} & \textbf{Definition} \\
+\midrule
+$n$ & Number of units \\
+$i$ & Unit index, $i = 1, \ldots, n$ \\
+$T_i$ & Treatment indicator ($1 = $ treated, $0 = $ control) \\
+$\poty{1}_i$ & Potential outcome under treatment \\
+$\poty{0}_i$ & Potential outcome under control \\
+$Y_i$ & Observed outcome \\
+$\tau_i$ & Individual treatment effect, $\poty{1}_i - \poty{0}_i$ \\
+$X_i$ & Vector of pre-treatment covariates \\
+$\ate$ & Average treatment effect, $\E[\poty{1}_i - \poty{0}_i]$ \\
+$\att$ & Average treatment effect on the treated \\
+$\atc$ & Average treatment effect on the control \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+% ============================================================================
+\section{The Fundamental Problem of Causal Inference}
+\label{sec:fundamental_problem}
+% ============================================================================
+
+\subsection{The Missing Data Problem}
+
+The \emph{fundamental problem of causal inference} \cite{holland1986statistics} is that we can never observe both potential outcomes for the same unit. For each unit $i$:
+\begin{itemize}
+    \item If $T_i = 1$, we observe $\poty{1}_i$ but not $\poty{0}_i$
+    \item If $T_i = 0$, we observe $\poty{0}_i$ but not $\poty{1}_i$
+\end{itemize}
+
+The unobserved potential outcome is called the \emph{counterfactual}---it describes what \emph{would have} happened under the alternative treatment.
+
+\begin{proposition}[Individual Effects Are Unidentifiable]
+\label{prop:ite_unidentified}
+The individual treatment effect $\tau_i = \poty{1}_i - \poty{0}_i$ cannot be identified from data on $(Y_i, T_i)$ alone, even with an infinite sample, because one of the two potential outcomes is always missing.
+\end{proposition}
+
+This is not a sample size problem---it is a fundamental logical constraint. No amount of data can reveal what would have happened to a specific individual under a treatment they did not receive.
+
+\subsection{Why Naive Comparisons Fail}
+
+Consider the simplest estimator: compare average outcomes between treated and control groups.
+
+\begin{equation}
+\hat{\Delta} = \frac{1}{n_1} \sum_{i: T_i = 1} Y_i - \frac{1}{n_0} \sum_{i: T_i = 0} Y_i
+\label{eq:naive_comparison}
+\end{equation}
+
+where $n_1 = \sum_i T_i$ and $n_0 = n - n_1$.
+
+In expectation, this estimator converges to:
+\begin{align}
+\E[\hat{\Delta}] &= \E[Y_i \mid T_i = 1] - \E[Y_i \mid T_i = 0] \nonumber \\
+&= \E[\poty{1}_i \mid T_i = 1] - \E[\poty{0}_i \mid T_i = 0]
+\label{eq:naive_expectation}
+\end{align}
+
+To understand what this quantity measures, we can decompose it:
+
+\begin{theorem}[Decomposition of Naive Comparison]
+\label{thm:selection_decomposition}
+The difference in observed means can be decomposed as:
+\begin{align}
+\E[Y_i \mid T_i = 1] - \E[Y_i \mid T_i = 0] &= \underbrace{\E[\poty{1}_i - \poty{0}_i \mid T_i = 1]}_{\text{ATT}} \nonumber \\
+&\quad + \underbrace{\E[\poty{0}_i \mid T_i = 1] - \E[\poty{0}_i \mid T_i = 0]}_{\text{Selection Bias}}
+\label{eq:selection_decomposition}
+\end{align}
+\end{theorem}
+
+\begin{proof}
+Add and subtract $\E[\poty{0}_i \mid T_i = 1]$:
+\begin{align*}
+&\E[\poty{1}_i \mid T_i = 1] - \E[\poty{0}_i \mid T_i = 0] \\
+&= \E[\poty{1}_i \mid T_i = 1] - \E[\poty{0}_i \mid T_i = 1] + \E[\poty{0}_i \mid T_i = 1] - \E[\poty{0}_i \mid T_i = 0] \\
+&= \E[\poty{1}_i - \poty{0}_i \mid T_i = 1] + \E[\poty{0}_i \mid T_i = 1] - \E[\poty{0}_i \mid T_i = 0]
+\end{align*}
+\end{proof}
+
+\begin{insight}
+The selection bias term $\E[\poty{0}_i \mid T_i = 1] - \E[\poty{0}_i \mid T_i = 0]$ measures how the treated and control groups differ in their \emph{baseline} (untreated) outcomes. If sicker patients are more likely to receive treatment, and sickness increases mortality, then $\E[\poty{0}_i \mid T_i = 1] > \E[\poty{0}_i \mid T_i = 0]$, creating positive selection bias that overstates mortality for the treated group.
+\end{insight}
+
+\subsection{The Role of Identification}
+
+Since individual effects are unidentifiable, causal inference focuses on \emph{average} effects. The key insight is that while we cannot identify $\tau_i$ for any specific unit, we may be able to identify the \emph{average} treatment effect $\E[\tau_i]$ under appropriate assumptions.
+
+The process of moving from estimand (what we want to know) to estimator (what we can compute from data) requires an \emph{identification strategy}---a set of assumptions that, if true, allow us to express the causal quantity in terms of observable data.
+
+
+% ============================================================================
+\section{Average Treatment Effects}
+\label{sec:ate}
+% ============================================================================
+
+\subsection{The Average Treatment Effect}
+
+Since individual treatment effects cannot be identified, we focus on population-level summaries.
+
+\begin{definition}[Average Treatment Effect]
+\label{def:ate}
+The \emph{Average Treatment Effect} (ATE) is:
+\begin{equation}
+\ate \equiv \E[\poty{1}_i - \poty{0}_i] = \E[\poty{1}_i] - \E[\poty{0}_i]
+\label{eq:ate}
+\end{equation}
+This is the expected treatment effect across all units in the population.
+\end{definition}
+
+The ATE answers: ``What is the average effect of moving \emph{everyone} from control to treatment?'' It is a population-level parameter that averages over all sources of treatment effect heterogeneity.
+
+\subsection{The Average Treatment Effect on the Treated}
+
+In many applications, we are particularly interested in the effect of treatment on those who actually receive it.
+
+\begin{definition}[Average Treatment Effect on the Treated]
+\label{def:att}
+The \emph{Average Treatment Effect on the Treated} (ATT) is:
+\begin{equation}
+\att \equiv \E[\poty{1}_i - \poty{0}_i \mid T_i = 1]
+\label{eq:att}
+\end{equation}
+This is the expected treatment effect among units that received treatment.
+\end{definition}
+
+The ATT answers: ``For those who were treated, what was the average effect of their treatment?'' This is often the policy-relevant question when evaluating existing programs.
+
+\begin{example}[ATT vs. ATE in Program Evaluation]
+Consider a voluntary job training program. The ATT measures the effect on those who chose to participate---perhaps highly motivated workers who would benefit most. The ATE measures what the effect would be if we mandated participation for everyone, including those who would not voluntarily enroll.
+\end{example}
+
+\subsection{The Average Treatment Effect on the Control}
+
+Symmetrically, we can define the effect for the untreated group.
+
+\begin{definition}[Average Treatment Effect on the Control]
+\label{def:atc}
+The \emph{Average Treatment Effect on the Control} (ATC) is:
+\begin{equation}
+\atc \equiv \E[\poty{1}_i - \poty{0}_i \mid T_i = 0]
+\label{eq:atc}
+\end{equation}
+This is the expected treatment effect among units that did not receive treatment.
+\end{definition}
+
+The ATC answers: ``For those who were not treated, what would the effect have been if they had been treated?''
+
+\subsection{Relationships Between Estimands}
+
+These three estimands are related through the law of iterated expectations.
+
+\begin{proposition}[ATE Decomposition]
+\label{prop:ate_decomposition}
+The ATE can be expressed as a weighted average of the ATT and ATC:
+\begin{equation}
+\ate = \Prob(T_i = 1) \cdot \att + \Prob(T_i = 0) \cdot \atc
+\label{eq:ate_weights}
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+By the law of iterated expectations:
+\begin{align*}
+\ate &= \E[\poty{1}_i - \poty{0}_i] \\
+&= \E[\E[\poty{1}_i - \poty{0}_i \mid T_i]] \\
+&= \Prob(T_i = 1) \cdot \E[\poty{1}_i - \poty{0}_i \mid T_i = 1] \\
+&\quad + \Prob(T_i = 0) \cdot \E[\poty{1}_i - \poty{0}_i \mid T_i = 0] \\
+&= \Prob(T_i = 1) \cdot \att + \Prob(T_i = 0) \cdot \atc
+\end{align*}
+\end{proof}
+
+\begin{corollary}
+If treatment effects are homogeneous ($\tau_i = \tau$ for all $i$), then:
+\begin{equation}
+\ate = \att = \atc = \tau
+\end{equation}
+\end{corollary}
+
+When treatment effects are heterogeneous and correlated with selection into treatment, ATE, ATT, and ATC will generally differ. Understanding which estimand is policy-relevant is crucial for applied research.
+
+\subsection{Which Estimand?}
+
+The choice between ATE, ATT, and ATC depends on the policy question:
+
+\begin{itemize}
+    \item \textbf{ATE}: Relevant for universal policies (e.g., should we vaccinate everyone?)
+    \item \textbf{ATT}: Relevant for evaluating existing programs (e.g., did the training program help participants?)
+    \item \textbf{ATC}: Relevant for program expansion (e.g., would training help those not currently enrolled?)
+\end{itemize}
+
+Different estimation methods identify different estimands. As we will see, randomized experiments identify the ATE, while methods like propensity score matching may only identify the ATT.
+
+
+% ============================================================================
+\section{The SUTVA Assumption}
+\label{sec:sutva}
+% ============================================================================
+
+The potential outcomes framework relies on a critical assumption known as the \emph{Stable Unit Treatment Value Assumption} (SUTVA), articulated by \cite{rubin1980comment}.
+
+\subsection{Statement of SUTVA}
+
+\begin{definition}[SUTVA]
+\label{def:sutva}
+The \emph{Stable Unit Treatment Value Assumption} consists of two components:
+
+\begin{enumerate}
+    \item \textbf{No Interference}: The potential outcomes for any unit do not depend on the treatment assignments of other units. Formally, if we let $\mathbf{T} = (T_1, \ldots, T_n)$ denote the full treatment vector, then:
+    \begin{equation}
+    Y_i(\mathbf{T}) = Y_i(T_i)
+    \label{eq:no_interference}
+    \end{equation}
+
+    \item \textbf{No Hidden Versions of Treatment}: There is only one version of each treatment level. If $T_i = t$, then $\poty{t}_i$ is well-defined regardless of how treatment $t$ was administered.
+\end{enumerate}
+\end{definition}
+
+SUTVA is what allows us to write $\poty{t}_i$ as a function of unit $i$'s own treatment only. Without SUTVA, we would need notation like $Y_i(T_1, \ldots, T_n)$ to capture how unit $i$'s outcome depends on everyone's treatment.
+
+\subsection{When SUTVA Fails: Interference}
+
+The no-interference assumption fails when units affect each other.
+
+\begin{example}[Vaccine Spillovers]
+\label{ex:vaccine_spillover}
+Consider a vaccination study. If I am vaccinated and you are not, your health may improve because I am less likely to infect you. Your potential outcomes depend on my treatment status, violating SUTVA:
+\begin{equation}
+Y_{\text{you}}(T_{\text{you}} = 0, T_{\text{me}} = 1) \neq Y_{\text{you}}(T_{\text{you}} = 0, T_{\text{me}} = 0)
+\end{equation}
+\end{example}
+
+Other examples of interference include:
+\begin{itemize}
+    \item \textbf{Social networks}: Your adoption of a product may influence my adoption
+    \item \textbf{Geographic spillovers}: A factory closure affects neighboring areas
+    \item \textbf{Market effects}: A job training program may reduce wages for untrained workers by increasing labor supply
+    \item \textbf{Classroom effects}: A disruptive student affects classmates' learning
+\end{itemize}
+
+When interference is present, we need more complex frameworks with concepts like \emph{exposure mappings} \cite{aronow2017estimating} or \emph{cluster-level} randomization.
+
+\subsection{Hidden Versions Problem}
+
+The no-hidden-versions assumption fails when treatment is ill-defined.
+
+\begin{example}[Aspirin Dosage]
+\label{ex:hidden_versions}
+``Taking aspirin'' could mean:
+\begin{itemize}
+    \item One 81mg low-dose aspirin
+    \item One 325mg regular aspirin
+    \item Multiple tablets
+    \item Different brands with different coatings
+\end{itemize}
+If different versions of ``treatment'' have different effects, the potential outcome $\poty{1}_i$ is ambiguous.
+\end{example}
+
+The solution is to define treatment precisely. Rather than ``taking aspirin,'' we might study ``taking exactly one 325mg aspirin tablet within 24 hours of symptom onset.''
+
+\subsection{Implications for Study Design}
+
+SUTVA has important implications for how we design studies:
+
+\begin{enumerate}
+    \item \textbf{Clear treatment definition}: Specify exactly what the treatment is
+    \item \textbf{Unit selection}: Choose units unlikely to interfere (e.g., geographically separated)
+    \item \textbf{Cluster randomization}: When interference is expected within clusters, randomize at the cluster level
+    \item \textbf{Partial identification}: When SUTVA is suspect, report bounds rather than point estimates
+\end{enumerate}
+
+\begin{remark}
+SUTVA is often stated without explicit justification, but it is rarely perfectly satisfied. The question is whether violations are severe enough to materially affect conclusions. Sensitivity analysis (Chapter~\ref{ch:sensitivity}) provides tools for assessing robustness.
+\end{remark}
+
+
+% ============================================================================
+\section{Identification Strategies}
+\label{sec:identification}
+% ============================================================================
+
+The fundamental problem of causal inference tells us that causal effects are not directly observable. \emph{Identification} is the process of connecting unobservable causal quantities to observable data. An estimand is \emph{identified} if it can be uniquely determined from the distribution of observable data, given a set of assumptions.
+
+\subsection{Randomization as Identification}
+
+The gold standard for causal inference is the \emph{randomized controlled trial} (RCT). When treatment is randomly assigned, treated and control groups are comparable in expectation.
+
+\begin{theorem}[Identification Under Randomization]
+\label{thm:rct_identification}
+If treatment $T_i$ is randomly assigned, independent of potential outcomes:
+\begin{equation}
+T_i \independent (\poty{1}_i, \poty{0}_i)
+\label{eq:random_assignment}
+\end{equation}
+then the ATE is identified by the difference in conditional means:
+\begin{equation}
+\ate = \E[Y_i \mid T_i = 1] - \E[Y_i \mid T_i = 0]
+\label{eq:rct_identification}
+\end{equation}
+\end{theorem}
+
+\begin{proof}
+Under random assignment:
+\begin{align*}
+\E[Y_i \mid T_i = 1] &= \E[\poty{1}_i \mid T_i = 1] = \E[\poty{1}_i] \\
+\E[Y_i \mid T_i = 0] &= \E[\poty{0}_i \mid T_i = 0] = \E[\poty{0}_i]
+\end{align*}
+where the second equality in each line follows from independence. Therefore:
+\begin{equation*}
+\E[Y_i \mid T_i = 1] - \E[Y_i \mid T_i = 0] = \E[\poty{1}_i] - \E[\poty{0}_i] = \ate
+\end{equation*}
+\end{proof}
+
+Random assignment eliminates selection bias by ensuring that $\E[\poty{0}_i \mid T_i = 1] = \E[\poty{0}_i \mid T_i = 0]$. Chapter~\ref{ch:rct} develops estimation and inference for randomized experiments in detail.
+
+\subsection{Selection on Observables}
+
+When randomization is not possible, we may still identify causal effects if we observe all variables that jointly affect treatment selection and outcomes.
+
+\begin{definition}[Unconfoundedness]
+\label{def:unconfoundedness}
+Treatment assignment is \emph{unconfounded} given covariates $X_i$ if:
+\begin{equation}
+T_i \independent (\poty{1}_i, \poty{0}_i) \mid X_i
+\label{eq:unconfoundedness}
+\end{equation}
+This is also called \emph{conditional independence}, \emph{ignorability}, or \emph{selection on observables}.
+\end{definition}
+
+Under unconfoundedness, treatment is ``as good as random'' within strata defined by $X_i$. This assumption underlies the methods of Part~\ref{part:selection_observables}:
+\begin{itemize}
+    \item Chapter~\ref{ch:propensity}: Propensity score methods
+    \item Chapter~\ref{ch:weighting}: IPW, doubly robust, TMLE
+    \item Chapter~\ref{ch:cate}: Conditional treatment effects
+    \item Chapter~\ref{ch:forests}: Causal forests
+    \item Chapter~\ref{ch:sensitivity}: Sensitivity analysis for unconfoundedness
+\end{itemize}
+
+\subsection{Selection on Unobservables}
+
+When unconfoundedness is implausible because important confounders are unobserved, we need identification strategies that exploit other sources of variation.
+
+\begin{itemize}
+    \item \textbf{Instrumental Variables}: Use exogenous variation that affects treatment but not outcomes directly
+    \item \textbf{Difference-in-Differences}: Exploit parallel trends in panel data
+    \item \textbf{Regression Discontinuity}: Exploit discontinuous treatment assignment rules
+    \item \textbf{Synthetic Control}: Construct counterfactuals from weighted combinations of control units
+\end{itemize}
+
+Each approach relies on different assumptions and identifies different estimands. The choice of method depends on the data structure and the plausibility of the required assumptions.
+
+\subsection{The Identification--Estimation Distinction}
+
+It is important to distinguish between:
+\begin{itemize}
+    \item \textbf{Identification}: Can the estimand be expressed in terms of observable quantities?
+    \item \textbf{Estimation}: How do we compute the estimand from finite-sample data?
+\end{itemize}
+
+A quantity can be identified but difficult to estimate (e.g., requires very large samples). Conversely, an estimator can be computed but may not identify anything meaningful if assumptions fail.
+
+This book develops both sides: identification conditions (when can we learn causal effects?) and estimation procedures (how do we compute them in practice?).
+
+
+% ============================================================================
+\section{Summary}
+\label{sec:po_summary}
+% ============================================================================
+
+This chapter introduced the potential outcomes framework, the mathematical foundation for causal inference.
+
+\subsection{Key Concepts}
+
+\begin{enumerate}
+    \item \textbf{Potential Outcomes}: For each unit $i$, $\poty{1}_i$ and $\poty{0}_i$ represent outcomes under treatment and control.
+
+    \item \textbf{Individual Treatment Effect}: $\tau_i = \poty{1}_i - \poty{0}_i$ is the causal effect for unit $i$.
+
+    \item \textbf{Fundamental Problem}: We observe only one potential outcome per unit; the other is counterfactual.
+
+    \item \textbf{Average Effects}: ATE, ATT, and ATC summarize treatment effects at the population level.
+
+    \item \textbf{SUTVA}: No interference between units and no hidden versions of treatment.
+
+    \item \textbf{Identification}: Assumptions that allow expressing causal quantities in terms of observable data.
+\end{enumerate}
+
+\subsection{Notation Reference}
+
+\begin{center}
+\begin{tabular}{ll}
+$\poty{t}_i$ & Potential outcome under treatment $t$ \\
+$Y_i$ & Observed outcome \\
+$T_i$ & Treatment indicator \\
+$\tau_i$ & Individual treatment effect \\
+$\ate = \E[\poty{1}_i - \poty{0}_i]$ & Average treatment effect \\
+$\att = \E[\poty{1}_i - \poty{0}_i \mid T_i = 1]$ & Average effect on the treated \\
+$\atc = \E[\poty{1}_i - \poty{0}_i \mid T_i = 0]$ & Average effect on the control \\
+$X_i$ & Pre-treatment covariates
+\end{tabular}
+\end{center}
+
+\subsection{Looking Ahead}
+
+Chapter~\ref{ch:rct} develops estimation and inference for randomized experiments, where random assignment provides the cleanest identification of causal effects. Subsequent chapters tackle the more challenging case of observational studies, where selection into treatment is not controlled by the researcher.
+
+\begin{insight}
+The potential outcomes framework does not tell us \emph{how} to identify causal effects---it tells us what we \emph{mean} by a causal effect and what we need to identify. The specific assumptions that enable identification vary by research design and are the subject of the rest of this book.
+\end{insight}

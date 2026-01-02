@@ -1,0 +1,18 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{c+c1}{\PYGZsh{} Check balance after matching}
+\PYG{n}{matched\PYGZus{}pairs} \PYG{o}{=} \PYG{p}{[}\PYG{p}{(}\PYG{n}{t\PYGZus{}idx}\PYG{p}{,} \PYG{n}{c\PYGZus{}idx}\PYG{p}{)} \PYG{k}{for} \PYG{n}{t\PYGZus{}idx}\PYG{p}{,} \PYG{n}{c\PYGZus{}list} \PYG{o+ow}{in}
+                 \PYG{n+nb}{zip}\PYG{p}{(}\PYG{n}{match\PYGZus{}result}\PYG{o}{.}\PYG{n}{matched\PYGZus{}treated\PYGZus{}indices}\PYG{p}{,} \PYG{n}{match\PYGZus{}result}\PYG{o}{.}\PYG{n}{matches}\PYG{p}{)}
+                 \PYG{k}{for} \PYG{n}{c\PYGZus{}idx} \PYG{o+ow}{in} \PYG{n}{c\PYGZus{}list}\PYG{p}{]}
+
+\PYG{n}{balanced}\PYG{p}{,} \PYG{n}{smd\PYGZus{}after}\PYG{p}{,} \PYG{n}{vr\PYGZus{}after}\PYG{p}{,} \PYG{n}{smd\PYGZus{}before}\PYG{p}{,} \PYG{n}{vr\PYGZus{}before} \PYG{o}{=} \PYG{n}{check\PYGZus{}covariate\PYGZus{}balance}\PYG{p}{(}
+    \PYG{n}{covariates}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{,} \PYG{n}{matched\PYGZus{}pairs}\PYG{p}{,} \PYG{n}{threshold}\PYG{o}{=}\PYG{l+m+mf}{0.1}
+\PYG{p}{)}
+
+\PYG{k}{if} \PYG{n}{balanced}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{All covariates balanced (|SMD| \PYGZlt{} 0.1)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\PYG{k}{else}\PYG{p}{:}
+    \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{Some covariates imbalanced:}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+    \PYG{k}{for} \PYG{n}{j}\PYG{p}{,} \PYG{n}{smd} \PYG{o+ow}{in} \PYG{n+nb}{enumerate}\PYG{p}{(}\PYG{n}{smd\PYGZus{}after}\PYG{p}{)}\PYG{p}{:}
+        \PYG{k}{if} \PYG{n+nb}{abs}\PYG{p}{(}\PYG{n}{smd}\PYG{p}{)} \PYG{o}{\PYGZgt{}}\PYG{o}{=} \PYG{l+m+mf}{0.1}\PYG{p}{:}
+            \PYG{n+nb}{print}\PYG{p}{(}\PYG{l+s+sa}{f}\PYG{l+s+s2}{\PYGZdq{}}\PYG{l+s+s2}{  Covariate }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{j}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{: SMD = }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{smd}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{ (was }\PYG{l+s+si}{\PYGZob{}}\PYG{n}{smd\PYGZus{}before}\PYG{p}{[}\PYG{n}{j}\PYG{p}{]}\PYG{l+s+si}{:}\PYG{l+s+s2}{.3f}\PYG{l+s+si}{\PYGZcb{}}\PYG{l+s+s2}{)}\PYG{l+s+s2}{\PYGZdq{}}\PYG{p}{)}
+\end{MintedVerbatim}

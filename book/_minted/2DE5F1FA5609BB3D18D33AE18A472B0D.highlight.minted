@@ -1,0 +1,28 @@
+\begin{MintedVerbatim}[commandchars=\\\{\}]
+\PYG{k}{def}\PYG{+w}{ }\PYG{n+nf}{x\PYGZus{}learner}\PYG{p}{(}
+    \PYG{n}{outcomes}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{treatment}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+    \PYG{n}{covariates}\PYG{p}{:} \PYG{n}{np}\PYG{o}{.}\PYG{n}{ndarray}\PYG{p}{,}
+\PYG{p}{)} \PYG{o}{\PYGZhy{}}\PYG{o}{\PYGZgt{}} \PYG{n}{CATEResult}\PYG{p}{:}
+\PYG{+w}{    }\PYG{l+s+sd}{\PYGZdq{}\PYGZdq{}\PYGZdq{}X\PYGZhy{}Learner: Cross\PYGZhy{}learner for imbalanced data.\PYGZdq{}\PYGZdq{}\PYGZdq{}}
+    \PYG{c+c1}{\PYGZsh{} Stage 1: T\PYGZhy{}learner models}
+    \PYG{n}{model\PYGZus{}1} \PYG{o}{=} \PYG{n}{RandomForestRegressor}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{X\PYGZus{}1}\PYG{p}{,} \PYG{n}{Y\PYGZus{}1}\PYG{p}{)}
+    \PYG{n}{model\PYGZus{}0} \PYG{o}{=} \PYG{n}{RandomForestRegressor}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{X\PYGZus{}0}\PYG{p}{,} \PYG{n}{Y\PYGZus{}0}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Stage 2: Imputed treatment effects}
+    \PYG{n}{D\PYGZus{}1} \PYG{o}{=} \PYG{n}{Y\PYGZus{}1} \PYG{o}{\PYGZhy{}} \PYG{n}{model\PYGZus{}0}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{X\PYGZus{}1}\PYG{p}{)}  \PYG{c+c1}{\PYGZsh{} Treated: Y \PYGZhy{} mu\PYGZus{}0(X)}
+    \PYG{n}{D\PYGZus{}0} \PYG{o}{=} \PYG{n}{model\PYGZus{}1}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{X\PYGZus{}0}\PYG{p}{)} \PYG{o}{\PYGZhy{}} \PYG{n}{Y\PYGZus{}0}  \PYG{c+c1}{\PYGZsh{} Control: mu\PYGZus{}1(X) \PYGZhy{} Y}
+
+    \PYG{c+c1}{\PYGZsh{} Stage 3: CATE models on imputed effects}
+    \PYG{n}{tau\PYGZus{}model\PYGZus{}1} \PYG{o}{=} \PYG{n}{RandomForestRegressor}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{X\PYGZus{}1}\PYG{p}{,} \PYG{n}{D\PYGZus{}1}\PYG{p}{)}
+    \PYG{n}{tau\PYGZus{}model\PYGZus{}0} \PYG{o}{=} \PYG{n}{RandomForestRegressor}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{X\PYGZus{}0}\PYG{p}{,} \PYG{n}{D\PYGZus{}0}\PYG{p}{)}
+
+    \PYG{n}{tau\PYGZus{}1} \PYG{o}{=} \PYG{n}{tau\PYGZus{}model\PYGZus{}1}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{)}
+    \PYG{n}{tau\PYGZus{}0} \PYG{o}{=} \PYG{n}{tau\PYGZus{}model\PYGZus{}0}\PYG{o}{.}\PYG{n}{predict}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{)}
+
+    \PYG{c+c1}{\PYGZsh{} Stage 4: Propensity\PYGZhy{}weighted combination}
+    \PYG{n}{propensity} \PYG{o}{=} \PYG{n}{LogisticRegression}\PYG{p}{(}\PYG{p}{)}\PYG{o}{.}\PYG{n}{fit}\PYG{p}{(}\PYG{n}{covariates}\PYG{p}{,} \PYG{n}{treatment}\PYG{p}{)}\PYG{o}{.}\PYG{n}{predict\PYGZus{}proba}\PYG{p}{(}\PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}\PYG{p}{[}\PYG{p}{:}\PYG{p}{,} \PYG{l+m+mi}{1}\PYG{p}{]}
+    \PYG{n}{cate} \PYG{o}{=} \PYG{n}{propensity} \PYG{o}{*} \PYG{n}{tau\PYGZus{}0} \PYG{o}{+} \PYG{p}{(}\PYG{l+m+mi}{1} \PYG{o}{\PYGZhy{}} \PYG{n}{propensity}\PYG{p}{)} \PYG{o}{*} \PYG{n}{tau\PYGZus{}1}
+
+    \PYG{k}{return} \PYG{n}{CATEResult}\PYG{p}{(}\PYG{n}{cate}\PYG{o}{=}\PYG{n}{cate}\PYG{p}{,} \PYG{n}{ate}\PYG{o}{=}\PYG{n}{np}\PYG{o}{.}\PYG{n}{mean}\PYG{p}{(}\PYG{n}{cate}\PYG{p}{)}\PYG{p}{,} \PYG{o}{.}\PYG{o}{.}\PYG{o}{.}\PYG{p}{)}
+\end{MintedVerbatim}
