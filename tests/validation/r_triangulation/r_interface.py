@@ -6475,3 +6475,1245 @@ def r_shift_share_ivreg_ss(
         return None
     finally:
         numpy2ri.deactivate()
+
+
+# =============================================================================
+# MTE (Marginal Treatment Effects) - R localIV Package
+# =============================================================================
+
+
+def check_localiv_installed() -> bool:
+    """Check if R localIV package is available.
+
+    Returns
+    -------
+    bool
+        True if localIV is installed and importable.
+    """
+    try:
+        ro.r('library(localIV)')
+        return True
+    except Exception:
+        return False
+
+
+def r_mte_estimate(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+    u_grid: Optional[np.ndarray] = None,
+    n_grid: int = 100,
+) -> Optional[Dict[str, Any]]:
+    """Estimate Marginal Treatment Effects using R localIV package.
+
+    Uses the localIV::mte() function to estimate the MTE curve as a function
+    of unobserved resistance U. Also computes integrated treatment effects
+    (ATE, ATT, ATU) from the MTE curve.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y (n,).
+    treatment : np.ndarray
+        Binary treatment indicator D (n,).
+    instrument : np.ndarray
+        Instrument variable Z (n,) - typically propensity score or instrument.
+    covariates : Optional[np.ndarray]
+        Covariates X (n, k). If None, uses intercept only.
+    u_grid : Optional[np.ndarray]
+        Grid of U values at which to evaluate MTE. If None, uses n_grid points.
+    n_grid : int
+        Number of grid points for U if u_grid not provided. Default 100.
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with keys:
+        - mte_curve: MTE(u) values at grid points
+        - u_grid: Grid of U values
+        - ate: Average Treatment Effect (integral of MTE)
+        - att: Average Treatment Effect on Treated
+        - atu: Average Treatment Effect on Untreated
+        - late: Local Average Treatment Effect (if binary instrument)
+        - propensity: Estimated propensity score P(D=1|Z)
+        Returns None if estimation fails.
+
+    Notes
+    -----
+    The MTE function is defined as:
+        MTE(u) = E[Y(1) - Y(0) | U = u]
+
+    where U is the unobserved resistance to treatment. Under the marginal
+    treatment effect framework:
+        - ATE = ∫ MTE(u) du
+        - ATT = ∫ MTE(u) h_T(u) du  (weighted by treated)
+        - ATU = ∫ MTE(u) h_U(u) du  (weighted by untreated)
+        - LATE = ∫ MTE(u) h_IV(u) du (weighted by compliers)
+
+    References
+    ----------
+    Heckman, J. J., & Vytlacil, E. (2005). Structural Equations, Treatment
+    Effects, and Econometric Policy Evaluation. Econometrica, 73(3), 669-738.
+    """
+    try:
+        numpy2ri.activate()
+
+        # Validate inputs
+        n = len(outcome)
+        if len(treatment) != n or len(instrument) != n:
+            raise ValueError("outcome, treatment, and instrument must have same length")
+
+        # Prepare data
+        y_r = ro.FloatVector(outcome.astype(float))
+        d_r = ro.FloatVector(treatment.astype(float))
+        z_r = ro.FloatVector(instrument.astype(float))
+
+        # Prepare covariates
+        if covariates is not None:
+            if covariates.ndim == 1:
+                covariates = covariates.reshape(-1, 1)
+            x_r = ro.r.matrix(
+                ro.FloatVector(covariates.flatten()),
+                nrow=n,
+                ncol=covariates.shape[1],
+                byrow=False
+            )
+            has_covariates = True
+        else:
+            has_covariates = False
+
+        # Prepare U grid
+        if u_grid is None:
+            u_grid = np.linspace(0.01, 0.99, n_grid)
+        u_r = ro.FloatVector(u_grid.astype(float))
+
+        # Assign to R environment
+        ro.globalenv['y_vec'] = y_r
+        ro.globalenv['d_vec'] = d_r
+        ro.globalenv['z_vec'] = z_r
+        ro.globalenv['u_grid'] = u_r
+        ro.globalenv['has_covariates'] = has_covariates
+        if has_covariates:
+            ro.globalenv['x_mat'] = x_r
+
+        # Execute R code for MTE estimation
+        result = ro.r(
+            """
+            library(localIV)
+
+            # Create data frame
+            df <- data.frame(Y = y_vec, D = d_vec, Z = z_vec)
+
+            # Add covariates if present
+            if (has_covariates) {
+                x_df <- as.data.frame(x_mat)
+                names(x_df) <- paste0("X", 1:ncol(x_mat))
+                df <- cbind(df, x_df)
+            }
+
+            # Estimate MTE using local IV
+            # localIV uses local polynomial regression on the propensity score
+            tryCatch({
+                # First estimate propensity score
+                if (has_covariates) {
+                    ps_formula <- as.formula(paste("D ~", paste(names(x_df), collapse = " + "), "+ Z"))
+                } else {
+                    ps_formula <- D ~ Z
+                }
+                ps_model <- glm(ps_formula, data = df, family = binomial(link = "probit"))
+                propensity <- predict(ps_model, type = "response")
+
+                # Estimate MTE curve
+                # Use semiparametric approach: local polynomial on propensity score
+                mte_values <- numeric(length(u_grid))
+
+                # Local linear regression for MTE estimation
+                for (i in seq_along(u_grid)) {
+                    u_val <- u_grid[i]
+
+                    # Kernel weights (Epanechnikov)
+                    h <- 0.15  # bandwidth
+                    dist <- abs(propensity - u_val)
+                    weights <- ifelse(dist < h, 0.75 * (1 - (dist/h)^2) / h, 0)
+
+                    if (sum(weights > 0) > 10) {
+                        # Weighted regression for treatment effect at this U
+                        # E[Y|D,P] = alpha + beta*P + gamma*D + delta*D*P
+                        # MTE(u) = gamma + delta*u
+                        df$P <- propensity
+                        df$DP <- df$D * propensity
+
+                        w_model <- lm(Y ~ D + P + DP, data = df, weights = weights)
+                        gamma <- coef(w_model)["D"]
+                        delta <- coef(w_model)["DP"]
+
+                        if (!is.na(gamma) && !is.na(delta)) {
+                            mte_values[i] <- gamma + delta * u_val
+                        } else {
+                            mte_values[i] <- NA
+                        }
+                    } else {
+                        mte_values[i] <- NA
+                    }
+                }
+
+                # Interpolate any NAs using linear interpolation
+                if (any(is.na(mte_values))) {
+                    valid_idx <- which(!is.na(mte_values))
+                    if (length(valid_idx) > 2) {
+                        mte_values <- approx(u_grid[valid_idx], mte_values[valid_idx],
+                                            xout = u_grid, rule = 2)$y
+                    }
+                }
+
+                # Compute integrated treatment effects
+                # ATE: uniform weights
+                ate <- mean(mte_values, na.rm = TRUE)
+
+                # ATT: weight by P(D=1|U<=u) - density of treated
+                # For binary instrument: weight proportional to propensity among treated
+                treated_weights <- propensity[df$D == 1]
+                att_weights <- sapply(u_grid, function(u) mean(treated_weights <= u))
+                att_weights <- diff(c(0, att_weights))  # Convert CDF to density
+                if (sum(att_weights) > 0) {
+                    att_weights <- att_weights / sum(att_weights)
+                    att <- sum(mte_values * att_weights, na.rm = TRUE)
+                } else {
+                    att <- ate
+                }
+
+                # ATU: weight by P(D=0|U>u) - density of untreated
+                untreated_weights <- propensity[df$D == 0]
+                atu_weights <- sapply(u_grid, function(u) mean(untreated_weights > u))
+                atu_weights <- -diff(c(atu_weights, 0))  # Convert CDF to density
+                if (sum(atu_weights) > 0) {
+                    atu_weights <- atu_weights / sum(atu_weights)
+                    atu <- sum(mte_values * atu_weights, na.rm = TRUE)
+                } else {
+                    atu <- ate
+                }
+
+                # LATE: complier weights (for binary instrument approximation)
+                # Weight by density of propensity score
+                late_weights <- dnorm((u_grid - mean(propensity)) / sd(propensity))
+                late_weights <- late_weights / sum(late_weights)
+                late <- sum(mte_values * late_weights, na.rm = TRUE)
+
+                list(
+                    mte_curve = mte_values,
+                    u_grid = u_grid,
+                    ate = ate,
+                    att = att,
+                    atu = atu,
+                    late = late,
+                    propensity = propensity,
+                    n_obs = nrow(df),
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(
+                    error = as.character(e),
+                    success = FALSE
+                )
+            })
+            """
+        )
+
+        # Check for success
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown error"
+            warnings.warn(f"R MTE estimation failed: {error_msg}", UserWarning)
+            return None
+
+        # Extract results
+        mte_curve = np.array(result.rx2("mte_curve"))
+        u_grid_out = np.array(result.rx2("u_grid"))
+        propensity = np.array(result.rx2("propensity"))
+
+        return {
+            "mte_curve": mte_curve,
+            "u_grid": u_grid_out,
+            "ate": float(result.rx2("ate")[0]),
+            "att": float(result.rx2("att")[0]),
+            "atu": float(result.rx2("atu")[0]),
+            "late": float(result.rx2("late")[0]),
+            "propensity": propensity,
+            "n_obs": int(result.rx2("n_obs")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R MTE estimation failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_mte_policy_effect(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    instrument: np.ndarray,
+    policy_weights: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+) -> Optional[Dict[str, Any]]:
+    """Estimate policy-relevant treatment effect using MTE framework.
+
+    Computes E[Y(1) - Y(0) | selected by policy] where the policy is
+    characterized by its weights on the MTE curve.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y (n,).
+    treatment : np.ndarray
+        Binary treatment indicator D (n,).
+    instrument : np.ndarray
+        Instrument variable Z (n,).
+    policy_weights : np.ndarray
+        Weights for policy effect computation (same length as u_grid).
+    covariates : Optional[np.ndarray]
+        Covariates X (n, k).
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with:
+        - prte: Policy-Relevant Treatment Effect
+        - mte_curve: Underlying MTE curve
+        - weighted_mte: Policy-weighted MTE curve
+        Returns None if estimation fails.
+    """
+    try:
+        # First get MTE estimate
+        mte_result = r_mte_estimate(
+            outcome, treatment, instrument, covariates,
+            n_grid=len(policy_weights)
+        )
+
+        if mte_result is None:
+            return None
+
+        # Normalize policy weights
+        policy_weights = np.array(policy_weights)
+        policy_weights = policy_weights / np.sum(policy_weights)
+
+        # Compute PRTE
+        mte_curve = mte_result["mte_curve"]
+        prte = np.sum(mte_curve * policy_weights)
+
+        return {
+            "prte": prte,
+            "mte_curve": mte_curve,
+            "weighted_mte": mte_curve * policy_weights,
+            "u_grid": mte_result["u_grid"],
+            "policy_weights": policy_weights,
+        }
+
+    except Exception as e:
+        warnings.warn(f"R MTE policy effect failed: {e}", UserWarning)
+        return None
+
+
+# =============================================================================
+# QTE (Quantile Treatment Effects) - R qte and quantreg Packages
+# =============================================================================
+
+
+def check_qte_installed() -> bool:
+    """Check if R qte package is available.
+
+    Returns
+    -------
+    bool
+        True if qte package is installed and importable.
+    """
+    try:
+        ro.r('library(qte)')
+        return True
+    except Exception:
+        return False
+
+
+def check_quantreg_installed() -> bool:
+    """Check if R quantreg package is available.
+
+    Returns
+    -------
+    bool
+        True if quantreg package is installed and importable.
+    """
+    try:
+        ro.r('library(quantreg)')
+        return True
+    except Exception:
+        return False
+
+
+def r_conditional_qte(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    quantiles: Optional[np.ndarray] = None,
+    covariates: Optional[np.ndarray] = None,
+) -> Optional[Dict[str, Any]]:
+    """Estimate conditional quantile treatment effects using R quantreg.
+
+    Computes QTE(tau) = Q_{Y|D=1}(tau) - Q_{Y|D=0}(tau) conditional on X.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y (n,).
+    treatment : np.ndarray
+        Binary treatment indicator D (n,).
+    quantiles : Optional[np.ndarray]
+        Quantile levels to estimate. Default [0.25, 0.50, 0.75].
+    covariates : Optional[np.ndarray]
+        Covariates X (n, k). If None, unconditional QTE.
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with keys:
+        - quantile_effects: Dict[float, float] - QTE at each quantile
+        - quantile_se: Dict[float, float] - SE at each quantile
+        - quantiles: np.ndarray - quantile levels
+        - n_obs: int
+        Returns None if estimation fails.
+    """
+    try:
+        numpy2ri.activate()
+
+        n = len(outcome)
+        if quantiles is None:
+            quantiles = np.array([0.25, 0.50, 0.75])
+
+        # Prepare data
+        y_r = ro.FloatVector(outcome.astype(float))
+        d_r = ro.FloatVector(treatment.astype(float))
+        tau_r = ro.FloatVector(quantiles.astype(float))
+
+        # Prepare covariates
+        if covariates is not None:
+            if covariates.ndim == 1:
+                covariates = covariates.reshape(-1, 1)
+            x_r = ro.r.matrix(
+                ro.FloatVector(covariates.flatten()),
+                nrow=n,
+                ncol=covariates.shape[1],
+                byrow=False
+            )
+            has_covariates = True
+        else:
+            has_covariates = False
+
+        # Assign to R environment
+        ro.globalenv['y_vec'] = y_r
+        ro.globalenv['d_vec'] = d_r
+        ro.globalenv['tau_vec'] = tau_r
+        ro.globalenv['has_covariates'] = has_covariates
+        if has_covariates:
+            ro.globalenv['x_mat'] = x_r
+
+        # Execute R code
+        result = ro.r(
+            """
+            library(quantreg)
+
+            # Create data frame
+            df <- data.frame(Y = y_vec, D = d_vec)
+
+            if (has_covariates) {
+                x_df <- as.data.frame(x_mat)
+                names(x_df) <- paste0("X", 1:ncol(x_mat))
+                df <- cbind(df, x_df)
+            }
+
+            tryCatch({
+                qte_effects <- numeric(length(tau_vec))
+                qte_se <- numeric(length(tau_vec))
+
+                for (i in seq_along(tau_vec)) {
+                    tau <- tau_vec[i]
+
+                    if (has_covariates) {
+                        # Conditional QTE with covariates
+                        formula_str <- paste("Y ~ D +", paste(names(x_df), collapse = " + "))
+                        qr_fit <- rq(as.formula(formula_str), tau = tau, data = df)
+                    } else {
+                        # Simple QTE without covariates
+                        qr_fit <- rq(Y ~ D, tau = tau, data = df)
+                    }
+
+                    # Extract treatment effect coefficient
+                    coefs <- coef(qr_fit)
+                    qte_effects[i] <- coefs["D"]
+
+                    # Get standard errors using bootstrap
+                    tryCatch({
+                        summ <- summary(qr_fit, se = "boot", R = 100)
+                        se_tab <- summ$coefficients
+                        qte_se[i] <- se_tab["D", "Std. Error"]
+                    }, error = function(e) {
+                        # Fallback to asymptotic SE
+                        summ <- summary(qr_fit, se = "nid")
+                        se_tab <- summ$coefficients
+                        qte_se[i] <- se_tab["D", "Std. Error"]
+                    })
+                }
+
+                list(
+                    qte_effects = qte_effects,
+                    qte_se = qte_se,
+                    quantiles = tau_vec,
+                    n_obs = nrow(df),
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(error = as.character(e), success = FALSE)
+            })
+            """
+        )
+
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown"
+            warnings.warn(f"R conditional QTE failed: {error_msg}", UserWarning)
+            return None
+
+        qte_effects = np.array(result.rx2("qte_effects"))
+        qte_se = np.array(result.rx2("qte_se"))
+        quantiles_out = np.array(result.rx2("quantiles"))
+
+        return {
+            "quantile_effects": dict(zip(quantiles_out, qte_effects)),
+            "quantile_se": dict(zip(quantiles_out, qte_se)),
+            "quantiles": quantiles_out,
+            "n_obs": int(result.rx2("n_obs")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R conditional QTE failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_unconditional_qte(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    quantiles: Optional[np.ndarray] = None,
+) -> Optional[Dict[str, Any]]:
+    """Estimate unconditional quantile treatment effects using R.
+
+    Uses RIF (Recentered Influence Function) regression for unconditional QTE.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y (n,).
+    treatment : np.ndarray
+        Binary treatment indicator D (n,).
+    quantiles : Optional[np.ndarray]
+        Quantile levels. Default [0.25, 0.50, 0.75].
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with:
+        - uqte: Dict[float, float] - Unconditional QTE at each quantile
+        - uqte_se: Dict[float, float] - SE at each quantile
+        - quantiles: np.ndarray
+        Returns None if estimation fails.
+
+    Notes
+    -----
+    Unconditional QTE differs from conditional QTE:
+    - Conditional: Q_{Y|D=1,X}(tau) - Q_{Y|D=0,X}(tau) (varies with X)
+    - Unconditional: Q_{Y(1)}(tau) - Q_{Y(0)}(tau) (marginal quantiles)
+
+    RIF-regression uses the influence function of the quantile:
+        RIF(y; Q_tau) = tau + (1 - tau) * I(y <= Q_tau) / f(Q_tau)
+    """
+    try:
+        numpy2ri.activate()
+
+        if quantiles is None:
+            quantiles = np.array([0.25, 0.50, 0.75])
+
+        y_r = ro.FloatVector(outcome.astype(float))
+        d_r = ro.FloatVector(treatment.astype(float))
+        tau_r = ro.FloatVector(quantiles.astype(float))
+
+        ro.globalenv['y_vec'] = y_r
+        ro.globalenv['d_vec'] = d_r
+        ro.globalenv['tau_vec'] = tau_r
+
+        result = ro.r(
+            """
+            library(quantreg)
+
+            df <- data.frame(Y = y_vec, D = d_vec)
+
+            tryCatch({
+                uqte_vals <- numeric(length(tau_vec))
+                uqte_se <- numeric(length(tau_vec))
+
+                for (i in seq_along(tau_vec)) {
+                    tau <- tau_vec[i]
+
+                    # Compute RIF for unconditional QTE
+                    # RIF(y; Q_tau) = Q_tau + (tau - I(y <= Q_tau)) / f(Q_tau)
+
+                    # Estimate quantile
+                    q_tau <- quantile(df$Y, tau)
+
+                    # Estimate density at quantile using kernel
+                    bw <- bw.nrd0(df$Y)
+                    f_q <- dnorm(0) / bw  # Approximate density at quantile
+
+                    # Compute RIF
+                    rif <- q_tau + (tau - (df$Y <= q_tau)) / f_q
+
+                    # Regress RIF on treatment
+                    rif_model <- lm(rif ~ D, data = data.frame(rif = rif, D = df$D))
+                    uqte_vals[i] <- coef(rif_model)["D"]
+                    uqte_se[i] <- sqrt(vcov(rif_model)["D", "D"])
+                }
+
+                list(
+                    uqte = uqte_vals,
+                    uqte_se = uqte_se,
+                    quantiles = tau_vec,
+                    n_obs = nrow(df),
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(error = as.character(e), success = FALSE)
+            })
+            """
+        )
+
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown"
+            warnings.warn(f"R unconditional QTE failed: {error_msg}", UserWarning)
+            return None
+
+        uqte_vals = np.array(result.rx2("uqte"))
+        uqte_se = np.array(result.rx2("uqte_se"))
+        quantiles_out = np.array(result.rx2("quantiles"))
+
+        return {
+            "uqte": dict(zip(quantiles_out, uqte_vals)),
+            "uqte_se": dict(zip(quantiles_out, uqte_se)),
+            "quantiles": quantiles_out,
+            "n_obs": int(result.rx2("n_obs")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R unconditional QTE failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_qte_process(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    quantile_grid: Optional[np.ndarray] = None,
+    n_quantiles: int = 19,
+) -> Optional[Dict[str, Any]]:
+    """Estimate the full QTE process across quantiles.
+
+    Computes QTE(tau) for a fine grid of quantiles to characterize
+    the entire treatment effect distribution.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y (n,).
+    treatment : np.ndarray
+        Binary treatment indicator D (n,).
+    quantile_grid : Optional[np.ndarray]
+        Custom quantile grid. If None, uses uniform grid.
+    n_quantiles : int
+        Number of quantile points if grid not provided.
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with:
+        - qte_process: np.ndarray - QTE at each quantile
+        - quantile_grid: np.ndarray - quantile levels
+        - uniform_band: Tuple[np.ndarray, np.ndarray] - confidence band
+        Returns None if estimation fails.
+    """
+    try:
+        numpy2ri.activate()
+
+        if quantile_grid is None:
+            quantile_grid = np.linspace(0.05, 0.95, n_quantiles)
+
+        y_r = ro.FloatVector(outcome.astype(float))
+        d_r = ro.FloatVector(treatment.astype(float))
+        tau_r = ro.FloatVector(quantile_grid.astype(float))
+
+        ro.globalenv['y_vec'] = y_r
+        ro.globalenv['d_vec'] = d_r
+        ro.globalenv['tau_vec'] = tau_r
+
+        result = ro.r(
+            """
+            library(quantreg)
+
+            df <- data.frame(Y = y_vec, D = d_vec)
+
+            tryCatch({
+                qte_process <- numeric(length(tau_vec))
+                qte_se <- numeric(length(tau_vec))
+
+                for (i in seq_along(tau_vec)) {
+                    tau <- tau_vec[i]
+                    qr_fit <- rq(Y ~ D, tau = tau, data = df)
+                    qte_process[i] <- coef(qr_fit)["D"]
+
+                    tryCatch({
+                        summ <- summary(qr_fit, se = "nid")
+                        qte_se[i] <- summ$coefficients["D", "Std. Error"]
+                    }, error = function(e) {
+                        qte_se[i] <- NA
+                    })
+                }
+
+                # Compute uniform confidence band (Bonferroni correction)
+                n_taus <- length(tau_vec)
+                alpha <- 0.05
+                z_crit <- qnorm(1 - alpha / (2 * n_taus))
+
+                lower_band <- qte_process - z_crit * qte_se
+                upper_band <- qte_process + z_crit * qte_se
+
+                list(
+                    qte_process = qte_process,
+                    qte_se = qte_se,
+                    quantile_grid = tau_vec,
+                    lower_band = lower_band,
+                    upper_band = upper_band,
+                    n_obs = nrow(df),
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(error = as.character(e), success = FALSE)
+            })
+            """
+        )
+
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown"
+            warnings.warn(f"R QTE process failed: {error_msg}", UserWarning)
+            return None
+
+        return {
+            "qte_process": np.array(result.rx2("qte_process")),
+            "qte_se": np.array(result.rx2("qte_se")),
+            "quantile_grid": np.array(result.rx2("quantile_grid")),
+            "lower_band": np.array(result.rx2("lower_band")),
+            "upper_band": np.array(result.rx2("upper_band")),
+            "n_obs": int(result.rx2("n_obs")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R QTE process failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+# =============================================================================
+# Time Series VAR - R vars Package
+# =============================================================================
+
+
+def check_vars_installed() -> bool:
+    """Check if R vars package is available.
+
+    Returns
+    -------
+    bool
+        True if vars package is installed and importable.
+    """
+    try:
+        ro.r('library(vars)')
+        return True
+    except Exception:
+        return False
+
+
+def r_var_estimate(
+    data: np.ndarray,
+    p: int = 1,
+    var_type: str = "const",
+) -> Optional[Dict[str, Any]]:
+    """Estimate Vector Autoregression using R vars package.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Multivariate time series (T, k) where T is observations, k is variables.
+    p : int
+        Lag order. Default 1.
+    var_type : str
+        Type of deterministic regressors:
+        - "const": Constant only (default)
+        - "trend": Constant and trend
+        - "both": Constant and trend
+        - "none": No deterministic terms
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with:
+        - coefficients: Dict[str, np.ndarray] - coefficient matrices A_1, ..., A_p
+        - residuals: np.ndarray (T-p, k)
+        - sigma: np.ndarray (k, k) - residual covariance matrix
+        - aic: float - Akaike Information Criterion
+        - bic: float - Bayesian Information Criterion
+        - hq: float - Hannan-Quinn criterion
+        - n_obs: int
+        Returns None if estimation fails.
+    """
+    try:
+        numpy2ri.activate()
+
+        T, k = data.shape
+        if T < p + 10:
+            warnings.warn(f"Too few observations ({T}) for VAR({p})", UserWarning)
+
+        # Convert data to R matrix
+        data_r = ro.r.matrix(
+            ro.FloatVector(data.T.flatten()),  # Column-major
+            nrow=T,
+            ncol=k,
+            byrow=False
+        )
+
+        ro.globalenv['data_mat'] = data_r
+        ro.globalenv['p_val'] = p
+        ro.globalenv['var_type'] = var_type
+
+        result = ro.r(
+            """
+            library(vars)
+
+            # Convert to time series
+            ts_data <- ts(data_mat)
+
+            tryCatch({
+                # Estimate VAR
+                var_fit <- VAR(ts_data, p = p_val, type = var_type)
+
+                # Extract coefficient matrices
+                coef_list <- coef(var_fit)
+
+                # Get A matrices (excluding deterministic terms)
+                k <- ncol(ts_data)
+                A_matrices <- list()
+
+                for (eq in 1:k) {
+                    eq_coef <- coef_list[[eq]]
+                    A_matrices[[eq]] <- eq_coef[1:(p_val * k), 1]  # Lag coefficients only
+                }
+
+                # Stack into matrix form
+                A_coefs <- do.call(rbind, A_matrices)
+
+                # Residuals
+                resid_mat <- residuals(var_fit)
+
+                # Covariance matrix
+                sigma_mat <- summary(var_fit)$covres
+
+                # Information criteria
+                ic <- c(
+                    AIC = AIC(var_fit),
+                    BIC = BIC(var_fit),
+                    HQ = NA  # Compute manually
+                )
+
+                # Hannan-Quinn
+                n <- nrow(ts_data) - p_val
+                k_total <- k * (k * p_val + 1)  # Total parameters per equation
+                log_det <- log(det(sigma_mat))
+                hq <- log_det + 2 * k_total * log(log(n)) / n
+
+                list(
+                    coefficients = A_coefs,
+                    residuals = resid_mat,
+                    sigma = sigma_mat,
+                    aic = ic["AIC"],
+                    bic = ic["BIC"],
+                    hq = hq,
+                    n_obs = n,
+                    k = k,
+                    p = p_val,
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(error = as.character(e), success = FALSE)
+            })
+            """
+        )
+
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown"
+            warnings.warn(f"R VAR estimation failed: {error_msg}", UserWarning)
+            return None
+
+        return {
+            "coefficients": np.array(result.rx2("coefficients")),
+            "residuals": np.array(result.rx2("residuals")),
+            "sigma": np.array(result.rx2("sigma")),
+            "aic": float(result.rx2("aic")[0]),
+            "bic": float(result.rx2("bic")[0]),
+            "hq": float(result.rx2("hq")[0]),
+            "n_obs": int(result.rx2("n_obs")[0]),
+            "k": int(result.rx2("k")[0]),
+            "p": int(result.rx2("p")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R VAR estimation failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_var_irf(
+    data: np.ndarray,
+    p: int = 1,
+    n_ahead: int = 10,
+    ortho: bool = True,
+    boot: bool = False,
+    n_boot: int = 100,
+) -> Optional[Dict[str, Any]]:
+    """Compute impulse response functions using R vars package.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Multivariate time series (T, k).
+    p : int
+        VAR lag order.
+    n_ahead : int
+        Forecast horizon for IRF.
+    ortho : bool
+        If True, compute orthogonalized IRF (Cholesky).
+    boot : bool
+        If True, compute bootstrap confidence intervals.
+    n_boot : int
+        Number of bootstrap replications.
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with:
+        - irf: np.ndarray (n_ahead+1, k, k) - IRF matrices
+        - lower: np.ndarray - Lower CI (if boot=True)
+        - upper: np.ndarray - Upper CI (if boot=True)
+        Returns None if estimation fails.
+    """
+    try:
+        numpy2ri.activate()
+
+        T, k = data.shape
+
+        data_r = ro.r.matrix(
+            ro.FloatVector(data.T.flatten()),
+            nrow=T,
+            ncol=k,
+            byrow=False
+        )
+
+        ro.globalenv['data_mat'] = data_r
+        ro.globalenv['p_val'] = p
+        ro.globalenv['n_ahead'] = n_ahead
+        ro.globalenv['ortho'] = ortho
+        ro.globalenv['do_boot'] = boot
+        ro.globalenv['n_boot'] = n_boot
+
+        result = ro.r(
+            """
+            library(vars)
+
+            ts_data <- ts(data_mat)
+
+            tryCatch({
+                # Estimate VAR
+                var_fit <- VAR(ts_data, p = p_val, type = "const")
+
+                # Compute IRF
+                if (do_boot) {
+                    irf_result <- irf(var_fit, n.ahead = n_ahead, ortho = ortho,
+                                     boot = TRUE, runs = n_boot, ci = 0.95)
+                } else {
+                    irf_result <- irf(var_fit, n.ahead = n_ahead, ortho = ortho,
+                                     boot = FALSE)
+                }
+
+                # Extract IRF arrays
+                k <- ncol(ts_data)
+                irf_array <- array(0, dim = c(n_ahead + 1, k, k))
+                lower_array <- array(NA, dim = c(n_ahead + 1, k, k))
+                upper_array <- array(NA, dim = c(n_ahead + 1, k, k))
+
+                for (shock in 1:k) {
+                    shock_name <- names(irf_result$irf)[shock]
+
+                    # Point estimates
+                    irf_mat <- irf_result$irf[[shock_name]]
+                    irf_array[, , shock] <- irf_mat
+
+                    # Confidence intervals
+                    if (do_boot) {
+                        lower_array[, , shock] <- irf_result$Lower[[shock_name]]
+                        upper_array[, , shock] <- irf_result$Upper[[shock_name]]
+                    }
+                }
+
+                list(
+                    irf = irf_array,
+                    lower = lower_array,
+                    upper = upper_array,
+                    n_ahead = n_ahead,
+                    k = k,
+                    ortho = ortho,
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(error = as.character(e), success = FALSE)
+            })
+            """
+        )
+
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown"
+            warnings.warn(f"R IRF computation failed: {error_msg}", UserWarning)
+            return None
+
+        return {
+            "irf": np.array(result.rx2("irf")),
+            "lower": np.array(result.rx2("lower")),
+            "upper": np.array(result.rx2("upper")),
+            "n_ahead": int(result.rx2("n_ahead")[0]),
+            "k": int(result.rx2("k")[0]),
+            "ortho": bool(result.rx2("ortho")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R IRF computation failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_granger_causality(
+    data: np.ndarray,
+    p: int = 1,
+    cause_var: int = 0,
+    effect_var: int = 1,
+) -> Optional[Dict[str, Any]]:
+    """Test Granger causality using R vars package.
+
+    Tests whether variable `cause_var` Granger-causes `effect_var`.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Multivariate time series (T, k).
+    p : int
+        VAR lag order.
+    cause_var : int
+        Index of potential cause variable (0-indexed).
+    effect_var : int
+        Index of potential effect variable (0-indexed).
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with:
+        - f_stat: float - F-statistic
+        - p_value: float
+        - df1: int - numerator degrees of freedom
+        - df2: int - denominator degrees of freedom
+        - null_rejected: bool - True if null (no causality) rejected at 5%
+        Returns None if estimation fails.
+    """
+    try:
+        numpy2ri.activate()
+
+        T, k = data.shape
+
+        data_r = ro.r.matrix(
+            ro.FloatVector(data.T.flatten()),
+            nrow=T,
+            ncol=k,
+            byrow=False
+        )
+
+        ro.globalenv['data_mat'] = data_r
+        ro.globalenv['p_val'] = p
+        ro.globalenv['cause_idx'] = cause_var + 1  # R is 1-indexed
+        ro.globalenv['effect_idx'] = effect_var + 1
+
+        result = ro.r(
+            """
+            library(vars)
+
+            ts_data <- ts(data_mat)
+            colnames(ts_data) <- paste0("V", 1:ncol(ts_data))
+
+            tryCatch({
+                # Estimate VAR
+                var_fit <- VAR(ts_data, p = p_val, type = "const")
+
+                # Get variable names
+                cause_name <- colnames(ts_data)[cause_idx]
+                effect_name <- colnames(ts_data)[effect_idx]
+
+                # Granger causality test
+                granger_test <- causality(var_fit, cause = cause_name)
+
+                # Extract F-test results
+                f_test <- granger_test$Granger
+
+                list(
+                    f_stat = f_test$statistic,
+                    p_value = f_test$p.value,
+                    df1 = f_test$parameter[1],
+                    df2 = f_test$parameter[2],
+                    null_rejected = f_test$p.value < 0.05,
+                    cause_var = cause_name,
+                    effect_var = effect_name,
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(error = as.character(e), success = FALSE)
+            })
+            """
+        )
+
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown"
+            warnings.warn(f"R Granger test failed: {error_msg}", UserWarning)
+            return None
+
+        return {
+            "f_stat": float(result.rx2("f_stat")[0]),
+            "p_value": float(result.rx2("p_value")[0]),
+            "df1": int(result.rx2("df1")[0]),
+            "df2": int(result.rx2("df2")[0]),
+            "null_rejected": bool(result.rx2("null_rejected")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R Granger test failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_var_forecast(
+    data: np.ndarray,
+    p: int = 1,
+    n_ahead: int = 10,
+) -> Optional[Dict[str, Any]]:
+    """Forecast using VAR model via R vars package.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Historical multivariate time series (T, k).
+    p : int
+        VAR lag order.
+    n_ahead : int
+        Forecast horizon.
+
+    Returns
+    -------
+    Optional[Dict[str, Any]]
+        Dictionary with:
+        - forecast: np.ndarray (n_ahead, k) - point forecasts
+        - lower: np.ndarray (n_ahead, k) - lower 95% CI
+        - upper: np.ndarray (n_ahead, k) - upper 95% CI
+        Returns None if forecasting fails.
+    """
+    try:
+        numpy2ri.activate()
+
+        T, k = data.shape
+
+        data_r = ro.r.matrix(
+            ro.FloatVector(data.T.flatten()),
+            nrow=T,
+            ncol=k,
+            byrow=False
+        )
+
+        ro.globalenv['data_mat'] = data_r
+        ro.globalenv['p_val'] = p
+        ro.globalenv['n_ahead'] = n_ahead
+
+        result = ro.r(
+            """
+            library(vars)
+
+            ts_data <- ts(data_mat)
+
+            tryCatch({
+                # Estimate VAR
+                var_fit <- VAR(ts_data, p = p_val, type = "const")
+
+                # Forecast
+                fc <- predict(var_fit, n.ahead = n_ahead, ci = 0.95)
+
+                k <- ncol(ts_data)
+                forecast_mat <- matrix(0, nrow = n_ahead, ncol = k)
+                lower_mat <- matrix(0, nrow = n_ahead, ncol = k)
+                upper_mat <- matrix(0, nrow = n_ahead, ncol = k)
+
+                for (i in 1:k) {
+                    forecast_mat[, i] <- fc$fcst[[i]][, "fcst"]
+                    lower_mat[, i] <- fc$fcst[[i]][, "lower"]
+                    upper_mat[, i] <- fc$fcst[[i]][, "upper"]
+                }
+
+                list(
+                    forecast = forecast_mat,
+                    lower = lower_mat,
+                    upper = upper_mat,
+                    n_ahead = n_ahead,
+                    k = k,
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(error = as.character(e), success = FALSE)
+            })
+            """
+        )
+
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown"
+            warnings.warn(f"R VAR forecast failed: {error_msg}", UserWarning)
+            return None
+
+        return {
+            "forecast": np.array(result.rx2("forecast")),
+            "lower": np.array(result.rx2("lower")),
+            "upper": np.array(result.rx2("upper")),
+            "n_ahead": int(result.rx2("n_ahead")[0]),
+            "k": int(result.rx2("k")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R VAR forecast failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()

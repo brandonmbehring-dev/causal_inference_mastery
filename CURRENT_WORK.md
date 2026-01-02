@@ -1,16 +1,17 @@
 # Current Work
 
-**Last Updated**: 2026-01-02 [Session 178 - R Triangulation Quick Wins]
+**Last Updated**: 2026-01-02 [Session 179 - MTE + QTE + Time Series R Triangulation]
 
 ---
 
 ## Right Now
 
-**Session 178**: R Triangulation Quick Wins ✅ COMPLETE
+**Session 179**: MTE + QTE + Time Series R Triangulation ✅ COMPLETE
 
-Added Layer 5 R Triangulation for Bunching and Shift-Share method families.
-- **Bunching**: Uses R's `bunchr` package (Saez 2010 methodology)
-- **Shift-Share**: Uses R's `ShiftShareSE` package (Adão, Kolesár, Morales 2019)
+Extended Layer 5 R Triangulation to include three major method families:
+- **MTE**: Uses R's `localIV` package (Heckman-Vytlacil MTE framework)
+- **QTE**: Uses R's `quantreg` package (Koenker quantile regression)
+- **Time Series (VAR)**: Uses R's `vars` package (Lütkepohl VAR methodology)
 
 ### Session Progress (R Triangulation Multi-Session Plan)
 
@@ -24,11 +25,86 @@ Added Layer 5 R Triangulation for Bunching and Shift-Share method families.
 | 176b | Mediation | ✅ COMPLETE | +14 |
 | 177 | Book Audit | ✅ COMPLETE | N/A |
 | 178 | Bunching + Shift-Share | ✅ COMPLETE | +32 |
+| 179 | MTE + QTE + Time Series | ✅ COMPLETE | +45 |
 
 ### Current Layer 5 Coverage
 
-**17/25 families (68%)**:
-- RCT, PSM, PS, IV, RDD, DiD, SCM, CATE, DTR, Sensitivity, Observational, RKD, Bounds, Selection, Mediation, **Bunching**, **Shift-Share**
+**20/25 families (80%)** 🎉:
+- RCT, PSM, PS, IV, RDD, DiD, SCM, CATE, DTR, Sensitivity, Observational, RKD, Bounds, Selection, Mediation, Bunching, Shift-Share, **MTE**, **QTE**, **Time Series**
+
+### Session 179 Deliverables
+
+1. ✅ `r_interface.py`: Added 11 R wrappers (+1,241 lines, total 7,718 lines)
+   - **MTE (3 wrappers)**:
+     - `check_localiv_installed()`: Check R localIV availability
+     - `r_mte_estimate()`: MTE curve + ATE/ATT/ATU/LATE via local IV
+     - `r_mte_policy_effect()`: Policy-relevant treatment effects
+   - **QTE (4 wrappers)**:
+     - `check_qte_installed()`: Check R qte availability
+     - `check_quantreg_installed()`: Check R quantreg availability
+     - `r_conditional_qte()`: Conditional QTE via quantreg::rq()
+     - `r_unconditional_qte()`: Unconditional QTE via RIF regression
+     - `r_qte_process()`: Full QTE process across quantile grid
+   - **Time Series (4 wrappers)**:
+     - `check_vars_installed()`: Check R vars availability
+     - `r_var_estimate()`: VAR estimation via vars::VAR()
+     - `r_var_irf()`: Impulse response functions via vars::irf()
+     - `r_granger_causality()`: Granger tests via vars::causality()
+     - `r_var_forecast()`: VAR forecasting via vars::predict()
+
+2. ✅ `test_mte_vs_r.py`: NEW (13 tests, ~450 lines)
+   - `TestMTECurveVsR` (5 tests): MTE curve shape, ATE/ATT/ATU from MTE
+   - `TestLATEVsR` (2 tests): LATE estimation with binary instrument
+   - `TestMTEEdgeCases` (3 tests): Weak instrument, no covariates, polynomial MTE
+   - `TestMTEMonteCarloTriangulation` (3 tests): Monte Carlo consistency
+
+3. ✅ `test_qte_vs_r.py`: NEW (16 tests, ~530 lines)
+   - `TestConditionalQTEVsR` (4 tests): Median, quartiles, with covariates
+   - `TestUnconditionalQTEVsR` (3 tests): RIF-based QTE
+   - `TestQTEEdgeCases` (4 tests): Extreme quantiles, heavy tails, skewed
+   - `TestQTEStandardErrors` (2 tests): SE magnitude and parity
+   - `TestQTEMonteCarloTriangulation` (3 tests): Monte Carlo consistency
+
+4. ✅ `test_var_vs_r.py`: NEW (16 tests, ~520 lines)
+   - `TestVAREstimationVsR` (4 tests): Coefficients, sigma, AIC/BIC
+   - `TestVARIRFVsR` (3 tests): IRF point estimates, decay, impact
+   - `TestGrangerCausalityVsR` (3 tests): F-stat, bidirectional, unidirectional
+   - `TestVAREdgeCases` (3 tests): Bivariate, VAR(4), forecasting
+   - `TestVARMonteCarloTriangulation` (3 tests): Monte Carlo consistency
+
+5. ✅ Tests skip gracefully when R packages unavailable
+
+### Tolerance Standards (Session 179)
+
+| Method | Metric | Tolerance | Rationale |
+|--------|--------|-----------|-----------|
+| MTE | Curve mean | rtol=0.15-0.20 | Nonparametric estimation |
+| MTE | ATE/ATT/ATU | rtol=0.10-0.15 | Integrated from curve |
+| MTE | LATE | rtol=0.10 | Should match 2SLS |
+| QTE | Median | rtol=0.08-0.10 | Same algorithm |
+| QTE | Quartiles | rtol=0.12 | Quantile variance |
+| QTE | Unconditional | rtol=0.15-0.20 | RIF differences |
+| VAR | Coefficients | rtol=0.05 | Same OLS |
+| VAR | Sigma | rtol=0.10 | Sample covariance |
+| VAR | IRF | rtol=0.10-0.15 | Cumulative effects |
+| VAR | Granger F | rtol=0.10 | Same Wald test |
+
+### Next: Session 180+
+
+Remaining 5 families for 100% Layer 5 coverage:
+- VECM (urca, tsDyn)
+- Control Function (can leverage IV)
+- Discovery/PC/FCI (pcalg - complex)
+- Dynamic DML (grf proxy)
+- Bayesian CATE (bartCause)
+
+---
+
+**Session 178**: R Triangulation Quick Wins ✅ COMPLETE
+
+Added Layer 5 R Triangulation for Bunching and Shift-Share method families.
+- **Bunching**: Uses R's `bunchr` package (Saez 2010 methodology)
+- **Shift-Share**: Uses R's `ShiftShareSE` package (Adão, Kolesár, Morales 2019)
 
 ### Session 178 Deliverables
 
