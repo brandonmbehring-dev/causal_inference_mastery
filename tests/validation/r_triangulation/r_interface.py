@@ -5403,3 +5403,532 @@ def r_heckman_two_step(
         return None
     finally:
         numpy2ri.deactivate()
+
+
+# =============================================================================
+# Mediation R Triangulation - Session 176b
+# =============================================================================
+
+
+def check_mediation_available() -> bool:
+    """Check if R mediation package is installed.
+
+    The mediation package (Imai, Keele, Yamamoto) provides:
+    - mediate(): Causal mediation analysis
+    - medsens(): Sensitivity analysis
+
+    Returns
+    -------
+    bool
+        True if package is available, False otherwise.
+    """
+    if not check_r_available():
+        return False
+
+    try:
+        from rpy2.robjects.packages import isinstalled
+
+        return bool(isinstalled("mediation"))
+    except Exception:
+        return False
+
+
+def r_baron_kenny(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    mediator: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+) -> Optional[Dict[str, Any]]:
+    """Compute Baron-Kenny path coefficients via R OLS.
+
+    Fits the standard mediation model:
+    - M = alpha_0 + alpha_1 * T + [gamma * X] + e_m
+    - Y = beta_0 + beta_1 * T + beta_2 * M + [delta * X] + e_y
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y.
+    treatment : np.ndarray
+        Treatment variable T.
+    mediator : np.ndarray
+        Mediator variable M.
+    covariates : np.ndarray, optional
+        Pre-treatment covariates X.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with:
+        - alpha_1: Effect of T on M
+        - alpha_1_se: Standard error
+        - beta_1: Direct effect (T on Y controlling for M)
+        - beta_1_se: Standard error
+        - beta_2: Effect of M on Y
+        - beta_2_se: Standard error
+        - indirect_effect: alpha_1 * beta_2
+        - direct_effect: beta_1
+        - total_effect: beta_1 + alpha_1 * beta_2
+        - sobel_z: Sobel test statistic
+        - sobel_pvalue: P-value for indirect effect
+    """
+    if not check_r_available():
+        return None
+
+    try:
+        from rpy2.robjects import r, numpy2ri
+
+        numpy2ri.activate()
+
+        # Pass arrays to R
+        r.assign("Y", outcome)
+        r.assign("T", treatment)
+        r.assign("M", mediator)
+
+        if covariates is not None:
+            if covariates.ndim == 1:
+                covariates = covariates.reshape(-1, 1)
+            r.assign("X", covariates)
+            r.assign("has_covariates", True)
+            r.assign("n_covs", covariates.shape[1])
+        else:
+            r.assign("has_covariates", False)
+
+        result = r(
+            """
+            # Mediator model: M ~ T + [X]
+            if (has_covariates) {
+                X_df <- as.data.frame(X)
+                names(X_df) <- paste0("X", 1:n_covs)
+                med_formula <- as.formula(
+                    paste("M ~ T +", paste(names(X_df), collapse = " + "))
+                )
+                df <- cbind(data.frame(Y = Y, T = T, M = M), X_df)
+            } else {
+                med_formula <- M ~ T
+                df <- data.frame(Y = Y, T = T, M = M)
+            }
+
+            med_model <- lm(med_formula, data = df)
+            med_summary <- summary(med_model)
+
+            # Extract alpha_1 (coefficient on T)
+            alpha_1 <- coef(med_model)["T"]
+            alpha_1_se <- med_summary$coefficients["T", "Std. Error"]
+
+            # Outcome model: Y ~ T + M + [X]
+            if (has_covariates) {
+                out_formula <- as.formula(
+                    paste("Y ~ T + M +", paste(names(X_df), collapse = " + "))
+                )
+            } else {
+                out_formula <- Y ~ T + M
+            }
+
+            out_model <- lm(out_formula, data = df)
+            out_summary <- summary(out_model)
+
+            # Extract beta_1 (direct effect) and beta_2 (M -> Y)
+            beta_1 <- coef(out_model)["T"]
+            beta_1_se <- out_summary$coefficients["T", "Std. Error"]
+            beta_2 <- coef(out_model)["M"]
+            beta_2_se <- out_summary$coefficients["M", "Std. Error"]
+
+            # Compute effects
+            indirect_effect <- alpha_1 * beta_2
+            direct_effect <- beta_1
+            total_effect <- beta_1 + alpha_1 * beta_2
+
+            # Sobel test for indirect effect
+            # SE = sqrt(alpha_1^2 * SE(beta_2)^2 + beta_2^2 * SE(alpha_1)^2)
+            sobel_se <- sqrt(alpha_1^2 * beta_2_se^2 + beta_2^2 * alpha_1_se^2)
+            sobel_z <- indirect_effect / sobel_se
+            sobel_pvalue <- 2 * pnorm(-abs(sobel_z))
+
+            # R-squared values
+            r2_mediator <- med_summary$r.squared
+            r2_outcome <- out_summary$r.squared
+
+            list(
+                alpha_1 = alpha_1,
+                alpha_1_se = alpha_1_se,
+                beta_1 = beta_1,
+                beta_1_se = beta_1_se,
+                beta_2 = beta_2,
+                beta_2_se = beta_2_se,
+                indirect_effect = indirect_effect,
+                indirect_se = sobel_se,
+                direct_effect = direct_effect,
+                total_effect = total_effect,
+                sobel_z = sobel_z,
+                sobel_pvalue = sobel_pvalue,
+                r2_mediator = r2_mediator,
+                r2_outcome = r2_outcome,
+                n_obs = nrow(df)
+            )
+            """
+        )
+
+        return {
+            "alpha_1": float(result.rx2("alpha_1")[0]),
+            "alpha_1_se": float(result.rx2("alpha_1_se")[0]),
+            "beta_1": float(result.rx2("beta_1")[0]),
+            "beta_1_se": float(result.rx2("beta_1_se")[0]),
+            "beta_2": float(result.rx2("beta_2")[0]),
+            "beta_2_se": float(result.rx2("beta_2_se")[0]),
+            "indirect_effect": float(result.rx2("indirect_effect")[0]),
+            "indirect_se": float(result.rx2("indirect_se")[0]),
+            "direct_effect": float(result.rx2("direct_effect")[0]),
+            "total_effect": float(result.rx2("total_effect")[0]),
+            "sobel_z": float(result.rx2("sobel_z")[0]),
+            "sobel_pvalue": float(result.rx2("sobel_pvalue")[0]),
+            "r2_mediator": float(result.rx2("r2_mediator")[0]),
+            "r2_outcome": float(result.rx2("r2_outcome")[0]),
+            "n_obs": int(result.rx2("n_obs")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R Baron-Kenny failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_mediation_analysis(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    mediator: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+    n_bootstrap: int = 1000,
+    seed: int = 42,
+) -> Optional[Dict[str, Any]]:
+    """Compute causal mediation analysis via R mediation package.
+
+    Uses mediate() from the mediation package (Imai et al.) to estimate
+    natural direct and indirect effects with bootstrap inference.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y.
+    treatment : np.ndarray
+        Treatment variable T (binary 0/1).
+    mediator : np.ndarray
+        Mediator variable M.
+    covariates : np.ndarray, optional
+        Pre-treatment covariates X.
+    n_bootstrap : int
+        Number of bootstrap replications.
+    seed : int
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with:
+        - nde: Natural Direct Effect
+        - nde_ci: (lower, upper) 95% CI
+        - nie: Natural Indirect Effect
+        - nie_ci: (lower, upper) 95% CI
+        - total_effect: NDE + NIE
+        - proportion_mediated: NIE / Total
+        - proportion_mediated_ci: (lower, upper) 95% CI
+    """
+    if not check_mediation_available():
+        warnings.warn("R mediation package not available", UserWarning)
+        return None
+
+    try:
+        from rpy2.robjects import r, numpy2ri
+
+        numpy2ri.activate()
+
+        # Pass arrays to R
+        r.assign("Y", outcome)
+        r.assign("T", treatment.astype(float))
+        r.assign("M", mediator)
+        r.assign("n_boot", n_bootstrap)
+        r.assign("seed", seed)
+
+        if covariates is not None:
+            if covariates.ndim == 1:
+                covariates = covariates.reshape(-1, 1)
+            r.assign("X", covariates)
+            r.assign("has_covariates", True)
+            r.assign("n_covs", covariates.shape[1])
+        else:
+            r.assign("has_covariates", False)
+
+        result = r(
+            """
+            library(mediation)
+            set.seed(seed)
+
+            # Build data frame
+            if (has_covariates) {
+                X_df <- as.data.frame(X)
+                names(X_df) <- paste0("X", 1:n_covs)
+                df <- cbind(data.frame(Y = Y, T = T, M = M), X_df)
+                cov_terms <- paste(names(X_df), collapse = " + ")
+                med_formula <- as.formula(paste("M ~ T +", cov_terms))
+                out_formula <- as.formula(paste("Y ~ T + M +", cov_terms))
+            } else {
+                df <- data.frame(Y = Y, T = T, M = M)
+                med_formula <- M ~ T
+                out_formula <- Y ~ T + M
+            }
+
+            # Fit models
+            med_fit <- lm(med_formula, data = df)
+            out_fit <- lm(out_formula, data = df)
+
+            # Run mediation analysis
+            med_out <- mediate(
+                med_fit, out_fit,
+                treat = "T",
+                mediator = "M",
+                boot = TRUE,
+                sims = n_boot
+            )
+
+            # Extract results
+            # d0 = NDE at control, d1 = NDE at treated
+            # z0 = NIE at control, z1 = NIE at treated
+            # d.avg, z.avg = averages
+            nde <- med_out$d.avg
+            nde_ci_lower <- med_out$d.avg.ci[1]
+            nde_ci_upper <- med_out$d.avg.ci[2]
+
+            nie <- med_out$z.avg
+            nie_ci_lower <- med_out$z.avg.ci[1]
+            nie_ci_upper <- med_out$z.avg.ci[2]
+
+            total <- med_out$tau.coef
+            total_ci_lower <- med_out$tau.ci[1]
+            total_ci_upper <- med_out$tau.ci[2]
+
+            prop_med <- med_out$n.avg
+            prop_med_ci_lower <- med_out$n.avg.ci[1]
+            prop_med_ci_upper <- med_out$n.avg.ci[2]
+
+            list(
+                nde = nde,
+                nde_ci_lower = nde_ci_lower,
+                nde_ci_upper = nde_ci_upper,
+                nie = nie,
+                nie_ci_lower = nie_ci_lower,
+                nie_ci_upper = nie_ci_upper,
+                total_effect = total,
+                total_ci_lower = total_ci_lower,
+                total_ci_upper = total_ci_upper,
+                proportion_mediated = prop_med,
+                prop_med_ci_lower = prop_med_ci_lower,
+                prop_med_ci_upper = prop_med_ci_upper,
+                n_obs = nrow(df)
+            )
+            """
+        )
+
+        return {
+            "nde": float(result.rx2("nde")[0]),
+            "nde_ci": (
+                float(result.rx2("nde_ci_lower")[0]),
+                float(result.rx2("nde_ci_upper")[0]),
+            ),
+            "nie": float(result.rx2("nie")[0]),
+            "nie_ci": (
+                float(result.rx2("nie_ci_lower")[0]),
+                float(result.rx2("nie_ci_upper")[0]),
+            ),
+            "total_effect": float(result.rx2("total_effect")[0]),
+            "total_ci": (
+                float(result.rx2("total_ci_lower")[0]),
+                float(result.rx2("total_ci_upper")[0]),
+            ),
+            "proportion_mediated": float(result.rx2("proportion_mediated")[0]),
+            "proportion_mediated_ci": (
+                float(result.rx2("prop_med_ci_lower")[0]),
+                float(result.rx2("prop_med_ci_upper")[0]),
+            ),
+            "n_obs": int(result.rx2("n_obs")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R mediation analysis failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_mediation_sensitivity(
+    outcome: np.ndarray,
+    treatment: np.ndarray,
+    mediator: np.ndarray,
+    covariates: Optional[np.ndarray] = None,
+    rho_range: Tuple[float, float] = (-0.9, 0.9),
+    n_rho: int = 41,
+    n_bootstrap: int = 500,
+    seed: int = 42,
+) -> Optional[Dict[str, Any]]:
+    """Compute mediation sensitivity analysis via R medsens.
+
+    Assesses how mediation effects change under violations of
+    sequential ignorability using the sensitivity parameter rho.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable Y.
+    treatment : np.ndarray
+        Treatment variable T.
+    mediator : np.ndarray
+        Mediator variable M.
+    covariates : np.ndarray, optional
+        Pre-treatment covariates X.
+    rho_range : tuple
+        (min, max) range for sensitivity parameter rho.
+    n_rho : int
+        Number of rho values to evaluate.
+    n_bootstrap : int
+        Bootstrap replications for each rho.
+    seed : int
+        Random seed.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with:
+        - rho_grid: Array of rho values tested
+        - nde_at_rho: NDE estimate at each rho
+        - nie_at_rho: NIE estimate at each rho
+        - rho_at_zero_nie: Rho value where NIE crosses zero
+        - rho_at_zero_nde: Rho value where NDE crosses zero
+        - original_nde: NDE at rho=0
+        - original_nie: NIE at rho=0
+    """
+    if not check_mediation_available():
+        warnings.warn("R mediation package not available", UserWarning)
+        return None
+
+    try:
+        from rpy2.robjects import r, numpy2ri
+
+        numpy2ri.activate()
+
+        # Pass arrays to R
+        r.assign("Y", outcome)
+        r.assign("T", treatment.astype(float))
+        r.assign("M", mediator)
+        r.assign("rho_min", rho_range[0])
+        r.assign("rho_max", rho_range[1])
+        r.assign("n_rho", n_rho)
+        r.assign("n_boot", n_bootstrap)
+        r.assign("seed", seed)
+
+        if covariates is not None:
+            if covariates.ndim == 1:
+                covariates = covariates.reshape(-1, 1)
+            r.assign("X", covariates)
+            r.assign("has_covariates", True)
+            r.assign("n_covs", covariates.shape[1])
+        else:
+            r.assign("has_covariates", False)
+
+        result = r(
+            """
+            library(mediation)
+            set.seed(seed)
+
+            # Build data frame and formulas
+            if (has_covariates) {
+                X_df <- as.data.frame(X)
+                names(X_df) <- paste0("X", 1:n_covs)
+                df <- cbind(data.frame(Y = Y, T = T, M = M), X_df)
+                cov_terms <- paste(names(X_df), collapse = " + ")
+                med_formula <- as.formula(paste("M ~ T +", cov_terms))
+                out_formula <- as.formula(paste("Y ~ T + M +", cov_terms))
+            } else {
+                df <- data.frame(Y = Y, T = T, M = M)
+                med_formula <- M ~ T
+                out_formula <- Y ~ T + M
+            }
+
+            # Fit models
+            med_fit <- lm(med_formula, data = df)
+            out_fit <- lm(out_formula, data = df)
+
+            # Run mediation
+            med_out <- mediate(
+                med_fit, out_fit,
+                treat = "T",
+                mediator = "M",
+                boot = TRUE,
+                sims = n_boot
+            )
+
+            # Sensitivity analysis
+            sens_out <- medsens(med_out, rho.by = (rho_max - rho_min) / (n_rho - 1))
+
+            # Extract sensitivity results
+            rho_grid <- sens_out$rho
+            nde_at_rho <- sens_out$d.avg
+            nie_at_rho <- sens_out$z.avg
+
+            # Find zero crossings (where effect changes sign)
+            find_zero_crossing <- function(rho_vals, effect_vals) {
+                # Look for sign change
+                sign_changes <- which(diff(sign(effect_vals)) != 0)
+                if (length(sign_changes) > 0) {
+                    # Linear interpolation to find exact crossing
+                    idx <- sign_changes[1]
+                    rho1 <- rho_vals[idx]
+                    rho2 <- rho_vals[idx + 1]
+                    e1 <- effect_vals[idx]
+                    e2 <- effect_vals[idx + 1]
+                    rho_zero <- rho1 - e1 * (rho2 - rho1) / (e2 - e1)
+                    return(rho_zero)
+                } else {
+                    return(NA)
+                }
+            }
+
+            rho_at_zero_nie <- find_zero_crossing(rho_grid, nie_at_rho)
+            rho_at_zero_nde <- find_zero_crossing(rho_grid, nde_at_rho)
+
+            # Original effects at rho=0
+            zero_idx <- which.min(abs(rho_grid))
+            original_nde <- nde_at_rho[zero_idx]
+            original_nie <- nie_at_rho[zero_idx]
+
+            list(
+                rho_grid = rho_grid,
+                nde_at_rho = nde_at_rho,
+                nie_at_rho = nie_at_rho,
+                rho_at_zero_nie = rho_at_zero_nie,
+                rho_at_zero_nde = rho_at_zero_nde,
+                original_nde = original_nde,
+                original_nie = original_nie
+            )
+            """
+        )
+
+        rho_grid = np.array(result.rx2("rho_grid"))
+        nde_at_rho = np.array(result.rx2("nde_at_rho"))
+        nie_at_rho = np.array(result.rx2("nie_at_rho"))
+
+        # Handle potential NA values
+        rho_zero_nie = result.rx2("rho_at_zero_nie")[0]
+        rho_zero_nde = result.rx2("rho_at_zero_nde")[0]
+
+        return {
+            "rho_grid": rho_grid,
+            "nde_at_rho": nde_at_rho,
+            "nie_at_rho": nie_at_rho,
+            "rho_at_zero_nie": float(rho_zero_nie) if not np.isnan(rho_zero_nie) else None,
+            "rho_at_zero_nde": float(rho_zero_nde) if not np.isnan(rho_zero_nde) else None,
+            "original_nde": float(result.rx2("original_nde")[0]),
+            "original_nie": float(result.rx2("original_nie")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R mediation sensitivity failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
