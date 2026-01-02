@@ -345,7 +345,26 @@ The McCrary test cannot detect:
 A null result provides evidence consistent with no manipulation, not proof of validity.
 \end{remark}
 
-See \texttt{docs/METHODOLOGICAL\_CONCERNS.md}, CONCERN-22 for additional discussion.
+\subsection{Implementation Caveat}
+
+\begin{remark}[Empirical Calibration]
+The standard error calculation in our implementation uses an empirically-calibrated
+correction factor (15.0) rather than the theoretically-derived variance formula
+from \citet{cattaneo2020simple}. This calibration was tuned via binary search to
+achieve approximately 5--8\% Type I error rate in Monte Carlo simulations.
+
+\textbf{Limitations:}
+\begin{itemize}
+    \item Calibration validated for $n \approx 1000$, uniform density
+    \item May not generalize to $n < 500$ or $n > 10000$
+    \item Non-uniform underlying densities may require recalibration
+\end{itemize}
+
+\textbf{For high-stakes applications:} Validate against R's \texttt{rddensity} package
+or run Monte Carlo calibration with your specific DGP.
+
+See \texttt{docs/METHODOLOGICAL\_CONCERNS.md}, CONCERN-22 for technical details.
+\end{remark}
 
 % ============================================================================
 \section{Additional Diagnostics}
@@ -504,11 +523,10 @@ else:
 \subsection{Comprehensive Diagnostics}
 
 \begin{minted}[fontsize=\small, linenos]{python}
-from causal_inference.rdd.diagnostics import (
+from causal_inference.rdd import (
     covariate_balance_test,
-    placebo_cutoff_test,
     donut_hole_rdd,
-    bandwidth_sensitivity
+    bandwidth_sensitivity_analysis
 )
 
 # Covariate balance
@@ -516,15 +534,13 @@ W = np.random.normal(0, 1, n)  # Pre-determined covariate
 balance_result = covariate_balance_test(W, X, c, bandwidth=0.3)
 print(f"Covariate discontinuity: {balance_result.tau:.4f} (p={balance_result.pvalue:.3f})")
 
-# Placebo cutoffs
-placebo_cutoffs = [-0.5, -0.25, 0.25, 0.5]
-for pc in placebo_cutoffs:
-    placebo_result = placebo_cutoff_test(Y, X, true_cutoff=c, placebo_cutoff=pc)
-    print(f"Placebo c={pc}: tau={placebo_result.tau:.4f} (p={placebo_result.pvalue:.3f})")
+# Donut hole RDD (exclude observations near cutoff)
+donut_result = donut_hole_rdd(Y, X, c, donut_radius=0.05, bandwidth=0.3)
+print(f"Donut RDD: tau={donut_result.tau:.4f} (se={donut_result.se:.4f})")
 
 # Bandwidth sensitivity
 bandwidths = [0.15, 0.2, 0.25, 0.3, 0.35, 0.4]
-sensitivity = bandwidth_sensitivity(Y, X, c, bandwidths)
+sensitivity = bandwidth_sensitivity_analysis(Y, X, c, bandwidths)
 for h, tau, se in zip(bandwidths, sensitivity.estimates, sensitivity.std_errors):
     print(f"h={h:.2f}: tau={tau:.4f} (se={se:.4f})")
 \end{minted}

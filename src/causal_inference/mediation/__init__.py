@@ -68,7 +68,7 @@ from .estimators import (
     natural_direct_effect,
     natural_indirect_effect,
 )
-from .sensitivity import mediation_sensitivity
+from .sensitivity import mediation_sensitivity, medsens_plot
 from .types import (
     BaronKennyResult,
     CDEResult,
@@ -85,6 +85,7 @@ __all__ = [
     "natural_indirect_effect",
     "controlled_direct_effect",
     "mediation_sensitivity",
+    "medsens_plot",
     # Types
     "MediationResult",
     "BaronKennyResult",

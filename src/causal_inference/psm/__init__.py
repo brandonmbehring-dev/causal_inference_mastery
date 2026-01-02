@@ -22,12 +22,13 @@ __all__ = [
     "NearestNeighborMatcher",
     "abadie_imbens_variance",
     "psm_ate",
-    # "BalanceDiagnostics",      # Session 3
+    "check_covariate_balance",
 ]
 
 from .propensity import PropensityScoreEstimator
 from .matching import NearestNeighborMatcher
 from .variance import abadie_imbens_variance
 from .psm_estimator import psm_ate
+from .balance import check_covariate_balance
 
 __version__ = "0.2.0"

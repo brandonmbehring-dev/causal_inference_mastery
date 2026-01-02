@@ -451,10 +451,11 @@ print(f"Standard error: {result.se:.4f}")
 \subsection{RKD Diagnostics}
 
 \begin{minted}[fontsize=\small, linenos]{python}
-from causal_inference.rkd.diagnostics import (
+from causal_inference.rkd import (
     density_smoothness_test,
     covariate_smoothness_test,
-    bandwidth_sensitivity_rkd
+    first_stage_test,
+    rkd_diagnostics_summary
 )
 
 # Density smoothness test
@@ -468,11 +469,14 @@ cov_result = covariate_smoothness_test(W, X, c, bandwidth=0.3)
 print(f"Covariate kink: {cov_result.kink:.4f}")
 print(f"P-value: {cov_result.pvalue:.4f}")
 
-# Bandwidth sensitivity
-bandwidths = [0.2, 0.3, 0.4, 0.5, 0.6]
-sensitivity = bandwidth_sensitivity_rkd(Y, X, c, kappa_B, bandwidths)
-for h, tau, se in zip(bandwidths, sensitivity.estimates, sensitivity.std_errors):
-    print(f"h={h:.2f}: tau={tau:.4f} (se={se:.4f})")
+# First stage test (for fuzzy RKD)
+# fs_result = first_stage_test(D, X, c, bandwidth=0.3)
+
+# Full diagnostics summary
+diagnostics = rkd_diagnostics_summary(
+    X=X, cutoff=c, bandwidth=0.3, covariates=W.reshape(-1, 1)
+)
+print(f"Diagnostics: {diagnostics}")
 \end{minted}
 
 % ============================================================================

@@ -466,7 +466,7 @@ print(f"Placebo p-value: {time_placebo.pvalue:.4f}")
 from causal_inference.scm.diagnostics import (
     check_pre_treatment_fit,
     check_weight_properties,
-    covariate_balance_table
+    check_covariate_balance
 )
 
 # Pre-treatment fit
@@ -481,14 +481,15 @@ print(f"Effective N: {weight_diagnostics.effective_n:.2f}")
 print(f"HHI: {weight_diagnostics.hhi:.4f}")
 print(f"Sparse donors (w > 0.01): {weight_diagnostics.n_positive}")
 
-# Balance table
-balance = covariate_balance_table(
-    X_treated=X[0],
-    X_donors=X[1:],
-    weights=result.weights,
+# Covariate balance (treated vs synthetic)
+synthetic_covariates = result.weights @ X_donors  # Weighted average of donors
+balance = check_covariate_balance(
+    treated_covariates=X_treated,
+    synthetic_covariates=synthetic_covariates,
     covariate_names=['GDP', 'Pop', 'Trend']
 )
-print(balance)
+for name, metrics in balance.items():
+    print(f"{name}: diff={metrics['difference']:.4f}, balanced={metrics['balanced']}")
 \end{minted}
 
 % ============================================================================

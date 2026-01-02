@@ -17,11 +17,12 @@ References
   MIT Press, Chapter 19.
 """
 
-from src.causal_inference.selection.heckman import heckman_two_step
-from src.causal_inference.selection.types import HeckmanResult
-from src.causal_inference.selection.diagnostics import (
+from .heckman import heckman_two_step
+from .types import HeckmanResult
+from .diagnostics import (
     selection_bias_test,
     plot_imr_distribution,
+    diagnose_identification,
 )
 
 __all__ = [
@@ -29,4 +30,5 @@ __all__ = [
     "HeckmanResult",
     "selection_bias_test",
     "plot_imr_distribution",
+    "diagnose_identification",
 ]
