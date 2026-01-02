@@ -1,42 +1,64 @@
 # Current Work
 
-**Last Updated**: 2025-12-31 [Session 165 - Comprehensive Audit]
+**Last Updated**: 2026-01-02 [Session 174 - RKD R Triangulation]
 
 ---
 
 ## Right Now
 
+**Session 174**: RKD R Triangulation ✅ COMPLETE
+
+Extended Layer 5 R Triangulation to include RKD (Regression Kink Design) methods.
+Challenge: No native R package for RKD → used rdrobust with deriv=1 for slope estimation.
+
+### Session Progress (R Triangulation Multi-Session Plan)
+
+| Session | Family | Status | Tests |
+|---------|--------|--------|-------|
+| 172 | Sensitivity | ✅ COMPLETE | +20 |
+| 173 | Observational | ✅ COMPLETE | +17 |
+| 174 | RKD | ✅ COMPLETE | +12 |
+| 175 | Bounds | 🔲 PENDING | ~12 |
+
+### Current Layer 5 Coverage
+
+**12/25 families (48%)**:
+- RCT, PSM, PS, IV, RDD, DiD, SCM, CATE, DTR, Sensitivity, Observational, RKD
+
+### Session 174 Deliverables
+
+1. ✅ `r_interface.py`: Added 3 RKD wrapper functions (+523 lines, total 4463 lines)
+   - `check_rdrobust_rkd_capable()`: Check rdrobust supports deriv=1
+   - `r_sharp_rkd()`: Sharp RKD via rdrobust derivative estimation
+   - `r_fuzzy_rkd()`: Fuzzy RKD via rdrobust + delta method SE
+2. ✅ `test_rkd_vs_r.py`: NEW (12 tests, 975 lines)
+   - `TestSharpRKDVsRdrobust` (4 tests)
+   - `TestFuzzyRKDVsRdrobust` (3 tests)
+   - `TestRKDEdgeCases` (3 tests)
+   - `TestRKDConsistency` (2 tests)
+3. ✅ Tests skip gracefully when R/rdrobust unavailable
+
+### Tolerance Standards
+
+| Metric | Tolerance |
+|--------|-----------|
+| Sharp RKD estimate | rtol=0.10 |
+| Fuzzy RKD estimate | rtol=0.15 |
+| Slope estimates | rtol=0.05 |
+| Standard errors | rtol=0.20 |
+
+### Next: Session 175
+
+**Bounds R Triangulation** (Manski, Lee) via BoundsOnCausalEffects or custom R
+- Estimated: ~12 tests
+- Challenge: Limited R packages for partial identification
+
+---
+
 **Session 165**: Comprehensive Repository Audit ✅ COMPLETE
 
 Full repository audit verifying accuracy of all metrics and documentation.
-
-### Key Results
-
-| Finding | Status |
-|---------|--------|
-| Test assertions | 8,975 verified (3,854 Python + 5,121 Julia) |
-| Source lines | 98,427 (54,728 Python + 43,699 Julia) |
-| Method families | 26 confirmed |
-| Collection errors | 0 |
-| Pass rate | 99%+ |
-| Methodological concerns | 22/22 resolved |
-| Known bugs | 14/14 fixed |
-
-### Actions Completed
-
-1. ✅ Regenerated `docs/METRICS_CURRENT.md` via automation script
-2. ✅ Updated CLAUDE.md with verified counts
-3. ✅ Updated ROADMAP.md with Sessions 159-165
-4. ✅ Committed Sessions 159-164 (16,705 lines)
-5. ✅ Created `docs/AUDIT_2025-12-31.md`
-
-### Next: Session 166
-
-Options:
-- New method implementations (DSGE, etc.)
-- Performance optimization
-- Additional sensitivity methods
-- R triangulation layer
+Superseded by independent audit in Session 166.
 
 ---
 
