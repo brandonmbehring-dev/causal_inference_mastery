@@ -2753,3 +2753,426 @@ def r_ipw_ate(
         return None
     finally:
         numpy2ri.deactivate()
+
+
+# =============================================================================
+# Propensity Score Matching (MatchIt package) - Session 171
+# =============================================================================
+
+
+def check_matchit_installed() -> bool:
+    """Check if the MatchIt R package is installed.
+
+    Returns
+    -------
+    bool
+        True if MatchIt can be loaded in R, False otherwise.
+    """
+    if not check_r_available():
+        return False
+    try:
+        import rpy2.robjects as ro
+
+        ro.r("suppressPackageStartupMessages(library(MatchIt))")
+        return True
+    except Exception:
+        return False
+
+
+def check_cobalt_installed() -> bool:
+    """Check if the cobalt R package is installed (for balance metrics).
+
+    Returns
+    -------
+    bool
+        True if cobalt can be loaded in R, False otherwise.
+    """
+    if not check_r_available():
+        return False
+    try:
+        import rpy2.robjects as ro
+
+        ro.r("suppressPackageStartupMessages(library(cobalt))")
+        return True
+    except Exception:
+        return False
+
+
+def r_psm_propensity(
+    covariates: np.ndarray,
+    treatment: np.ndarray,
+) -> Optional[Dict[str, Any]]:
+    """Estimate propensity scores using R's glm().
+
+    Uses logistic regression (binomial family, logit link) to estimate
+    P(T=1|X) for comparison with Python's PropensityScoreEstimator.
+
+    Parameters
+    ----------
+    covariates : np.ndarray
+        Covariate matrix X (n, p).
+    treatment : np.ndarray
+        Binary treatment indicator (0/1).
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - propensity_scores: np.ndarray of estimated P(T=1|X)
+        - coefficients: np.ndarray of logistic regression coefficients
+        - converged: bool indicating model convergence
+        Returns None if R unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for PSM validation", UserWarning)
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        # Transfer data to R
+        n, p = covariates.shape
+        ro.globalenv["treatment"] = ro.IntVector(treatment.astype(int))
+
+        # Create covariate columns
+        for j in range(p):
+            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+
+        # Build formula dynamically
+        cov_names = " + ".join([f"X{j+1}" for j in range(p)])
+
+        result = ro.r(
+            f"""
+            # Build data frame
+            data <- data.frame(treatment = treatment)
+            for (j in 1:{p}) {{
+                data[[paste0("X", j)]] <- get(paste0("X", j))
+            }}
+
+            # Fit logistic regression
+            formula <- as.formula(paste("treatment ~", "{cov_names}"))
+            model <- glm(formula, data = data, family = binomial(link = "logit"))
+
+            list(
+                propensity_scores = predict(model, type = "response"),
+                coefficients = coef(model),
+                converged = model$converged
+            )
+            """
+        )
+
+        return {
+            "propensity_scores": np.array(result.rx2("propensity_scores")),
+            "coefficients": np.array(result.rx2("coefficients")),
+            "converged": bool(result.rx2("converged")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R propensity estimation failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_psm_matchit_nearest(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    M: int = 1,
+    caliper: Optional[float] = None,
+    with_replacement: bool = False,
+    alpha: float = 0.05,
+) -> Optional[Dict[str, Any]]:
+    """Run full PSM pipeline via MatchIt's matchit() + lm().
+
+    Implements nearest neighbor matching on propensity scores using
+    R's MatchIt package, then estimates ATE via regression on matched data.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y (n,).
+    treatment : np.ndarray
+        Binary treatment indicator (0/1).
+    covariates : np.ndarray
+        Covariate matrix X (n, p).
+    M : int, default=1
+        Number of matches per treated unit (ratio).
+    caliper : float or None, default=None
+        Maximum propensity distance in standard deviations.
+        None means no caliper restriction.
+    with_replacement : bool, default=False
+        Whether to match with replacement.
+    alpha : float, default=0.05
+        Significance level for confidence interval.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - estimate: float, ATE estimate
+        - se: float, standard error (robust)
+        - ci_lower: float, CI lower bound
+        - ci_upper: float, CI upper bound
+        - n_treated: int, number of treated units
+        - n_control: int, number of unique control units matched
+        - n_matched: int, number of treated units successfully matched
+        - propensity_scores: np.ndarray, estimated propensity scores
+        - match_matrix: np.ndarray, matched pair indices
+        Returns None if R/MatchIt unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for PSM validation", UserWarning)
+        return None
+
+    if not check_matchit_installed():
+        warnings.warn(
+            "R 'MatchIt' package not installed. Install in R with: "
+            "install.packages('MatchIt')",
+            UserWarning,
+        )
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        # Transfer data to R
+        n, p = covariates.shape
+        ro.globalenv["outcomes"] = ro.FloatVector(outcomes)
+        ro.globalenv["treatment"] = ro.IntVector(treatment.astype(int))
+        ro.globalenv["M"] = M
+        ro.globalenv["with_replacement"] = with_replacement
+        ro.globalenv["alpha"] = alpha
+
+        # Set caliper (NULL if None)
+        if caliper is not None:
+            ro.globalenv["caliper_val"] = caliper
+            caliper_arg = "caliper = caliper_val,"
+        else:
+            caliper_arg = ""
+
+        # Create covariate columns
+        for j in range(p):
+            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+
+        cov_names = " + ".join([f"X{j+1}" for j in range(p)])
+
+        result = ro.r(
+            f"""
+            suppressPackageStartupMessages(library(MatchIt))
+
+            # Build data frame
+            data <- data.frame(
+                Y = outcomes,
+                treatment = treatment
+            )
+            for (j in 1:{p}) {{
+                data[[paste0("X", j)]] <- get(paste0("X", j))
+            }}
+
+            # Run MatchIt with nearest neighbor on propensity scores
+            formula <- as.formula(paste("treatment ~", "{cov_names}"))
+            m_out <- matchit(
+                formula,
+                data = data,
+                method = "nearest",
+                distance = "glm",  # logistic propensity score
+                ratio = M,
+                replace = with_replacement,
+                {caliper_arg}
+                estimand = "ATT"
+            )
+
+            # Get matched data
+            m_data <- match.data(m_out)
+
+            # Estimate ATE via regression on matched data (with weights)
+            # Use robust standard errors (HC2)
+            fit <- lm(Y ~ treatment, data = m_data, weights = weights)
+
+            # Get robust SE using sandwich estimator
+            if (requireNamespace("sandwich", quietly = TRUE)) {{
+                robust_se <- sqrt(sandwich::vcovHC(fit, type = "HC2")[2, 2])
+            }} else {{
+                # Fallback to regular SE
+                robust_se <- summary(fit)$coefficients[2, 2]
+            }}
+
+            ate <- coef(fit)["treatment"]
+            z <- qnorm(1 - alpha / 2)
+
+            # Extract match information
+            n_treated <- sum(data$treatment == 1)
+            n_matched <- sum(!is.na(m_out$match.matrix[, 1]))
+            n_control_matched <- length(unique(na.omit(as.vector(m_out$match.matrix))))
+
+            list(
+                estimate = as.numeric(ate),
+                se = robust_se,
+                ci_lower = as.numeric(ate - z * robust_se),
+                ci_upper = as.numeric(ate + z * robust_se),
+                n_treated = n_treated,
+                n_control = n_control_matched,
+                n_matched = n_matched,
+                propensity_scores = m_out$distance,
+                match_matrix = m_out$match.matrix
+            )
+            """
+        )
+
+        # Parse match matrix (may be NULL or have multiple columns for M>1)
+        match_matrix_r = result.rx2("match_matrix")
+        if match_matrix_r is not ro.NULL:
+            match_matrix = np.array(match_matrix_r)
+            # R is 1-indexed, convert to 0-indexed
+            match_matrix = np.where(np.isnan(match_matrix), -1, match_matrix - 1)
+        else:
+            match_matrix = np.array([])
+
+        return {
+            "estimate": float(result.rx2("estimate")[0]),
+            "se": float(result.rx2("se")[0]),
+            "ci_lower": float(result.rx2("ci_lower")[0]),
+            "ci_upper": float(result.rx2("ci_upper")[0]),
+            "n_treated": int(result.rx2("n_treated")[0]),
+            "n_control": int(result.rx2("n_control")[0]),
+            "n_matched": int(result.rx2("n_matched")[0]),
+            "propensity_scores": np.array(result.rx2("propensity_scores")),
+            "match_matrix": match_matrix,
+        }
+    except Exception as e:
+        warnings.warn(f"R MatchIt failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_psm_balance_metrics(
+    covariates: np.ndarray,
+    treatment: np.ndarray,
+    propensity_scores: np.ndarray,
+    matched_treated: np.ndarray,
+    matched_control: np.ndarray,
+) -> Optional[Dict[str, Any]]:
+    """Compute balance diagnostics (SMD, VR) via R.
+
+    Computes standardized mean difference and variance ratio
+    before and after matching for comparison with Python's
+    balance.py implementation.
+
+    Parameters
+    ----------
+    covariates : np.ndarray
+        Covariate matrix X (n, p).
+    treatment : np.ndarray
+        Binary treatment indicator (0/1).
+    propensity_scores : np.ndarray
+        Estimated propensity scores (n,).
+    matched_treated : np.ndarray
+        Indices of matched treated units.
+    matched_control : np.ndarray
+        Indices of matched control units (same length as matched_treated).
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - smd_before: np.ndarray, SMD before matching (p,)
+        - smd_after: np.ndarray, SMD after matching (p,)
+        - vr_before: np.ndarray, variance ratio before matching (p,)
+        - vr_after: np.ndarray, variance ratio after matching (p,)
+        - max_smd_before: float, maximum absolute SMD before
+        - max_smd_after: float, maximum absolute SMD after
+        Returns None if R unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for balance validation", UserWarning)
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        n, p = covariates.shape
+
+        # Transfer data to R
+        ro.globalenv["treatment"] = ro.IntVector(treatment.astype(int))
+        ro.globalenv["matched_t"] = ro.IntVector((matched_treated + 1).astype(int))  # 1-indexed
+        ro.globalenv["matched_c"] = ro.IntVector((matched_control + 1).astype(int))
+
+        for j in range(p):
+            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+
+        result = ro.r(
+            f"""
+            # Create covariate matrix
+            n <- length(treatment)
+            p <- {p}
+            X <- matrix(0, nrow = n, ncol = p)
+            for (j in 1:p) {{
+                X[, j] <- get(paste0("X", j))
+            }}
+
+            # Before matching: all units
+            treated_idx <- which(treatment == 1)
+            control_idx <- which(treatment == 0)
+
+            smd_before <- numeric(p)
+            vr_before <- numeric(p)
+            for (j in 1:p) {{
+                mean_t <- mean(X[treated_idx, j])
+                mean_c <- mean(X[control_idx, j])
+                var_t <- var(X[treated_idx, j])
+                var_c <- var(X[control_idx, j])
+                pooled_sd <- sqrt((var_t + var_c) / 2)
+                smd_before[j] <- (mean_t - mean_c) / pooled_sd
+                vr_before[j] <- var_t / var_c
+            }}
+
+            # After matching: matched pairs
+            smd_after <- numeric(p)
+            vr_after <- numeric(p)
+            for (j in 1:p) {{
+                # Use matched indices
+                matched_t_vals <- X[matched_t, j]
+                matched_c_vals <- X[matched_c, j]
+                mean_t <- mean(matched_t_vals)
+                mean_c <- mean(matched_c_vals)
+                var_t <- var(matched_t_vals)
+                var_c <- var(matched_c_vals)
+                pooled_sd <- sqrt((var_t + var_c) / 2)
+                smd_after[j] <- (mean_t - mean_c) / pooled_sd
+                vr_after[j] <- var_t / var_c
+            }}
+
+            list(
+                smd_before = smd_before,
+                smd_after = smd_after,
+                vr_before = vr_before,
+                vr_after = vr_after,
+                max_smd_before = max(abs(smd_before)),
+                max_smd_after = max(abs(smd_after))
+            )
+            """
+        )
+
+        return {
+            "smd_before": np.array(result.rx2("smd_before")),
+            "smd_after": np.array(result.rx2("smd_after")),
+            "vr_before": np.array(result.rx2("vr_before")),
+            "vr_after": np.array(result.rx2("vr_after")),
+            "max_smd_before": float(result.rx2("max_smd_before")[0]),
+            "max_smd_after": float(result.rx2("max_smd_after")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R balance metrics failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()

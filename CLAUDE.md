@@ -120,7 +120,7 @@ causal_inference_mastery/
 | 2 | Adversarial | Edge cases, boundary conditions | ⚠️ 7 xfails |
 | 3 | Monte Carlo | 5,000-25,000 run simulations | ✅ VERIFIED |
 | 4 | Cross-Language | Python ↔ Julia parity | ⏸️ Conditional |
-| 5 | R Triangulation | External reference | ⚠️ PARTIAL (8/25 families) |
+| 5 | R Triangulation | External reference | ⚠️ PARTIAL (9/25 families) |
 | 6 | Golden Reference | 111KB JSON frozen results | ✅ ACTIVE (11 tests) |
 
 **Legend**: ✅ = Passing, ⚠️ = Partial, ⏸️ = Conditional/Unused, ❌ = Not implemented
