@@ -5188,3 +5188,218 @@ def r_lee_bounds(
         return None
     finally:
         numpy2ri.deactivate()
+
+
+# =============================================================================
+# Selection (Heckman) R Triangulation - Session 176a
+# =============================================================================
+
+
+def check_sample_selection_available() -> bool:
+    """Check if R sampleSelection package is installed.
+
+    The sampleSelection package (Toomet & Henningsen) provides:
+    - selection(): Heckman two-step and MLE estimators
+    - probit(): Probit selection models
+
+    Returns
+    -------
+    bool
+        True if package is available, False otherwise.
+    """
+    if not check_r_available():
+        return False
+
+    try:
+        from rpy2.robjects.packages import isinstalled
+
+        return bool(isinstalled("sampleSelection"))
+    except Exception:
+        return False
+
+
+def r_heckman_two_step(
+    outcome: np.ndarray,
+    selected: np.ndarray,
+    selection_covariates: np.ndarray,
+    outcome_covariates: Optional[np.ndarray] = None,
+) -> Optional[Dict[str, Any]]:
+    """Compute Heckman two-step estimator via R sampleSelection package.
+
+    Uses R's sampleSelection::selection() with method="2step" to estimate
+    the Heckman sample selection model.
+
+    Parameters
+    ----------
+    outcome : np.ndarray
+        Outcome variable. NaN for unselected observations, or full array.
+    selected : np.ndarray
+        Binary selection indicator (1=selected/observed, 0=not).
+    selection_covariates : np.ndarray
+        Covariates for selection equation (Z). Shape (n,) or (n, k_z).
+    outcome_covariates : np.ndarray, optional
+        Covariates for outcome equation (X). If None, uses selection_covariates.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with:
+        - estimate: First outcome coefficient (after intercept)
+        - se: Heckman-corrected standard error
+        - rho: Selection correlation
+        - sigma: Error standard deviation
+        - lambda_coef: IMR coefficient (= rho * sigma)
+        - lambda_se: Standard error of lambda
+        - lambda_pvalue: P-value for H0: lambda = 0
+        - gamma: Selection equation coefficients (including intercept)
+        - beta: Outcome equation coefficients (including intercept)
+        - n_selected: Number of selected observations
+        - n_total: Total sample size
+
+    Returns None if R package unavailable or estimation fails.
+    """
+    if not check_sample_selection_available():
+        warnings.warn("R sampleSelection package not available", UserWarning)
+        return None
+
+    try:
+        from rpy2.robjects import r, numpy2ri, pandas2ri
+        from rpy2.robjects.packages import importr
+
+        numpy2ri.activate()
+
+        # Prepare covariates
+        if selection_covariates.ndim == 1:
+            selection_covariates = selection_covariates.reshape(-1, 1)
+
+        if outcome_covariates is None:
+            outcome_covariates = selection_covariates.copy()
+        elif outcome_covariates.ndim == 1:
+            outcome_covariates = outcome_covariates.reshape(-1, 1)
+
+        n = len(selected)
+        n_sel_covs = selection_covariates.shape[1]
+        n_out_covs = outcome_covariates.shape[1]
+
+        # Pass arrays to R
+        r.assign("Y", outcome)
+        r.assign("S", selected.astype(float))
+        r.assign("Z", selection_covariates)
+        r.assign("X", outcome_covariates)
+        r.assign("n", n)
+        r.assign("n_sel_covs", n_sel_covs)
+        r.assign("n_out_covs", n_out_covs)
+
+        # Build formulas dynamically based on number of covariates
+        result = r(
+            """
+            library(sampleSelection)
+
+            # Create data frame
+            df <- data.frame(
+                Y = Y,
+                S = as.integer(S)
+            )
+
+            # Add selection covariates
+            for (j in 1:n_sel_covs) {
+                df[[paste0("Z", j)]] <- Z[, j]
+            }
+
+            # Add outcome covariates
+            for (j in 1:n_out_covs) {
+                df[[paste0("X", j)]] <- X[, j]
+            }
+
+            # Build formula strings
+            sel_vars <- paste0("Z", 1:n_sel_covs, collapse = " + ")
+            out_vars <- paste0("X", 1:n_out_covs, collapse = " + ")
+
+            sel_formula <- as.formula(paste("S ~", sel_vars))
+            out_formula <- as.formula(paste("Y ~", out_vars))
+
+            # Fit Heckman two-step model
+            model <- selection(
+                selection = sel_formula,
+                outcome = out_formula,
+                data = df,
+                method = "2step"
+            )
+
+            # Extract results
+            summ <- summary(model)
+
+            # Get coefficients
+            sel_coef <- coef(model, part = "selection")
+            out_coef <- coef(model, part = "outcome")
+
+            # Get standard errors from summary
+            sel_se <- summ$estimate[1:length(sel_coef), "Std. Error"]
+            out_se <- summ$estimate[(length(sel_coef)+1):(length(sel_coef)+length(out_coef)), "Std. Error"]
+
+            # Get lambda (IMR) coefficient and inference
+            # In sampleSelection, lambda is included in outcome coefficients
+            # The last coefficient is typically the IMR
+            lambda_idx <- length(out_coef)
+            lambda_coef <- out_coef[lambda_idx]
+            lambda_se <- out_se[lambda_idx]
+            lambda_t <- lambda_coef / lambda_se
+            lambda_pvalue <- 2 * pt(-abs(lambda_t), df = sum(S) - length(out_coef))
+
+            # rho and sigma
+            rho <- model$rho
+            sigma <- model$sigma
+
+            # Sample sizes
+            n_selected <- sum(S)
+            n_total <- length(S)
+
+            # Get first outcome coefficient (after intercept)
+            # Position 2 is first covariate (position 1 is intercept)
+            estimate <- out_coef[2]
+            estimate_se <- out_se[2]
+
+            list(
+                estimate = estimate,
+                se = estimate_se,
+                rho = rho,
+                sigma = sigma,
+                lambda_coef = lambda_coef,
+                lambda_se = lambda_se,
+                lambda_pvalue = lambda_pvalue,
+                gamma = sel_coef,
+                beta = out_coef,
+                gamma_se = sel_se,
+                beta_se = out_se,
+                n_selected = n_selected,
+                n_total = n_total
+            )
+            """
+        )
+
+        # Extract results
+        gamma = np.array(result.rx2("gamma"))
+        beta = np.array(result.rx2("beta"))
+        gamma_se = np.array(result.rx2("gamma_se"))
+        beta_se = np.array(result.rx2("beta_se"))
+
+        return {
+            "estimate": float(result.rx2("estimate")[0]),
+            "se": float(result.rx2("se")[0]),
+            "rho": float(result.rx2("rho")[0]),
+            "sigma": float(result.rx2("sigma")[0]),
+            "lambda_coef": float(result.rx2("lambda_coef")[0]),
+            "lambda_se": float(result.rx2("lambda_se")[0]),
+            "lambda_pvalue": float(result.rx2("lambda_pvalue")[0]),
+            "gamma": gamma,
+            "beta": beta,
+            "gamma_se": gamma_se,
+            "beta_se": beta_se,
+            "n_selected": int(result.rx2("n_selected")[0]),
+            "n_total": int(result.rx2("n_total")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R Heckman two-step failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()

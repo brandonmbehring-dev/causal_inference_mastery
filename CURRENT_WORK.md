@@ -1,15 +1,15 @@
 # Current Work
 
-**Last Updated**: 2026-01-02 [Session 175 - Bounds R Triangulation]
+**Last Updated**: 2026-01-02 [Session 176a - Selection R Triangulation]
 
 ---
 
 ## Right Now
 
-**Session 175**: Bounds R Triangulation ✅ COMPLETE
+**Session 176a**: Selection R Triangulation ✅ COMPLETE
 
-Extended Layer 5 R Triangulation to include partial identification bounds (Manski, Lee).
-Challenge: No standard R package for Manski/Lee → Manual base R implementation.
+Extended Layer 5 R Triangulation to include Heckman sample selection models.
+Uses R's `sampleSelection` package for reference validation.
 
 ### Session Progress (R Triangulation Multi-Session Plan)
 
@@ -19,11 +19,42 @@ Challenge: No standard R package for Manski/Lee → Manual base R implementation
 | 173 | Observational | ✅ COMPLETE | +17 |
 | 174 | RKD | ✅ COMPLETE | +12 |
 | 175 | Bounds | ✅ COMPLETE | +16 |
+| 176a | Selection | ✅ COMPLETE | +10 |
 
 ### Current Layer 5 Coverage
 
-**13/25 families (52%)**:
-- RCT, PSM, PS, IV, RDD, DiD, SCM, CATE, DTR, Sensitivity, Observational, RKD, Bounds
+**14/25 families (56%)**:
+- RCT, PSM, PS, IV, RDD, DiD, SCM, CATE, DTR, Sensitivity, Observational, RKD, Bounds, Selection
+
+### Session 176a Deliverables
+
+1. ✅ `r_interface.py`: Added 2 Selection wrapper functions (+215 lines, total 5405 lines)
+   - `check_sample_selection_available()`: Check R package availability
+   - `r_heckman_two_step()`: Heckman two-step via R sampleSelection
+2. ✅ `test_selection_vs_r.py`: NEW (10 tests, 529 lines)
+   - `TestHeckmanVsSampleSelection` (6 tests)
+   - `TestHeckmanDiagnosticsVsR` (2 tests)
+   - `TestHeckmanConsistency` (2 tests)
+3. ✅ Tests skip gracefully when R/sampleSelection unavailable
+
+### Tolerance Standards (Selection)
+
+| Metric | Tolerance |
+|--------|-----------|
+| Coefficients (β, γ) | rtol=0.02 |
+| Standard errors | rtol=0.05 |
+| rho, sigma | rtol=0.02 |
+| lambda p-value | rtol=0.10 |
+
+### Next: Session 176b
+
+Mediation R Triangulation (Baron-Kenny, NDE/NIE, sensitivity)
+
+---
+
+**Session 175**: Bounds R Triangulation ✅ COMPLETE
+
+Extended Layer 5 R Triangulation to include partial identification bounds (Manski, Lee).
 
 ### Session 175 Deliverables
 
