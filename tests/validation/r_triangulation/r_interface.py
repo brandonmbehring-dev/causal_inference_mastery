@@ -2363,3 +2363,393 @@ def r_a_learning_dtrreg(
         }
     finally:
         numpy2ri.deactivate()
+
+
+# =============================================================================
+# RCT Estimators (Layer 5: R Triangulation for RCT)
+# =============================================================================
+
+
+def check_rct_r_packages_installed() -> bool:
+    """Check if R packages required for RCT validation are installed.
+
+    Checks for 'sandwich' (HC3 robust SE) and 'coin' (permutation tests).
+
+    Returns
+    -------
+    bool
+        True if both packages are available, False otherwise.
+    """
+    if not check_r_available():
+        return False
+    try:
+        import rpy2.robjects as ro
+
+        ro.r('suppressPackageStartupMessages(library(sandwich))')
+        ro.r('suppressPackageStartupMessages(library(coin))')
+        return True
+    except Exception:
+        return False
+
+
+def _get_rct_r_script_path() -> str:
+    """Get path to the RCT R validation script."""
+    import os
+
+    # Script is at validation/r_scripts/validate_rct.R relative to repo root
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    repo_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(current_dir))))
+    return os.path.join(repo_root, "validation", "r_scripts", "validate_rct.R")
+
+
+def _source_rct_script() -> None:
+    """Source the RCT validation R script."""
+    import rpy2.robjects as ro
+
+    script_path = _get_rct_r_script_path()
+    ro.r(f'source("{script_path}")')
+
+
+def r_simple_ate(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    alpha: float = 0.05,
+) -> Optional[Dict[str, Any]]:
+    """Estimate simple ATE using R's Welch t-test.
+
+    Calls simple_ate_r() from validate_rct.R which uses R's t.test()
+    with unequal variances (Neyman-style heteroskedasticity robust).
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y.
+    treatment : np.ndarray
+        Binary treatment indicator (0/1 or True/False).
+    alpha : float, default=0.05
+        Significance level for confidence interval.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - estimate: float, ATE estimate
+        - se: float, standard error
+        - ci_lower: float, CI lower bound
+        - ci_upper: float, CI upper bound
+        Returns None if R packages unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for RCT validation", UserWarning)
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        _source_rct_script()
+
+        ro.globalenv["outcomes"] = ro.FloatVector(outcomes)
+        ro.globalenv["treatment"] = ro.BoolVector(treatment.astype(bool))
+        ro.globalenv["alpha"] = alpha
+
+        result = ro.r("simple_ate_r(outcomes, treatment, alpha)")
+
+        return {
+            "estimate": float(result.rx2("estimate")[0]),
+            "se": float(result.rx2("se")[0]),
+            "ci_lower": float(result.rx2("ci_lower")[0]),
+            "ci_upper": float(result.rx2("ci_upper")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R simple_ate failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_stratified_ate(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    strata: np.ndarray,
+    alpha: float = 0.05,
+) -> Optional[Dict[str, Any]]:
+    """Estimate stratified ATE using R's precision-weighted estimator.
+
+    Calls stratified_ate_r() from validate_rct.R which computes
+    stratum-specific ATEs weighted by stratum size.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y.
+    treatment : np.ndarray
+        Binary treatment indicator (0/1 or True/False).
+    strata : np.ndarray
+        Integer stratum assignments.
+    alpha : float, default=0.05
+        Significance level for confidence interval.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - estimate: float, stratified ATE estimate
+        - se: float, standard error
+        - ci_lower: float, CI lower bound
+        - ci_upper: float, CI upper bound
+        Returns None if R packages unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for RCT validation", UserWarning)
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        _source_rct_script()
+
+        ro.globalenv["outcomes"] = ro.FloatVector(outcomes)
+        ro.globalenv["treatment"] = ro.BoolVector(treatment.astype(bool))
+        ro.globalenv["strata"] = ro.IntVector(strata.astype(int))
+        ro.globalenv["alpha"] = alpha
+
+        result = ro.r("stratified_ate_r(outcomes, treatment, strata, alpha)")
+
+        return {
+            "estimate": float(result.rx2("estimate")[0]),
+            "se": float(result.rx2("se")[0]),
+            "ci_lower": float(result.rx2("ci_lower")[0]),
+            "ci_upper": float(result.rx2("ci_upper")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R stratified_ate failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_regression_ate(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    covariates: np.ndarray,
+    alpha: float = 0.05,
+) -> Optional[Dict[str, Any]]:
+    """Estimate regression-adjusted ATE using R with HC3 robust SE.
+
+    Calls regression_ate_r() from validate_rct.R which uses R's lm()
+    with sandwich::vcovHC(type="HC3") for robust standard errors.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y.
+    treatment : np.ndarray
+        Binary treatment indicator (0/1 or True/False).
+    covariates : np.ndarray
+        Covariate matrix (n x p).
+    alpha : float, default=0.05
+        Significance level for confidence interval.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - estimate: float, regression-adjusted ATE estimate
+        - se: float, HC3 robust standard error
+        - ci_lower: float, CI lower bound
+        - ci_upper: float, CI upper bound
+        Returns None if R packages unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for RCT validation", UserWarning)
+        return None
+
+    if not check_rct_r_packages_installed():
+        warnings.warn(
+            "R 'sandwich' package required for HC3 SE. "
+            "Install in R: install.packages('sandwich')",
+            UserWarning,
+        )
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        _source_rct_script()
+
+        ro.globalenv["outcomes"] = ro.FloatVector(outcomes)
+        ro.globalenv["treatment"] = ro.BoolVector(treatment.astype(bool))
+
+        # Convert covariates to R matrix
+        if covariates.ndim == 1:
+            covariates = covariates.reshape(-1, 1)
+        ro.globalenv["covariates"] = ro.r["matrix"](
+            ro.FloatVector(covariates.flatten()),
+            nrow=covariates.shape[0],
+            ncol=covariates.shape[1],
+        )
+        ro.globalenv["alpha"] = alpha
+
+        result = ro.r("regression_ate_r(outcomes, treatment, covariates, alpha)")
+
+        return {
+            "estimate": float(result.rx2("estimate")[0]),
+            "se": float(result.rx2("se")[0]),
+            "ci_lower": float(result.rx2("ci_lower")[0]),
+            "ci_upper": float(result.rx2("ci_upper")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R regression_ate failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_permutation_test(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    n_permutations: int = 1000,
+    seed: Optional[int] = None,
+) -> Optional[Dict[str, Any]]:
+    """Run permutation test using R's coin package.
+
+    Calls permutation_test_r() from validate_rct.R which uses
+    coin::independence_test() for exact permutation inference.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y.
+    treatment : np.ndarray
+        Binary treatment indicator (0/1 or True/False).
+    n_permutations : int, default=1000
+        Number of permutations for Monte Carlo approximation.
+    seed : int, optional
+        Random seed for reproducibility.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - observed_statistic: float, observed difference in means
+        - p_value: float, two-sided p-value
+        - permutation_distribution: np.ndarray, null distribution
+        Returns None if R packages unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for RCT validation", UserWarning)
+        return None
+
+    if not check_rct_r_packages_installed():
+        warnings.warn(
+            "R 'coin' package required for permutation tests. "
+            "Install in R: install.packages('coin')",
+            UserWarning,
+        )
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        _source_rct_script()
+
+        ro.globalenv["outcomes"] = ro.FloatVector(outcomes)
+        ro.globalenv["treatment"] = ro.BoolVector(treatment.astype(bool))
+        ro.globalenv["n_permutations"] = n_permutations
+
+        if seed is not None:
+            ro.globalenv["random_seed"] = seed
+            result = ro.r(
+                "permutation_test_r(outcomes, treatment, n_permutations, random_seed)"
+            )
+        else:
+            result = ro.r(
+                "permutation_test_r(outcomes, treatment, n_permutations, NULL)"
+            )
+
+        return {
+            "observed_statistic": float(result.rx2("observed_statistic")[0]),
+            "p_value": float(result.rx2("p_value")[0]),
+            "permutation_distribution": np.array(result.rx2("permutation_distribution")),
+        }
+    except Exception as e:
+        warnings.warn(f"R permutation_test failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()
+
+
+def r_ipw_ate(
+    outcomes: np.ndarray,
+    treatment: np.ndarray,
+    propensity: np.ndarray,
+    alpha: float = 0.05,
+) -> Optional[Dict[str, Any]]:
+    """Estimate IPW ATE using R's Horvitz-Thompson estimator.
+
+    Calls ipw_ate_r() from validate_rct.R which implements
+    inverse probability weighting with robust variance.
+
+    Parameters
+    ----------
+    outcomes : np.ndarray
+        Outcome variable Y.
+    treatment : np.ndarray
+        Binary treatment indicator (0/1 or True/False).
+    propensity : np.ndarray
+        Propensity scores P(T=1|X).
+    alpha : float, default=0.05
+        Significance level for confidence interval.
+
+    Returns
+    -------
+    dict or None
+        Dictionary with keys:
+        - estimate: float, IPW ATE estimate
+        - se: float, robust standard error
+        - ci_lower: float, CI lower bound
+        - ci_upper: float, CI upper bound
+        Returns None if R packages unavailable.
+    """
+    if not check_r_available():
+        warnings.warn("R/rpy2 not available for RCT validation", UserWarning)
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    numpy2ri.activate()
+
+    try:
+        _source_rct_script()
+
+        ro.globalenv["outcomes"] = ro.FloatVector(outcomes)
+        ro.globalenv["treatment"] = ro.BoolVector(treatment.astype(bool))
+        ro.globalenv["propensity"] = ro.FloatVector(propensity)
+        ro.globalenv["alpha"] = alpha
+
+        result = ro.r("ipw_ate_r(outcomes, treatment, propensity, alpha)")
+
+        return {
+            "estimate": float(result.rx2("estimate")[0]),
+            "se": float(result.rx2("se")[0]),
+            "ci_lower": float(result.rx2("ci_lower")[0]),
+            "ci_upper": float(result.rx2("ci_upper")[0]),
+        }
+    except Exception as e:
+        warnings.warn(f"R ipw_ate failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()

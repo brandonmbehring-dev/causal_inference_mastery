@@ -147,8 +147,8 @@ Cross-language tests require `juliacall` which needs Julia environment setup. St
 | 2: Adversarial | ✅ | ⚠️ PARTIAL | 7 xfail tests remain |
 | 3: Monte Carlo | ✅ | ✅ VERIFIED | 5000-iter tests pass |
 | 4: Cross-Language | ✅ | ⏸️ CONDITIONAL | Requires Julia setup |
-| 5: R Triangulation | Claimed | ❌ NOT IMPLEMENTED | No R bridge exists |
-| 6: Golden Reference | Claimed | ⏸️ UNUSED | JSON exists, not tested |
+| 5: R Triangulation | Claimed | ⚠️ PARTIAL (8/25 families) | r_interface.py + 91 tests |
+| 6: Golden Reference | Claimed | ✅ ACTIVE (11 tests) | Session 166 activated |
 
 ### Recommendation
 

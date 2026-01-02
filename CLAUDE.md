@@ -31,12 +31,13 @@ Dual-language causal inference implementation for deep methodological understand
 - **Julia**: From-scratch implementations for mathematical rigor
 - **Goal**: Cross-language validation to 10 decimal places
 
-### Current Status (Verified Session 164 - Audit 2025-12-31)
-- **Python**: Phases 1-15+ COMPLETE (54,728 lines across 26 method families)
+### Current Status (Verified Session 166 - Independent Audit 2026-01-01)
+- **Python**: Phases 1-15+ COMPLETE (54,727 lines across 25 method families)
 - **Julia**: Phases 1-15+ COMPLETE (43,699 lines with cross-language parity)
 - **Tests**: 8,975 total (3,854 Python functions, 5,121 Julia assertions)
 - **Pass Rate**: 99%+ (3,869 tests collected, 0 collection errors)
 - **Known Bugs**: 0 outstanding (all 14 tracked bugs fixed, see `docs/KNOWN_BUGS.md`)
+- **Audit Status**: Independent audit complete (see `docs/AUDIT_2026-01-01_INDEPENDENT.md`)
 
 ---
 
@@ -73,7 +74,7 @@ pre-commit run --all-files
 
 ```
 causal_inference_mastery/
-├── src/causal_inference/           # Python modules (54,728 lines, 26 method families)
+├── src/causal_inference/           # Python modules (54,727 lines, 25 method families)
 │   ├── rct/                        # RCT estimators (ATE, IPW, stratified, permutation)
 │   ├── observational/              # IPW, DR, outcome regression
 │   ├── psm/                        # Propensity score matching
@@ -119,8 +120,8 @@ causal_inference_mastery/
 | 2 | Adversarial | Edge cases, boundary conditions | ⚠️ 7 xfails |
 | 3 | Monte Carlo | 5,000-25,000 run simulations | ✅ VERIFIED |
 | 4 | Cross-Language | Python ↔ Julia parity | ⏸️ Conditional |
-| 5 | R Triangulation | External reference | ❌ NOT IMPLEMENTED |
-| 6 | Golden Reference | 111KB JSON frozen results | ⏸️ EXISTS, UNUSED |
+| 5 | R Triangulation | External reference | ⚠️ PARTIAL (8/25 families) |
+| 6 | Golden Reference | 111KB JSON frozen results | ✅ ACTIVE (11 tests) |
 
 **Legend**: ✅ = Passing, ⚠️ = Partial, ⏸️ = Conditional/Unused, ❌ = Not implemented
 
@@ -373,12 +374,12 @@ julia --project -e "using Pkg; Pkg.instantiate()"
 
 | Session | Focus | Status |
 |---------|-------|--------|
+| 166 | **Independent Audit** - Metrics verification, McCrary warning, CI/CD | ✅ Complete |
+| 165 | **Comprehensive Audit** - Sessions 159-164 commit, documentation sync | ✅ Complete |
+| 159-164 | Time series (LP, Sign Restrictions, Proxy SVAR, TVP-VAR) | ✅ Complete |
 | 158 | **Repository Remediation** - Test fixes, docs, McCrary | ✅ Complete |
 | 150-157 | Time series (VAR, SVAR, IRF), Causal Forest | ✅ Complete |
 | 140-149 | CATE parity, Neural CATE, OML | ✅ Complete |
-| 106-139 | Bug fixes (BUG-1 to BUG-12), selection models | ✅ Complete |
-| 83-105 | RKD, Bunching, comprehensive audit | ✅ Complete |
-| 55-82 | IV stages, VCov, McCrary, CATE MC | ✅ Complete |
 
-**Current**: Session 158 - Repository remediation COMPLETE
-**Next**: Phase 16+ new methods or maintenance
+**Current**: Session 166 - Independent audit COMPLETE
+**Next**: CI/CD infrastructure, golden reference integration
