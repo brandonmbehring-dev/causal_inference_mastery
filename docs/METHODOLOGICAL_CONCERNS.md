@@ -1,11 +1,11 @@
 # Methodological Concerns Tracking
 
 **Created**: 2025-11-21
-**Last Updated**: 2025-12-28 (Session 158)
+**Last Updated**: 2026-01-01 (Session 168)
 **Purpose**: Track all methodological concerns across causal inference implementations
 
-**Status**: All 22 concerns RESOLVED. Session 158 fixed McCrary Type I error (CONCERN-22: 22% → ~5%).
-Sessions 98-157 added time series (VAR, SVAR, IRF) and CATE methods with no new concerns.
+**Status**: 21/22 concerns FULLY RESOLVED. CONCERN-22 (McCrary) is FUNCTIONALLY RESOLVED
+(correct Type I error rates achieved via empirical calibration, not theoretical derivation).
 
 ---
 
@@ -14,7 +14,8 @@ Sessions 98-157 added time series (VAR, SVAR, IRF) and CATE methods with no new 
 This document tracks methodological concerns that must be addressed to ensure rigorous causal inference implementations. Each concern is linked to specific phases, implementation status, and test validation.
 
 **Status Legend**:
-- ✅ **Addressed**: Implemented and tested
+- ✅ **Addressed**: Implemented and tested (theoretically grounded)
+- ⚠️ **Functional**: Works correctly but uses empirical calibration
 - 🟡 **Partial**: Implementation exists but needs validation
 - ⏳ **Planned**: Documented in roadmap, not yet implemented
 - ❌ **Unaddressed**: Needs attention
@@ -284,8 +285,9 @@ This document tracks methodological concerns that must be addressed to ensure ri
 
 ### CONCERN-22: McCrary Density Test for Manipulation
 **Phase**: Phase 5 (RDD)
-**Status**: ✅ FULLY RESOLVED (Sessions 57 + 70)
+**Status**: ⚠️ FUNCTIONALLY RESOLVED (Sessions 57 + 70 + 168)
 **Priority**: CRITICAL
+**Resolution Type**: Empirical calibration (not theoretical derivation)
 
 **Issue**: If units manipulate running variable to cross threshold, RDD invalid.
 Original implementations had severe Type I error inflation (~80% rejection rate on uniform data).
@@ -295,15 +297,26 @@ Original implementations had severe Type I error inflation (~80% rejection rate 
 2. Polynomial extrapolation amplification
 3. Bandwidth-dependent smoothing variance
 
-**Solution**: McCrary (2008) density test with CJM (2020) variance correction.
+**Solution**: McCrary (2008) density test with empirically-calibrated variance correction.
+
+**⚠️ IMPORTANT CAVEAT**:
+The correction factors were found via Monte Carlo binary search, NOT derived from
+CJM (2020) asymptotic theory. The implementation achieves correct Type I error
+rates in tested scenarios but may not generalize to:
+- Different sample sizes (n < 500 or n > 10000)
+- Non-uniform underlying densities
+- Non-standard bandwidth/bin configurations
+
+**For high-stakes research**: Validate against R's `rddensity` package (Cattaneo et al.)
 
 **Implementation**:
-- Python: `src/causal_inference/rdd/mccrary.py:357`
-  - Function: `mccrary_density_test()` with empirical correction factor (100×)
+- Python: `src/causal_inference/rdd/mccrary.py:214`
+  - Function: `mccrary_density_test()` with empirical correction factor (15×)
   - Type I error: **~6.4%** ✅ (Session 70 fix - was 22%, target <8%)
+  - Warning: Prominent docstring warning about empirical nature (lines 287-306)
 - Julia: `julia/src/rdd/mccrary.jl` (Session 57)
   - `McCraryProblem`, `McCrarySolution` with SciML pattern
-  - `histogram_extrapolation_variance()` with CJM-based formula
+  - Correction factor: 36 (different from Python due to implementation details)
   - Type I error: **~4%** ✅ (target met)
 
 **Variance Formula**:
@@ -312,7 +325,7 @@ Var(θ) = correction_factor × C_K × (1/(n_L×h_L) + 1/(n_R×h_R))
 ```
 where:
 - Julia: correction_factor = 36 (empirically calibrated)
-- Python: correction_factor = 100 (different numpy behavior, Session 70)
+- Python: correction_factor = 15 (recalibrated Session 158)
 - C_K ≈ 0.87 (triangular kernel)
 
 **Validation**:
@@ -322,11 +335,15 @@ where:
 - ✅ Monte Carlo power: >40% with 15% bunching
 - ✅ xfail markers removed from Monte Carlo tests
 
+**Future Work** (not blocking):
+- Derive correction factor from CJM (2020) asymptotic variance formula
+- Or: Validate against R `rddensity` for external confirmation
+
 **References**:
 - McCrary (2008): "Manipulation of the running variable in the RDD"
 - Cattaneo, Jansson, Ma (2020): "Simple local polynomial density estimators"
 
-**Session**: Sessions 14-15 (RDD Foundation), Session 57 (Julia fix), **Session 70** (Python fix)
+**Session**: Sessions 14-15 (RDD Foundation), Session 57 (Julia fix), **Session 70** (Python fix), **Session 168** (documentation)
 
 ---
 
@@ -454,7 +471,7 @@ where:
 ### CRITICAL (Must Address)
 - ✅ CONCERN-11: TWFE bias with staggered adoption (DiD) - **ADDRESSED**
 - ✅ CONCERN-16: Weak instrument diagnostics (IV) - **ADDRESSED**
-- ✅ CONCERN-22: McCrary density test (RDD) - **FULLY RESOLVED** (Sessions 57+70: Julia 4%, Python 6.4%)
+- ⚠️ CONCERN-22: McCrary density test (RDD) - **FUNCTIONALLY RESOLVED** (empirical calibration, not theoretical)
 - ✅ CONCERN-28: Causal forests honesty (CATE) - **ADDRESSED** (Session 42)
 - ✅ CONCERN-29: Double ML cross-fitting (CATE) - **ADDRESSED** (Session 41)
 
