@@ -9090,3 +9090,242 @@ def r_skeleton(
         return None
     finally:
         numpy2ri.deactivate()
+
+
+# =============================================================================
+# Causal Discovery: FCI Algorithm (pcalg package)
+# Session 184: FCI Algorithm R Triangulation
+# =============================================================================
+
+
+def r_fci_algorithm(
+    data: np.ndarray,
+    alpha: float = 0.05,
+    indep_test: str = "gaussCItest",
+    stable: bool = True,
+) -> Optional[Dict[str, Any]]:
+    """Run FCI algorithm via R pcalg::fci().
+
+    Estimates the PAG (Partial Ancestral Graph) from observational data
+    using the FCI algorithm. Unlike PC, FCI can detect latent confounders
+    and represents them via bidirected edges (X <-> Y).
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Data matrix of shape (n_samples, n_variables).
+    alpha : float
+        Significance level for CI tests. Default 0.05.
+    indep_test : str
+        Independence test to use. Options: "gaussCItest" (default),
+        "disCItest" (discrete), "binCItest" (binary).
+    stable : bool
+        If True, use stable FCI variant (order-independent). Default True.
+
+    Returns
+    -------
+    Dict with keys:
+        pag : np.ndarray
+            PAG adjacency matrix with edge marks.
+            pcalg encoding: 0=no edge, 1=circle, 2=arrowhead, 3=tail
+            pag[i,j] gives mark at j for edge i-j.
+        skeleton : np.ndarray
+            Undirected skeleton adjacency matrix (symmetric).
+        directed : np.ndarray
+            Definitely directed edges (tail->arrow: pag[i,j]=3, pag[j,i]=2).
+        bidirected : np.ndarray
+            Bidirected edges indicating latent confounders (both arrows).
+        circle_edges : np.ndarray
+            Edges with at least one circle mark (uncertain orientation).
+        separating_sets : Dict[Tuple[int, int], List[int]]
+            Separating sets for non-adjacent pairs.
+        n_bidirected : int
+            Count of bidirected edges (latent confounders detected).
+        n_nodes : int
+            Number of variables.
+
+    Returns None if R/pcalg not available or execution fails.
+
+    Notes
+    -----
+    PAG edge mark encoding in pcalg:
+    - 0: No edge
+    - 1: Circle (o) - uncertain mark
+    - 2: Arrowhead (>) - definite arrowhead
+    - 3: Tail (-) - definite tail
+
+    Edge types:
+    - X --> Y: pag[X,Y]=3 (tail at X), pag[Y,X]=2 (arrow at Y)
+    - X <-> Y: pag[X,Y]=2, pag[Y,X]=2 (bidirected, latent confounder)
+    - X o-> Y: pag[X,Y]=1 (circle), pag[Y,X]=2 (arrow)
+    - X o-o Y: pag[X,Y]=1, pag[Y,X]=1 (both circles)
+    """
+    if not check_pcalg_installed():
+        warnings.warn("R pcalg package not available", UserWarning)
+        return None
+
+    import rpy2.robjects as ro
+    from rpy2.robjects import numpy2ri
+
+    try:
+        numpy2ri.activate()
+
+        n_samples, n_vars = data.shape
+
+        # Convert data to R matrix
+        data_r = ro.r.matrix(
+            ro.FloatVector(data.T.flatten()),
+            nrow=n_samples,
+            ncol=n_vars,
+            byrow=False
+        )
+
+        # Set up variable labels
+        labels = [f"V{i}" for i in range(n_vars)]
+        labels_r = ro.StrVector(labels)
+
+        ro.globalenv['data_mat'] = data_r
+        ro.globalenv['alpha_val'] = alpha
+        ro.globalenv['labels_vec'] = labels_r
+        ro.globalenv['n_samples'] = n_samples
+        ro.globalenv['use_stable'] = stable
+
+        # Choose independence test
+        test_mapping = {
+            "gaussCItest": "gaussCItest",
+            "disCItest": "disCItest",
+            "binCItest": "binCItest",
+        }
+        ro.globalenv['indep_test_name'] = test_mapping.get(indep_test, "gaussCItest")
+
+        result = ro.r(
+            """
+            library(pcalg)
+
+            tryCatch({
+                # Compute correlation matrix for Gaussian CI test
+                suffStat <- list(C = cor(data_mat), n = n_samples)
+
+                # Get the independence test function
+                indepTest <- switch(indep_test_name,
+                    "gaussCItest" = gaussCItest,
+                    "disCItest" = disCItest,
+                    "binCItest" = binCItest,
+                    gaussCItest  # default
+                )
+
+                # Run FCI algorithm
+                fci_fit <- fci(
+                    suffStat = suffStat,
+                    indepTest = indepTest,
+                    alpha = alpha_val,
+                    labels = labels_vec,
+                    skel.method = if (use_stable) "stable" else "original",
+                    verbose = FALSE
+                )
+
+                # Extract PAG as adjacency matrix
+                # pcalg PAG encoding: 0=no edge, 1=circle, 2=arrow, 3=tail
+                pag <- as(fci_fit@amat, "matrix")
+
+                # Create skeleton (symmetric, all edges)
+                skeleton <- pag
+                skeleton[skeleton > 0] <- 1
+                skeleton <- pmax(skeleton, t(skeleton))
+
+                n_vars <- nrow(pag)
+
+                # Create directed matrix (tail -> arrow: pag[i,j]=3, pag[j,i]=2)
+                directed <- matrix(0, n_vars, n_vars)
+                for (i in 1:n_vars) {
+                    for (j in 1:n_vars) {
+                        if (i != j && pag[i, j] == 3 && pag[j, i] == 2) {
+                            directed[i, j] <- 1
+                        }
+                    }
+                }
+
+                # Create bidirected matrix (both arrows: pag[i,j]=2, pag[j,i]=2)
+                bidirected <- matrix(0, n_vars, n_vars)
+                n_bidirected <- 0
+                for (i in 1:(n_vars-1)) {
+                    for (j in (i+1):n_vars) {
+                        if (pag[i, j] == 2 && pag[j, i] == 2) {
+                            bidirected[i, j] <- 1
+                            bidirected[j, i] <- 1
+                            n_bidirected <- n_bidirected + 1
+                        }
+                    }
+                }
+
+                # Create circle edges matrix (at least one circle mark)
+                circle_edges <- matrix(0, n_vars, n_vars)
+                for (i in 1:n_vars) {
+                    for (j in 1:n_vars) {
+                        if (i != j && (pag[i, j] == 1 || pag[j, i] == 1)) {
+                            circle_edges[i, j] <- 1
+                        }
+                    }
+                }
+
+                # Extract separating sets
+                sep_sets_list <- list()
+                if (!is.null(fci_fit@sepset)) {
+                    for (i in 1:length(fci_fit@sepset)) {
+                        for (j in 1:length(fci_fit@sepset[[i]])) {
+                            if (!is.null(fci_fit@sepset[[i]][[j]]) && length(fci_fit@sepset[[i]][[j]]) >= 0) {
+                                key <- paste(i-1, j-1, sep=",")
+                                sep_sets_list[[key]] <- fci_fit@sepset[[i]][[j]] - 1  # 0-indexed
+                            }
+                        }
+                    }
+                }
+
+                list(
+                    pag = pag,
+                    skeleton = skeleton,
+                    directed = directed,
+                    bidirected = bidirected,
+                    circle_edges = circle_edges,
+                    sep_sets = sep_sets_list,
+                    n_bidirected = n_bidirected,
+                    n_vars = n_vars,
+                    success = TRUE
+                )
+            }, error = function(e) {
+                list(error = as.character(e), success = FALSE)
+            })
+            """
+        )
+
+        if not result.rx2("success")[0]:
+            error_msg = str(result.rx2("error")[0]) if "error" in result.names else "Unknown"
+            warnings.warn(f"R FCI algorithm failed: {error_msg}", UserWarning)
+            return None
+
+        # Convert separating sets from R list to Python dict
+        sep_sets_r = result.rx2("sep_sets")
+        separating_sets = {}
+        if sep_sets_r is not None and len(sep_sets_r) > 0:
+            for key in sep_sets_r.names:
+                parts = key.split(",")
+                i, j = int(parts[0]), int(parts[1])
+                sep_set = list(sep_sets_r.rx2(key))
+                separating_sets[(min(i, j), max(i, j))] = [int(x) for x in sep_set]
+
+        return {
+            "pag": np.array(result.rx2("pag"), dtype=np.int8),
+            "skeleton": np.array(result.rx2("skeleton"), dtype=np.int8),
+            "directed": np.array(result.rx2("directed"), dtype=np.int8),
+            "bidirected": np.array(result.rx2("bidirected"), dtype=np.int8),
+            "circle_edges": np.array(result.rx2("circle_edges"), dtype=np.int8),
+            "separating_sets": separating_sets,
+            "n_bidirected": int(result.rx2("n_bidirected")[0]),
+            "n_nodes": int(result.rx2("n_vars")[0]),
+        }
+
+    except Exception as e:
+        warnings.warn(f"R FCI algorithm failed: {e}", UserWarning)
+        return None
+    finally:
+        numpy2ri.deactivate()

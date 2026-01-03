@@ -1,10 +1,60 @@
 # Current Work
 
-**Last Updated**: 2026-01-02 [Session 183 - PC Algorithm R Triangulation]
+**Last Updated**: 2026-01-02 [Session 184 - FCI Algorithm R Triangulation]
 
 ---
 
 ## Right Now
+
+**Session 184**: FCI Algorithm R Triangulation ✅ COMPLETE 🎉
+
+Extended Layer 5 to include FCI algorithm via R pcalg package.
+**Layer 5 R Triangulation is now 100% complete (25/25 families)!**
+
+### FCI Algorithm R Triangulation (Layer 5: 25/25 = 100%)
+
+The FCI (Fast Causal Inference) algorithm extends PC to handle latent confounders:
+- Outputs PAG (Partial Ancestral Graph) instead of CPDAG
+- Bidirected edges (X ↔ Y) indicate latent common causes
+- Uses extended orientation rules R0-R10 (vs Meek R1-R4)
+- More conservative: circle marks for uncertain orientations
+
+**Deliverables**:
+1. ✅ `r_interface.py`: Added FCI algorithm wrapper (+240 lines)
+   - `r_fci_algorithm()`: Full FCI via pcalg::fci()
+   - Returns PAG, skeleton, bidirected edges, circle edges
+
+2. ✅ `test_fci_vs_r.py`: NEW (20 tests, ~600 lines)
+   - `TestFCISkeletonVsR` (3 tests): skeleton recovery parity
+   - `TestFCIPAGOrientationVsR` (2 tests): PAG orientation parity
+   - `TestFCILatentConfoundersVsR` (4 tests): bidirected edge detection
+   - `TestFCICircleMarksVsR` (2 tests): uncertain orientation handling
+   - `TestFCISeparatingSetsVsR` (1 test): separating sets parity
+   - `TestFCIMonteCarlo` (2 tests): detection consistency
+   - `TestFCIEdgeCases` (4 tests): independent, small, alpha, 5-node
+   - `TestFCISummaryStats` (2 tests): node/edge count matching
+
+3. ✅ Tests skip gracefully when R packages unavailable
+
+### Tolerance Standards (Session 184)
+
+| Metric | Tolerance | Rationale |
+|--------|-----------|-----------|
+| Skeleton | Exact match | Same as PC |
+| PAG edge types | 95%+ match | Rule order may vary |
+| Bidirected edges | Exact match | Critical for latent detection |
+| Circle marks | ±1 edge | Conservative orientation |
+
+### Layer Coverage Summary
+
+| Layer | Description | Coverage | Status |
+|-------|-------------|----------|--------|
+| 5 | R Triangulation | **25/25 (100%)** | ✅ COMPLETE 🎉 |
+| 6 | Golden Reference | 5/25 (20%) | Unchanged |
+
+**Note**: Bayesian CATE was skipped — Python lacks BART/CATE implementation.
+
+---
 
 **Session 183**: PC Algorithm R Triangulation ✅ COMPLETE
 
@@ -31,29 +81,6 @@ The PC algorithm is a constraint-based causal discovery method that:
    - `TestPCEdgeCases` (3 tests): independent, small sample, alpha
 
 3. ✅ Tests skip gracefully when R packages unavailable
-
-### Tolerance Standards (Session 183)
-
-| Metric | Tolerance | Rationale |
-|--------|-----------|-----------|
-| Skeleton edges | Exact match | Same CI test → same skeleton |
-| CPDAG directed edges | Exact match | Meek rules deterministic |
-| Skeleton F1 | ≥ 0.85 | Allow small differences |
-| SHD (Monte Carlo) | ≤ 2 | Small differences acceptable |
-
-### Layer Coverage Summary
-
-| Layer | Description | Coverage | Status |
-|-------|-------------|----------|--------|
-| 5 | R Triangulation | 24/25 (96%) | ✅ PC Algorithm added |
-| 6 | Golden Reference | 5/25 (20%) | Unchanged |
-
-### Next: Session 184
-
-Remaining 1 family for 100% Layer 5:
-- FCI Algorithm (pcalg::fci) - Session 184
-
-**Note**: Bayesian CATE skipped — Python lacks BART/CATE implementation.
 
 ---
 
