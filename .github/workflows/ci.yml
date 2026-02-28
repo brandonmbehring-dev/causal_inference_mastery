@@ -48,7 +48,13 @@ jobs:
         run: |
           # This catches broken imports, syntax errors, and fixture issues
           # before running any tests. Fails fast on collection errors.
-          pytest tests/ --collect-only -q 2>&1 | tee collection.log
+          # Note: ignore dirs requiring optional deps (torch, R, Julia)
+          pytest tests/ --collect-only -q \
+            --ignore=tests/validation/r_triangulation \
+            --ignore=tests/validation/cross_language \
+            --ignore=tests/validation/adversarial \
+            --ignore=tests/test_cate \
+            2>&1 | tee collection.log
           if grep -q "error" collection.log; then
             echo "::error::Test collection failed - check for import/syntax errors"
             exit 1
@@ -71,4 +77,9 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Run fast tests (skip slow/monte_carlo)
-        run: pytest tests/ -m "not slow and not monte_carlo" --tb=short -q
+        run: |
+          pytest tests/ -m "not slow and not monte_carlo" --tb=short -q \
+            --ignore=tests/validation/r_triangulation \
+            --ignore=tests/validation/cross_language \
+            --ignore=tests/validation/adversarial \
+            --ignore=tests/test_cate

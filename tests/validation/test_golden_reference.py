@@ -17,10 +17,10 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from src.causal_inference.rct.estimators import simple_ate
-from src.causal_inference.rct.estimators_stratified import stratified_ate
-from src.causal_inference.rct.estimators_regression import regression_adjusted_ate
-from src.causal_inference.rct.estimators_ipw import ipw_ate
+from causal_inference.rct.estimators import simple_ate
+from causal_inference.rct.estimators_stratified import stratified_ate
+from causal_inference.rct.estimators_regression import regression_adjusted_ate
+from causal_inference.rct.estimators_ipw import ipw_ate
 
 
 # Load golden results at module level
