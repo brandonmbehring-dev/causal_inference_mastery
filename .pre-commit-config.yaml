@@ -61,3 +61,11 @@ repos:
         entry: bash -c 'for file in $(git diff --cached --name-only --diff-filter=A | grep "^src/.*\.py$"); do test_file="tests/test_$(basename $(dirname $file))/test_$(basename $file)"; if [[ ! -f "$test_file" ]]; then echo "WARNING: New module $file has no corresponding test file at $test_file"; fi; done'
         language: system
         pass_filenames: false
+
+      # Session staleness check (Session 158)
+      - id: session-staleness-check
+        name: Check documentation session staleness
+        entry: bash -c 'cw_session=$(grep -oE "Session\s+[0-9]+" CURRENT_WORK.md 2>/dev/null | head -1 | grep -oE "[0-9]+"); claude_session=$(grep -oE "Session\s+[0-9]+" CLAUDE.md 2>/dev/null | grep -oE "[0-9]+" | head -1); if [[ ! -z "$cw_session" ]] && [[ ! -z "$claude_session" ]]; then diff=$((cw_session - claude_session)); if [[ $diff -gt 10 ]]; then echo "WARNING: CLAUDE.md session ($claude_session) is $diff sessions behind CURRENT_WORK.md ($cw_session)"; echo "Consider running: python scripts/update_metrics.py --output"; fi; fi'
+        language: system
+        pass_filenames: false
+        always_run: true

@@ -5,7 +5,7 @@ type: software
 authors:
   - given-names: Brandon
     family-names: Behring
-repository-code: "https://github.com/brandondocusen/causal_inference_mastery"
+repository-code: "https://github.com/brandon-behring/causal_inference_mastery"
 license: MIT
 version: 1.0.0
 date-released: 2025-12-28
