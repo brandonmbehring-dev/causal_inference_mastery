@@ -132,6 +132,8 @@ markers = [
     "e2e: marks end-to-end workflow tests",
     "benchmark: marks performance benchmark tests",
     "mcmc: marks MCMC-based tests (very slow)",
+    "audit: marks code audit/linting validation tests",
+    "type_i_error: marks Type-I error validation (statistical)",
 ]
 
 # Coverage configuration
