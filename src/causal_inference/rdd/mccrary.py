@@ -56,7 +56,7 @@ def _estimate_density_at_cutoff(
     Notes
     -----
     Uses triangular kernel: w = max(1 - |x-c|/h, 0)
-    Key fix (Session 70): Use adaptive polynomial order like Julia:
+    Key fix: Use adaptive polynomial order matching the Julia implementation:
     - 2 bins with positive weight → linear extrapolation
     - 3+ bins with positive weight → quadratic extrapolation
     This reduces variance inflation from over-fitting with sparse data.
@@ -283,6 +283,27 @@ def mccrary_density_test(
     - Test has low power with small samples (n < 500)
     - Discrete running variables can cause false positives
     - Natural bunching (e.g., age heaping) can trigger test
+
+    .. warning:: EMPIRICAL CALIBRATION
+
+       The standard error calculation uses an empirically-calibrated correction
+       factor (15.0) rather than a theoretically-derived formula. This was tuned
+       via binary search to achieve approximately 5-8% Type I error rate in Monte
+       Carlo simulations with n=1000 and uniform density.
+
+       **This calibration may not generalize to:**
+       - Different sample sizes (especially n < 500 or n > 10000)
+       - Non-uniform underlying densities
+       - Different bandwidth choices
+       - Non-standard bin configurations
+
+       **For high-stakes research applications**, consider:
+       - Validating against R's `rddensity` package (Cattaneo et al.)
+       - Running Monte Carlo calibration with your specific DGP
+       - Reporting sensitivity to bandwidth choice
+
+       Reference: Cattaneo, Jansson, Ma (2020), "Simple local polynomial
+       density estimators", Journal of the American Statistical Association.
     """
     X = np.asarray(X).flatten()
 
@@ -337,7 +358,7 @@ def mccrary_density_test(
 
     # Standard error using CJM (2020) asymptotic variance
     #
-    # Session 158 fix: Calibrate correction factor empirically.
+    # Empirically calibrated correction factor.
     # The Julia implementation achieves ~4% Type I error with factor=36.0 but
     # with side-specific bandwidths. Python's numpy differs slightly in polynomial
     # fitting behavior, requiring re-calibration.
@@ -353,8 +374,8 @@ def mccrary_density_test(
     C_K = 0.8727  # Triangular kernel constant
 
     # Correction factor: empirically calibrated for Python's polynomial fitting
-    # Session 158 calibration: factor=15 targets ~8% Type I error
-    # Binary search results: factor=10 → 15%, factor=20 → 3%, factor=15 → ~8%
+    # Targets ~8% Type I error via binary search:
+    # factor=10 → 15%, factor=20 → 3%, factor=15 → ~8%
     correction_factor = 15.0
 
     # Variance formula using global bandwidth (consistent with density estimation)
