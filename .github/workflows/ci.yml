@@ -20,10 +20,10 @@ jobs:
           cache: 'pip'
 
       - name: Install linting tools
-        run: pip install black ruff mypy types-all numpy pandas-stubs
+        run: pip install ruff mypy numpy pandas-stubs
 
-      - name: Check formatting with Black
-        run: black --check --line-length=100 src/ tests/
+      - name: Check formatting with Ruff
+        run: ruff format --check --line-length=100 src/ tests/
 
       - name: Lint with Ruff
         run: ruff check src/ tests/

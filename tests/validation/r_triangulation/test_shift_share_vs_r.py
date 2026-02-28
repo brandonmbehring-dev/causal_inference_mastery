@@ -20,8 +20,13 @@ from .r_interface import (
     r_shift_share_ivreg_ss,
 )
 
-# Import Python implementation
-from causal_inference.shift_share import ShiftShareIV, shift_share_iv
+# Import Python implementation (guarded to prevent collection failure when not installed)
+_ci_shift_share = pytest.importorskip(
+    "causal_inference.shift_share",
+    reason="causal_inference package not installed (run: pip install -e .)",
+)
+ShiftShareIV = _ci_shift_share.ShiftShareIV
+shift_share_iv = _ci_shift_share.shift_share_iv
 
 # Import DGP from test_shift_share
 import sys
