@@ -45,11 +45,15 @@ class TestPSMExtremePropensities:
         # Strategy: Most treated have high X, control has low X
         # Then some treated with low X will have propensity near 0
         treatment = np.array([1] * 35 + [1] * 15 + [0] * 50)
-        covariates = np.concatenate([
-            np.random.normal(5, 1, (35, 2)),    # Normal treated (high X)
-            np.random.normal(-10, 1, (15, 2)),  # Treated with control-like X (near 0 propensity) - 15%
-            np.random.normal(-10, 1, (50, 2)),  # Control (low X)
-        ])
+        covariates = np.concatenate(
+            [
+                np.random.normal(5, 1, (35, 2)),  # Normal treated (high X)
+                np.random.normal(
+                    -10, 1, (15, 2)
+                ),  # Treated with control-like X (near 0 propensity) - 15%
+                np.random.normal(-10, 1, (50, 2)),  # Control (low X)
+            ]
+        )
         outcomes = 2.0 * treatment + 0.5 * covariates[:, 0] + np.random.normal(0, 1, n)
 
         # Should succeed with warning
@@ -76,11 +80,15 @@ class TestPSMExtremePropensities:
         # Strategy: Most treated have high X, control has low X
         # Then some control with high X will have propensity near 1
         treatment = np.array([1] * 50 + [0] * 35 + [0] * 15)
-        covariates = np.concatenate([
-            np.random.normal(10, 1, (50, 2)),   # Treated (high X)
-            np.random.normal(-5, 1, (35, 2)),   # Normal control (low X)
-            np.random.normal(10, 1, (15, 2)),   # Control with treated-like X (near 1 propensity) - 15%
-        ])
+        covariates = np.concatenate(
+            [
+                np.random.normal(10, 1, (50, 2)),  # Treated (high X)
+                np.random.normal(-5, 1, (35, 2)),  # Normal control (low X)
+                np.random.normal(
+                    10, 1, (15, 2)
+                ),  # Control with treated-like X (near 1 propensity) - 15%
+            ]
+        )
         outcomes = 2.0 * treatment + 0.5 * covariates[:, 0] + np.random.normal(0, 1, n)
 
         with pytest.warns(RuntimeWarning, match="perfect separation"):
@@ -105,10 +113,12 @@ class TestPSMCommonSupport:
 
         # Complete separation
         treatment = np.array([1] * 50 + [0] * 50)
-        covariates = np.concatenate([
-            np.random.normal(5, 1, (50, 1)),   # Treated: X ~ N(5, 1)
-            np.random.normal(-5, 1, (50, 1)),  # Control: X ~ N(-5, 1)
-        ])
+        covariates = np.concatenate(
+            [
+                np.random.normal(5, 1, (50, 1)),  # Treated: X ~ N(5, 1)
+                np.random.normal(-5, 1, (50, 1)),  # Control: X ~ N(-5, 1)
+            ]
+        )
         outcomes = 2.0 * treatment + np.random.normal(0, 1, 100)
 
         # With current min_overlap=0.001, this should pass
@@ -129,10 +139,12 @@ class TestPSMCommonSupport:
 
         # Use complete separation to guarantee propensities far apart
         treatment = np.array([1] * 50 + [0] * 50)
-        covariates = np.concatenate([
-            np.random.normal(10, 0.5, (50, 1)),   # Treated: X ~ N(10, 0.5)
-            np.random.normal(-10, 0.5, (50, 1)),  # Control: X ~ N(-10, 0.5)
-        ])
+        covariates = np.concatenate(
+            [
+                np.random.normal(10, 0.5, (50, 1)),  # Treated: X ~ N(10, 0.5)
+                np.random.normal(-10, 0.5, (50, 1)),  # Control: X ~ N(-10, 0.5)
+            ]
+        )
         outcomes = 2.0 * treatment + np.random.normal(0, 1, 100)
 
         # With complete separation, propensities are ~0 and ~1 (distance ~1)
@@ -325,10 +337,12 @@ class TestPSMOutliersAndVariance:
         n = 100
 
         treatment = np.random.binomial(1, 0.5, n).astype(bool)
-        covariates = np.column_stack([
-            np.random.normal(0, 1, n),
-            np.ones(n),  # Zero variance
-        ])
+        covariates = np.column_stack(
+            [
+                np.random.normal(0, 1, n),
+                np.ones(n),  # Zero variance
+            ]
+        )
         outcomes = 2.0 * treatment + np.random.normal(0, 1, n)
 
         result = psm_ate(outcomes, treatment, covariates, M=1)
@@ -354,10 +368,12 @@ class TestPSMTiedPropensities:
 
         # Binary covariates → 4 possible propensity values
         treatment = np.random.binomial(1, 0.5, n).astype(bool)
-        covariates = np.column_stack([
-            np.random.binomial(1, 0.5, n),
-            np.random.binomial(1, 0.5, n),
-        ]).astype(float)
+        covariates = np.column_stack(
+            [
+                np.random.binomial(1, 0.5, n),
+                np.random.binomial(1, 0.5, n),
+            ]
+        ).astype(float)
         outcomes = 2.0 * treatment + np.random.normal(0, 1, n)
 
         result = psm_ate(outcomes, treatment, covariates, M=1)

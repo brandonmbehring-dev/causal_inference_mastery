@@ -824,9 +824,7 @@ def _lp_state_regression(
 
     # Lagged controls
     for j in range(lags):
-        X[:, 4 + j * n_vars : 4 + (j + 1) * n_vars] = data[
-            lags - j - 1 : lags - j - 1 + T, :
-        ]
+        X[:, 4 + j * n_vars : 4 + (j + 1) * n_vars] = data[lags - j - 1 : lags - j - 1 + T, :]
 
     # OLS
     try:

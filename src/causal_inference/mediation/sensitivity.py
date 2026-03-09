@@ -184,7 +184,9 @@ def mediation_sensitivity(
 
             if covariates is not None:
                 X_m_b = np.column_stack([np.ones(n), treatment[idx], covariates[idx]])
-                X_y_b = np.column_stack([np.ones(n), treatment[idx], mediator[idx], covariates[idx]])
+                X_y_b = np.column_stack(
+                    [np.ones(n), treatment[idx], mediator[idx], covariates[idx]]
+                )
             else:
                 X_m_b = np.column_stack([np.ones(n), treatment[idx]])
                 X_y_b = np.column_stack([np.ones(n), treatment[idx], mediator[idx]])
@@ -310,9 +312,7 @@ def _generate_interpretation(
             robustness = "ROBUST"
             advice = "Only strong confounding could explain away the indirect effect."
 
-        lines.append(
-            f"NIE: Effect becomes zero at rho = {rho_at_zero_nie:.3f} ({robustness})"
-        )
+        lines.append(f"NIE: Effect becomes zero at rho = {rho_at_zero_nie:.3f} ({robustness})")
         lines.append(f"     {advice}")
 
     lines.append("")
@@ -326,13 +326,9 @@ def _generate_interpretation(
     else:
         abs_rho = abs(rho_at_zero_nde)
         if abs_rho < 0.3:
-            lines.append(
-                f"NDE: Effect becomes zero at rho = {rho_at_zero_nde:.3f} (SENSITIVE)"
-            )
+            lines.append(f"NDE: Effect becomes zero at rho = {rho_at_zero_nde:.3f} (SENSITIVE)")
         else:
-            lines.append(
-                f"NDE: Effect becomes zero at rho = {rho_at_zero_nde:.3f} (ROBUST)"
-            )
+            lines.append(f"NDE: Effect becomes zero at rho = {rho_at_zero_nde:.3f} (ROBUST)")
 
     return "\n".join(lines)
 

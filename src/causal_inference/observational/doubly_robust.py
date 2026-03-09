@@ -170,9 +170,7 @@ def dr_ate(
         )
 
     if np.any(np.isinf(outcomes)) or np.any(np.isinf(treatment)) or np.any(np.isinf(covariates)):
-        raise ValueError(
-            f"CRITICAL ERROR: Infinite values detected in input.\n" f"Function: dr_ate"
-        )
+        raise ValueError(f"CRITICAL ERROR: Infinite values detected in input.\nFunction: dr_ate")
 
     unique_treatment = np.unique(treatment)
     if not np.all(np.isin(unique_treatment, [0, 1])):
@@ -262,9 +260,9 @@ def dr_ate(
     treated_contribution = (
         treatment / propensity_clipped * (outcomes - mu1_predictions) + mu1_predictions
     )
-    control_contribution = (
-        (1 - treatment) / (1 - propensity_clipped) * (outcomes - mu0_predictions) + mu0_predictions
-    )
+    control_contribution = (1 - treatment) / (1 - propensity_clipped) * (
+        outcomes - mu0_predictions
+    ) + mu0_predictions
 
     dr_estimate = np.mean(treated_contribution - control_contribution)
 

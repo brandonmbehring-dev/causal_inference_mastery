@@ -68,9 +68,7 @@ class TestWildBootstrapWeights:
 
         for value in [-1.5, -1.0, -0.5, 0.5, 1.0, 1.5]:
             prop = np.mean(weights == value)
-            assert 0.15 < prop < 0.18, (
-                f"Expected ~1/6 for {value}, got {prop:.3f}"
-            )
+            assert 0.15 < prop < 0.18, f"Expected ~1/6 for {value}, got {prop:.3f}"
 
     def test_weight_length_matches_clusters(self):
         """Weight arrays should have length equal to n_clusters."""
@@ -153,12 +151,14 @@ class TestWildBootstrapSE:
         # Now compute wild bootstrap SE
         # Need to construct X matrix and get residuals
         n = len(data["outcomes"])
-        X = np.column_stack([
-            np.ones(n),
-            data["treatment"],
-            data["post"],
-            data["treatment"] * data["post"],
-        ])
+        X = np.column_stack(
+            [
+                np.ones(n),
+                data["treatment"],
+                data["post"],
+                data["treatment"] * data["post"],
+            ]
+        )
 
         # Get OLS residuals
         beta = np.linalg.lstsq(X, data["outcomes"], rcond=None)[0]
@@ -186,12 +186,14 @@ class TestWildBootstrapSE:
         data = few_cluster_did_data
 
         n = len(data["outcomes"])
-        X = np.column_stack([
-            np.ones(n),
-            data["treatment"],
-            data["post"],
-            data["treatment"] * data["post"],
-        ])
+        X = np.column_stack(
+            [
+                np.ones(n),
+                data["treatment"],
+                data["post"],
+                data["treatment"] * data["post"],
+            ]
+        )
         beta = np.linalg.lstsq(X, data["outcomes"], rcond=None)[0]
         residuals = data["outcomes"] - X @ beta
 
@@ -222,12 +224,14 @@ class TestWildBootstrapSE:
 
         # Generate simple data
         cluster_id = np.repeat(np.arange(n_clusters), obs_per_cluster)
-        X = np.column_stack([
-            np.ones(n),
-            np.random.normal(0, 1, n),
-            np.random.normal(0, 1, n),
-            np.random.normal(0, 1, n),
-        ])
+        X = np.column_stack(
+            [
+                np.ones(n),
+                np.random.normal(0, 1, n),
+                np.random.normal(0, 1, n),
+                np.random.normal(0, 1, n),
+            ]
+        )
         y = X @ [1, 2, 3, 4] + np.random.normal(0, 1, n)
         beta = np.linalg.lstsq(X, y, rcond=None)[0]
         residuals = y - X @ beta
@@ -254,12 +258,14 @@ class TestWildBootstrapSE:
         data = few_cluster_did_data
 
         n = len(data["outcomes"])
-        X = np.column_stack([
-            np.ones(n),
-            data["treatment"],
-            data["post"],
-            data["treatment"] * data["post"],
-        ])
+        X = np.column_stack(
+            [
+                np.ones(n),
+                data["treatment"],
+                data["post"],
+                data["treatment"] * data["post"],
+            ]
+        )
         beta = np.linalg.lstsq(X, data["outcomes"], rcond=None)[0]
         residuals = data["outcomes"] - X @ beta
 
@@ -539,12 +545,14 @@ class TestWildBootstrapMonteCarlo:
 
             # Build regression matrix
             n = len(outcomes)
-            X = np.column_stack([
-                np.ones(n),
-                treatment,
-                post,
-                treatment * post,
-            ])
+            X = np.column_stack(
+                [
+                    np.ones(n),
+                    treatment,
+                    post,
+                    treatment * post,
+                ]
+            )
 
             beta = np.linalg.lstsq(X, outcomes, rcond=None)[0]
             residuals = outcomes - X @ beta
@@ -631,12 +639,14 @@ class TestWildBootstrapMonteCarlo:
                 import statsmodels.api as sm
 
                 n = len(outcomes)
-                X = np.column_stack([
-                    np.ones(n),
-                    treatment,
-                    post,
-                    treatment * post,
-                ])
+                X = np.column_stack(
+                    [
+                        np.ones(n),
+                        treatment,
+                        post,
+                        treatment * post,
+                    ]
+                )
 
                 model = sm.OLS(outcomes, X)
                 results = model.fit(cov_type="cluster", cov_kwds={"groups": unit_id})

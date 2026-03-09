@@ -43,8 +43,10 @@ class TestLIMLBasicFunctionality:
 
         # Coefficients should be similar (within 10%)
         np.testing.assert_allclose(
-            liml.coef_[0], tsls.coef_[0], rtol=0.1,
-            err_msg="LIML and 2SLS should agree with strong instruments"
+            liml.coef_[0],
+            tsls.coef_[0],
+            rtol=0.1,
+            err_msg="LIML and 2SLS should agree with strong instruments",
         )
 
     def test_liml_kappa_greater_than_one(self, iv_strong_instrument):
@@ -152,9 +154,7 @@ class TestLIMLInference:
         liml_robust.fit(Y, D, Z, X)
 
         # Coefficients should be identical
-        np.testing.assert_allclose(
-            liml_standard.coef_, liml_robust.coef_, rtol=1e-6
-        )
+        np.testing.assert_allclose(liml_standard.coef_, liml_robust.coef_, rtol=1e-6)
 
         # Robust SEs should be >= standard SEs (in expectation)
         # Note: May not hold for every single coefficient in every sample

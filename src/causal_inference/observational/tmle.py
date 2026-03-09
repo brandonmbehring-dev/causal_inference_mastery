@@ -246,9 +246,7 @@ def tmle_ate(
 
     # Apply trimming if specified
     if trim_at is not None:
-        trim_result = trim_propensity(
-            propensity, treatment, outcomes, covariates, trim_at
-        )
+        trim_result = trim_propensity(propensity, treatment, outcomes, covariates, trim_at)
         outcomes = trim_result["outcomes"]
         treatment = trim_result["treatment"]
         covariates = trim_result["covariates"]
@@ -290,9 +288,7 @@ def tmle_ate(
 
     for iteration in range(max_iter):
         # Check convergence
-        converged, convergence_criterion = check_convergence(
-            outcomes, Q_star, H, tol
-        )
+        converged, convergence_criterion = check_convergence(outcomes, Q_star, H, tol)
 
         if converged:
             break

@@ -100,10 +100,7 @@ class TestLeeBoundsKnownAnswers:
         outcome, treatment, observed, true_ate = simple_selection_data
 
         result = lee_bounds(
-            outcome, treatment, observed,
-            monotonicity="positive",
-            n_bootstrap=100,
-            random_state=42
+            outcome, treatment, observed, monotonicity="positive", n_bootstrap=100, random_state=42
         )
 
         # Bounds should contain true ATE (with some tolerance for sampling)
@@ -114,11 +111,7 @@ class TestLeeBoundsKnownAnswers:
         """Positive monotonicity should work when treatment increases observation."""
         outcome, treatment, observed, _ = simple_selection_data
 
-        result = lee_bounds(
-            outcome, treatment, observed,
-            monotonicity="positive",
-            n_bootstrap=0
-        )
+        result = lee_bounds(outcome, treatment, observed, monotonicity="positive", n_bootstrap=0)
 
         assert result["bounds_lower"] <= result["bounds_upper"]
         assert result["attrition_treated"] < result["attrition_control"]
@@ -127,11 +120,7 @@ class TestLeeBoundsKnownAnswers:
         """Negative monotonicity should work when treatment decreases observation."""
         outcome, treatment, observed, _ = negative_monotonicity_data
 
-        result = lee_bounds(
-            outcome, treatment, observed,
-            monotonicity="negative",
-            n_bootstrap=0
-        )
+        result = lee_bounds(outcome, treatment, observed, monotonicity="negative", n_bootstrap=0)
 
         assert result["bounds_lower"] <= result["bounds_upper"]
         assert result["attrition_treated"] > result["attrition_control"]
@@ -140,11 +129,7 @@ class TestLeeBoundsKnownAnswers:
         """No differential attrition should give point identification."""
         outcome, treatment, observed, true_ate = no_attrition_data
 
-        result = lee_bounds(
-            outcome, treatment, observed,
-            monotonicity="positive",
-            n_bootstrap=0
-        )
+        result = lee_bounds(outcome, treatment, observed, monotonicity="positive", n_bootstrap=0)
 
         # Bounds should be very close (point identified)
         assert result["bounds_width"] < 0.5  # Some tolerance for randomness
@@ -153,11 +138,7 @@ class TestLeeBoundsKnownAnswers:
         """Higher differential attrition should give wider bounds."""
         outcome, treatment, observed, _ = high_attrition_data
 
-        result = lee_bounds(
-            outcome, treatment, observed,
-            monotonicity="positive",
-            n_bootstrap=0
-        )
+        result = lee_bounds(outcome, treatment, observed, monotonicity="positive", n_bootstrap=0)
 
         # Wide bounds due to high attrition
         assert result["bounds_width"] > 0.5
@@ -171,10 +152,7 @@ class TestBootstrapCI:
         outcome, treatment, observed, _ = simple_selection_data
 
         result = lee_bounds(
-            outcome, treatment, observed,
-            monotonicity="positive",
-            n_bootstrap=500,
-            random_state=42
+            outcome, treatment, observed, monotonicity="positive", n_bootstrap=500, random_state=42
         )
 
         # CI should be wider than bounds
@@ -186,19 +164,23 @@ class TestBootstrapCI:
         outcome, treatment, observed, _ = simple_selection_data
 
         result_95 = lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             monotonicity="positive",
             n_bootstrap=300,
             alpha=0.05,
-            random_state=42
+            random_state=42,
         )
 
         result_99 = lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             monotonicity="positive",
             n_bootstrap=300,
             alpha=0.01,
-            random_state=42
+            random_state=42,
         )
 
         ci_width_95 = result_95["ci_upper"] - result_95["ci_lower"]
@@ -319,9 +301,11 @@ class TestEdgeCases:
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
             lee_bounds(
-                outcome, treatment, observed,
+                outcome,
+                treatment,
+                observed,
                 monotonicity="negative",  # Wrong direction
-                n_bootstrap=0
+                n_bootstrap=0,
             )
             # Should have warned
             assert any("violation" in str(warning.message).lower() for warning in w)
@@ -334,19 +318,24 @@ class TestReturnTypes:
         """Result should have all required keys."""
         outcome, treatment, observed, _ = simple_selection_data
 
-        result = lee_bounds(
-            outcome, treatment, observed,
-            n_bootstrap=50,
-            random_state=42
-        )
+        result = lee_bounds(outcome, treatment, observed, n_bootstrap=50, random_state=42)
 
         required_keys = [
-            "bounds_lower", "bounds_upper", "bounds_width",
-            "ci_lower", "ci_upper", "point_identified",
-            "trimming_proportion", "trimmed_group",
-            "attrition_treated", "attrition_control",
-            "n_treated_observed", "n_control_observed",
-            "n_trimmed", "monotonicity_assumption", "interpretation"
+            "bounds_lower",
+            "bounds_upper",
+            "bounds_width",
+            "ci_lower",
+            "ci_upper",
+            "point_identified",
+            "trimming_proportion",
+            "trimmed_group",
+            "attrition_treated",
+            "attrition_control",
+            "n_treated_observed",
+            "n_control_observed",
+            "n_trimmed",
+            "monotonicity_assumption",
+            "interpretation",
         ]
 
         for key in required_keys:
@@ -356,11 +345,7 @@ class TestReturnTypes:
         """All numeric values should be finite."""
         outcome, treatment, observed, _ = simple_selection_data
 
-        result = lee_bounds(
-            outcome, treatment, observed,
-            n_bootstrap=100,
-            random_state=42
-        )
+        result = lee_bounds(outcome, treatment, observed, n_bootstrap=100, random_state=42)
 
         for key in ["bounds_lower", "bounds_upper", "attrition_treated", "attrition_control"]:
             assert np.isfinite(result[key]), f"{key} is not finite"
@@ -436,9 +421,15 @@ class TestCheckMonotonicity:
         result = check_monotonicity(treatment, observed)
 
         expected_keys = [
-            "obs_rate_treated", "obs_rate_control", "difference",
-            "se", "z_statistic", "p_value", "significant",
-            "suggested_monotonicity", "interpretation"
+            "obs_rate_treated",
+            "obs_rate_control",
+            "difference",
+            "se",
+            "z_statistic",
+            "p_value",
+            "significant",
+            "suggested_monotonicity",
+            "interpretation",
         ]
 
         for key in expected_keys:
@@ -468,9 +459,7 @@ class TestMonteCarloCoverage:
             outcome = true_ate * treatment + np.random.randn(n)
 
             result = lee_bounds(
-                outcome, treatment, observed,
-                monotonicity="positive",
-                n_bootstrap=0
+                outcome, treatment, observed, monotonicity="positive", n_bootstrap=0
             )
 
             if result["bounds_lower"] <= true_ate <= result["bounds_upper"]:
@@ -494,11 +483,13 @@ class TestMonteCarloCoverage:
             outcome = true_ate * treatment + np.random.randn(n)
 
             result = lee_bounds(
-                outcome, treatment, observed,
+                outcome,
+                treatment,
+                observed,
                 monotonicity="positive",
                 n_bootstrap=200,
                 alpha=0.05,
-                random_state=seed
+                random_state=seed,
             )
 
             if result["ci_lower"] <= true_ate <= result["ci_upper"]:
@@ -529,10 +520,12 @@ class TestTightenedBounds:
         outcome = 2.0 * treatment + x + np.random.randn(n)
 
         result = lee_bounds_tightened(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             covariates=x.reshape(-1, 1),
             n_bootstrap=50,
-            random_state=42
+            random_state=42,
         )
 
         assert np.isfinite(result["bounds_lower"])
@@ -549,9 +542,7 @@ class TestTightenedBounds:
         outcome = treatment + np.random.randn(n)
 
         result = lee_bounds_tightened(
-            outcome, treatment, observed,
-            covariates=x.reshape(-1, 1),
-            n_bootstrap=0
+            outcome, treatment, observed, covariates=x.reshape(-1, 1), n_bootstrap=0
         )
 
         assert np.isfinite(result["bounds_lower"])

@@ -41,11 +41,13 @@ from src.causal_inference.scm.types import validate_weights
 def minimal_panel():
     """Minimum viable SCM panel: 3 units (1 treated + 2 controls), 3 periods."""
     np.random.seed(42)
-    outcomes = np.array([
-        [10.0, 11.0, 15.0],  # Treated (effect in period 2)
-        [10.0, 11.0, 12.0],  # Control 1
-        [9.0, 10.0, 11.0],   # Control 2
-    ])
+    outcomes = np.array(
+        [
+            [10.0, 11.0, 15.0],  # Treated (effect in period 2)
+            [10.0, 11.0, 12.0],  # Control 1
+            [9.0, 10.0, 11.0],  # Control 2
+        ]
+    )
     treatment = np.array([1, 0, 0])
     treatment_period = 2
     return {
@@ -86,11 +88,13 @@ class TestInputValidationEdgeCases:
 
     def test_inf_in_outcomes(self):
         """Inf values in outcomes should raise ValueError."""
-        outcomes = np.array([
-            [10.0, np.inf, 12.0, 13.0],
-            [9.0, 10.0, 11.0, 12.0],
-            [8.0, 9.0, 10.0, 11.0],
-        ])
+        outcomes = np.array(
+            [
+                [10.0, np.inf, 12.0, 13.0],
+                [9.0, 10.0, 11.0, 12.0],
+                [8.0, 9.0, 10.0, 11.0],
+            ]
+        )
         treatment = np.array([1, 0, 0])
 
         # Inf is handled as NaN-like invalid value
@@ -99,11 +103,13 @@ class TestInputValidationEdgeCases:
 
     def test_negative_inf_in_outcomes(self):
         """-Inf values should raise error."""
-        outcomes = np.array([
-            [10.0, -np.inf, 12.0, 13.0],
-            [9.0, 10.0, 11.0, 12.0],
-            [8.0, 9.0, 10.0, 11.0],
-        ])
+        outcomes = np.array(
+            [
+                [10.0, -np.inf, 12.0, 13.0],
+                [9.0, 10.0, 11.0, 12.0],
+                [8.0, 9.0, 10.0, 11.0],
+            ]
+        )
         treatment = np.array([1, 0, 0])
 
         with pytest.raises(ValueError):
@@ -343,11 +349,13 @@ class TestNumericalStability:
 
     def test_constant_outcomes_control(self):
         """Constant outcome values in controls."""
-        outcomes = np.array([
-            [10.0, 11.0, 12.0, 18.0, 19.0],  # Treated (varies + effect)
-            [5.0, 5.0, 5.0, 5.0, 5.0],       # Constant control
-            [8.0, 8.0, 8.0, 8.0, 8.0],       # Constant control
-        ])
+        outcomes = np.array(
+            [
+                [10.0, 11.0, 12.0, 18.0, 19.0],  # Treated (varies + effect)
+                [5.0, 5.0, 5.0, 5.0, 5.0],  # Constant control
+                [8.0, 8.0, 8.0, 8.0, 8.0],  # Constant control
+            ]
+        )
         treatment = np.array([1, 0, 0])
 
         result = synthetic_control(outcomes, treatment, 3, inference="none")
@@ -356,11 +364,13 @@ class TestNumericalStability:
 
     def test_constant_outcomes_treated(self):
         """Constant pre-treatment values for treated unit."""
-        outcomes = np.array([
-            [10.0, 10.0, 10.0, 15.0, 15.0],  # Treated (constant pre, then jumps)
-            [9.0, 10.0, 11.0, 12.0, 13.0],   # Control varies
-            [8.0, 9.0, 10.0, 11.0, 12.0],    # Control varies
-        ])
+        outcomes = np.array(
+            [
+                [10.0, 10.0, 10.0, 15.0, 15.0],  # Treated (constant pre, then jumps)
+                [9.0, 10.0, 11.0, 12.0, 13.0],  # Control varies
+                [8.0, 9.0, 10.0, 11.0, 12.0],  # Control varies
+            ]
+        )
         treatment = np.array([1, 0, 0])
 
         result = synthetic_control(outcomes, treatment, 3, inference="none")
@@ -373,11 +383,13 @@ class TestZeroVarianceEdgeCases:
 
     def test_zero_variance_single_control(self):
         """Single control with zero variance."""
-        outcomes = np.array([
-            [10.0, 11.0, 12.0, 15.0],  # Treated
-            [5.0, 5.0, 5.0, 5.0],      # Zero variance control
-            [8.0, 9.0, 10.0, 11.0],    # Normal control
-        ])
+        outcomes = np.array(
+            [
+                [10.0, 11.0, 12.0, 15.0],  # Treated
+                [5.0, 5.0, 5.0, 5.0],  # Zero variance control
+                [8.0, 9.0, 10.0, 11.0],  # Normal control
+            ]
+        )
         treatment = np.array([1, 0, 0])
 
         result = synthetic_control(outcomes, treatment, 2, inference="none")
@@ -647,9 +659,7 @@ class TestInferenceEdgeCases:
         treatment = np.zeros(10)
         treatment[0] = 1
 
-        result = synthetic_control(
-            outcomes, treatment, 6, inference="placebo", n_placebo=50
-        )
+        result = synthetic_control(outcomes, treatment, 6, inference="placebo", n_placebo=50)
 
         # P-value should be small (significant effect)
         assert result["p_value"] < 0.20
@@ -700,9 +710,7 @@ class TestASCMEdgeCases:
 
         treatment = np.array([1, 0, 0, 0, 0, 0, 0, 0])
 
-        result = augmented_synthetic_control(
-            outcomes, treatment, 8, inference="jackknife"
-        )
+        result = augmented_synthetic_control(outcomes, treatment, 8, inference="jackknife")
 
         assert result["se"] > 0 or np.isnan(result["se"])
 
@@ -714,9 +722,7 @@ class TestASCMEdgeCases:
 
         treatment = np.array([1, 0, 0, 0, 0, 0, 0, 0])
 
-        result = augmented_synthetic_control(
-            outcomes, treatment, 8, inference="bootstrap"
-        )
+        result = augmented_synthetic_control(outcomes, treatment, 8, inference="bootstrap")
 
         assert result["se"] > 0 or np.isnan(result["se"])
 
@@ -733,9 +739,7 @@ class TestASCMEdgeCases:
 
         treatment = np.array([1, 0, 0, 0, 0, 0])
 
-        scm_result = synthetic_control(
-            outcomes, treatment, treatment_period, inference="none"
-        )
+        scm_result = synthetic_control(outcomes, treatment, treatment_period, inference="none")
         ascm_result = augmented_synthetic_control(
             outcomes, treatment, treatment_period, inference="none"
         )
@@ -751,9 +755,7 @@ class TestASCMEdgeCases:
         treatment = np.array([1, 0, 0, 0, 0])
 
         with pytest.raises(ValueError, match="Unknown inference"):
-            augmented_synthetic_control(
-                outcomes, treatment, 5, inference="invalid_method"
-            )
+            augmented_synthetic_control(outcomes, treatment, 5, inference="invalid_method")
 
 
 # =============================================================================
@@ -857,11 +859,14 @@ class TestDataTypeHandling:
 
     def test_int_outcomes(self):
         """Integer outcomes should be converted and work."""
-        outcomes = np.array([
-            [10, 11, 12, 15, 16],
-            [9, 10, 11, 12, 13],
-            [8, 9, 10, 11, 12],
-        ], dtype=np.int64)
+        outcomes = np.array(
+            [
+                [10, 11, 12, 15, 16],
+                [9, 10, 11, 12, 13],
+                [8, 9, 10, 11, 12],
+            ],
+            dtype=np.int64,
+        )
 
         treatment = np.array([1, 0, 0])
 
@@ -871,11 +876,14 @@ class TestDataTypeHandling:
 
     def test_float32_outcomes(self):
         """Float32 outcomes should work."""
-        outcomes = np.array([
-            [10.0, 11.0, 12.0, 15.0, 16.0],
-            [9.0, 10.0, 11.0, 12.0, 13.0],
-            [8.0, 9.0, 10.0, 11.0, 12.0],
-        ], dtype=np.float32)
+        outcomes = np.array(
+            [
+                [10.0, 11.0, 12.0, 15.0, 16.0],
+                [9.0, 10.0, 11.0, 12.0, 13.0],
+                [8.0, 9.0, 10.0, 11.0, 12.0],
+            ],
+            dtype=np.float32,
+        )
 
         treatment = np.array([1, 0, 0])
 

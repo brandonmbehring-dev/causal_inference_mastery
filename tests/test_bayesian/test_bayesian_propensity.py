@@ -251,9 +251,7 @@ class TestBayesianPropensityLogistic:
 class TestBayesianPropensityAuto:
     """Tests for automatic method selection."""
 
-    def test_selects_stratified_for_discrete(
-        self, discrete_covariate_data: dict
-    ) -> None:
+    def test_selects_stratified_for_discrete(self, discrete_covariate_data: dict) -> None:
         """Uses stratified method for discrete covariates."""
         result = bayesian_propensity(
             discrete_covariate_data["treatment"],
@@ -263,9 +261,7 @@ class TestBayesianPropensityAuto:
 
         assert result["method"] == "stratified_beta_binomial"
 
-    def test_selects_logistic_for_continuous(
-        self, continuous_covariate_data: dict
-    ) -> None:
+    def test_selects_logistic_for_continuous(self, continuous_covariate_data: dict) -> None:
         """Uses logistic method for continuous covariates."""
         result = bayesian_propensity(
             continuous_covariate_data["treatment"],
@@ -373,9 +369,7 @@ class TestBayesianPropensityMonteCarlo:
             true_prop = np.where(X == 0, 0.3, 0.7)
             T = (np.random.rand(n) < true_prop).astype(float)
 
-            result = bayesian_propensity_stratified(
-                T, X.reshape(-1, 1), n_posterior_samples=1000
-            )
+            result = bayesian_propensity_stratified(T, X.reshape(-1, 1), n_posterior_samples=1000)
 
             # Check if 95% interval covers true value (for first stratum)
             samples = result["posterior_samples"][:, 0]

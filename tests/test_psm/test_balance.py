@@ -236,14 +236,16 @@ class TestCheckCovariateBalance:
         - smd_after = [0, 0] (exact match)
         - vr_after = [1.0, 1.0] (equal variances)
         """
-        covariates = np.array([
-            [1, 4],  # Treated 0
-            [2, 5],  # Treated 1
-            [3, 6],  # Treated 2
-            [1, 4],  # Control 3
-            [2, 5],  # Control 4
-            [3, 6],  # Control 5
-        ])
+        covariates = np.array(
+            [
+                [1, 4],  # Treated 0
+                [2, 5],  # Treated 1
+                [3, 6],  # Treated 2
+                [1, 4],  # Control 3
+                [2, 5],  # Control 4
+                [3, 6],  # Control 5
+            ]
+        )
         treatment = np.array([True, True, True, False, False, False])
         matched_indices = [(0, 3), (1, 4), (2, 5)]
 

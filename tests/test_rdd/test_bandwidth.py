@@ -46,14 +46,16 @@ class TestImbensKalyanaramanBandwidth:
         h_tri = imbens_kalyanaraman_bandwidth(Y, X, cutoff=0.0, kernel="triangular")
         h_rect = imbens_kalyanaraman_bandwidth(Y, X, cutoff=0.0, kernel="rectangular")
 
-        assert h_rect > h_tri, \
+        assert h_rect > h_tri, (
             f"Rectangular kernel should have larger bandwidth: h_rect={h_rect:.3f}, h_tri={h_tri:.3f}"
+        )
 
         # Ratio should be approximately C1_rect / C1_tri = 5.40554 / 3.43754 ≈ 1.57
         ratio = h_rect / h_tri
         expected_ratio = 5.40554 / 3.43754
-        assert abs(ratio - expected_ratio) < 0.3, \
+        assert abs(ratio - expected_ratio) < 0.3, (
             f"Expected ratio ≈ {expected_ratio:.2f}, got {ratio:.2f}"
+        )
 
     def test_ik_positive_bandwidth(self):
         """IK bandwidth should always be positive."""
@@ -109,8 +111,7 @@ class TestImbensKalyanaramanBandwidth:
         x_sd = np.std(X)
         h_min = 0.1 * x_sd
         h_max = 2.0 * x_sd
-        assert h_min <= h <= h_max, \
-            f"Bandwidth {h:.3f} should be in [{h_min:.3f}, {h_max:.3f}]"
+        assert h_min <= h <= h_max, f"Bandwidth {h:.3f} should be in [{h_min:.3f}, {h_max:.3f}]"
 
     def test_ik_invalid_kernel(self):
         """Should raise ValueError for unsupported kernel."""
@@ -165,8 +166,7 @@ class TestCCTBandwidth:
 
         # Check ratio
         ratio = h_bias / h_main
-        assert abs(ratio - 1.5) < 0.01, \
-            f"Expected h_bias ≈ 1.5 * h_main, got ratio = {ratio:.3f}"
+        assert abs(ratio - 1.5) < 0.01, f"Expected h_bias ≈ 1.5 * h_main, got ratio = {ratio:.3f}"
 
     def test_cct_no_bias_correction(self):
         """
@@ -182,8 +182,9 @@ class TestCCTBandwidth:
             warnings.simplefilter("ignore")
             h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0, bias_correction=False)
 
-        assert h_main == h_bias, \
+        assert h_main == h_bias, (
             f"With bias_correction=False, should have h_main == h_bias, got {h_main:.3f} vs {h_bias:.3f}"
+        )
 
     def test_cct_uses_ik_approximation(self):
         """
@@ -203,8 +204,9 @@ class TestCCTBandwidth:
             warnings.simplefilter("ignore")
             h_main, h_bias = cct_bandwidth(Y, X, cutoff=0.0)
 
-        assert h_main == h_ik, \
+        assert h_main == h_ik, (
             f"CCT main bandwidth should equal IK bandwidth, got {h_main:.3f} vs {h_ik:.3f}"
+        )
 
 
 class TestCrossValidationBandwidth:
@@ -221,8 +223,7 @@ class TestCrossValidationBandwidth:
         h_grid = np.array([0.5, 1.0, 1.5, 2.0])
         h_cv = cross_validation_bandwidth(Y, X, cutoff=0.0, h_grid=h_grid)
 
-        assert h_cv in h_grid, \
-            f"CV bandwidth {h_cv} should be in grid {h_grid}"
+        assert h_cv in h_grid, f"CV bandwidth {h_cv} should be in grid {h_grid}"
 
     def test_cv_default_grid_range(self):
         """
@@ -238,8 +239,9 @@ class TestCrossValidationBandwidth:
         h_min = 0.5 * x_sd
         h_max = 2.0 * x_sd
 
-        assert h_min <= h_cv <= h_max, \
+        assert h_min <= h_cv <= h_max, (
             f"CV bandwidth {h_cv:.3f} should be in [{h_min:.3f}, {h_max:.3f}]"
+        )
 
     def test_cv_positive_finite(self):
         """CV bandwidth should be positive and finite."""

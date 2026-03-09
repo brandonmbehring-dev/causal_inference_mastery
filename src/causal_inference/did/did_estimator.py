@@ -236,20 +236,20 @@ def did_2x2(
 ) -> DiD2x2Result:
     """
     2×2 Difference-in-Differences estimator with cluster-robust standard errors.
-    
+
     Estimates the causal effect of a binary treatment using the difference-in-differences
     design: (Ȳ_treated,post - Ȳ_treated,pre) - (Ȳ_control,post - Ȳ_control,pre)
-    
+
     Mathematically:
         DiD = E[Y_{i,post} - Y_{i,pre} | D_i=1] - E[Y_{i,post} - Y_{i,pre} | D_i=0]
-    
+
     Uses OLS regression: Y_it = β₀ + β₁·Treat_i + β₂·Post_t + β₃·(Treat_i × Post_t) + ε_it
     where β₃ is the DiD estimator.
-    
+
     **Identification Assumption**: Parallel trends
         E[Y_{1t} - Y_{0t} | D=1] = E[Y_{1t} - Y_{0t} | D=0] for all t < T
         (Treated and control would have parallel trends in absence of treatment)
-    
+
     Parameters
     ----------
     outcomes : np.ndarray
@@ -278,7 +278,7 @@ def did_2x2(
         If None, defaults based on cluster_se parameter for backward compatibility.
     n_bootstrap : int, default=999
         Number of bootstrap replications when se_method='wild_bootstrap'.
-    
+
     Returns
     -------
     dict
@@ -298,18 +298,18 @@ def did_2x2(
         - cluster_se_used : bool - Whether cluster SEs were used (deprecated)
         - se_method : str - SE method used ('cluster', 'wild_bootstrap', 'naive')
         - df : int - Degrees of freedom for t-distribution
-    
+
     Raises
     ------
     ValueError
         If inputs have mismatched lengths, invalid values, or violate DiD assumptions.
-    
+
     References
     ----------
     - Bertrand, Duflo, Mullainathan (2004). "How much should we trust DD estimates?"
       Quarterly Journal of Economics 119(1): 249-275.
     - Angrist & Pischke (2009). Mostly Harmless Econometrics, Chapter 5.
-    
+
     Examples
     --------
     >>> # Simple 2×2 DiD with 100 units, 2 periods
@@ -357,12 +357,14 @@ def did_2x2(
         se_method_used = se_method
 
     # Create design matrix: intercept, treatment, post, treatment*post
-    X = np.column_stack([
-        np.ones(len(outcomes)),  # Intercept
-        treatment,               # Treatment indicator
-        post,                    # Post indicator
-        treat_post               # Interaction (DiD estimate)
-    ])
+    X = np.column_stack(
+        [
+            np.ones(len(outcomes)),  # Intercept
+            treatment,  # Treatment indicator
+            post,  # Post indicator
+            treat_post,  # Interaction (DiD estimate)
+        ]
+    )
 
     # Get number of clusters for all methods
     n_clusters = len(np.unique(unit_id))
@@ -412,16 +414,16 @@ def check_parallel_trends(
 ) -> ParallelTrendsTestResult:
     """
     Test parallel trends assumption using pre-treatment periods.
-    
+
     Tests whether treated and control groups had parallel trends before treatment
     by regressing outcomes on treatment×time interaction in pre-treatment periods:
         Y_it = β₀ + β₁·Treat_i + β₂·Time_t + β₃·(Treat_i × Time_t) + ε_it
-    
+
     Under parallel trends: β₃ = 0 (no differential trend between groups).
-    
+
     **Note**: This tests **pre-treatment trends**, not the parallel trends assumption itself
     (which is untestable). Rejecting H₀: β₃=0 suggests parallel trends may be violated.
-    
+
     Parameters
     ----------
     outcomes : np.ndarray
@@ -437,7 +439,7 @@ def check_parallel_trends(
         Time period when treatment begins (periods < treatment_time are pre-treatment).
     alpha : float, optional
         Significance level for test (default: 0.05).
-    
+
     Returns
     -------
     dict
@@ -450,17 +452,17 @@ def check_parallel_trends(
         - n_pre_periods : int - Number of pre-treatment periods used
         - n_obs : int - Number of observations in pre-treatment sample
         - warning : str or None - Warning message if test may be underpowered
-    
+
     Raises
     ------
     ValueError
         If insufficient pre-treatment periods (<2) or invalid inputs.
-    
+
     References
     ----------
     - Roth (2022). "Pretest with caution: Event-study estimates after testing for parallel trends"
       American Economic Review: Insights 4(3): 305-322.
-    
+
     Examples
     --------
     >>> # Test parallel trends with 3 pre-periods, treatment starts at t=3
@@ -491,51 +493,53 @@ def check_parallel_trends(
 
     # Filter to pre-treatment periods
     pre_mask = time < treatment_time
-    
+
     if pre_mask.sum() == 0:
         raise ValueError(
             f"No pre-treatment periods found (all time >= {treatment_time}). "
             "Cannot test parallel trends without pre-treatment data."
         )
-    
+
     outcomes_pre = outcomes[pre_mask]
     treatment_pre = treatment[pre_mask]
     time_pre = time[pre_mask]
     unit_id_pre = unit_id[pre_mask]
-    
+
     # Count pre-treatment periods
     n_pre_periods = len(np.unique(time_pre))
-    
+
     if n_pre_periods < 2:
         raise ValueError(
             f"Need at least 2 pre-treatment periods to test trends. Got {n_pre_periods}. "
             "Parallel trends test requires variation in time to estimate trends."
         )
-    
+
     # Create treatment×time interaction
     treat_time = treatment_pre * time_pre
-    
+
     # Design matrix: intercept, treatment, time, treatment*time
-    X = np.column_stack([
-        np.ones(len(outcomes_pre)),
-        treatment_pre,
-        time_pre,
-        treat_time  # Differential trend coefficient
-    ])
-    
+    X = np.column_stack(
+        [
+            np.ones(len(outcomes_pre)),
+            treatment_pre,
+            time_pre,
+            treat_time,  # Differential trend coefficient
+        ]
+    )
+
     # Fit OLS with cluster-robust SEs
     model = sm.OLS(outcomes_pre, X)
-    results = model.fit(cov_type='cluster', cov_kwds={'groups': unit_id_pre})
-    
+    results = model.fit(cov_type="cluster", cov_kwds={"groups": unit_id_pre})
+
     # Extract differential trend coefficient (treatment×time interaction)
     pre_trend_diff = results.params[3]
     pre_trend_se = results.bse[3]
     pre_trend_tstat = results.tvalues[3]
     pre_trend_pvalue = results.pvalues[3]
-    
+
     # Test H₀: β₃ = 0 (parallel trends)
     parallel_trends_plausible = pre_trend_pvalue > alpha
-    
+
     # Generate warning if test may be underpowered
     warning_msg = None
     if n_pre_periods <= 2:
@@ -544,14 +548,14 @@ def check_parallel_trends(
             "Test may be underpowered to detect violations of parallel trends. "
             "Consider: (1) More pre-periods if available, (2) Event study design."
         )
-    
+
     n_clusters = len(np.unique(unit_id_pre))
     if n_clusters < 20:
         warning_msg = (
             f"Small number of clusters (n={n_clusters}) in pre-treatment sample. "
             "Cluster-robust SEs may be biased. Consider bootstrap or aggregation."
         )
-    
+
     return {
         "pre_trend_diff": float(pre_trend_diff),
         "se": float(pre_trend_se),

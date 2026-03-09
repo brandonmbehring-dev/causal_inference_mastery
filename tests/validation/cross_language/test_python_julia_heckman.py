@@ -17,14 +17,14 @@ try:
         julia_heckman_two_step,
         julia_compute_imr,
     )
+
     JULIA_AVAILABLE = is_julia_available()
 except ImportError:
     JULIA_AVAILABLE = False
 
 
 pytestmark = pytest.mark.skipif(
-    not JULIA_AVAILABLE,
-    reason="Julia not available for cross-language tests"
+    not JULIA_AVAILABLE, reason="Julia not available for cross-language tests"
 )
 
 
@@ -115,9 +115,10 @@ class TestHeckmanEstimateParity:
 
         # Primary estimate parity
         assert_allclose(
-            py_result["estimate"], jl_result["estimate"],
+            py_result["estimate"],
+            jl_result["estimate"],
             rtol=0.05,
-            err_msg=f"Estimate mismatch: Python={py_result['estimate']:.4f}, Julia={jl_result['estimate']:.4f}"
+            err_msg=f"Estimate mismatch: Python={py_result['estimate']:.4f}, Julia={jl_result['estimate']:.4f}",
         )
 
     def test_se_parity(self):
@@ -140,9 +141,10 @@ class TestHeckmanEstimateParity:
 
         # SE parity (Heckman SE can differ due to variance correction details)
         assert_allclose(
-            py_result["se"], jl_result["se"],
+            py_result["se"],
+            jl_result["se"],
             rtol=0.15,
-            err_msg=f"SE mismatch: Python={py_result['se']:.4f}, Julia={jl_result['se']:.4f}"
+            err_msg=f"SE mismatch: Python={py_result['se']:.4f}, Julia={jl_result['se']:.4f}",
         )
 
     def test_ci_parity(self):
@@ -165,11 +167,13 @@ class TestHeckmanEstimateParity:
 
         # CI should span similar range
         assert_allclose(
-            py_result["ci_lower"], jl_result["ci_lower"],
+            py_result["ci_lower"],
+            jl_result["ci_lower"],
             rtol=0.15,
         )
         assert_allclose(
-            py_result["ci_upper"], jl_result["ci_upper"],
+            py_result["ci_upper"],
+            jl_result["ci_upper"],
             rtol=0.15,
         )
 
@@ -196,13 +200,15 @@ class TestSelectionParametersParity:
         )
 
         # ρ should have same sign and similar magnitude
-        assert np.sign(py_result["rho"]) == np.sign(jl_result["rho"]), \
+        assert np.sign(py_result["rho"]) == np.sign(jl_result["rho"]), (
             f"ρ sign mismatch: Python={py_result['rho']:.4f}, Julia={jl_result['rho']:.4f}"
+        )
 
         assert_allclose(
-            py_result["rho"], jl_result["rho"],
+            py_result["rho"],
+            jl_result["rho"],
             rtol=0.20,
-            err_msg=f"ρ mismatch: Python={py_result['rho']:.4f}, Julia={jl_result['rho']:.4f}"
+            err_msg=f"ρ mismatch: Python={py_result['rho']:.4f}, Julia={jl_result['rho']:.4f}",
         )
 
     def test_lambda_parity(self):
@@ -224,9 +230,10 @@ class TestSelectionParametersParity:
         )
 
         assert_allclose(
-            py_result["lambda_coef"], jl_result["lambda_coef"],
+            py_result["lambda_coef"],
+            jl_result["lambda_coef"],
             rtol=0.15,
-            err_msg=f"λ mismatch: Python={py_result['lambda_coef']:.4f}, Julia={jl_result['lambda_coef']:.4f}"
+            err_msg=f"λ mismatch: Python={py_result['lambda_coef']:.4f}, Julia={jl_result['lambda_coef']:.4f}",
         )
 
     def test_lambda_se_parity(self):
@@ -248,7 +255,8 @@ class TestSelectionParametersParity:
         )
 
         assert_allclose(
-            py_result["lambda_se"], jl_result["lambda_se"],
+            py_result["lambda_se"],
+            jl_result["lambda_se"],
             rtol=0.20,
         )
 
@@ -263,17 +271,14 @@ class TestIMRComputationParity:
 
         # Python IMR (using scipy)
         from scipy.stats import norm
+
         py_imr = norm.pdf(norm.ppf(probs)) / probs
 
         # Julia IMR
         jl_imr = julia_compute_imr(probs)
 
         # Should match exactly (same formula)
-        assert_allclose(
-            py_imr, jl_imr,
-            rtol=1e-10,
-            err_msg="IMR computation should match exactly"
-        )
+        assert_allclose(py_imr, jl_imr, rtol=1e-10, err_msg="IMR computation should match exactly")
 
     def test_imr_from_solution_parity(self):
         """IMR values from full solution should be correlated."""
@@ -320,10 +325,7 @@ class TestSelectionProbabilityParity:
         )
 
         # Probit probabilities should be similar
-        corr = np.corrcoef(
-            py_result["selection_probs"],
-            jl_result["selection_probs"]
-        )[0, 1]
+        corr = np.corrcoef(py_result["selection_probs"], jl_result["selection_probs"])[0, 1]
         assert corr > 0.99, f"Selection probability correlation {corr:.4f} below threshold"
 
     def test_sample_sizes_match(self):
@@ -375,7 +377,8 @@ class TestNoSelectionScenario:
 
         # Estimates should be similar
         assert_allclose(
-            py_result["estimate"], jl_result["estimate"],
+            py_result["estimate"],
+            jl_result["estimate"],
             rtol=0.10,
         )
 
@@ -407,7 +410,8 @@ class TestStrongSelectionScenario:
 
         # Estimates should be reasonably close
         assert_allclose(
-            py_result["estimate"], jl_result["estimate"],
+            py_result["estimate"],
+            jl_result["estimate"],
             rtol=0.20,
         )
 
@@ -436,8 +440,9 @@ class TestNegativeSelectionScenario:
         # λ coefficient should have same sign
         py_sign = np.sign(py_result["lambda_coef"])
         jl_sign = np.sign(jl_result["lambda_coef"])
-        assert py_sign == jl_sign, \
+        assert py_sign == jl_sign, (
             f"λ sign mismatch: Python={py_result['lambda_coef']:.4f}, Julia={jl_result['lambda_coef']:.4f}"
+        )
 
 
 class TestMultipleSeedsConsistency:
@@ -464,7 +469,8 @@ class TestMultipleSeedsConsistency:
 
         # Relaxed tolerance for cross-seed consistency
         assert_allclose(
-            py_result["estimate"], jl_result["estimate"],
+            py_result["estimate"],
+            jl_result["estimate"],
             rtol=0.10,
-            err_msg=f"Estimate mismatch at seed={seed}"
+            err_msg=f"Estimate mismatch at seed={seed}",
         )

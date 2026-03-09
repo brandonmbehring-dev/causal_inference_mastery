@@ -46,7 +46,7 @@ class TestRosenbaumKnownAnswer:
         for i in range(1, len(result["p_upper"])):
             assert result["p_upper"][i] >= result["p_upper"][i - 1] - 1e-10, (
                 f"p_upper should increase with Gamma: "
-                f"{result['p_upper'][i]} < {result['p_upper'][i-1]}"
+                f"{result['p_upper'][i]} < {result['p_upper'][i - 1]}"
             )
 
     def test_lower_p_values_decrease_with_gamma(self):
@@ -105,8 +105,7 @@ class TestRosenbaumRobustness:
         # Either gamma_critical is large or None (robust to all tested)
         if result["gamma_critical"] is not None:
             assert result["gamma_critical"] > 2.0, (
-                f"Strong effect should have gamma_critical > 2.0, "
-                f"got {result['gamma_critical']}"
+                f"Strong effect should have gamma_critical > 2.0, got {result['gamma_critical']}"
             )
 
     def test_weak_effect_small_gamma_critical(self):
@@ -139,9 +138,7 @@ class TestRosenbaumRobustness:
 
         # No effect: should be at null or gamma_critical = 1.0
         # p_upper at gamma=1 should be > 0.5 roughly
-        assert result["p_upper"][0] > 0.05, (
-            "With no effect, p-value should be non-significant"
-        )
+        assert result["p_upper"][0] > 0.05, "With no effect, p-value should be non-significant"
 
     def test_larger_sample_more_robust(self):
         """Larger samples should be more robust (larger gamma_critical)."""
@@ -172,8 +169,7 @@ class TestRosenbaumRobustness:
         # Allow for some randomness, but generally larger sample more robust
         # This is a probabilistic test
         assert gamma_large >= gamma_small * 0.8, (
-            f"Larger sample ({gamma_large}) should be roughly as robust "
-            f"as smaller ({gamma_small})"
+            f"Larger sample ({gamma_large}) should be roughly as robust as smaller ({gamma_small})"
         )
 
 
@@ -249,9 +245,7 @@ class TestRosenbaumEdgeCases:
         treated = np.random.randn(30) + 1.0
         control = np.random.randn(30)
 
-        result = rosenbaum_bounds(
-            treated, control, gamma_range=(1.5, 4.0), n_gamma=15
-        )
+        result = rosenbaum_bounds(treated, control, gamma_range=(1.5, 4.0), n_gamma=15)
 
         assert result["gamma_values"][0] == 1.5
         assert result["gamma_values"][-1] == 4.0

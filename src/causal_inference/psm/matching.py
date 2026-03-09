@@ -171,8 +171,7 @@ class NearestNeighborMatcher:
 
         if n_control == 0:
             raise ValueError(
-                f"No control units. All {n} units are treated. "
-                f"Cannot match without control units."
+                f"No control units. All {n} units are treated. Cannot match without control units."
             )
 
         # PSM-specific: Check sufficient controls for matching without replacement

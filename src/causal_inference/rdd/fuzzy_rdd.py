@@ -156,7 +156,7 @@ def _weighted_2sls(
         first_stage_f = np.nan
 
     # First-stage R-squared
-    tss_first = np.sum((D_w - np.mean(D_w))**2)
+    tss_first = np.sum((D_w - np.mean(D_w)) ** 2)
     first_stage_r2 = 1 - ssr_unrestricted / tss_first if tss_first > 0 else 0.0
 
     # Second stage: Y ~ D_hat + X (weighted)
@@ -192,7 +192,7 @@ def _weighted_2sls(
     meat = np.zeros((W2.shape[1], W2.shape[1]))
     for i in range(n):
         xi = W2_w[i, :]
-        meat += resid_struct[i]**2 * np.outer(xi, xi)
+        meat += resid_struct[i] ** 2 * np.outer(xi, xi)
 
     # Sandwich variance
     vcov = WtW_inv @ meat @ WtW_inv
@@ -562,10 +562,7 @@ class FuzzyRDD:
             h_main, _ = cct_bandwidth(Y, X, self.cutoff, self.kernel)
             h = h_main
         else:
-            raise ValueError(
-                f"Unknown bandwidth: {self.bandwidth}. "
-                f"Must be float, 'ik', or 'cct'."
-            )
+            raise ValueError(f"Unknown bandwidth: {self.bandwidth}. Must be float, 'ik', or 'cct'.")
 
         # Regularize bandwidth (prevent pathological values)
         X_sd = np.std(X)
@@ -635,7 +632,9 @@ class FuzzyRDD:
         lines.append(f"  95% CI:              [{self.ci_[0]:.4f}, {self.ci_[1]:.4f}]")
         lines.append("")
         lines.append("First-Stage Diagnostics:")
-        lines.append(f"  Compliance rate:     {self.compliance_rate_:.4f} ({self.compliance_rate_:.1%})")
+        lines.append(
+            f"  Compliance rate:     {self.compliance_rate_:.4f} ({self.compliance_rate_:.1%})"
+        )
         lines.append(f"  F-statistic:         {self.first_stage_f_stat_:.2f}")
         lines.append(f"  R-squared:           {self.first_stage_r2_:.4f}")
 

@@ -351,11 +351,8 @@ class TestControlFunctionEndogeneityTestVsR:
         # Note: Python uses corrected SE, but we can compare control SE
         # which has similar correction issues
         # Use looser tolerance for SE comparison
-        assert np.isclose(
-            py_result["se_naive"], r_result["se_naive"], rtol=0.05
-        ), (
-            f"Naive SE mismatch: "
-            f"Python={py_result['se_naive']:.6f}, R={r_result['se_naive']:.6f}"
+        assert np.isclose(py_result["se_naive"], r_result["se_naive"], rtol=0.05), (
+            f"Naive SE mismatch: Python={py_result['se_naive']:.6f}, R={r_result['se_naive']:.6f}"
         )
 
 
@@ -448,8 +445,7 @@ class TestControlFunctionEquivalence2SLS:
 
         # Should be numerically equivalent (up to floating point)
         assert np.isclose(cf_result["estimate"], tsls.coef_[0], rtol=1e-10), (
-            f"CF vs 2SLS mismatch: CF={cf_result['estimate']:.10f}, "
-            f"2SLS={tsls.coef_[0]:.10f}"
+            f"CF vs 2SLS mismatch: CF={cf_result['estimate']:.10f}, 2SLS={tsls.coef_[0]:.10f}"
         )
 
 
@@ -480,12 +476,8 @@ class TestControlFunctionMonteCarlo:
         mean_discrepancy = np.mean(discrepancies)
         max_discrepancy = np.max(discrepancies)
 
-        assert mean_discrepancy < 0.001, (
-            f"Mean discrepancy too large: {mean_discrepancy:.6f}"
-        )
-        assert max_discrepancy < 0.01, (
-            f"Max discrepancy too large: {max_discrepancy:.6f}"
-        )
+        assert mean_discrepancy < 0.001, f"Mean discrepancy too large: {mean_discrepancy:.6f}"
+        assert max_discrepancy < 0.01, f"Max discrepancy too large: {max_discrepancy:.6f}"
 
     @requires_cf_python
     @pytest.mark.slow

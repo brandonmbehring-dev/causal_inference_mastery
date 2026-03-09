@@ -295,10 +295,7 @@ def dgp_matched_pairs_with_confounding(
 
     control_outcomes = rng.normal(0, noise_sd, n_pairs)
     treated_outcomes = (
-        control_outcomes
-        + true_effect
-        + confounding_bias
-        + rng.normal(0, noise_sd * 0.5, n_pairs)
+        control_outcomes + true_effect + confounding_bias + rng.normal(0, noise_sd * 0.5, n_pairs)
     )
 
     return treated_outcomes, control_outcomes, true_effect, gamma_confounding

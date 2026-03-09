@@ -201,8 +201,7 @@ class TestFCIOrientationRules:
             edge_21 = pag.get_edge(2, 1)
             if edge_01 and edge_21:
                 # At least one should have arrow at 1
-                has_arrows = (edge_01.mark_j == EdgeMark.ARROW or
-                              edge_21.mark_j == EdgeMark.ARROW)
+                has_arrows = edge_01.mark_j == EdgeMark.ARROW or edge_21.mark_j == EdgeMark.ARROW
                 assert has_arrows, "V-structure arrows not detected"
 
     def test_rule_1_away_from_collider(self):
@@ -524,6 +523,7 @@ class TestFCIInputValidation:
         # With empty data, should return result with 0 edges
         # (NumPy issues warnings but doesn't crash)
         import warnings
+
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             result = fci_algorithm(data, alpha=0.01)

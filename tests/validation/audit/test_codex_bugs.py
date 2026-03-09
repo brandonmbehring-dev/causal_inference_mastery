@@ -68,8 +68,7 @@ class TestBug1FuzzyRDDKernelNoOp:
         # BUG PROOF: Results should differ if kernel is actually used
         # If they're identical, kernel is a no-op
         assert np.isclose(rdd_tri.coef_, rdd_rect.coef_, rtol=1e-10), (
-            f"BUG NOT FOUND: triangular ({rdd_tri.coef_:.6f}) != "
-            f"rectangular ({rdd_rect.coef_:.6f})"
+            f"BUG NOT FOUND: triangular ({rdd_tri.coef_:.6f}) != rectangular ({rdd_rect.coef_:.6f})"
         )
 
 
@@ -254,10 +253,10 @@ class TestBug7ASCMJackknifeNotReal:
         source = inspect.getsource(augmented_scm._jackknife_se)
 
         # BUG PROOF: Should see weight renormalization without compute_scm_weights call
-        assert "loo_weights = loo_weights / loo_weights.sum()" in source or \
-               "/ loo_weights.sum()" in source, (
-            "BUG NOT FOUND: Jackknife doesn't show renormalization pattern"
-        )
+        assert (
+            "loo_weights = loo_weights / loo_weights.sum()" in source
+            or "/ loo_weights.sum()" in source
+        ), "BUG NOT FOUND: Jackknife doesn't show renormalization pattern"
 
         # Check that compute_scm_weights is NOT called in jackknife
         assert "compute_scm_weights" not in source, (
@@ -315,9 +314,7 @@ class TestBug8SCMSilentOptimizationFailure:
             if after_fallback and "result.success" in line:
                 found_second_check = True
 
-        assert not found_second_check, (
-            "BUG NOT FOUND: Fallback optimizer success IS checked"
-        )
+        assert not found_second_check, "BUG NOT FOUND: Fallback optimizer success IS checked"
 
     def test_proceeds_with_potentially_bad_weights(self):
         """Prove function returns weights even if optimization failed."""

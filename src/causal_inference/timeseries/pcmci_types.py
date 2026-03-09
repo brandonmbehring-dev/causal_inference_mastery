@@ -121,17 +121,13 @@ class LaggedDAG:
 
     def __post_init__(self) -> None:
         if self.adjacency is None:
-            self.adjacency = np.zeros(
-                (self.n_vars, self.n_vars, self.max_lag + 1), dtype=np.int8
-            )
+            self.adjacency = np.zeros((self.n_vars, self.n_vars, self.max_lag + 1), dtype=np.int8)
         if self.weights is None:
             self.weights = np.zeros((self.n_vars, self.n_vars, self.max_lag + 1))
         if self.var_names is None:
             self.var_names = [f"X{i}" for i in range(self.n_vars)]
 
-    def add_edge(
-        self, source: int, target: int, lag: int, weight: float = 1.0
-    ) -> None:
+    def add_edge(self, source: int, target: int, lag: int, weight: float = 1.0) -> None:
         """Add a directed edge from source at lag to target at time t."""
         if lag < 0 or lag > self.max_lag:
             raise ValueError(f"Lag must be in [0, {self.max_lag}], got {lag}")
@@ -210,10 +206,7 @@ class LaggedDAG:
         return links
 
     def __repr__(self) -> str:
-        return (
-            f"LaggedDAG(n_vars={self.n_vars}, max_lag={self.max_lag}, "
-            f"n_edges={self.n_edges()})"
-        )
+        return f"LaggedDAG(n_vars={self.n_vars}, max_lag={self.max_lag}, n_edges={self.n_edges()})"
 
 
 @dataclass
@@ -275,9 +268,7 @@ class PCMCIResult:
         dag.weights = self.val_matrix.copy()
         return dag
 
-    def get_significant_links(
-        self, alpha: Optional[float] = None
-    ) -> List[TimeSeriesLink]:
+    def get_significant_links(self, alpha: Optional[float] = None) -> List[TimeSeriesLink]:
         """Get links significant at given alpha (default: self.alpha)."""
         threshold = alpha if alpha is not None else self.alpha
         return [link for link in self.links if link.p_value < threshold]

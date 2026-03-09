@@ -122,10 +122,7 @@ def validate_binary(array: np.ndarray, name: str) -> None:
     if not np.array_equal(unique_vals, [0, 1]) and not (
         len(unique_vals) == 1 and unique_vals[0] in [0, 1]
     ):
-        raise ValueError(
-            f"{name} must be binary (0 or 1). "
-            f"Got unique values: {unique_vals}"
-        )
+        raise ValueError(f"{name} must be binary (0 or 1). Got unique values: {unique_vals}")
 
 
 def validate_not_empty(array: np.ndarray, name: str) -> None:

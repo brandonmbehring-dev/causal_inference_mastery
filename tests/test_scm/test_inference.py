@@ -159,9 +159,7 @@ class TestConfidenceInterval:
         estimate = 2.0
         se = 0.5
 
-        ci_lower, ci_upper = compute_confidence_interval(
-            estimate, se, alpha=0.05, method="normal"
-        )
+        ci_lower, ci_upper = compute_confidence_interval(estimate, se, alpha=0.05, method="normal")
 
         # 95% CI should be approximately [1.02, 2.98]
         assert ci_lower < estimate < ci_upper

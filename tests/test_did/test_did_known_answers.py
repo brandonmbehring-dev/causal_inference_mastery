@@ -40,7 +40,9 @@ class TestDiD2x2KnownAnswers:
 
         # Should be close to true effect (2.0)
         true_did = simple_did_data["true_did"]
-        assert abs(result["estimate"] - true_did) < 0.5, f"Expected ~{true_did}, got {result['estimate']}"
+        assert abs(result["estimate"] - true_did) < 0.5, (
+            f"Expected ~{true_did}, got {result['estimate']}"
+        )
         assert result["ci_lower"] <= true_did <= result["ci_upper"], "CI should contain true value"
 
         # p-value should be significant
@@ -85,8 +87,18 @@ class TestDiD2x2KnownAnswers:
         # Treated: pre=[12, 12], post=[20, 20] (change = +8)
         # DiD = 8 - 5 = 3
 
-        outcomes = np.array([10.0, 10.0, 15.0, 15.0,  # Control
-                             12.0, 12.0, 20.0, 20.0])  # Treated
+        outcomes = np.array(
+            [
+                10.0,
+                10.0,
+                15.0,
+                15.0,  # Control
+                12.0,
+                12.0,
+                20.0,
+                20.0,
+            ]
+        )  # Treated
         treatment = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         post = np.array([0, 0, 1, 1, 0, 0, 1, 1])
         unit_id = np.array([0, 1, 0, 1, 2, 3, 2, 3])
@@ -107,12 +119,18 @@ class TestDiD2x2KnownAnswers:
         keep_treated = 20
 
         # Keep first 20 from each group
-        mask = np.concatenate([
-            np.ones(keep_control, dtype=bool), np.zeros(50-keep_control, dtype=bool),  # control_pre
-            np.ones(keep_control, dtype=bool), np.zeros(50-keep_control, dtype=bool),  # control_post
-            np.ones(keep_treated, dtype=bool), np.zeros(50-keep_treated, dtype=bool),  # treated_pre
-            np.ones(keep_treated, dtype=bool), np.zeros(50-keep_treated, dtype=bool),  # treated_post
-        ])
+        mask = np.concatenate(
+            [
+                np.ones(keep_control, dtype=bool),
+                np.zeros(50 - keep_control, dtype=bool),  # control_pre
+                np.ones(keep_control, dtype=bool),
+                np.zeros(50 - keep_control, dtype=bool),  # control_post
+                np.ones(keep_treated, dtype=bool),
+                np.zeros(50 - keep_treated, dtype=bool),  # treated_pre
+                np.ones(keep_treated, dtype=bool),
+                np.zeros(50 - keep_treated, dtype=bool),  # treated_post
+            ]
+        )
 
         outcomes = simple_did_data["outcomes"][mask]
         treatment = simple_did_data["treatment"][mask]
@@ -146,8 +164,9 @@ class TestDiD2x2KnownAnswers:
         )
 
         # Cluster SE should typically be larger (or equal)
-        assert result_cluster["se"] >= result_naive["se"] * 0.9, \
+        assert result_cluster["se"] >= result_naive["se"] * 0.9, (
             "Cluster SE should be at least 90% of naive SE"
+        )
 
         # Both should have same point estimate
         assert abs(result_cluster["estimate"] - result_naive["estimate"]) < 1e-10
@@ -164,7 +183,9 @@ class TestDiD2x2KnownAnswers:
 
         # Should recover true effect (5.0)
         true_did = balanced_panel_data["true_did"]
-        assert abs(result["estimate"] - true_did) < 1.0, f"Expected ~{true_did}, got {result['estimate']}"
+        assert abs(result["estimate"] - true_did) < 1.0, (
+            f"Expected ~{true_did}, got {result['estimate']}"
+        )
 
         # With larger sample, should be more precise
         assert result["p_value"] < 0.05, "Should detect effect with multiple periods"
@@ -181,8 +202,9 @@ class TestDiD2x2KnownAnswers:
 
         # Should recover true effect (3.0) despite heterogeneous baselines
         true_did = heterogeneous_baselines_data["true_did"]
-        assert abs(result["estimate"] - true_did) < 1.0, \
+        assert abs(result["estimate"] - true_did) < 1.0, (
             f"Expected ~{true_did}, got {result['estimate']} (heterogeneous baselines)"
+        )
 
     def test_treatment_effect_only_in_post(self, simple_did_data):
         """Treatment effect should only appear in post-period."""
@@ -221,8 +243,9 @@ class TestDiD2x2KnownAnswers:
         # Should be negative and close to true effect (-4.0)
         true_did = negative_effect_data["true_did"]
         assert result["estimate"] < 0, "Effect should be negative"
-        assert abs(result["estimate"] - true_did) < 1.0, \
+        assert abs(result["estimate"] - true_did) < 1.0, (
             f"Expected ~{true_did}, got {result['estimate']}"
+        )
 
         # CI should not contain zero
         assert result["ci_upper"] < 0, "CI should be entirely negative"
@@ -240,19 +263,18 @@ class TestDiD2x2KnownAnswers:
         treated_post = np.full(n_treated, 14.0) + np.random.normal(0, 0.5, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         result = did_2x2(outcomes, treatment, post, unit_id, cluster_se=True)
 
@@ -464,10 +486,17 @@ class TestDiDDiagnostics:
 
         # Check required fields
         required_fields = [
-            "estimate", "se", "t_stat", "p_value",
-            "ci_lower", "ci_upper",
-            "n_treated", "n_control", "n_clusters",
-            "df", "cluster_se_used"
+            "estimate",
+            "se",
+            "t_stat",
+            "p_value",
+            "ci_lower",
+            "ci_upper",
+            "n_treated",
+            "n_control",
+            "n_clusters",
+            "df",
+            "cluster_se_used",
         ]
 
         for field in required_fields:
@@ -499,19 +528,18 @@ class TestDiDDiagnostics:
         treated_post = np.full(n_treated, 17.0) + np.random.normal(0, 0.5, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         # Should issue warning (RuntimeWarning, not UserWarning)
         with pytest.warns(RuntimeWarning, match="Small number of clusters"):

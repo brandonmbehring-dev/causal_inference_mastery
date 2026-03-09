@@ -46,9 +46,7 @@ class TestAndersonRubinCoverage:
         for seed in range(n_runs):
             data = dgp_iv_strong(n=500, true_beta=true_beta, random_state=seed)
 
-            _, _, (ar_lower, ar_upper) = anderson_rubin_test(
-                data.Y, data.D, data.Z, alpha=0.05
-            )
+            _, _, (ar_lower, ar_upper) = anderson_rubin_test(data.Y, data.D, data.Z, alpha=0.05)
 
             covered = ar_lower <= true_beta <= ar_upper
             ar_covers.append(covered)
@@ -74,9 +72,7 @@ class TestAndersonRubinCoverage:
         for seed in range(n_runs):
             data = dgp_iv_weak(n=500, true_beta=true_beta, random_state=seed)
 
-            _, _, (ar_lower, ar_upper) = anderson_rubin_test(
-                data.Y, data.D, data.Z, alpha=0.05
-            )
+            _, _, (ar_lower, ar_upper) = anderson_rubin_test(data.Y, data.D, data.Z, alpha=0.05)
 
             covered = ar_lower <= true_beta <= ar_upper
             ar_covers.append(covered)
@@ -105,9 +101,7 @@ class TestAndersonRubinCoverage:
             data = dgp_iv_very_weak(n=500, true_beta=true_beta, random_state=seed)
 
             try:
-                _, _, (ar_lower, ar_upper) = anderson_rubin_test(
-                    data.Y, data.D, data.Z, alpha=0.05
-                )
+                _, _, (ar_lower, ar_upper) = anderson_rubin_test(data.Y, data.D, data.Z, alpha=0.05)
 
                 # Handle unbounded CIs (can happen with very weak IV)
                 if np.isfinite(ar_lower) and np.isfinite(ar_upper):
@@ -150,9 +144,7 @@ class TestAndersonRubinVs2SLS:
             data = dgp_iv_weak(n=500, true_beta=true_beta, random_state=seed)
 
             # AR CI
-            _, _, (ar_lower, ar_upper) = anderson_rubin_test(
-                data.Y, data.D, data.Z, alpha=0.05
-            )
+            _, _, (ar_lower, ar_upper) = anderson_rubin_test(data.Y, data.D, data.Z, alpha=0.05)
             ar_covered = ar_lower <= true_beta <= ar_upper
             ar_covers.append(ar_covered)
 
@@ -188,9 +180,7 @@ class TestAndersonRubinVs2SLS:
             data = dgp_iv_weak(n=500, true_beta=true_beta, random_state=seed)
 
             # AR CI
-            _, _, (ar_lower, ar_upper) = anderson_rubin_test(
-                data.Y, data.D, data.Z, alpha=0.05
-            )
+            _, _, (ar_lower, ar_upper) = anderson_rubin_test(data.Y, data.D, data.Z, alpha=0.05)
             if np.isfinite(ar_lower) and np.isfinite(ar_upper):
                 ar_widths.append(ar_upper - ar_lower)
 
@@ -238,8 +228,7 @@ class TestStockYogoClassification:
 
         # Should almost always be classified as strong
         assert strong_rate > 0.95, (
-            f"Strong IV DGP classified as 'strong' only {strong_rate:.0%} of time. "
-            f"Expected > 95%."
+            f"Strong IV DGP classified as 'strong' only {strong_rate:.0%} of time. Expected > 95%."
         )
 
     @pytest.mark.slow
@@ -327,10 +316,7 @@ class TestFirstStageFStatistic:
         expected_f = 500 * (0.8**2)  # n * π² for strong DGP
 
         # Should be in the right ballpark (high)
-        assert mean_f > 100, (
-            f"Mean F-statistic {mean_f:.1f} too low for strong IV. "
-            f"Expected >> 10."
-        )
+        assert mean_f > 100, f"Mean F-statistic {mean_f:.1f} too low for strong IV. Expected >> 10."
 
     @pytest.mark.slow
     def test_f_stat_close_to_expected_weak_iv(self):
@@ -452,12 +438,8 @@ class TestDiagnosticEducational:
             }
 
         # Document: AR advantage increases with weaker instruments
-        ar_advantage_strong = (
-            results["strong"]["ar_coverage"] - results["strong"]["tsls_coverage"]
-        )
-        ar_advantage_weak = (
-            results["weak"]["ar_coverage"] - results["weak"]["tsls_coverage"]
-        )
+        ar_advantage_strong = results["strong"]["ar_coverage"] - results["strong"]["tsls_coverage"]
+        ar_advantage_weak = results["weak"]["ar_coverage"] - results["weak"]["tsls_coverage"]
 
         assert ar_advantage_weak > ar_advantage_strong - 0.05, (
             f"AR advantage should increase with weaker instruments. "

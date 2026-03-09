@@ -721,8 +721,8 @@ def dgp_scm_null_effect(
     # Treated: Combination of controls, NO TREATMENT EFFECT
     true_weights = rng.dirichlet(np.ones(n_control) * 0.5)
     treated_counterfactual = control_outcomes.T @ true_weights
-    treated_outcome = (
-        treated_counterfactual + rng.normal(0, sigma * 0.5, n_periods)
+    treated_outcome = treated_counterfactual + rng.normal(
+        0, sigma * 0.5, n_periods
     )  # No treatment effect added
 
     outcomes = np.vstack([treated_outcome.reshape(1, -1), control_outcomes])

@@ -219,8 +219,7 @@ class TestFullerCoverage:
         )
 
         assert validation["coverage_ok"], (
-            f"Fuller-1 coverage {validation['coverage']:.2%} outside [93%, 97%] "
-            f"with strong IV."
+            f"Fuller-1 coverage {validation['coverage']:.2%} outside [93%, 97%] with strong IV."
         )
 
     @pytest.mark.slow
@@ -250,12 +249,10 @@ class TestFullerCoverage:
             tsls_ci_uppers.append(tsls.ci_[0, 1])
 
         fuller_coverage = np.mean(
-            (np.array(fuller_ci_lowers) <= true_beta)
-            & (true_beta <= np.array(fuller_ci_uppers))
+            (np.array(fuller_ci_lowers) <= true_beta) & (true_beta <= np.array(fuller_ci_uppers))
         )
         tsls_coverage = np.mean(
-            (np.array(tsls_ci_lowers) <= true_beta)
-            & (true_beta <= np.array(tsls_ci_uppers))
+            (np.array(tsls_ci_lowers) <= true_beta) & (true_beta <= np.array(tsls_ci_uppers))
         )
 
         # Fuller should have better coverage
@@ -286,8 +283,7 @@ class TestFullerKappa:
 
             # Fuller kappa should be less than LIML kappa
             assert fuller.kappa_ < liml.kappa_, (
-                f"Fuller kappa ({fuller.kappa_:.4f}) should be < "
-                f"LIML kappa ({liml.kappa_:.4f})"
+                f"Fuller kappa ({fuller.kappa_:.4f}) should be < LIML kappa ({liml.kappa_:.4f})"
             )
 
     @pytest.mark.slow

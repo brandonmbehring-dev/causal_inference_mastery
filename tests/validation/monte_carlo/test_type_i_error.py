@@ -55,19 +55,19 @@ def _count_rejections_dict(results: list, true_effect: float = 0.0) -> Tuple[int
     for result in results:
         # Handle dict results (simple_ate returns dict)
         if isinstance(result, dict):
-            ci_lower = result.get('ci_lower', result.get('conf_int_lower'))
-            ci_upper = result.get('ci_upper', result.get('conf_int_upper'))
+            ci_lower = result.get("ci_lower", result.get("conf_int_lower"))
+            ci_upper = result.get("ci_upper", result.get("conf_int_upper"))
             if ci_lower is not None and ci_upper is not None:
                 if ci_lower > true_effect or ci_upper < true_effect:
                     rejections += 1
         # Handle object results with attributes
-        elif hasattr(result, 'ci_lower') and hasattr(result, 'ci_upper'):
+        elif hasattr(result, "ci_lower") and hasattr(result, "ci_upper"):
             if result.ci_lower > true_effect or result.ci_upper < true_effect:
                 rejections += 1
-        elif hasattr(result, 'conf_int_lower') and hasattr(result, 'conf_int_upper'):
+        elif hasattr(result, "conf_int_lower") and hasattr(result, "conf_int_upper"):
             if result.conf_int_lower > true_effect or result.conf_int_upper < true_effect:
                 rejections += 1
-        elif hasattr(result, 'ci_'):
+        elif hasattr(result, "ci_"):
             # SharpRDD returns tuple (lower, upper)
             ci_lower, ci_upper = result.ci_
             if ci_lower > true_effect or ci_upper < true_effect:
@@ -80,6 +80,7 @@ def _count_rejections_dict(results: list, true_effect: float = 0.0) -> Tuple[int
 # =============================================================================
 # RCT: SimpleATE
 # =============================================================================
+
 
 @pytest.mark.monte_carlo
 @pytest.mark.type_i_error
@@ -115,7 +116,10 @@ def test_type_i_error_simple_ate():
 # Observational: IPW
 # =============================================================================
 
-def _generate_ipw_null_dgp(n: int = 500, random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+
+def _generate_ipw_null_dgp(
+    n: int = 500, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Generate observational data with no treatment effect."""
     rng = np.random.RandomState(random_state)
 
@@ -171,6 +175,7 @@ def test_type_i_error_ipw():
 # DiD: did_2x2
 # =============================================================================
 
+
 @pytest.mark.monte_carlo
 @pytest.mark.type_i_error
 def test_type_i_error_did_2x2():
@@ -191,7 +196,7 @@ def test_type_i_error_did_2x2():
             n_post=1,
             true_att=0.0,  # NULL hypothesis
             sigma=1.0,
-            random_state=42 + i
+            random_state=42 + i,
         )
 
         try:
@@ -199,7 +204,7 @@ def test_type_i_error_did_2x2():
                 outcomes=data.outcomes,
                 treatment=data.treatment,
                 post=data.post,
-                unit_id=data.unit_id
+                unit_id=data.unit_id,
             )
             results.append(result)
         except Exception:
@@ -221,6 +226,7 @@ def test_type_i_error_did_2x2():
 # IV: TwoStageLeastSquares
 # =============================================================================
 
+
 @pytest.mark.monte_carlo
 @pytest.mark.type_i_error
 def test_type_i_error_2sls():
@@ -239,11 +245,11 @@ def test_type_i_error_2sls():
             n=500,
             true_beta=0.0,  # NULL hypothesis
             endogeneity_rho=0.5,  # Still has endogeneity
-            random_state=42 + i
+            random_state=42 + i,
         )
 
         try:
-            tsls = TwoStageLeastSquares(inference='robust')
+            tsls = TwoStageLeastSquares(inference="robust")
             tsls.fit(data.Y, data.D, data.Z)
             results.append(tsls)
         except Exception:
@@ -257,11 +263,11 @@ def test_type_i_error_2sls():
     rejections = 0
     for result in results:
         # TwoStageLeastSquares has coef_, se_, ci_ attributes
-        if hasattr(result, 'ci_') and result.ci_ is not None:
+        if hasattr(result, "ci_") and result.ci_ is not None:
             ci_lower, ci_upper = result.ci_[0]  # First coefficient CI
             if ci_lower > 0.0 or ci_upper < 0.0:
                 rejections += 1
-        elif hasattr(result, 'p_value_') and result.p_value_ is not None:
+        elif hasattr(result, "p_value_") and result.p_value_ is not None:
             if result.p_value_[0] < ALPHA:
                 rejections += 1
 
@@ -276,6 +282,7 @@ def test_type_i_error_2sls():
 # =============================================================================
 # RDD: SharpRDD
 # =============================================================================
+
 
 @pytest.mark.monte_carlo
 @pytest.mark.type_i_error
@@ -295,11 +302,11 @@ def test_type_i_error_sharp_rdd():
             cutoff=0.0,
             slope=1.0,
             error_sd=1.0,
-            random_state=42 + i
+            random_state=42 + i,
         )
 
         try:
-            rdd = SharpRDD(cutoff=data.cutoff, bandwidth='ik', inference='robust')
+            rdd = SharpRDD(cutoff=data.cutoff, bandwidth="ik", inference="robust")
             rdd.fit(data.Y, data.X)
             results.append(rdd)
         except Exception:
@@ -312,11 +319,11 @@ def test_type_i_error_sharp_rdd():
     # Count rejections
     rejections = 0
     for result in results:
-        if hasattr(result, 'ci_') and result.ci_ is not None:
+        if hasattr(result, "ci_") and result.ci_ is not None:
             ci_lower, ci_upper = result.ci_
             if ci_lower > 0.0 or ci_upper < 0.0:
                 rejections += 1
-        elif hasattr(result, 'p_value_') and result.p_value_ is not None:
+        elif hasattr(result, "p_value_") and result.p_value_ is not None:
             if result.p_value_ < ALPHA:
                 rejections += 1
 
@@ -336,6 +343,7 @@ def test_type_i_error_sharp_rdd():
 # =============================================================================
 # Summary Test
 # =============================================================================
+
 
 @pytest.mark.monte_carlo
 @pytest.mark.type_i_error

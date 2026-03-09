@@ -94,9 +94,7 @@ class TestCACEBayesianStructure:
         from src.causal_inference.principal_stratification.bayesian import cace_bayesian
 
         data = generate_ps_dgp(n=300, seed=42)
-        result = cace_bayesian(
-            data["Y"], data["D"], data["Z"], quick=True, random_seed=42
-        )
+        result = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=42)
 
         # Check all required fields exist
         assert "cace_mean" in result
@@ -119,9 +117,7 @@ class TestCACEBayesianStructure:
         from src.causal_inference.principal_stratification.bayesian import cace_bayesian
 
         data = generate_ps_dgp(n=300, seed=42)
-        result = cace_bayesian(
-            data["Y"], data["D"], data["Z"], quick=True, random_seed=42
-        )
+        result = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=42)
 
         # Quick mode: 1000 samples × 2 chains = 2000 total
         assert len(result["cace_samples"]) == 2000
@@ -134,9 +130,7 @@ class TestCACEBayesianStructure:
         from src.causal_inference.principal_stratification.bayesian import cace_bayesian
 
         data = generate_ps_dgp(n=300, seed=42)
-        result = cace_bayesian(
-            data["Y"], data["D"], data["Z"], quick=True, random_seed=42
-        )
+        result = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=42)
 
         assert result["cace_hdi_lower"] <= result["cace_mean"] <= result["cace_hdi_upper"]
 
@@ -172,9 +166,7 @@ class TestCACEBayesianKnownAnswer:
         from src.causal_inference.principal_stratification.bayesian import cace_bayesian
 
         data = generate_ps_dgp(n=300, seed=42)
-        result = cace_bayesian(
-            data["Y"], data["D"], data["Z"], quick=True, random_seed=42
-        )
+        result = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=42)
 
         total = result["pi_c_mean"] + result["pi_a_mean"] + result["pi_n_mean"]
         assert np.isclose(total, 1.0, rtol=1e-6)
@@ -184,9 +176,7 @@ class TestCACEBayesianKnownAnswer:
         from src.causal_inference.principal_stratification.bayesian import cace_bayesian
 
         data = generate_ps_dgp(n=500, true_cace=2.0, seed=42)
-        result = cace_bayesian(
-            data["Y"], data["D"], data["Z"], quick=True, random_seed=42
-        )
+        result = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=42)
 
         ci_width = result["cace_hdi_upper"] - result["cace_hdi_lower"]
 
@@ -229,9 +219,7 @@ class TestCACEBayesianDiagnostics:
         from src.causal_inference.principal_stratification.bayesian import cace_bayesian
 
         data = generate_ps_dgp(n=300, seed=42)
-        result = cace_bayesian(
-            data["Y"], data["D"], data["Z"], quick=True, random_seed=42
-        )
+        result = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=42)
 
         # Should have R-hat for CACE
         assert "cace" in result["rhat"]
@@ -252,9 +240,7 @@ class TestCACEBayesianQuickMode:
         from src.causal_inference.principal_stratification.bayesian import cace_bayesian
 
         data = generate_ps_dgp(n=200, seed=42)
-        result = cace_bayesian(
-            data["Y"], data["D"], data["Z"], quick=True, random_seed=42
-        )
+        result = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=42)
 
         assert result["n_samples"] == 2000  # 1000 × 2
         assert result["n_chains"] == 2
@@ -266,9 +252,7 @@ class TestCACEBayesianQuickMode:
         data = generate_ps_dgp(n=200, seed=42)
 
         # Quick mode
-        result_quick = cace_bayesian(
-            data["Y"], data["D"], data["Z"], quick=True, random_seed=42
-        )
+        result_quick = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=42)
 
         # Quick uses 2000 samples, full would use 8000 (2000 × 4)
         assert result_quick["n_samples"] == 2000
@@ -442,13 +426,9 @@ class TestCACEBayesianMonteCarlo:
 
         for seed in range(n_runs):
             data = generate_ps_dgp(n=300, true_cace=true_cace, seed=seed)
-            result = cace_bayesian(
-                data["Y"], data["D"], data["Z"], quick=True, random_seed=seed
-            )
+            result = cace_bayesian(data["Y"], data["D"], data["Z"], quick=True, random_seed=seed)
 
-            covers.append(
-                result["cace_hdi_lower"] <= true_cace <= result["cace_hdi_upper"]
-            )
+            covers.append(result["cace_hdi_lower"] <= true_cace <= result["cace_hdi_upper"])
 
         coverage = np.mean(covers)
         # Allow 85-99% coverage (Bayesian HDI, small sample Monte Carlo variance)

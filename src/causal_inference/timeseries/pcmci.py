@@ -264,9 +264,7 @@ def pc_stable_condition_selection(
                     continue  # Already removed
 
                 # Get conditioning candidates (other parents of target)
-                other_parents = [
-                    p for p in parents[target] if p != (source, lag)
-                ]
+                other_parents = [p for p in parents[target] if p != (source, lag)]
 
                 if len(other_parents) < cond_size:
                     continue
@@ -293,9 +291,7 @@ def pc_stable_condition_selection(
 
                         if verbosity > 1:
                             cond_str = ", ".join(f"X{v}(t-{l})" for v, l in cond_set)
-                            print(
-                                f"    Removed: X{source}(t-{lag}) → X{target} | {{{cond_str}}}"
-                            )
+                            print(f"    Removed: X{source}(t-{lag}) → X{target} | {{{cond_str}}}")
                         break
 
         cond_size += 1
@@ -382,10 +378,7 @@ def mci_test_all(
                 graph[source, target, lag] = 1
 
                 if verbosity > 1:
-                    print(
-                        f"  Significant: X{source}(t-{lag}) → X{target}, "
-                        f"p={result.p_value:.4f}"
-                    )
+                    print(f"  Significant: X{source}(t-{lag}) → X{target}, p={result.p_value:.4f}")
 
     return {
         "p_matrix": p_matrix,

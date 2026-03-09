@@ -387,7 +387,7 @@ class TestDiagnosticsFunctions:
 
         result = diagnose_identification(
             selection_covariates=Z,  # 1D
-            outcome_covariates=X,    # 1D
+            outcome_covariates=X,  # 1D
         )
 
         assert "has_exclusion" in result
@@ -418,14 +418,18 @@ class TestParameterRecoveryRobustness:
 
         # Add intercept manually
         n = len(data["selected"])
-        sel_cov_with_int = np.column_stack([
-            np.ones(n),
-            data["selection_covariates"],
-        ])
-        out_cov_with_int = np.column_stack([
-            np.ones(n),
-            data["outcome_covariates"],
-        ])
+        sel_cov_with_int = np.column_stack(
+            [
+                np.ones(n),
+                data["selection_covariates"],
+            ]
+        )
+        out_cov_with_int = np.column_stack(
+            [
+                np.ones(n),
+                data["outcome_covariates"],
+            ]
+        )
 
         result = heckman_two_step(
             outcome=data["outcome"],

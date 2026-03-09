@@ -153,9 +153,9 @@ class TestEValueVsR:
             pytest.skip("R e_value unavailable")
 
         # E-value formula is exact, should match closely
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.01
-        ), f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.01), (
+            f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
     def test_risk_ratio_with_ci(self):
         """Python and R should agree on E-value with confidence interval."""
@@ -170,14 +170,14 @@ class TestEValueVsR:
             pytest.skip("R e_value unavailable")
 
         # Point estimate E-value
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.01
-        ), f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.01), (
+            f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
         # CI E-value
-        assert np.isclose(
-            py_result["e_value_ci"], r_result["e_value_ci"], rtol=0.02
-        ), f"E-value CI mismatch: Python={py_result['e_value_ci']:.4f}, R={r_result['e_value_ci']:.4f}"
+        assert np.isclose(py_result["e_value_ci"], r_result["e_value_ci"], rtol=0.02), (
+            f"E-value CI mismatch: Python={py_result['e_value_ci']:.4f}, R={r_result['e_value_ci']:.4f}"
+        )
 
     def test_odds_ratio(self):
         """Python and R should agree on E-value for odds ratio."""
@@ -190,9 +190,9 @@ class TestEValueVsR:
             pytest.skip("R e_value unavailable")
 
         # OR approximated as RR, formula is the same
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.01
-        ), f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.01), (
+            f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
     def test_hazard_ratio(self):
         """Python and R should agree on E-value for hazard ratio."""
@@ -204,9 +204,9 @@ class TestEValueVsR:
         if r_result is None:
             pytest.skip("R e_value unavailable")
 
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.01
-        ), f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.01), (
+            f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
     def test_standardized_mean_difference(self):
         """Python and R should agree on E-value for SMD."""
@@ -219,9 +219,9 @@ class TestEValueVsR:
             pytest.skip("R e_value unavailable")
 
         # SMD conversion to RR uses exp(0.91*d)
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.02
-        ), f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.02), (
+            f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
     def test_protective_effect(self):
         """Python and R should agree on E-value for protective effect (RR < 1)."""
@@ -234,9 +234,9 @@ class TestEValueVsR:
             pytest.skip("R e_value unavailable")
 
         # For RR < 1, E-value uses 1/RR
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.01
-        ), f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.01), (
+            f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
     def test_null_effect(self):
         """Python and R should agree on E-value for null effect (RR = 1)."""
@@ -249,7 +249,9 @@ class TestEValueVsR:
             pytest.skip("R e_value unavailable")
 
         # E-value at null should be 1.0
-        assert py_result["e_value"] == 1.0, f"Python E-value should be 1.0, got {py_result['e_value']}"
+        assert py_result["e_value"] == 1.0, (
+            f"Python E-value should be 1.0, got {py_result['e_value']}"
+        )
         assert r_result["e_value"] == 1.0, f"R E-value should be 1.0, got {r_result['e_value']}"
 
     def test_ci_includes_null(self):
@@ -265,7 +267,9 @@ class TestEValueVsR:
             pytest.skip("R e_value unavailable")
 
         # CI includes null, so E-value_CI should be 1.0
-        assert py_result["e_value_ci"] == 1.0, f"Python E-value_CI should be 1.0 when CI includes null"
+        assert py_result["e_value_ci"] == 1.0, (
+            f"Python E-value_CI should be 1.0 when CI includes null"
+        )
         assert r_result["e_value_ci"] == 1.0, f"R E-value_CI should be 1.0 when CI includes null"
 
 
@@ -300,9 +304,9 @@ class TestRosenbaumBoundsVsR:
             pytest.skip("R rosenbaum_bounds unavailable")
 
         # Gamma values should match exactly (same linspace)
-        assert np.allclose(
-            py_result["gamma_values"], r_result["gamma_values"], rtol=1e-10
-        ), "Gamma values should match exactly"
+        assert np.allclose(py_result["gamma_values"], r_result["gamma_values"], rtol=1e-10), (
+            "Gamma values should match exactly"
+        )
 
         # Strong effect should be robust - both should find high gamma_critical
         # or both should indicate robustness (gamma_critical > 2.5 or None)
@@ -337,9 +341,9 @@ class TestRosenbaumBoundsVsR:
         # Weak effect - both should find similar gamma_critical
         # Allow 10% relative tolerance on gamma_critical
         if py_result["gamma_critical"] is not None and r_result["gamma_critical"] is not None:
-            assert np.isclose(
-                py_result["gamma_critical"], r_result["gamma_critical"], rtol=0.15
-            ), f"Gamma critical mismatch: Python={py_result['gamma_critical']:.3f}, R={r_result['gamma_critical']:.3f}"
+            assert np.isclose(py_result["gamma_critical"], r_result["gamma_critical"], rtol=0.15), (
+                f"Gamma critical mismatch: Python={py_result['gamma_critical']:.3f}, R={r_result['gamma_critical']:.3f}"
+            )
 
     def test_p_value_bounds_direction(self):
         """P-value bounds should have correct ordering (p_upper >= p_lower)."""
@@ -396,14 +400,14 @@ class TestRosenbaumBoundsVsR:
             pytest.skip("R rosenbaum_bounds unavailable")
 
         # At gamma=1 (no confounding), p_upper = p_lower
-        assert np.isclose(
-            py_result["p_upper"][0], py_result["p_lower"][0], atol=0.01
-        ), "At gamma=1, p_upper should equal p_lower"
+        assert np.isclose(py_result["p_upper"][0], py_result["p_lower"][0], atol=0.01), (
+            "At gamma=1, p_upper should equal p_lower"
+        )
 
         # Python and R should give similar p-values at gamma=1
-        assert np.isclose(
-            py_result["p_upper"][0], r_result["p_upper"][0], atol=0.10
-        ), f"P-value at gamma=1 mismatch: Python={py_result['p_upper'][0]:.4f}, R={r_result['p_upper'][0]:.4f}"
+        assert np.isclose(py_result["p_upper"][0], r_result["p_upper"][0], atol=0.10), (
+            f"P-value at gamma=1 mismatch: Python={py_result['p_upper'][0]:.4f}, R={r_result['p_upper'][0]:.4f}"
+        )
 
 
 # =============================================================================
@@ -426,9 +430,9 @@ class TestEValueEdgeCases:
         if r_result is None:
             pytest.skip("R e_value unavailable")
 
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.01
-        ), f"E-value mismatch for large RR: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.01), (
+            f"E-value mismatch for large RR: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
         # Very large effect should have large E-value
         assert py_result["e_value"] > 10.0, "E-value for RR=10 should be > 10"
@@ -443,9 +447,9 @@ class TestEValueEdgeCases:
         if r_result is None:
             pytest.skip("R e_value unavailable")
 
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.01
-        ), f"E-value mismatch for small RR: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.01), (
+            f"E-value mismatch for small RR: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
         # Small effect should have E-value close to 1
         assert py_result["e_value"] < 1.5, "E-value for RR=1.1 should be < 1.5"
@@ -462,9 +466,9 @@ class TestEValueEdgeCases:
 
         # Should still compute E-value (uses |SMD| effectively)
         assert py_result["e_value"] > 1.0, "E-value should be > 1 for non-null effect"
-        assert np.isclose(
-            py_result["e_value"], r_result["e_value"], rtol=0.02
-        ), f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        assert np.isclose(py_result["e_value"], r_result["e_value"], rtol=0.02), (
+            f"E-value mismatch: Python={py_result['e_value']:.4f}, R={r_result['e_value']:.4f}"
+        )
 
 
 @requires_sensitivity_python
@@ -504,19 +508,17 @@ class TestRosenbaumEdgeCases:
         treated = np.random.randn(n_pairs)
         control = np.random.randn(n_pairs)
 
-        py_result = rosenbaum_bounds(
-            treated, control, gamma_range=(1.0, 2.0), n_gamma=5
-        )
-        r_result = r_rosenbaum_bounds(
-            treated, control, gamma_range=(1.0, 2.0), n_gamma=5
-        )
+        py_result = rosenbaum_bounds(treated, control, gamma_range=(1.0, 2.0), n_gamma=5)
+        r_result = r_rosenbaum_bounds(treated, control, gamma_range=(1.0, 2.0), n_gamma=5)
 
         if r_result is None:
             pytest.skip("R rosenbaum_bounds unavailable")
 
         # With no effect, p-value at gamma=1 should be relatively high (> 0.05)
         # Note: this is probabilistic, so we use a lenient check
-        assert py_result["p_upper"][0] > 0.01, "P-value should not be extremely small for null effect"
+        assert py_result["p_upper"][0] > 0.01, (
+            "P-value should not be extremely small for null effect"
+        )
 
     def test_small_sample(self):
         """Rosenbaum bounds with small sample (n=10 pairs)."""
@@ -572,9 +574,9 @@ class TestSensitivityConsistency:
         assert py_evalue["e_value"] > 2.0, "E-value should indicate robustness"
 
         # Gamma_critical > 2 or None indicates robustness
-        assert (
-            py_rosenbaum["gamma_critical"] is None or py_rosenbaum["gamma_critical"] > 2.0
-        ), "Rosenbaum bounds should indicate robustness"
+        assert py_rosenbaum["gamma_critical"] is None or py_rosenbaum["gamma_critical"] > 2.0, (
+            "Rosenbaum bounds should indicate robustness"
+        )
 
     def test_weak_effect_both_methods(self):
         """Both methods should indicate sensitivity for weak effect."""

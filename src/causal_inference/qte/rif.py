@@ -139,23 +139,16 @@ def rif_qte(
 
     unique_treatment = np.unique(treatment)
     if not np.all(np.isin(unique_treatment, [0, 1])):
-        raise ValueError(
-            f"CRITICAL ERROR: Treatment must be binary.\nGot: {unique_treatment}"
-        )
+        raise ValueError(f"CRITICAL ERROR: Treatment must be binary.\nGot: {unique_treatment}")
 
     if len(unique_treatment) < 2:
         raise ValueError("CRITICAL ERROR: No treatment variation.\nFunction: rif_qte")
 
     if quantile <= 0 or quantile >= 1:
-        raise ValueError(
-            f"CRITICAL ERROR: Invalid quantile.\n"
-            f"Expected: in (0, 1), Got: {quantile}"
-        )
+        raise ValueError(f"CRITICAL ERROR: Invalid quantile.\nExpected: in (0, 1), Got: {quantile}")
 
     if alpha <= 0 or alpha >= 1:
-        raise ValueError(
-            f"CRITICAL ERROR: Invalid alpha.\nExpected: in (0, 1), Got: {alpha}"
-        )
+        raise ValueError(f"CRITICAL ERROR: Invalid alpha.\nExpected: in (0, 1), Got: {alpha}")
 
     # Handle covariates
     if covariates is not None:
@@ -168,9 +161,7 @@ def rif_qte(
                 f"Got: outcome={n}, covariates={len(covariates)}"
             )
         if np.any(np.isnan(covariates)) or np.any(np.isinf(covariates)):
-            raise ValueError(
-                "CRITICAL ERROR: NaN/Inf in covariates.\nFunction: rif_qte"
-            )
+            raise ValueError("CRITICAL ERROR: NaN/Inf in covariates.\nFunction: rif_qte")
 
     n_treated = int(np.sum(treatment == 1))
     n_control = int(np.sum(treatment == 0))

@@ -264,7 +264,7 @@ class TestIPWProperties:
 
         # Extreme propensities (more variable weights)
         # High propensity for first half, low for second half
-        propensity_extreme = np.concatenate([np.full(n//2, 0.9), np.full(n//2, 0.1)])
+        propensity_extreme = np.concatenate([np.full(n // 2, 0.9), np.full(n // 2, 0.1)])
         treatment_extreme = np.random.binomial(1, propensity_extreme)
         outcomes_extreme = np.random.normal(5, 2, n)
 

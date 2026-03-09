@@ -22,14 +22,14 @@ try:
         julia_conditional_qte,
         julia_rif_qte,
     )
+
     JULIA_AVAILABLE = is_julia_available()
 except ImportError:
     JULIA_AVAILABLE = False
 
 
 pytestmark = pytest.mark.skipif(
-    not JULIA_AVAILABLE,
-    reason="Julia not available for cross-language tests"
+    not JULIA_AVAILABLE, reason="Julia not available for cross-language tests"
 )
 
 

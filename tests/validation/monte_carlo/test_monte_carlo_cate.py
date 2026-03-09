@@ -105,9 +105,7 @@ class TestSLearnerMonteCarlo:
             ci_uppers.append(result["ci_upper"])
 
         coverage = coverage_rate(ci_lowers, ci_uppers, true_ate)
-        assert 0.90 <= coverage <= 0.98, (
-            f"S-Learner coverage {coverage:.2%} outside [90%, 98%]"
-        )
+        assert 0.90 <= coverage <= 0.98, f"S-Learner coverage {coverage:.2%} outside [90%, 98%]"
 
     def test_regularization_bias_detection(self):
         """
@@ -122,9 +120,7 @@ class TestSLearnerMonteCarlo:
         estimates = []
 
         for seed in range(n_runs):
-            data = dgp_constant_effect(
-                n=500, true_ate=small_ate, p=10, random_state=seed
-            )
+            data = dgp_constant_effect(n=500, true_ate=small_ate, p=10, random_state=seed)
             result = s_learner(data.Y, data.T, data.X, model="ridge")
             estimates.append(result["ate"])
 
@@ -188,9 +184,7 @@ class TestTLearnerMonteCarlo:
         avg_true_ate = np.mean(true_ates)
         coverage = coverage_rate(ci_lowers, ci_uppers, avg_true_ate)
 
-        assert 0.88 <= coverage <= 0.99, (
-            f"T-Learner coverage {coverage:.2%} outside [88%, 99%]"
-        )
+        assert 0.88 <= coverage <= 0.99, f"T-Learner coverage {coverage:.2%} outside [88%, 99%]"
 
 
 # =============================================================================
@@ -334,9 +328,7 @@ class TestDMLMonteCarlo:
             ci_uppers.append(result["ci_upper"])
 
         coverage = coverage_rate(ci_lowers, ci_uppers, true_ate)
-        assert 0.88 <= coverage <= 0.99, (
-            f"DML coverage {coverage:.2%} outside [88%, 99%]"
-        )
+        assert 0.88 <= coverage <= 0.99, f"DML coverage {coverage:.2%} outside [88%, 99%]"
 
     def test_dml_linear_heterogeneity(self):
         """DML should recover linear heterogeneity."""
@@ -365,7 +357,9 @@ class TestCausalForestMonteCarlo:
         """
         data = dgp_complex_heterogeneity(n=2000, random_state=42)
         result = causal_forest(
-            data.Y, data.T, data.X,
+            data.Y,
+            data.T,
+            data.X,
             n_estimators=100,
             min_samples_leaf=10,
             honest=True,
@@ -390,7 +384,9 @@ class TestCausalForestMonteCarlo:
         for seed in range(n_runs):
             data = dgp_constant_effect(n=500, true_ate=true_ate, random_state=seed)
             result = causal_forest(
-                data.Y, data.T, data.X,
+                data.Y,
+                data.T,
+                data.X,
                 n_estimators=50,  # Fewer trees for speed
                 honest=True,
             )
@@ -400,9 +396,7 @@ class TestCausalForestMonteCarlo:
         coverage = coverage_rate(ci_lowers, ci_uppers, true_ate)
         # Honest forests should have reasonable coverage
         # Note: 100% coverage indicates conservative CIs, which is acceptable
-        assert 0.85 <= coverage <= 1.0, (
-            f"Causal Forest coverage {coverage:.2%} outside [85%, 100%]"
-        )
+        assert 0.85 <= coverage <= 1.0, f"Causal Forest coverage {coverage:.2%} outside [85%, 100%]"
 
     @pytest.mark.slow
     def test_forest_bias(self):
@@ -414,7 +408,9 @@ class TestCausalForestMonteCarlo:
         for seed in range(n_runs):
             data = dgp_constant_effect(n=500, true_ate=true_ate, random_state=seed)
             result = causal_forest(
-                data.Y, data.T, data.X,
+                data.Y,
+                data.T,
+                data.X,
                 n_estimators=50,
                 honest=True,
             )
@@ -496,7 +492,9 @@ class TestCATEHighDimensional:
 
         # Ridge-based methods should handle high-D well
         result = double_ml(
-            data.Y, data.T, data.X,
+            data.Y,
+            data.T,
+            data.X,
             n_folds=5,
             nuisance_model="ridge",
         )

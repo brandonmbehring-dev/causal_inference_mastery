@@ -262,8 +262,8 @@ class TestComplierCharacteristics:
 
         # LATE should equal the difference in complier outcomes
         implied_late = (
-            complier_result["complier_mean_outcome_treated"] -
-            complier_result["complier_mean_outcome_control"]
+            complier_result["complier_mean_outcome_treated"]
+            - complier_result["complier_mean_outcome_control"]
         )
 
         # Allow some tolerance due to different estimation approaches

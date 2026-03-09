@@ -230,9 +230,7 @@ class TestTWFEvsModernEstimators:
             twfe_estimates.append(twfe_result["att"])
 
             # CS (should be unbiased)
-            cs_result = callaway_santanna_ate(
-                staggered, n_bootstrap=50, random_state=seed
-            )
+            cs_result = callaway_santanna_ate(staggered, n_bootstrap=50, random_state=seed)
             cs_estimates.append(cs_result["att"])
 
         twfe_bias = abs(np.mean(twfe_estimates) - true_att)
@@ -258,9 +256,7 @@ class TestTWFEEducationalDocumentation:
 
     def test_twfe_warning_message(self):
         """Verify TWFE produces appropriate bias warning."""
-        data = dgp_staggered_heterogeneous(
-            n_units=100, n_periods=10, random_state=42
-        )
+        data = dgp_staggered_heterogeneous(n_units=100, n_periods=10, random_state=42)
 
         staggered = create_staggered_data(
             outcomes=data.outcomes,

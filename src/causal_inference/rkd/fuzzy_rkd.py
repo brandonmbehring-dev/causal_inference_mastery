@@ -185,9 +185,7 @@ class FuzzyRKD:
         self.bandwidth_: Optional[float] = None
         self.result_: Optional[FuzzyRKDResult] = None
 
-    def _compute_kernel_weights(
-        self, x: np.ndarray, bandwidth: float
-    ) -> np.ndarray:
+    def _compute_kernel_weights(self, x: np.ndarray, bandwidth: float) -> np.ndarray:
         """Compute kernel weights based on distance from cutoff."""
         u = (x - self.cutoff) / bandwidth
 
@@ -248,11 +246,10 @@ class FuzzyRKD:
 
         return coef, vcov, residual_var
 
-    def _select_bandwidth(
-        self, y: np.ndarray, x: np.ndarray
-    ) -> float:
+    def _select_bandwidth(self, y: np.ndarray, x: np.ndarray) -> float:
         """Select optimal bandwidth for Fuzzy RKD."""
         from .bandwidth import rkd_ik_bandwidth
+
         return rkd_ik_bandwidth(y, x, self.cutoff)
 
     def fit(
@@ -289,9 +286,7 @@ class FuzzyRKD:
         d = np.asarray(d).flatten()
 
         if len(y) != len(x) or len(y) != len(d):
-            raise ValueError(
-                f"Input length mismatch: y({len(y)}), x({len(x)}), d({len(d)})"
-            )
+            raise ValueError(f"Input length mismatch: y({len(y)}), x({len(x)}), d({len(d)})")
 
         if len(y) < 10:
             raise ValueError(f"Insufficient observations: {len(y)} < 10")
@@ -414,9 +409,7 @@ class FuzzyRKD:
         # Var(τ) = (1/fs_kink²) * [Var(rf_kink) + τ² * Var(fs_kink)]
         var_rf_kink = vcov_y_left[1, 1] + vcov_y_right[1, 1]
 
-        var_estimate = (1 / fs_kink**2) * (
-            var_rf_kink + estimate**2 * var_fs_kink
-        )
+        var_estimate = (1 / fs_kink**2) * (var_rf_kink + estimate**2 * var_fs_kink)
         se = np.sqrt(var_estimate)
 
         # Inference

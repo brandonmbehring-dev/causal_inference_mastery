@@ -76,7 +76,7 @@ class TestBasicEstimationParity:
             py_result["estimate"],
             jl_result["estimate"],
             rtol=1e-4,
-            err_msg="Point estimates differ"
+            err_msg="Point estimates differ",
         )
 
     def test_se_parity(self):
@@ -91,7 +91,7 @@ class TestBasicEstimationParity:
             py_result["se"],
             jl_result["se"],
             rtol=0.1,  # 10% tolerance for SE
-            err_msg="Standard errors differ too much"
+            err_msg="Standard errors differ too much",
         )
 
     def test_t_stat_parity(self):
@@ -102,10 +102,7 @@ class TestBasicEstimationParity:
         jl_result = julia_shift_share_iv(Y, D, shares, shocks)
 
         np.testing.assert_allclose(
-            py_result["t_stat"],
-            jl_result["t_stat"],
-            rtol=0.1,
-            err_msg="T-statistics differ"
+            py_result["t_stat"], jl_result["t_stat"], rtol=0.1, err_msg="T-statistics differ"
         )
 
     def test_ci_parity(self):
@@ -116,16 +113,10 @@ class TestBasicEstimationParity:
         jl_result = julia_shift_share_iv(Y, D, shares, shocks)
 
         np.testing.assert_allclose(
-            py_result["ci_lower"],
-            jl_result["ci_lower"],
-            rtol=0.1,
-            err_msg="CI lower bounds differ"
+            py_result["ci_lower"], jl_result["ci_lower"], rtol=0.1, err_msg="CI lower bounds differ"
         )
         np.testing.assert_allclose(
-            py_result["ci_upper"],
-            jl_result["ci_upper"],
-            rtol=0.1,
-            err_msg="CI upper bounds differ"
+            py_result["ci_upper"], jl_result["ci_upper"], rtol=0.1, err_msg="CI upper bounds differ"
         )
 
 
@@ -143,7 +134,7 @@ class TestFirstStageParity:
             py_result["first_stage"]["f_statistic"],
             jl_result["first_stage"]["f_statistic"],
             rtol=0.1,
-            err_msg="F-statistics differ"
+            err_msg="F-statistics differ",
         )
 
     def test_first_stage_coefficient_parity(self):
@@ -157,7 +148,7 @@ class TestFirstStageParity:
             py_result["first_stage"]["coefficient"],
             jl_result["first_stage"]["coefficient"],
             rtol=1e-4,
-            err_msg="First-stage coefficients differ"
+            err_msg="First-stage coefficients differ",
         )
 
     def test_partial_r2_parity(self):
@@ -171,7 +162,7 @@ class TestFirstStageParity:
             py_result["first_stage"]["partial_r2"],
             jl_result["first_stage"]["partial_r2"],
             rtol=0.1,
-            err_msg="Partial R-squared values differ"
+            err_msg="Partial R-squared values differ",
         )
 
     def test_weak_iv_warning_parity(self):
@@ -181,9 +172,10 @@ class TestFirstStageParity:
         py_result = shift_share_iv(Y, D, shares, shocks)
         jl_result = julia_shift_share_iv(Y, D, shares, shocks)
 
-        assert py_result["first_stage"]["weak_iv_warning"] == \
-               jl_result["first_stage"]["weak_iv_warning"], \
-               "Weak IV warning flags differ"
+        assert (
+            py_result["first_stage"]["weak_iv_warning"]
+            == jl_result["first_stage"]["weak_iv_warning"]
+        ), "Weak IV warning flags differ"
 
 
 class TestRotembergWeightsParity:
@@ -200,7 +192,7 @@ class TestRotembergWeightsParity:
             py_result["rotemberg"]["weights"],
             jl_result["rotemberg"]["weights"],
             rtol=1e-4,
-            err_msg="Rotemberg weights differ"
+            err_msg="Rotemberg weights differ",
         )
 
     def test_negative_weight_share_parity(self):
@@ -214,7 +206,7 @@ class TestRotembergWeightsParity:
             py_result["rotemberg"]["negative_weight_share"],
             jl_result["rotemberg"]["negative_weight_share"],
             rtol=1e-4,
-            err_msg="Negative weight shares differ"
+            err_msg="Negative weight shares differ",
         )
 
     def test_herfindahl_parity(self):
@@ -228,7 +220,7 @@ class TestRotembergWeightsParity:
             py_result["rotemberg"]["herfindahl"],
             jl_result["rotemberg"]["herfindahl"],
             rtol=1e-4,
-            err_msg="Herfindahl indices differ"
+            err_msg="Herfindahl indices differ",
         )
 
 
@@ -247,7 +239,7 @@ class TestSampleSizeParity:
             py_result["estimate"],
             jl_result["estimate"],
             rtol=1e-4,
-            err_msg=f"Estimates differ for n={n}"
+            err_msg=f"Estimates differ for n={n}",
         )
 
 
@@ -257,9 +249,7 @@ class TestSectorCountParity:
     @pytest.mark.parametrize("n_sectors", [5, 10, 20])
     def test_different_sector_counts(self, n_sectors):
         """Estimates match across sector counts."""
-        Y, D, shares, shocks = generate_shift_share_data(
-            n_sectors=n_sectors, seed=42
-        )
+        Y, D, shares, shocks = generate_shift_share_data(n_sectors=n_sectors, seed=42)
 
         py_result = shift_share_iv(Y, D, shares, shocks)
         jl_result = julia_shift_share_iv(Y, D, shares, shocks)
@@ -268,7 +258,7 @@ class TestSectorCountParity:
             py_result["estimate"],
             jl_result["estimate"],
             rtol=1e-4,
-            err_msg=f"Estimates differ for n_sectors={n_sectors}"
+            err_msg=f"Estimates differ for n_sectors={n_sectors}",
         )
 
 
@@ -304,7 +294,7 @@ class TestMetadataParity:
             py_result["share_sum_mean"],
             jl_result["share_sum_mean"],
             rtol=1e-4,
-            err_msg="Share sum means differ"
+            err_msg="Share sum means differ",
         )
 
 

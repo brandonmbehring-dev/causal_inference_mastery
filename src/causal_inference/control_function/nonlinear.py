@@ -178,9 +178,7 @@ class NonlinearControlFunction:
         # Check Y is binary
         unique_y = np.unique(Y)
         if not np.all(np.isin(unique_y, [0, 1])):
-            raise ValueError(
-                f"Y must be binary (0/1). Found values: {unique_y[:10]}..."
-            )
+            raise ValueError(f"Y must be binary (0/1). Found values: {unique_y[:10]}...")
 
         if len(D) != n:
             raise ValueError(f"Length mismatch: Y ({n}) != D ({len(D)})")

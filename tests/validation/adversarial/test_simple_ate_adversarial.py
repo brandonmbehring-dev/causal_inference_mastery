@@ -54,9 +54,9 @@ class TestSimpleATEExtremeSampleSizes:
         n = 10000
         treatment = np.array([1] * 5000 + [0] * 5000)
         # True ATE = 2.0
-        outcomes = np.where(treatment == 1,
-                           np.random.normal(2.0, 1.0, n),
-                           np.random.normal(0.0, 1.0, n))
+        outcomes = np.where(
+            treatment == 1, np.random.normal(2.0, 1.0, n), np.random.normal(0.0, 1.0, n)
+        )
 
         result = simple_ate(outcomes, treatment)
 
@@ -103,9 +103,11 @@ class TestSimpleATEExtremeVariance:
         """Outcomes with very low variance (σ² ≈ 0.001)."""
         np.random.seed(42)
         treatment = np.array([1] * 50 + [0] * 50)
-        outcomes = np.where(treatment == 1,
-                           2.0 + np.random.normal(0, 0.01, 100),  # σ=0.01
-                           0.0 + np.random.normal(0, 0.01, 100))
+        outcomes = np.where(
+            treatment == 1,
+            2.0 + np.random.normal(0, 0.01, 100),  # σ=0.01
+            0.0 + np.random.normal(0, 0.01, 100),
+        )
 
         result = simple_ate(outcomes, treatment)
 
@@ -118,9 +120,11 @@ class TestSimpleATEExtremeVariance:
         """Outcomes with very high variance (σ² = 1000000)."""
         np.random.seed(42)
         treatment = np.array([1] * 50 + [0] * 50)
-        outcomes = np.where(treatment == 1,
-                           2.0 + np.random.normal(0, 1000, 100),  # σ=1000
-                           0.0 + np.random.normal(0, 1000, 100))
+        outcomes = np.where(
+            treatment == 1,
+            2.0 + np.random.normal(0, 1000, 100),  # σ=1000
+            0.0 + np.random.normal(0, 1000, 100),
+        )
 
         result = simple_ate(outcomes, treatment)
 

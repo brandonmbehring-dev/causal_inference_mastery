@@ -31,8 +31,7 @@ class TestQLearningKnownAnswer:
         # The intercept is the first coefficient (after adding intercept)
         blip_intercept = result.blip_coefficients[0][0]
         assert abs(blip_intercept - true_params["true_blip"]) < 0.5, (
-            f"Blip intercept {blip_intercept:.3f} not close to "
-            f"true blip {true_params['true_blip']}"
+            f"Blip intercept {blip_intercept:.3f} not close to true blip {true_params['true_blip']}"
         )
 
     def test_single_stage_zero_effect(self, single_stage_zero_effect_data):
@@ -42,9 +41,7 @@ class TestQLearningKnownAnswer:
 
         # Blip intercept should be close to 0
         blip_intercept = result.blip_coefficients[0][0]
-        assert abs(blip_intercept) < 0.5, (
-            f"Blip intercept {blip_intercept:.3f} should be near 0"
-        )
+        assert abs(blip_intercept) < 0.5, f"Blip intercept {blip_intercept:.3f} should be near 0"
 
     def test_two_stage_backward_induction(self, two_stage_data):
         """Two-stage Q-learning uses backward induction correctly."""
@@ -66,9 +63,7 @@ class TestQLearningKnownAnswer:
         # In this DGP, stages are correlated, so stage 1 blip may be larger
         # Just verify it's positive (treatment is beneficial)
         blip_stage1 = result.blip_coefficients[0][0]
-        assert blip_stage1 > 0, (
-            f"Stage 1 blip {blip_stage1:.3f} should be positive"
-        )
+        assert blip_stage1 > 0, f"Stage 1 blip {blip_stage1:.3f} should be positive"
 
     def test_optimal_regime_direction(self, single_stage_constant_data):
         """Optimal regime has correct direction."""
@@ -85,9 +80,7 @@ class TestQLearningKnownAnswer:
 
     def test_optimal_regime_negative_blip(self):
         """Optimal regime correct with negative blip."""
-        data, true_params = generate_dtr_dgp(
-            n=500, n_stages=1, true_blip=-2.0, seed=123
-        )
+        data, true_params = generate_dtr_dgp(n=500, n_stages=1, true_blip=-2.0, seed=123)
         result = q_learning(data)
 
         # With negative blip, should recommend A=0 for average history
@@ -235,9 +228,7 @@ class TestQLearningMethods:
 
         # SE should be in same ballpark (within factor of 2)
         se_ratio = result_sandwich.blip_se[0][0] / result_bootstrap.blip_se[0][0]
-        assert 0.5 < se_ratio < 2.0, (
-            f"SE ratio {se_ratio:.2f} outside [0.5, 2.0]"
-        )
+        assert 0.5 < se_ratio < 2.0, f"SE ratio {se_ratio:.2f} outside [0.5, 2.0]"
 
 
 class TestQLearningConvenience:
@@ -340,9 +331,7 @@ class TestQLearningMonteCarlo:
         blip_estimates = []
 
         for i in range(n_simulations):
-            data, _ = generate_dtr_dgp(
-                n=300, n_stages=1, true_blip=true_blip, seed=None
-            )
+            data, _ = generate_dtr_dgp(n=300, n_stages=1, true_blip=true_blip, seed=None)
             result = q_learning(data)
             blip_estimates.append(result.blip_coefficients[0][0])
 
@@ -361,9 +350,7 @@ class TestQLearningMonteCarlo:
         covered = []
 
         for i in range(n_simulations):
-            data, _ = generate_dtr_dgp(
-                n=300, n_stages=1, true_blip=true_blip, seed=None
-            )
+            data, _ = generate_dtr_dgp(n=300, n_stages=1, true_blip=true_blip, seed=None)
             result = q_learning(data)
 
             # Check if true blip is within CI for intercept
@@ -390,9 +377,7 @@ class TestQLearningMonteCarlo:
         se_estimates = []
 
         for i in range(n_simulations):
-            data, _ = generate_dtr_dgp(
-                n=300, n_stages=1, true_blip=true_blip, seed=None
-            )
+            data, _ = generate_dtr_dgp(n=300, n_stages=1, true_blip=true_blip, seed=None)
             result = q_learning(data)
             blip_estimates.append(result.blip_coefficients[0][0])
             se_estimates.append(result.blip_se[0][0])
@@ -414,9 +399,7 @@ class TestQLearningMonteCarlo:
         stage2_blips = []
 
         for i in range(n_simulations):
-            data, _ = generate_dtr_dgp(
-                n=300, n_stages=2, true_blip=true_blip, seed=None
-            )
+            data, _ = generate_dtr_dgp(n=300, n_stages=2, true_blip=true_blip, seed=None)
             result = q_learning(data)
             stage2_blips.append(result.blip_coefficients[1][0])
 

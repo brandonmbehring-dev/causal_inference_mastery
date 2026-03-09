@@ -195,9 +195,7 @@ def safe_solve(
     """
     # Validate shapes
     if A.ndim != 2 or A.shape[0] != A.shape[1]:
-        raise ValueError(
-            f"{name}: Coefficient matrix A must be square. Got shape {A.shape}."
-        )
+        raise ValueError(f"{name}: Coefficient matrix A must be square. Got shape {A.shape}.")
 
     if len(b) != A.shape[0]:
         raise ValueError(

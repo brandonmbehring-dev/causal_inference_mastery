@@ -174,9 +174,7 @@ def event_study(
     # Check treatment is binary
     unique_treatment = np.unique(treatment)
     if not np.array_equal(unique_treatment, [0, 1]):
-        raise ValueError(
-            f"treatment must be binary (0, 1). Got unique values: {unique_treatment}"
-        )
+        raise ValueError(f"treatment must be binary (0, 1). Got unique values: {unique_treatment}")
 
     # Build DataFrame for validation
     df = pd.DataFrame({"unit_id": unit_id, "treatment": treatment, "time": time})
@@ -279,9 +277,7 @@ def event_study(
     # Validate omit_period
     valid_periods = list(range(-n_leads, 0)) + list(range(0, n_lags + 1))
     if omit_period not in valid_periods:
-        raise ValueError(
-            f"omit_period ({omit_period}) must be in valid periods {valid_periods}"
-        )
+        raise ValueError(f"omit_period ({omit_period}) must be in valid periods {valid_periods}")
 
     # Create relative time variable (time - treatment_time for each observation)
     df["relative_time"] = df["time"] - treatment_time
@@ -480,7 +476,9 @@ def plot_event_study(
     fig, ax = plt.subplots(figsize=figsize)
 
     # Plot point estimates
-    ax.plot(periods, estimates, "o-", color="steelblue", linewidth=2, markersize=6, label="Estimate")
+    ax.plot(
+        periods, estimates, "o-", color="steelblue", linewidth=2, markersize=6, label="Estimate"
+    )
 
     # Plot confidence intervals (shaded region)
     ax.fill_between(periods, ci_lowers, ci_uppers, alpha=0.3, color="steelblue", label="95% CI")

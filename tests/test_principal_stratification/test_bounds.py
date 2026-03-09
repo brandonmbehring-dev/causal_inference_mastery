@@ -160,9 +160,7 @@ class TestPSBoundsMonotonicity:
     def test_no_direct_effect_point_identified(self):
         """When direct_effect_bound=0, bounds collapse to LATE."""
         data = generate_ps_dgp(n=500, direct_effect=0.0, seed=42)
-        result = ps_bounds_monotonicity(
-            data["Y"], data["D"], data["Z"], direct_effect_bound=0.0
-        )
+        result = ps_bounds_monotonicity(data["Y"], data["D"], data["Z"], direct_effect_bound=0.0)
 
         assert result["identified"] is True
         assert_allclose(result["bound_width"], 0.0, atol=1e-10)
@@ -199,9 +197,7 @@ class TestPSBoundsMonotonicity:
         """Bounds should contain true CACE when assumptions hold."""
         data = generate_ps_dgp(n=500, true_cace=2.0, direct_effect=0.0, seed=42)
 
-        result = ps_bounds_monotonicity(
-            data["Y"], data["D"], data["Z"], direct_effect_bound=0.0
-        )
+        result = ps_bounds_monotonicity(data["Y"], data["D"], data["Z"], direct_effect_bound=0.0)
 
         # With proper identification, point estimate should be close to true
         point_estimate = (result["lower_bound"] + result["upper_bound"]) / 2
@@ -350,18 +346,14 @@ class TestBoundsAdversarial:
         data = generate_ps_dgp(n=100, seed=42)
 
         with pytest.raises(ValueError, match="non-negative"):
-            ps_bounds_monotonicity(
-                data["Y"], data["D"], data["Z"], direct_effect_bound=-0.5
-            )
+            ps_bounds_monotonicity(data["Y"], data["D"], data["Z"], direct_effect_bound=-0.5)
 
     def test_invalid_outcome_support(self):
         """Should raise on invalid outcome_support."""
         data = generate_ps_dgp(n=100, seed=42)
 
         with pytest.raises(ValueError, match="Y_min < Y_max"):
-            ps_bounds_no_assumption(
-                data["Y"], data["D"], data["Z"], outcome_support=(5.0, -5.0)
-            )
+            ps_bounds_no_assumption(data["Y"], data["D"], data["Z"], outcome_support=(5.0, -5.0))
 
     def test_all_treated_or_control(self):
         """Handle case where all units are in one treatment group."""
@@ -394,9 +386,7 @@ class TestBoundsMonteCarlo:
         covers = []
 
         for seed in range(n_sims):
-            data = generate_ps_dgp(
-                n=500, true_cace=true_cace, direct_effect=0.0, seed=seed
-            )
+            data = generate_ps_dgp(n=500, true_cace=true_cace, direct_effect=0.0, seed=seed)
 
             result = ps_bounds_monotonicity(
                 data["Y"], data["D"], data["Z"], direct_effect_bound=0.0
@@ -419,16 +409,12 @@ class TestBoundsMonteCarlo:
         covers = []
 
         for seed in range(n_sims):
-            data = generate_defiers_dgp(
-                n=500, true_cace=true_cace, pi_defier=0.15, seed=seed
-            )
+            data = generate_defiers_dgp(n=500, true_cace=true_cace, pi_defier=0.15, seed=seed)
 
             result = ps_bounds_no_assumption(data["Y"], data["D"], data["Z"])
 
             # Bounds should contain true CACE
-            covers.append(
-                result["lower_bound"] <= true_cace <= result["upper_bound"]
-            )
+            covers.append(result["lower_bound"] <= true_cace <= result["upper_bound"])
 
         coverage = np.mean(covers)
         # Should always cover since bounds are conservative

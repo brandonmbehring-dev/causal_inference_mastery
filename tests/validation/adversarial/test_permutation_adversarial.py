@@ -78,9 +78,9 @@ class TestPermutationTestSampleSizes:
         np.random.seed(42)
         n = 1000
         treatment = np.array([1] * 500 + [0] * 500)
-        outcomes = np.where(treatment == 1,
-                           np.random.normal(2.0, 1.0, n),
-                           np.random.normal(0.0, 1.0, n))
+        outcomes = np.where(
+            treatment == 1, np.random.normal(2.0, 1.0, n), np.random.normal(0.0, 1.0, n)
+        )
 
         result = permutation_test(outcomes, treatment, n_permutations=1000, random_seed=42)
 
@@ -98,8 +98,9 @@ class TestPermutationTestAlternatives:
         outcomes = np.array([10.0, 9.0, 8.0, 2.0, 1.0, 0.0])
         treatment = np.array([1, 1, 1, 0, 0, 0])
 
-        result = permutation_test(outcomes, treatment, n_permutations=1000,
-                                 alternative="greater", random_seed=42)
+        result = permutation_test(
+            outcomes, treatment, n_permutations=1000, alternative="greater", random_seed=42
+        )
 
         # Should have low p-value for greater alternative
         assert result["p_value"] < 0.1
@@ -109,8 +110,9 @@ class TestPermutationTestAlternatives:
         outcomes = np.array([0.0, 1.0, 2.0, 8.0, 9.0, 10.0])
         treatment = np.array([1, 1, 1, 0, 0, 0])
 
-        result = permutation_test(outcomes, treatment, n_permutations=1000,
-                                 alternative="less", random_seed=42)
+        result = permutation_test(
+            outcomes, treatment, n_permutations=1000, alternative="less", random_seed=42
+        )
 
         # Should have low p-value for less alternative
         assert result["p_value"] < 0.1

@@ -102,8 +102,7 @@ class TestBiasProperties:
         bias = mean_estimate - true_beta
 
         assert abs(bias) < 0.15, (
-            f"Bias too large: {bias:.4f} (mean={mean_estimate:.4f}, "
-            f"true={true_beta:.2f})"
+            f"Bias too large: {bias:.4f} (mean={mean_estimate:.4f}, true={true_beta:.2f})"
         )
 
     @pytest.mark.monte_carlo
@@ -128,9 +127,7 @@ class TestBiasProperties:
         mean_estimate = np.mean(estimates)
         bias = mean_estimate - true_beta
 
-        assert abs(bias) < 0.20, (
-            f"Strong selection bias too large: {bias:.4f}"
-        )
+        assert abs(bias) < 0.20, f"Strong selection bias too large: {bias:.4f}"
 
     @pytest.mark.monte_carlo
     def test_beta_unbiased_no_selection(self):
@@ -153,9 +150,7 @@ class TestBiasProperties:
         mean_estimate = np.mean(estimates)
         bias = mean_estimate - true_beta
 
-        assert abs(bias) < 0.10, (
-            f"No-selection bias: {bias:.4f}"
-        )
+        assert abs(bias) < 0.10, f"No-selection bias: {bias:.4f}"
 
 
 class TestCoverageProperties:
@@ -205,9 +200,7 @@ class TestCoverageProperties:
         coverage_rate = np.mean(coverages)
 
         # Should have good coverage with large n
-        assert coverage_rate > 0.88, (
-            f"Large sample coverage too low: {coverage_rate:.1%}"
-        )
+        assert coverage_rate > 0.88, f"Large sample coverage too low: {coverage_rate:.1%}"
 
 
 class TestStandardErrorAccuracy:
@@ -295,9 +288,7 @@ class TestSelectionTestPower:
 
         rejection_rate = np.mean([p < 0.05 for p in lambda_pvalues])
 
-        assert rejection_rate > 0.40, (
-            f"Selection test power too low: {rejection_rate:.1%}"
-        )
+        assert rejection_rate > 0.40, f"Selection test power too low: {rejection_rate:.1%}"
 
     @pytest.mark.monte_carlo
     def test_selection_test_type_i_error(self):
@@ -318,9 +309,7 @@ class TestSelectionTestPower:
 
         rejection_rate = np.mean([p < 0.05 for p in lambda_pvalues])
 
-        assert rejection_rate < 0.12, (
-            f"Type I error too high: {rejection_rate:.1%}"
-        )
+        assert rejection_rate < 0.12, f"Type I error too high: {rejection_rate:.1%}"
 
 
 class TestAsymptoticProperties:
@@ -348,8 +337,7 @@ class TestAsymptoticProperties:
         # Bias should generally decrease (not always monotonic due to sampling)
         # At minimum, large n should have smaller bias than small n
         assert biases[1000] < biases[200] + 0.05, (
-            f"Bias not decreasing: n=200: {biases[200]:.4f}, "
-            f"n=1000: {biases[1000]:.4f}"
+            f"Bias not decreasing: n=200: {biases[200]:.4f}, n=1000: {biases[1000]:.4f}"
         )
 
     @pytest.mark.monte_carlo
@@ -373,8 +361,7 @@ class TestAsymptoticProperties:
 
         # SE should decrease with n (roughly as 1/√n)
         assert se_means[1000] < se_means[200], (
-            f"SE not decreasing: n=200: {se_means[200]:.4f}, "
-            f"n=1000: {se_means[1000]:.4f}"
+            f"SE not decreasing: n=200: {se_means[200]:.4f}, n=1000: {se_means[1000]:.4f}"
         )
 
 
@@ -401,7 +388,7 @@ class TestRobustnessToRho:
             # All estimates should be finite
             finite_rate = np.mean(np.isfinite(estimates))
             assert finite_rate > 0.95, (
-                f"Too many non-finite estimates for ρ={rho}: {1-finite_rate:.1%} failed"
+                f"Too many non-finite estimates for ρ={rho}: {1 - finite_rate:.1%} failed"
             )
 
 
@@ -458,6 +445,5 @@ class TestComparisonWithOLS:
 
         # Heckman should have less bias (or at least not much more)
         assert heckman_bias < ols_bias + 0.15, (
-            f"Heckman bias ({heckman_bias:.4f}) not better than "
-            f"OLS bias ({ols_bias:.4f})"
+            f"Heckman bias ({heckman_bias:.4f}) not better than OLS bias ({ols_bias:.4f})"
         )

@@ -347,7 +347,7 @@ def balance_summary(
     else:
         improvement = 0.0
 
-    all_balanced = (n_imbalanced == 0)
+    all_balanced = n_imbalanced == 0
 
     return {
         "n_covariates": p,

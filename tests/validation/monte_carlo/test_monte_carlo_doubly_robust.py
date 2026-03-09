@@ -73,9 +73,7 @@ class TestMonteCarloDoublyRobustBothCorrect:
         assert np.abs(bias) < 0.05, f"Bias = {bias:.3f}, expected < 0.05"
 
         # Coverage 94-96%
-        assert (
-            0.94 <= coverage <= 0.96
-        ), f"Coverage = {coverage:.3f}, expected 94-96%"
+        assert 0.94 <= coverage <= 0.96, f"Coverage = {coverage:.3f}, expected 94-96%"
 
         # SE accuracy < 10%
         se_accuracy = np.abs(empirical_sd - mean_se) / empirical_sd
@@ -118,9 +116,7 @@ class TestMonteCarloDoublyRobustBothCorrect:
             T = np.random.binomial(1, e_X)
 
             # Outcome: linear in covariates
-            Y = true_ate * T + (2 + 0.4 * X1 + 0.3 * X2 + 0.2 * X3) + np.random.normal(
-                0, 0.5, n
-            )
+            Y = true_ate * T + (2 + 0.4 * X1 + 0.3 * X2 + 0.2 * X3) + np.random.normal(0, 0.5, n)
 
             result = dr_ate(Y, T, X)
 
@@ -139,9 +135,7 @@ class TestMonteCarloDoublyRobustBothCorrect:
         assert np.abs(bias) < 0.05, f"Bias = {bias:.3f}, expected < 0.05"
 
         # Coverage 94-96%
-        assert (
-            0.94 <= coverage <= 0.96
-        ), f"Coverage = {coverage:.3f}, expected 94-96%"
+        assert 0.94 <= coverage <= 0.96, f"Coverage = {coverage:.3f}, expected 94-96%"
 
         # SE accuracy < 10%
         assert se_accuracy < 0.10, f"SE accuracy = {se_accuracy:.3f}, expected < 0.10"
@@ -202,9 +196,7 @@ class TestMonteCarloDoublyRobustPropensityCorrect:
         assert np.abs(bias) < 0.10, f"Bias = {bias:.3f}, expected < 0.10"
 
         # Coverage 93-97.5% (relaxed upper bound for misspecification)
-        assert (
-            0.93 <= coverage <= 0.975
-        ), f"Coverage = {coverage:.3f}, expected 93-97.5%"
+        assert 0.93 <= coverage <= 0.975, f"Coverage = {coverage:.3f}, expected 93-97.5%"
 
         # SE accuracy < 15%
         assert se_accuracy < 0.15, f"SE accuracy = {se_accuracy:.3f}, expected < 0.15"
@@ -266,9 +258,7 @@ class TestMonteCarloDoublyRobustOutcomeCorrect:
         assert np.abs(bias) < 0.10, f"Bias = {bias:.3f}, expected < 0.10"
 
         # Coverage 93-97.5%
-        assert (
-            0.93 <= coverage <= 0.975
-        ), f"Coverage = {coverage:.3f}, expected 93-97.5%"
+        assert 0.93 <= coverage <= 0.975, f"Coverage = {coverage:.3f}, expected 93-97.5%"
 
         # SE accuracy < 15%
         assert se_accuracy < 0.15, f"SE accuracy = {se_accuracy:.3f}, expected < 0.15"

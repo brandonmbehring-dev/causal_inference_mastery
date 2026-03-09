@@ -246,7 +246,9 @@ def _find_causal_order(A: np.ndarray, verbose: bool = False) -> Tuple[List[int],
         # Update working matrix (remove effect of this variable)
         if remaining:
             for i in remaining:
-                A_work[i, :] -= A_work[i, next_var] / A_work[next_var, next_var] * A_work[next_var, :]
+                A_work[i, :] -= (
+                    A_work[i, next_var] / A_work[next_var, next_var] * A_work[next_var, :]
+                )
 
     # Build permutation matrix
     P = np.zeros((n, n))
@@ -397,8 +399,10 @@ def direct_lingam(
         remaining.remove(next_var)
 
         if verbose:
-            print(f"  Step {len(causal_order)}: selected variable {next_var} "
-                  f"(score={exog_scores[0][1]:.4f})")
+            print(
+                f"  Step {len(causal_order)}: selected variable {next_var} "
+                f"(score={exog_scores[0][1]:.4f})"
+            )
 
         # Remove effect of next_var from all remaining variables
         if remaining:

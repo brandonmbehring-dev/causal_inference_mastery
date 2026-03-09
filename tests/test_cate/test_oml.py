@@ -87,9 +87,7 @@ class TestIRMKnownAnswer:
         result = irm_dml(Y, T, X, n_folds=5)
 
         # ATE should be close to true value
-        assert abs(result["ate"] - 2.0) < 0.5, (
-            f"IRM ATE {result['ate']:.3f} far from true 2.0"
-        )
+        assert abs(result["ate"] - 2.0) < 0.5, f"IRM ATE {result['ate']:.3f} far from true 2.0"
         assert result["method"] == "irm_dml"
         assert result["target"] == "ate"
         assert result["score_type"] == "irm"
@@ -185,9 +183,7 @@ class TestIRMAdversarial:
     def test_irm_confounded_dgp(self):
         """IRM handles confounded treatment assignment."""
         # Strong confounding
-        Y, T, X = generate_irm_dgp(
-            n=500, true_ate=2.0, confounding_strength=1.0, seed=42
-        )
+        Y, T, X = generate_irm_dgp(n=500, true_ate=2.0, confounding_strength=1.0, seed=42)
 
         result = irm_dml(Y, T, X, n_folds=5)
 
@@ -333,9 +329,7 @@ class TestIRMMonteCarlo:
 
         estimates = []
         for sim in range(n_sims):
-            Y, T, X = generate_irm_dgp(
-                n=300, true_ate=true_ate, seed=sim * 1000 + 42
-            )
+            Y, T, X = generate_irm_dgp(n=300, true_ate=true_ate, seed=sim * 1000 + 42)
             result = irm_dml(Y, T, X, n_folds=5)
             estimates.append(result["ate"])
 
@@ -354,9 +348,7 @@ class TestIRMMonteCarlo:
 
         covers = []
         for sim in range(n_sims):
-            Y, T, X = generate_irm_dgp(
-                n=300, true_ate=true_ate, seed=sim * 1000 + 42
-            )
+            Y, T, X = generate_irm_dgp(n=300, true_ate=true_ate, seed=sim * 1000 + 42)
             result = irm_dml(Y, T, X, n_folds=5, alpha=0.05)
             covers.append(result["ci_lower"] < true_ate < result["ci_upper"])
 
@@ -395,9 +387,7 @@ class TestIRMMonteCarlo:
 
         bias = np.mean(estimates) - true_ate
         # DR property: should still have reasonable bias even with misspecified outcome
-        assert abs(bias) < 0.50, (
-            f"Bias {bias:.4f} too large despite propensity being correct"
-        )
+        assert abs(bias) < 0.50, f"Bias {bias:.4f} too large despite propensity being correct"
 
     @pytest.mark.slow
     def test_atte_unbiased(self):
@@ -411,9 +401,7 @@ class TestIRMMonteCarlo:
 
         estimates = []
         for sim in range(n_sims):
-            Y, T, X = generate_irm_dgp(
-                n=300, true_ate=true_ate, seed=sim * 1000 + 42
-            )
+            Y, T, X = generate_irm_dgp(n=300, true_ate=true_ate, seed=sim * 1000 + 42)
             result = irm_dml(Y, T, X, n_folds=5, target="atte")
             estimates.append(result["ate"])
 

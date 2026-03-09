@@ -191,9 +191,7 @@ def _create_interactions(data: StaggeredData) -> tuple[pd.DataFrame, list[str]]:
 
         for l in sorted(event_times):
             col_name = f"cohort_{int(g)}_event_{int(l)}"
-            df[col_name] = ((df["treatment_time"] == g) & (df["event_time"] == l)).astype(
-                float
-            )
+            df[col_name] = ((df["treatment_time"] == g) & (df["event_time"] == l)).astype(float)
             interaction_cols.append(col_name)
 
     return df, interaction_cols
@@ -356,9 +354,7 @@ def _aggregate_sun_abraham(
         - se: Standard error
     """
     # Merge cohort effects and weights
-    merged = cohort_effects_df.merge(
-        weights_df, on=["cohort", "event_time"], how="inner"
-    )
+    merged = cohort_effects_df.merge(weights_df, on=["cohort", "event_time"], how="inner")
 
     # Compute weighted average
     att = np.sum(merged["coef"] * merged["weight"])

@@ -70,9 +70,7 @@ class TestBootstrapFEVDKnownAnswer:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         assert isinstance(fevd_ci, FEVDBootstrapResult)
 
@@ -84,9 +82,7 @@ class TestBootstrapFEVDKnownAnswer:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         assert fevd_ci.fevd.shape == (2, 2, 11)
         assert fevd_ci.fevd_lower.shape == (2, 2, 11)
@@ -100,9 +96,7 @@ class TestBootstrapFEVDKnownAnswer:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         assert fevd_ci.has_confidence_bands
         # Lower should be <= upper
@@ -116,9 +110,7 @@ class TestBootstrapFEVDKnownAnswer:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         # All values should be between 0 and 1
         assert np.all(fevd_ci.fevd >= 0)
@@ -134,9 +126,7 @@ class TestBootstrapFEVDKnownAnswer:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         assert fevd_ci.validate_rows_sum_to_one()
 
@@ -149,9 +139,7 @@ class TestBootstrapFEVDKnownAnswer:
         svar_result = cholesky_svar(var_result)
 
         fevd_point = compute_fevd(svar_result, horizons=10)
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         np.testing.assert_allclose(fevd_ci.fevd, fevd_point.fevd, rtol=1e-10)
 
@@ -163,9 +151,7 @@ class TestBootstrapFEVDKnownAnswer:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         # Point estimate should be within CI (or very close due to bootstrap variability)
         # Using relaxed check since bootstrap median may differ slightly from point estimate
@@ -243,9 +229,7 @@ class TestFEVDBootstrapResultMethods:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         result = fevd_ci.get_decomposition_with_ci(0, horizon=5)
 
@@ -263,9 +247,7 @@ class TestFEVDBootstrapResultMethods:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         result = fevd_ci.get_contribution_with_ci(response_var=0, shock_var=1)
 
@@ -292,9 +274,7 @@ class TestBootstrapFEVDAdversarial:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=5, n_bootstrap=30, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=5, n_bootstrap=30, seed=seed)
 
         assert fevd_ci.has_confidence_bands
 
@@ -306,9 +286,7 @@ class TestBootstrapFEVDAdversarial:
         var_result = var_estimate(data, lags=2)
         svar_result = cholesky_svar(var_result)
 
-        fevd_ci = bootstrap_fevd(
-            data, svar_result, horizons=10, n_bootstrap=50, seed=seed
-        )
+        fevd_ci = bootstrap_fevd(data, svar_result, horizons=10, n_bootstrap=50, seed=seed)
 
         assert fevd_ci.fevd.shape == (3, 3, 11)
 
@@ -439,16 +417,26 @@ class TestBootstrapFEVDMonteCarlo:
 
             # Residual bootstrap
             fevd_resid = bootstrap_fevd(
-                data, svar_result, horizons=horizons, n_bootstrap=100, alpha=alpha,
-                method="residual", seed=run
+                data,
+                svar_result,
+                horizons=horizons,
+                n_bootstrap=100,
+                alpha=alpha,
+                method="residual",
+                seed=run,
             )
             if fevd_resid.fevd_lower[0, 0, 5] <= true_value <= fevd_resid.fevd_upper[0, 0, 5]:
                 residual_coverage += 1
 
             # Wild bootstrap
             fevd_wild = bootstrap_fevd(
-                data, svar_result, horizons=horizons, n_bootstrap=100, alpha=alpha,
-                method="wild", seed=run
+                data,
+                svar_result,
+                horizons=horizons,
+                n_bootstrap=100,
+                alpha=alpha,
+                method="wild",
+                seed=run,
             )
             if fevd_wild.fevd_lower[0, 0, 5] <= true_value <= fevd_wild.fevd_upper[0, 0, 5]:
                 wild_coverage += 1
@@ -487,8 +475,7 @@ class TestBootstrapFEVDMonteCarlo:
             svar_result = cholesky_svar(var_result)
 
             fevd_ci = bootstrap_fevd(
-                data, svar_result, horizons=horizons, n_bootstrap=n_bootstrap,
-                alpha=alpha, seed=42
+                data, svar_result, horizons=horizons, n_bootstrap=n_bootstrap, alpha=alpha, seed=42
             )
 
             # Average CI width

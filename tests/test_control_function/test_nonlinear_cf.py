@@ -54,9 +54,7 @@ class TestNonlinearCFBasic:
             Y, D, Z.ravel(), X, model_type="probit", n_bootstrap=50, random_state=42
         )
 
-        cf = NonlinearControlFunction(
-            model_type="probit", n_bootstrap=50, random_state=42
-        )
+        cf = NonlinearControlFunction(model_type="probit", n_bootstrap=50, random_state=42)
         result2 = cf.fit(Y, D, Z.ravel(), X)
 
         assert np.isclose(result1["estimate"], result2["estimate"], rtol=1e-10)
@@ -146,9 +144,7 @@ class TestEndogeneityDetection:
         """Detects endogeneity when rho > 0."""
         Y, D, Z, X, true_beta, rho = nonlinear_cf_probit
         # rho = 0.5 in this fixture
-        result = nonlinear_control_function(
-            Y, D, Z.ravel(), X, n_bootstrap=200, random_state=42
-        )
+        result = nonlinear_control_function(Y, D, Z.ravel(), X, n_bootstrap=200, random_state=42)
 
         # Should detect endogeneity with high probability
         # (may not always due to sampling variability)
@@ -157,9 +153,7 @@ class TestEndogeneityDetection:
     def test_no_endogeneity_when_absent(self, nonlinear_cf_no_endogeneity):
         """Control coefficient is small when rho = 0."""
         Y, D, Z, X, true_beta, rho = nonlinear_cf_no_endogeneity
-        result = nonlinear_control_function(
-            Y, D, Z.ravel(), X, n_bootstrap=200, random_state=42
-        )
+        result = nonlinear_control_function(Y, D, Z.ravel(), X, n_bootstrap=200, random_state=42)
 
         # Control coefficient should be close to zero
         # We can't guarantee endogeneity_detected == False due to type I error
@@ -179,9 +173,7 @@ class TestAME:
         """AME has correct sign for positive true effect."""
         Y, D, Z, X, true_beta, _ = nonlinear_cf_probit
         # true_beta = 1.0 (positive)
-        result = nonlinear_control_function(
-            Y, D, Z.ravel(), X, n_bootstrap=200, random_state=42
-        )
+        result = nonlinear_control_function(Y, D, Z.ravel(), X, n_bootstrap=200, random_state=42)
 
         # AME should be positive (same sign as true_beta)
         # Note: AME is scaled by phi/lambda, so magnitude differs from true_beta
@@ -190,9 +182,7 @@ class TestAME:
     def test_ame_reasonable_magnitude(self, nonlinear_cf_probit):
         """AME has reasonable magnitude (typically 0.1-0.5 for marginal effects)."""
         Y, D, Z, X, _, _ = nonlinear_cf_probit
-        result = nonlinear_control_function(
-            Y, D, Z.ravel(), X, n_bootstrap=100, random_state=42
-        )
+        result = nonlinear_control_function(Y, D, Z.ravel(), X, n_bootstrap=100, random_state=42)
 
         # AME typically in reasonable range
         assert abs(result["estimate"]) < 1.0  # Not implausibly large
@@ -337,12 +327,8 @@ class TestEdgeCases:
         """Results reproducible with same random_state."""
         Y, D, Z, X, _, _ = nonlinear_cf_probit
 
-        result1 = nonlinear_control_function(
-            Y, D, Z.ravel(), X, n_bootstrap=50, random_state=42
-        )
-        result2 = nonlinear_control_function(
-            Y, D, Z.ravel(), X, n_bootstrap=50, random_state=42
-        )
+        result1 = nonlinear_control_function(Y, D, Z.ravel(), X, n_bootstrap=50, random_state=42)
+        result2 = nonlinear_control_function(Y, D, Z.ravel(), X, n_bootstrap=50, random_state=42)
 
         assert np.isclose(result1["estimate"], result2["estimate"])
         assert np.isclose(result1["se"], result2["se"])

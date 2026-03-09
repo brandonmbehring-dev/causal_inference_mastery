@@ -79,9 +79,9 @@ class TestIPWATEConstantPropensity:
         n = 100
         propensity = np.ones(n) * 0.5
         treatment = np.array([1] * 50 + [0] * 50)
-        outcomes = np.where(treatment == 1,
-                           np.random.normal(2.0, 1.0, n),
-                           np.random.normal(0.0, 1.0, n))
+        outcomes = np.where(
+            treatment == 1, np.random.normal(2.0, 1.0, n), np.random.normal(0.0, 1.0, n)
+        )
 
         result = ipw_ate(outcomes, treatment, propensity)
 
@@ -137,13 +137,15 @@ class TestIPWATEPerfectSeparation:
         n = 100
         # Treated have propensity near 1, control have propensity near 0
         treatment = np.array([1] * 50 + [0] * 50)
-        propensity = np.concatenate([
-            np.ones(50) * 0.99,   # Treated
-            np.ones(50) * 0.01    # Control
-        ])
-        outcomes = np.where(treatment == 1,
-                           np.random.normal(2.0, 1.0, n),
-                           np.random.normal(0.0, 1.0, n))
+        propensity = np.concatenate(
+            [
+                np.ones(50) * 0.99,  # Treated
+                np.ones(50) * 0.01,  # Control
+            ]
+        )
+        outcomes = np.where(
+            treatment == 1, np.random.normal(2.0, 1.0, n), np.random.normal(0.0, 1.0, n)
+        )
         np.random.seed(42)
 
         result = ipw_ate(outcomes, treatment, propensity)

@@ -30,6 +30,7 @@ from numpy.linalg import lstsq
 
 class ScoreType(Enum):
     """Score function types."""
+
     BIC = "bic"
     AIC = "aic"
     BIC_G = "bic_g"  # BIC with Gaussian assumption
@@ -52,6 +53,7 @@ class LocalScore:
     rss : float
         Residual sum of squares
     """
+
     node: int
     parents: Set[int]
     score: float
@@ -81,7 +83,7 @@ def _compute_rss(data: np.ndarray, node: int, parents: Set[int]) -> float:
 
     if len(parents) == 0:
         # No parents: RSS = sum of squared deviations from mean
-        return np.sum((y - np.mean(y))**2)
+        return np.sum((y - np.mean(y)) ** 2)
 
     # Regress node on parents
     X = data[:, list(parents)]
@@ -96,7 +98,7 @@ def _compute_rss(data: np.ndarray, node: int, parents: Set[int]) -> float:
 
     # Compute residuals manually if not returned
     y_pred = X_with_intercept @ beta
-    rss = np.sum((y - y_pred)**2)
+    rss = np.sum((y - y_pred) ** 2)
 
     return rss
 
@@ -105,7 +107,7 @@ def local_score_bic(
     data: np.ndarray,
     node: int,
     parents: Set[int],
-    cache: Optional[Dict[Tuple[int, frozenset], float]] = None
+    cache: Optional[Dict[Tuple[int, frozenset], float]] = None,
 ) -> LocalScore:
     """Compute local BIC score for a node given its parents.
 
@@ -157,13 +159,7 @@ def local_score_bic(
     penalty = n_params / 2 * np.log(n_samples)
     score = log_likelihood - penalty
 
-    result = LocalScore(
-        node=node,
-        parents=parents,
-        score=score,
-        n_params=n_params,
-        rss=rss
-    )
+    result = LocalScore(node=node, parents=parents, score=score, n_params=n_params, rss=rss)
 
     # Cache result
     if cache is not None:
@@ -176,7 +172,7 @@ def local_score_aic(
     data: np.ndarray,
     node: int,
     parents: Set[int],
-    cache: Optional[Dict[Tuple[int, frozenset], float]] = None
+    cache: Optional[Dict[Tuple[int, frozenset], float]] = None,
 ) -> LocalScore:
     """Compute local AIC score for a node given its parents.
 
@@ -200,13 +196,7 @@ def local_score_aic(
     penalty = n_params
     score = log_likelihood - penalty
 
-    result = LocalScore(
-        node=node,
-        parents=parents,
-        score=score,
-        n_params=n_params,
-        rss=rss
-    )
+    result = LocalScore(node=node, parents=parents, score=score, n_params=n_params, rss=rss)
 
     if cache is not None:
         cache[cache_key] = result
@@ -219,7 +209,7 @@ def local_score(
     node: int,
     parents: Set[int],
     score_type: ScoreType = ScoreType.BIC,
-    cache: Optional[Dict] = None
+    cache: Optional[Dict] = None,
 ) -> LocalScore:
     """Compute local score for a node given its parents.
 
@@ -253,7 +243,7 @@ def total_score(
     data: np.ndarray,
     adjacency: np.ndarray,
     score_type: ScoreType = ScoreType.BIC,
-    cache: Optional[Dict] = None
+    cache: Optional[Dict] = None,
 ) -> float:
     """Compute total score for a DAG.
 
@@ -293,7 +283,7 @@ def score_delta_add(
     current_parents: Set[int],
     new_parent: int,
     score_type: ScoreType = ScoreType.BIC,
-    cache: Optional[Dict] = None
+    cache: Optional[Dict] = None,
 ) -> float:
     """Compute score change from adding an edge.
 
@@ -311,7 +301,7 @@ def score_delta_remove(
     current_parents: Set[int],
     parent_to_remove: int,
     score_type: ScoreType = ScoreType.BIC,
-    cache: Optional[Dict] = None
+    cache: Optional[Dict] = None,
 ) -> float:
     """Compute score change from removing an edge.
 

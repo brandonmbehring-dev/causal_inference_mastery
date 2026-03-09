@@ -82,11 +82,7 @@ def generate_proxy_svar_dgp(
     u = (B0_inv_true @ eps.T).T
 
     # VAR coefficients (stable)
-    A1 = np.array([
-        [0.5, 0.1, 0.0],
-        [0.0, 0.4, 0.1],
-        [0.0, 0.0, 0.3]
-    ])[:n_vars, :n_vars]
+    A1 = np.array([[0.5, 0.1, 0.0], [0.0, 0.4, 0.1], [0.0, 0.0, 0.3]])[:n_vars, :n_vars]
 
     # Generate VAR data
     data = np.zeros((n, n_vars))
@@ -331,7 +327,7 @@ class TestProxySVARAdversarial:
 
         data = np.zeros((n, n_vars))
         for t in range(1, n):
-            data[t] = 0.5 * data[t-1] + u[t]
+            data[t] = 0.5 * data[t - 1] + u[t]
 
         var_result = var_estimate(data, lags=1)
 
@@ -423,7 +419,11 @@ class TestProxySVARMonteCarlo:
 
                 # Check if true value in CI (for normalized comparison)
                 for i in range(3):
-                    if result.impact_column_ci_lower[i] <= true_impact[i] <= result.impact_column_ci_upper[i]:
+                    if (
+                        result.impact_column_ci_lower[i]
+                        <= true_impact[i]
+                        <= result.impact_column_ci_upper[i]
+                    ):
                         coverage[i] += 1
             except Exception:
                 continue

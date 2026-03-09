@@ -123,9 +123,7 @@ class TestKnownAnswer:
 
     def test_constant_effect_recovered(self):
         """DML should recover constant treatment effect within tolerance."""
-        Y, D, X, true_effect = generate_continuous_dgp(
-            n=1000, true_effect=2.0, random_state=42
-        )
+        Y, D, X, true_effect = generate_continuous_dgp(n=1000, true_effect=2.0, random_state=42)
         result = dml_continuous(Y, D, X)
 
         assert np.abs(result.ate - true_effect) < 0.3, (
@@ -134,18 +132,14 @@ class TestKnownAnswer:
 
     def test_zero_effect_recovered(self):
         """DML should recover zero effect when there is none."""
-        Y, D, X, _ = generate_continuous_dgp(
-            n=1000, true_effect=0.0, random_state=43
-        )
+        Y, D, X, _ = generate_continuous_dgp(n=1000, true_effect=0.0, random_state=43)
         result = dml_continuous(Y, D, X)
 
         assert np.abs(result.ate) < 0.2, f"ATE estimate {result.ate:.4f} should be near 0"
 
     def test_negative_effect_recovered(self):
         """DML should recover negative treatment effects."""
-        Y, D, X, true_effect = generate_continuous_dgp(
-            n=1000, true_effect=-1.5, random_state=44
-        )
+        Y, D, X, true_effect = generate_continuous_dgp(n=1000, true_effect=-1.5, random_state=44)
         result = dml_continuous(Y, D, X)
 
         assert np.abs(result.ate - true_effect) < 0.3, (
@@ -154,9 +148,7 @@ class TestKnownAnswer:
 
     def test_large_effect_recovered(self):
         """DML should recover large treatment effects."""
-        Y, D, X, true_effect = generate_continuous_dgp(
-            n=1000, true_effect=5.0, random_state=45
-        )
+        Y, D, X, true_effect = generate_continuous_dgp(n=1000, true_effect=5.0, random_state=45)
         result = dml_continuous(Y, D, X)
 
         assert np.abs(result.ate - true_effect) < 0.5, (
@@ -165,9 +157,7 @@ class TestKnownAnswer:
 
     def test_ci_contains_true_effect(self):
         """95% CI should contain true effect."""
-        Y, D, X, true_effect = generate_continuous_dgp(
-            n=1000, true_effect=2.0, random_state=46
-        )
+        Y, D, X, true_effect = generate_continuous_dgp(n=1000, true_effect=2.0, random_state=46)
         result = dml_continuous(Y, D, X)
 
         assert result.ci_lower < true_effect < result.ci_upper, (
@@ -217,9 +207,7 @@ class TestAdversarial:
     def test_high_dimensional_covariates(self):
         """DML should work with p > n/10 covariates."""
         n, p = 200, 30
-        Y, D, X, true_effect = generate_continuous_dgp(
-            n=n, p=p, true_effect=2.0, random_state=60
-        )
+        Y, D, X, true_effect = generate_continuous_dgp(n=n, p=p, true_effect=2.0, random_state=60)
         result = dml_continuous(Y, D, X, n_folds=3)
 
         # Should run without error and produce reasonable estimate
@@ -291,9 +279,7 @@ class TestMonteCarlo:
         estimates = []
 
         for seed in range(n_runs):
-            Y, D, X, _ = generate_continuous_dgp(
-                n=500, true_effect=true_effect, random_state=seed
-            )
+            Y, D, X, _ = generate_continuous_dgp(n=500, true_effect=true_effect, random_state=seed)
             result = dml_continuous(Y, D, X)
             estimates.append(result.ate)
 
@@ -308,9 +294,7 @@ class TestMonteCarlo:
         covers = []
 
         for seed in range(n_runs):
-            Y, D, X, _ = generate_continuous_dgp(
-                n=500, true_effect=true_effect, random_state=seed
-            )
+            Y, D, X, _ = generate_continuous_dgp(n=500, true_effect=true_effect, random_state=seed)
             result = dml_continuous(Y, D, X)
             covers.append(result.ci_lower < true_effect < result.ci_upper)
 
@@ -326,9 +310,7 @@ class TestMonteCarlo:
         ses = []
 
         for seed in range(n_runs):
-            Y, D, X, _ = generate_continuous_dgp(
-                n=500, true_effect=true_effect, random_state=seed
-            )
+            Y, D, X, _ = generate_continuous_dgp(n=500, true_effect=true_effect, random_state=seed)
             result = dml_continuous(Y, D, X)
             estimates.append(result.ate)
             ses.append(result.ate_se)
@@ -337,9 +319,7 @@ class TestMonteCarlo:
         mean_se = np.mean(ses)
 
         se_ratio = mean_se / empirical_sd
-        assert 0.7 < se_ratio < 1.5, (
-            f"SE ratio {se_ratio:.2f} outside [0.7, 1.5]"
-        )
+        assert 0.7 < se_ratio < 1.5, f"SE ratio {se_ratio:.2f} outside [0.7, 1.5]"
 
 
 # =============================================================================
@@ -363,9 +343,18 @@ class TestDiagnostics:
         result = dml_continuous(Y, D, X)
 
         expected_fields = {
-            "cate", "ate", "ate_se", "ci_lower", "ci_upper", "method",
-            "fold_estimates", "fold_ses", "outcome_r2", "treatment_r2",
-            "n", "n_folds"
+            "cate",
+            "ate",
+            "ate_se",
+            "ci_lower",
+            "ci_upper",
+            "method",
+            "fold_estimates",
+            "fold_ses",
+            "outcome_r2",
+            "treatment_r2",
+            "n",
+            "n_folds",
         }
         actual_fields = {f.name for f in fields(result)}
         assert expected_fields == actual_fields
@@ -539,9 +528,7 @@ class TestGoldenReference:
 
     def test_golden_reference_seed_42(self):
         """Result should match frozen reference for seed 42."""
-        Y, D, X, _ = generate_continuous_dgp(
-            n=500, p=5, true_effect=2.0, random_state=42
-        )
+        Y, D, X, _ = generate_continuous_dgp(n=500, p=5, true_effect=2.0, random_state=42)
         result = dml_continuous(Y, D, X, n_folds=5)
 
         # These are approximate expectations; update after implementation stabilizes

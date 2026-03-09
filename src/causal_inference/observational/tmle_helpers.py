@@ -140,7 +140,7 @@ def fit_fluctuation(
     # Fit epsilon via simple regression: residuals ~ H
     # epsilon = sum(H * residuals) / sum(H^2)
     numerator = np.sum(clever_covariate * residuals)
-    denominator = np.sum(clever_covariate ** 2)
+    denominator = np.sum(clever_covariate**2)
 
     if np.abs(denominator) < 1e-10:
         # Avoid division by zero - no fluctuation needed
@@ -206,7 +206,7 @@ def fit_fluctuation_logistic(
         score = np.sum(clever_covariate * (outcomes - Q_star))
 
         # Information (Hessian): sum(H^2 * Q* * (1 - Q*))
-        info = np.sum(clever_covariate ** 2 * Q_star * (1 - Q_star))
+        info = np.sum(clever_covariate**2 * Q_star * (1 - Q_star))
 
         if np.abs(info) < 1e-10:
             break
@@ -361,6 +361,6 @@ def compute_tmle_variance(eif: np.ndarray) -> float:
         Estimated variance of ATE.
     """
     n = len(eif)
-    variance = np.mean(eif ** 2) / n
+    variance = np.mean(eif**2) / n
 
     return variance

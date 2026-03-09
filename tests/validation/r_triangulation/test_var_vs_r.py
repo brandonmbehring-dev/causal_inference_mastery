@@ -47,6 +47,7 @@ try:
         r_granger_causality,
         r_var_forecast,
     )
+
     R_AVAILABLE = True
 except ImportError:
     R_AVAILABLE = False
@@ -63,10 +64,7 @@ def check_r_available():
 
 
 # Skip if R/vars not available
-pytestmark = pytest.mark.skipif(
-    not check_r_available(),
-    reason="R or vars package not available"
-)
+pytestmark = pytest.mark.skipif(not check_r_available(), reason="R or vars package not available")
 
 
 # =============================================================================
@@ -115,25 +113,31 @@ def generate_var_dgp(
     if p == 1:
         if granger_structure == "bidirectional":
             # Both cause each other
-            A = np.array([
-                [0.5, 0.2],   # y1_t = 0.5*y1_{t-1} + 0.2*y2_{t-1}
-                [0.3, 0.4],   # y2_t = 0.3*y1_{t-1} + 0.4*y2_{t-1}
-            ])
+            A = np.array(
+                [
+                    [0.5, 0.2],  # y1_t = 0.5*y1_{t-1} + 0.2*y2_{t-1}
+                    [0.3, 0.4],  # y2_t = 0.3*y1_{t-1} + 0.4*y2_{t-1}
+                ]
+            )
             granger_01 = True
             granger_10 = True
         elif granger_structure == "unidirectional":
             # Only 0 -> 1
-            A = np.array([
-                [0.5, 0.0],   # y1_t = 0.5*y1_{t-1} (no effect from y2)
-                [0.4, 0.3],   # y2_t = 0.4*y1_{t-1} + 0.3*y2_{t-1}
-            ])
+            A = np.array(
+                [
+                    [0.5, 0.0],  # y1_t = 0.5*y1_{t-1} (no effect from y2)
+                    [0.4, 0.3],  # y2_t = 0.4*y1_{t-1} + 0.3*y2_{t-1}
+                ]
+            )
             granger_01 = False
             granger_10 = True
         else:  # independent
-            A = np.array([
-                [0.5, 0.0],
-                [0.0, 0.4],
-            ])
+            A = np.array(
+                [
+                    [0.5, 0.0],
+                    [0.0, 0.4],
+                ]
+            )
             granger_01 = False
             granger_10 = False
     else:
@@ -143,15 +147,21 @@ def generate_var_dgp(
             A_lag = np.random.randn(k, k) * 0.3 / (lag + 1)
             # Make diagonal dominant for stability
             A_lag[np.diag_indices_from(A_lag)] = 0.4 / (lag + 1)
-            A[:, lag*k:(lag+1)*k] = A_lag
+            A[:, lag * k : (lag + 1) * k] = A_lag
         granger_01 = True
         granger_10 = True
 
     # Error covariance
-    sigma = np.array([
-        [1.0, 0.3],
-        [0.3, 1.0],
-    ]) if k == 2 else np.eye(k)
+    sigma = (
+        np.array(
+            [
+                [1.0, 0.3],
+                [0.3, 1.0],
+            ]
+        )
+        if k == 2
+        else np.eye(k)
+    )
 
     # Generate data
     burn_in = 50
@@ -160,7 +170,7 @@ def generate_var_dgp(
 
     for t in range(p, T + burn_in):
         for lag in range(p):
-            data[t] += A[:, lag*k:(lag+1)*k] @ data[t - lag - 1]
+            data[t] += A[:, lag * k : (lag + 1) * k] @ data[t - lag - 1]
         data[t] += errors[t]
 
     # Remove burn-in
@@ -188,15 +198,19 @@ def generate_irf_dgp(
     np.random.seed(seed)
 
     # VAR(1) with known dynamics
-    A = np.array([
-        [0.5, 0.2],
-        [0.1, 0.4],
-    ])
+    A = np.array(
+        [
+            [0.5, 0.2],
+            [0.1, 0.4],
+        ]
+    )
 
-    sigma = np.array([
-        [1.0, 0.0],
-        [0.0, 1.0],
-    ])
+    sigma = np.array(
+        [
+            [1.0, 0.0],
+            [0.0, 1.0],
+        ]
+    )
 
     # Generate data
     T_total = T + 50
@@ -204,7 +218,7 @@ def generate_irf_dgp(
     errors = np.random.multivariate_normal(np.zeros(2), sigma, T_total)
 
     for t in range(1, T_total):
-        data[t] = A @ data[t-1] + errors[t]
+        data[t] = A @ data[t - 1] + errors[t]
 
     # Compute analytical IRFs
     # IRF(0) = Cholesky(Sigma)

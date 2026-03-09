@@ -350,8 +350,12 @@ def mccrary_density_test(
     log_right_density = np.log(right_density + eps)
 
     # Estimate density at cutoff from both sides
-    f_left_at_cutoff = _estimate_density_at_cutoff(left_centers, log_left_density, cutoff, bandwidth)
-    f_right_at_cutoff = _estimate_density_at_cutoff(right_centers, log_right_density, cutoff, bandwidth)
+    f_left_at_cutoff = _estimate_density_at_cutoff(
+        left_centers, log_left_density, cutoff, bandwidth
+    )
+    f_right_at_cutoff = _estimate_density_at_cutoff(
+        right_centers, log_right_density, cutoff, bandwidth
+    )
 
     # Test statistic: log difference
     theta = np.log(f_right_at_cutoff / f_left_at_cutoff)

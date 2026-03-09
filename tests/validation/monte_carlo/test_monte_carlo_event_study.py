@@ -73,8 +73,7 @@ class TestEventStudyPretrends:
                 mean_est = np.mean(pretrend_estimates[k])
                 print(f"Pre-trend k={k}: mean={mean_est:.4f}")
                 assert abs(mean_est) < 0.35, (
-                    f"Pre-trend at k={k} has mean {mean_est:.4f}, "
-                    f"expected ~0 with parallel trends"
+                    f"Pre-trend at k={k} has mean {mean_est:.4f}, expected ~0 with parallel trends"
                 )
 
     @pytest.mark.slow
@@ -297,9 +296,7 @@ class TestEventStudyDiagnostics:
 
     def test_event_study_returns_expected_structure(self):
         """Verify event_study returns all expected output fields."""
-        data = dgp_event_study_null_pretrends(
-            n_treated=50, n_control=50, random_state=42
-        )
+        data = dgp_event_study_null_pretrends(n_treated=50, n_control=50, random_state=42)
 
         result = event_study(
             outcomes=data["outcomes"],
@@ -311,7 +308,7 @@ class TestEventStudyDiagnostics:
 
         # Check required fields (event_study uses leads/lags structure)
         assert "leads" in result  # Pre-treatment effects
-        assert "lags" in result   # Post-treatment effects
+        assert "lags" in result  # Post-treatment effects
         assert "parallel_trends_plausible" in result
         assert "omitted_period" in result
 
@@ -320,9 +317,7 @@ class TestEventStudyDiagnostics:
 
     def test_event_study_reference_period(self):
         """Verify event study uses k=-1 as reference period."""
-        data = dgp_event_study_null_pretrends(
-            n_treated=50, n_control=50, random_state=42
-        )
+        data = dgp_event_study_null_pretrends(n_treated=50, n_control=50, random_state=42)
 
         result = event_study(
             outcomes=data["outcomes"],
@@ -337,6 +332,4 @@ class TestEventStudyDiagnostics:
             f"Expected omitted period to be -1, got {result['omitted_period']}"
         )
         # k=-1 should not be in leads (it's the reference)
-        assert -1 not in result["leads"], (
-            "Reference period k=-1 should be omitted from leads"
-        )
+        assert -1 not in result["leads"], "Reference period k=-1 should be omitted from leads"

@@ -155,6 +155,5 @@ class TestSmallSampleCoverage:
         # With t-distribution, should achieve 93-97% coverage
         # With z-distribution, coverage would be lower (~90-92%)
         assert 0.90 <= coverage <= 0.98, (
-            f"IPW coverage {coverage:.2%} for n={n}. "
-            f"Expected 93-97% with t-distribution."
+            f"IPW coverage {coverage:.2%} for n={n}. Expected 93-97% with t-distribution."
         )

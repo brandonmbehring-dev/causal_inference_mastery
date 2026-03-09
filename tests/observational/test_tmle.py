@@ -219,9 +219,9 @@ class TestTMLEComparisonWithDR:
         dr_result = dr_ate(Y, T, X)
 
         # Estimates should be within 10% of each other
-        relative_diff = np.abs(
-            tmle_result["estimate"] - dr_result["estimate"]
-        ) / np.abs(dr_result["estimate"])
+        relative_diff = np.abs(tmle_result["estimate"] - dr_result["estimate"]) / np.abs(
+            dr_result["estimate"]
+        )
         assert relative_diff < 0.1
 
     def test_tmle_se_comparable_to_dr(self):

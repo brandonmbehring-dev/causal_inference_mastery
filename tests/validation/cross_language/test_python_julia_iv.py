@@ -27,8 +27,7 @@ from tests.validation.cross_language.julia_interface import (
 
 
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-validation"
+    not is_julia_available(), reason="Julia not available for cross-validation"
 )
 
 
@@ -48,23 +47,28 @@ class TestTSLSParity:
         Y = 2.0 * D + eps
 
         # Python TSLS
-        py_model = TwoStageLeastSquares(inference='robust')
+        py_model = TwoStageLeastSquares(inference="robust")
         py_model.fit(Y, D, Z.reshape(-1, 1))
 
         # Julia TSLS
         jl_result = julia_tsls(Y, D, Z, robust=True)
 
         # Validate estimates match to 1e-10
-        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-10), \
+        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-10), (
             f"Estimate mismatch: Python={py_model.coef_[0]}, Julia={jl_result['estimate']}"
+        )
 
         # SE should also match
-        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=1e-10), \
+        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=1e-10), (
             f"SE mismatch: Python={py_model.se_[0]}, Julia={jl_result['se']}"
+        )
 
         # First-stage F-stat
-        assert np.isclose(py_model.first_stage_f_stat_, jl_result["first_stage_fstat"], rtol=1e-6), \
+        assert np.isclose(
+            py_model.first_stage_f_stat_, jl_result["first_stage_fstat"], rtol=1e-6
+        ), (
             f"F-stat mismatch: Python={py_model.first_stage_f_stat_}, Julia={jl_result['first_stage_fstat']}"
+        )
 
     def test_overidentified_two_instruments(self):
         """Overidentified case: 2 instruments, 1 endogenous variable."""
@@ -82,7 +86,7 @@ class TestTSLSParity:
         Z = np.column_stack([Z1, Z2])
 
         # Python TSLS
-        py_model = TwoStageLeastSquares(inference='robust')
+        py_model = TwoStageLeastSquares(inference="robust")
         py_model.fit(Y, D, Z)
 
         # Julia TSLS
@@ -106,7 +110,7 @@ class TestTSLSParity:
         Y = 2.0 * D + 0.4 * X + eps
 
         # Python TSLS with covariates (parameter is X, not covariates)
-        py_model = TwoStageLeastSquares(inference='robust')
+        py_model = TwoStageLeastSquares(inference="robust")
         py_model.fit(Y, D, Z.reshape(-1, 1), X=X.reshape(-1, 1))
 
         # Julia TSLS with covariates
@@ -127,7 +131,7 @@ class TestTSLSParity:
         eps = np.random.normal(0, 1, n)
         Y = 3.0 * D + eps
 
-        py_model = TwoStageLeastSquares(inference='robust')
+        py_model = TwoStageLeastSquares(inference="robust")
         py_model.fit(Y, D, Z.reshape(-1, 1))
 
         jl_result = julia_tsls(Y, D, Z, robust=True)
@@ -151,7 +155,7 @@ class TestTSLSParity:
         eps = np.random.normal(0, 1, n)
         Y = 2.0 * D + eps
 
-        py_model = TwoStageLeastSquares(inference='robust')
+        py_model = TwoStageLeastSquares(inference="robust")
         py_model.fit(Y, D, Z.reshape(-1, 1))
 
         jl_result = julia_tsls(Y, D, Z, robust=True)
@@ -170,7 +174,7 @@ class TestTSLSParity:
         D = 0.5 * Z + np.random.normal(0, 1, n)
         Y = 2.0 * D + np.random.normal(0, 1, n)  # Homoskedastic errors
 
-        py_model = TwoStageLeastSquares(inference='standard')
+        py_model = TwoStageLeastSquares(inference="standard")
         py_model.fit(Y, D, Z.reshape(-1, 1))
 
         jl_result = julia_tsls(Y, D, Z, robust=False)
@@ -200,18 +204,20 @@ class TestLIMLParity:
         Y = 2.0 * D + np.random.normal(0, 1, n)
 
         # Python LIML
-        py_model = LIML(inference='robust')
+        py_model = LIML(inference="robust")
         py_model.fit(Y, D, Z.reshape(-1, 1))
 
         # Julia LIML (no fuller parameter - test pure LIML)
         jl_result = julia_liml(Y, D, Z, robust=True, fuller=0.0)
 
         # Relaxed tolerance: LIML implementations differ in eigenvalue computation
-        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-2), \
+        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-2), (
             f"LIML estimate differs: Python={py_model.coef_[0]:.6f}, Julia={jl_result['estimate']:.6f}"
+        )
         # SE differs significantly due to different variance formulas - check same order of magnitude
-        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=1.0), \
+        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=1.0), (
             f"LIML SE differs significantly: Python={py_model.se_[0]:.6f}, Julia={jl_result['se']:.6f}"
+        )
 
     def test_liml_overidentified(self):
         """LIML with overidentification (2 instruments)."""
@@ -225,17 +231,19 @@ class TestLIMLParity:
 
         Z = np.column_stack([Z1, Z2])
 
-        py_model = LIML(inference='robust')
+        py_model = LIML(inference="robust")
         py_model.fit(Y, D, Z)
 
         jl_result = julia_liml(Y, D, Z, robust=True, fuller=0.0)
 
         # Relaxed tolerance: LIML implementations differ
-        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-2), \
+        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-2), (
             f"LIML estimate differs: Python={py_model.coef_[0]:.6f}, Julia={jl_result['estimate']:.6f}"
+        )
         # SE differs significantly due to different variance formulas - check same order of magnitude
-        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=1.0), \
+        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=1.0), (
             f"LIML SE differs significantly: Python={py_model.se_[0]:.6f}, Julia={jl_result['se']:.6f}"
+        )
 
     def test_fuller_1_modification(self):
         """Fuller-1 (alpha_param=1.0) for finite sample bias correction.
@@ -254,19 +262,22 @@ class TestLIMLParity:
         Y = 2.0 * D + np.random.normal(0, 1, n)
 
         # Python Fuller-1
-        py_model = Fuller(alpha_param=1.0, inference='robust')
+        py_model = Fuller(alpha_param=1.0, inference="robust")
         py_model.fit(Y, D, Z.reshape(-1, 1))
 
         # Julia LIML with fuller=1.0
         jl_result = julia_liml(Y, D, Z, robust=True, fuller=1.0)
 
         # Validate estimates match (relaxed tolerance due to implementation differences)
-        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=0.05), \
+        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=0.05), (
             f"Fuller-1 estimate differs: Python={py_model.coef_[0]:.6f}, Julia={jl_result['estimate']:.6f}"
+        )
 
         # Both should have positive Fuller kappa
         assert py_model.kappa_ > 0, "Python Fuller kappa should be positive"
-        assert jl_result.get("k_used", jl_result.get("k_liml", 1.0)) > 0, "Julia Fuller kappa should be positive"
+        assert jl_result.get("k_used", jl_result.get("k_liml", 1.0)) > 0, (
+            "Julia Fuller kappa should be positive"
+        )
 
     def test_fuller_4_modification(self):
         """Fuller-4 (alpha_param=4.0) for more conservative correction.
@@ -285,15 +296,16 @@ class TestLIMLParity:
         Z = np.column_stack([Z1, Z2])
 
         # Python Fuller-4
-        py_model = Fuller(alpha_param=4.0, inference='robust')
+        py_model = Fuller(alpha_param=4.0, inference="robust")
         py_model.fit(Y, D, Z)
 
         # Julia LIML with fuller=4.0
         jl_result = julia_liml(Y, D, Z, robust=True, fuller=4.0)
 
         # Validate estimates match (relaxed tolerance)
-        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=0.05), \
+        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=0.05), (
             f"Fuller-4 estimate differs: Python={py_model.coef_[0]:.6f}, Julia={jl_result['estimate']:.6f}"
+        )
 
     def test_fuller_vs_liml_comparison(self):
         """Fuller kappa should be less than LIML kappa (by correction term).
@@ -308,15 +320,16 @@ class TestLIMLParity:
         Y = 2.0 * D + np.random.normal(0, 1, n)
 
         # Python Fuller and LIML
-        py_fuller = Fuller(alpha_param=1.0, inference='robust')
+        py_fuller = Fuller(alpha_param=1.0, inference="robust")
         py_fuller.fit(Y, D, Z.reshape(-1, 1))
 
-        py_liml = LIML(inference='robust')
+        py_liml = LIML(inference="robust")
         py_liml.fit(Y, D, Z.reshape(-1, 1))
 
         # Fuller kappa should be less than LIML kappa
-        assert py_fuller.kappa_ < py_fuller.kappa_liml_, \
+        assert py_fuller.kappa_ < py_fuller.kappa_liml_, (
             f"Fuller kappa ({py_fuller.kappa_:.6f}) should be < LIML kappa ({py_fuller.kappa_liml_:.6f})"
+        )
 
         # Julia comparison
         jl_liml = julia_liml(Y, D, Z, robust=True, fuller=0.0)
@@ -354,18 +367,20 @@ class TestGMMParity:
         Y = 2.0 * D + np.random.normal(0, 1, n)
 
         # Python: steps='one' uses identity weighting (= 2SLS)
-        py_model = GMM(steps='one')
+        py_model = GMM(steps="one")
         py_model.fit(Y, D, Z.reshape(-1, 1))
 
         # Julia: weighting=:identity
         jl_result = julia_gmm(Y, D, Z, weighting="identity")
 
         # Point estimates should match (both are 2SLS)
-        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-10), \
+        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-10), (
             f"GMM estimate mismatch: Python={py_model.coef_[0]:.6f}, Julia={jl_result['estimate']:.6f}"
+        )
         # SE may differ due to different variance formulas - use relaxed tolerance
-        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=2.0), \
+        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=2.0), (
             f"GMM SE differs (expected): Python={py_model.se_[0]:.6f}, Julia={jl_result['se']:.6f}"
+        )
 
     def test_gmm_two_step_optimal(self):
         """GMM with two-step (optimal weighting)."""
@@ -380,17 +395,19 @@ class TestGMMParity:
         Z = np.column_stack([Z1, Z2])
 
         # Python: steps='two' uses optimal weighting
-        py_model = GMM(steps='two')
+        py_model = GMM(steps="two")
         py_model.fit(Y, D, Z)
 
         # Julia: weighting=:optimal
         jl_result = julia_gmm(Y, D, Z, weighting="optimal")
 
         # Optimal GMM estimates may differ slightly due to weighting matrix computation
-        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-3), \
+        assert np.isclose(py_model.coef_[0], jl_result["estimate"], rtol=1e-3), (
             f"GMM estimate differs: Python={py_model.coef_[0]:.6f}, Julia={jl_result['estimate']:.6f}"
-        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=0.5), \
+        )
+        assert np.isclose(py_model.se_[0], jl_result["se"], rtol=0.5), (
             f"GMM SE differs: Python={py_model.se_[0]:.6f}, Julia={jl_result['se']:.6f}"
+        )
 
     def test_gmm_overid_test(self):
         """GMM overidentification test (Hansen J-test)."""
@@ -405,20 +422,21 @@ class TestGMMParity:
 
         Z = np.column_stack([Z1, Z2])
 
-        py_model = GMM(steps='two')
+        py_model = GMM(steps="two")
         py_model.fit(Y, D, Z)
 
         jl_result = julia_gmm(Y, D, Z, weighting="optimal")
 
         # Overidentification p-value should be in same range (both show instruments are valid)
         # Python GMM stores J-test as j_pvalue_, Julia as overid_pvalue
-        if jl_result["overid_pvalue"] is not None and hasattr(py_model, 'j_pvalue_'):
+        if jl_result["overid_pvalue"] is not None and hasattr(py_model, "j_pvalue_"):
             # Both should fail to reject (p > 0.05 for valid instruments)
             assert py_model.j_pvalue_ > 0.05, "Python J-test should not reject"
             assert jl_result["overid_pvalue"] > 0.05, "Julia J-test should not reject"
             # Values should be in similar range (relaxed tolerance)
-            assert np.isclose(py_model.j_pvalue_, jl_result["overid_pvalue"], rtol=0.1), \
+            assert np.isclose(py_model.j_pvalue_, jl_result["overid_pvalue"], rtol=0.1), (
                 f"J-test p-value differs: Python={py_model.j_pvalue_:.4f}, Julia={jl_result['overid_pvalue']:.4f}"
+            )
 
 
 class TestIVCIAndPValue:
@@ -441,16 +459,18 @@ class TestIVCIAndPValue:
         D = 0.5 * Z + np.random.normal(0, 1, n)
         Y = 2.0 * D + np.random.normal(0, 1, n)
 
-        py_model = TwoStageLeastSquares(inference='robust', alpha=0.05)
+        py_model = TwoStageLeastSquares(inference="robust", alpha=0.05)
         py_model.fit(Y, D, Z.reshape(-1, 1))
 
         jl_result = julia_tsls(Y, D, Z, alpha=0.05, robust=True)
 
         # CI may differ due to df in t-distribution - use relaxed tolerance
-        assert np.isclose(py_model.ci_[0, 0], jl_result["ci_lower"], rtol=1e-3), \
+        assert np.isclose(py_model.ci_[0, 0], jl_result["ci_lower"], rtol=1e-3), (
             f"CI lower: Python={py_model.ci_[0, 0]:.6f}, Julia={jl_result['ci_lower']:.6f}"
-        assert np.isclose(py_model.ci_[0, 1], jl_result["ci_upper"], rtol=1e-3), \
+        )
+        assert np.isclose(py_model.ci_[0, 1], jl_result["ci_upper"], rtol=1e-3), (
             f"CI upper: Python={py_model.ci_[0, 1]:.6f}, Julia={jl_result['ci_upper']:.6f}"
+        )
 
     def test_different_alpha_levels(self):
         """Test 90% and 99% CIs."""
@@ -462,13 +482,15 @@ class TestIVCIAndPValue:
         Y = 2.0 * D + np.random.normal(0, 1, n)
 
         for alpha in [0.10, 0.01]:
-            py_model = TwoStageLeastSquares(inference='robust', alpha=alpha)
+            py_model = TwoStageLeastSquares(inference="robust", alpha=alpha)
             py_model.fit(Y, D, Z.reshape(-1, 1))
 
             jl_result = julia_tsls(Y, D, Z, alpha=alpha, robust=True)
 
             # Relaxed tolerance for CI comparison (differs more at extreme alpha)
-            assert np.isclose(py_model.ci_[0, 0], jl_result["ci_lower"], rtol=5e-3), \
+            assert np.isclose(py_model.ci_[0, 0], jl_result["ci_lower"], rtol=5e-3), (
                 f"CI lower mismatch at alpha={alpha}: Python={py_model.ci_[0, 0]:.6f}, Julia={jl_result['ci_lower']:.6f}"
-            assert np.isclose(py_model.ci_[0, 1], jl_result["ci_upper"], rtol=5e-3), \
+            )
+            assert np.isclose(py_model.ci_[0, 1], jl_result["ci_upper"], rtol=5e-3), (
                 f"CI upper mismatch at alpha={alpha}: Python={py_model.ci_[0, 1]:.6f}, Julia={jl_result['ci_upper']:.6f}"
+            )

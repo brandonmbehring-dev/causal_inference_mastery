@@ -9,9 +9,7 @@ from typing import Dict, Union, Optional
 import os
 
 # Set Julia project environment
-JULIA_PROJECT_PATH = os.path.join(
-    os.path.dirname(__file__), "..", "..", "..", "julia"
-)
+JULIA_PROJECT_PATH = os.path.join(os.path.dirname(__file__), "..", "..", "..", "julia")
 
 # Initialize juliacall with Julia project
 os.environ["PYTHON_JULIACALL_HANDLE_SIGNALS"] = "yes"
@@ -37,7 +35,9 @@ def is_julia_available() -> bool:
     return JULIA_AVAILABLE
 
 
-def julia_simple_ate(outcomes: np.ndarray, treatment: np.ndarray, alpha: float = 0.05) -> Dict[str, float]:
+def julia_simple_ate(
+    outcomes: np.ndarray, treatment: np.ndarray, alpha: float = 0.05
+) -> Dict[str, float]:
     """
     Call Julia simple_ate via juliacall.
 
@@ -80,10 +80,7 @@ def julia_simple_ate(outcomes: np.ndarray, treatment: np.ndarray, alpha: float =
 
 
 def julia_stratified_ate(
-    outcomes: np.ndarray,
-    treatment: np.ndarray,
-    strata: np.ndarray,
-    alpha: float = 0.05
+    outcomes: np.ndarray, treatment: np.ndarray, strata: np.ndarray, alpha: float = 0.05
 ) -> Dict[str, Union[float, int, list]]:
     """
     Call Julia stratified_ate via juliacall.
@@ -126,10 +123,7 @@ def julia_stratified_ate(
 
 
 def julia_regression_ate(
-    outcomes: np.ndarray,
-    treatment: np.ndarray,
-    covariates: np.ndarray,
-    alpha: float = 0.05
+    outcomes: np.ndarray, treatment: np.ndarray, covariates: np.ndarray, alpha: float = 0.05
 ) -> Dict[str, Union[float, int]]:
     """
     Call Julia regression_ate via juliacall.
@@ -176,10 +170,7 @@ def julia_regression_ate(
 
 
 def julia_ipw_ate(
-    outcomes: np.ndarray,
-    treatment: np.ndarray,
-    propensity: np.ndarray,
-    alpha: float = 0.05
+    outcomes: np.ndarray, treatment: np.ndarray, propensity: np.ndarray, alpha: float = 0.05
 ) -> Dict[str, float]:
     """
     Call Julia ipw_ate via juliacall.
@@ -205,7 +196,9 @@ def julia_ipw_ate(
 
     # Create RCTProblem with propensity
     # Note: Julia IPW might be called IPWATE() instead
-    problem = jl.RCTProblem(outcomes, treatment, None, None, jl.seval(f"(alpha={alpha}, propensity={list(propensity)})"))
+    problem = jl.RCTProblem(
+        outcomes, treatment, None, None, jl.seval(f"(alpha={alpha}, propensity={list(propensity)})")
+    )
 
     # Solve with IPWATE
     solution = jl.solve(problem, jl.IPWATE())
@@ -226,7 +219,7 @@ def julia_permutation_test(
     treatment: np.ndarray,
     n_permutations: Optional[int] = 1000,
     alternative: str = "two-sided",
-    random_seed: Optional[int] = None
+    random_seed: Optional[int] = None,
 ) -> Dict[str, Union[float, int, str]]:
     """
     Call Julia permutation_test via juliacall.
@@ -253,9 +246,11 @@ def julia_permutation_test(
         raise RuntimeError("Julia not available. Install juliacall.")
 
     # Create RCTProblem
-    params = jl.seval(f"(n_permutations={n_permutations if n_permutations else 'nothing'}, " +
-                     f"alternative=Symbol('{alternative.replace('-', '_')}'), " +
-                     f"random_seed={random_seed if random_seed else 'nothing'})")
+    params = jl.seval(
+        f"(n_permutations={n_permutations if n_permutations else 'nothing'}, "
+        + f"alternative=Symbol('{alternative.replace('-', '_')}'), "
+        + f"random_seed={random_seed if random_seed else 'nothing'})"
+    )
 
     problem = jl.RCTProblem(outcomes, treatment, None, None, params)
 
@@ -326,8 +321,7 @@ def julia_tsls(
 
     # Create IVProblem
     problem = jl.IVProblem(
-        jl_outcomes, jl_treatment, jl_instruments, jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
+        jl_outcomes, jl_treatment, jl_instruments, jl_covariates, jl.seval(f"(alpha={alpha},)")
     )
 
     # Solve with TSLS
@@ -344,7 +338,9 @@ def julia_tsls(
         "n_instruments": int(solution.n_instruments),
         "first_stage_fstat": float(solution.first_stage_fstat),
         "weak_iv_warning": bool(solution.weak_iv_warning),
-        "overid_pvalue": float(solution.overid_pvalue) if solution.overid_pvalue is not None else None,
+        "overid_pvalue": float(solution.overid_pvalue)
+        if solution.overid_pvalue is not None
+        else None,
     }
 
 
@@ -401,8 +397,7 @@ def julia_liml(
 
     # Create IVProblem
     problem = jl.IVProblem(
-        jl_outcomes, jl_treatment, jl_instruments, jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
+        jl_outcomes, jl_treatment, jl_instruments, jl_covariates, jl.seval(f"(alpha={alpha},)")
     )
 
     # Solve with LIML
@@ -419,7 +414,9 @@ def julia_liml(
         "n_instruments": int(solution.n_instruments),
         "first_stage_fstat": float(solution.first_stage_fstat),
         "weak_iv_warning": bool(solution.weak_iv_warning),
-        "overid_pvalue": float(solution.overid_pvalue) if solution.overid_pvalue is not None else None,
+        "overid_pvalue": float(solution.overid_pvalue)
+        if solution.overid_pvalue is not None
+        else None,
     }
 
 
@@ -473,8 +470,7 @@ def julia_gmm(
 
     # Create IVProblem
     problem = jl.IVProblem(
-        jl_outcomes, jl_treatment, jl_instruments, jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
+        jl_outcomes, jl_treatment, jl_instruments, jl_covariates, jl.seval(f"(alpha={alpha},)")
     )
 
     # Solve with GMM
@@ -491,7 +487,9 @@ def julia_gmm(
         "n_instruments": int(solution.n_instruments),
         "first_stage_fstat": float(solution.first_stage_fstat),
         "weak_iv_warning": bool(solution.weak_iv_warning),
-        "overid_pvalue": float(solution.overid_pvalue) if solution.overid_pvalue is not None else None,
+        "overid_pvalue": float(solution.overid_pvalue)
+        if solution.overid_pvalue is not None
+        else None,
     }
 
 
@@ -539,12 +537,13 @@ def julia_first_stage(
     # Convert numpy arrays to Julia arrays
     jl_treatment = jl.collect(treatment.astype(np.float64))
     jl_instruments = jl.collect(instruments.astype(np.float64))
-    jl_covariates = jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+    jl_covariates = (
+        jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+    )
 
     # Create FirstStageProblem
     problem = jl.FirstStageProblem(
-        jl_treatment, jl_instruments, jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
+        jl_treatment, jl_instruments, jl_covariates, jl.seval(f"(alpha={alpha},)")
     )
 
     # Solve with OLS
@@ -604,12 +603,13 @@ def julia_reduced_form(
     # Convert numpy arrays to Julia arrays
     jl_outcomes = jl.collect(outcomes.astype(np.float64))
     jl_instruments = jl.collect(instruments.astype(np.float64))
-    jl_covariates = jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+    jl_covariates = (
+        jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+    )
 
     # Create ReducedFormProblem
     problem = jl.ReducedFormProblem(
-        jl_outcomes, jl_instruments, jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
+        jl_outcomes, jl_instruments, jl_covariates, jl.seval(f"(alpha={alpha},)")
     )
 
     # Solve with OLS
@@ -664,12 +664,13 @@ def julia_second_stage(
     # Convert numpy arrays to Julia arrays
     jl_outcomes = jl.collect(outcomes.astype(np.float64))
     jl_fitted_treatment = jl.collect(fitted_treatment.astype(np.float64))
-    jl_covariates = jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+    jl_covariates = (
+        jl.collect(covariates.astype(np.float64)) if covariates is not None else jl.seval("nothing")
+    )
 
     # Create SecondStageProblem
     problem = jl.SecondStageProblem(
-        jl_outcomes, jl_fitted_treatment, jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
+        jl_outcomes, jl_fitted_treatment, jl_covariates, jl.seval(f"(alpha={alpha},)")
     )
 
     # Solve with OLS (will issue warning about naive SEs)
@@ -742,7 +743,7 @@ def julia_sharp_rdd(
         jl_treatment,
         float(cutoff),
         jl.seval("nothing"),  # No covariates
-        jl.seval(f"(alpha={alpha},)")
+        jl.seval(f"(alpha={alpha},)"),
     )
 
     # Map kernel name: Python "rectangular" -> Julia "uniform"
@@ -768,8 +769,8 @@ def julia_sharp_rdd(
             jl.SharpRDD(
                 bandwidth_method=jl_bandwidth_method,
                 kernel=jl_kernel,
-                run_density_test=run_density_test
-            )
+                run_density_test=run_density_test,
+            ),
         )
     else:
         # Fixed bandwidth - use CCT for now (bandwidth selection happens internally)
@@ -779,8 +780,8 @@ def julia_sharp_rdd(
             jl.SharpRDD(
                 bandwidth_method=jl_bandwidth_method,
                 kernel=jl_kernel,
-                run_density_test=run_density_test
-            )
+                run_density_test=run_density_test,
+            ),
         )
 
     # Extract results
@@ -791,7 +792,9 @@ def julia_sharp_rdd(
         "ci_upper": float(solution.ci_upper),
         "p_value": float(solution.p_value),
         "bandwidth": float(solution.bandwidth),
-        "bandwidth_bias": float(solution.bandwidth_bias) if solution.bandwidth_bias is not None else None,
+        "bandwidth_bias": float(solution.bandwidth_bias)
+        if solution.bandwidth_bias is not None
+        else None,
         "kernel": str(solution.kernel),
         "n_eff_left": int(solution.n_eff_left),
         "n_eff_right": int(solution.n_eff_right),
@@ -842,7 +845,7 @@ def julia_rdd_bandwidth_ik(
         jl_treatment,
         float(cutoff),
         jl.seval("nothing"),
-        jl.seval("(alpha=0.05,)")
+        jl.seval("(alpha=0.05,)"),
     )
 
     # Call bandwidth selection
@@ -892,7 +895,7 @@ def julia_rdd_bandwidth_cct(
         jl_treatment,
         float(cutoff),
         jl.seval("nothing"),
-        jl.seval("(alpha=0.05,)")
+        jl.seval("(alpha=0.05,)"),
     )
 
     # Call bandwidth selection - CCT returns tuple (h_main, h_bias)
@@ -957,7 +960,7 @@ def julia_fuzzy_rdd(
         jl_treatment,
         float(cutoff),
         jl.seval("nothing"),  # No covariates
-        jl.seval(f"(alpha={alpha},)")
+        jl.seval(f"(alpha={alpha},)"),
     )
 
     # Map kernel name: Python "rectangular" -> Julia "uniform"
@@ -983,8 +986,8 @@ def julia_fuzzy_rdd(
             jl.FuzzyRDD(
                 bandwidth_method=jl_bandwidth_method,
                 kernel=jl_kernel,
-                run_density_test=run_density_test
-            )
+                run_density_test=run_density_test,
+            ),
         )
     else:
         # Fixed bandwidth - use IK for now (bandwidth selection happens internally)
@@ -994,8 +997,8 @@ def julia_fuzzy_rdd(
             jl.FuzzyRDD(
                 bandwidth_method=jl_bandwidth_method,
                 kernel=jl_kernel,
-                run_density_test=run_density_test
-            )
+                run_density_test=run_density_test,
+            ),
         )
 
     # Extract results
@@ -1072,19 +1075,11 @@ def julia_classic_did(
 
     # Create DiDProblem
     problem = jl.DiDProblem(
-        jl_outcomes,
-        jl_treatment,
-        jl_post,
-        jl_unit_id,
-        jl_time,
-        jl.seval(f"(alpha={alpha},)")
+        jl_outcomes, jl_treatment, jl_post, jl_unit_id, jl_time, jl.seval(f"(alpha={alpha},)")
     )
 
     # Create ClassicDiD estimator
-    estimator = jl.ClassicDiD(
-        cluster_se=cluster_se,
-        test_parallel_trends=test_parallel_trends
-    )
+    estimator = jl.ClassicDiD(cluster_se=cluster_se, test_parallel_trends=test_parallel_trends)
 
     # Solve
     solution = jl.solve(problem, estimator)
@@ -1167,12 +1162,7 @@ def julia_event_study(
 
     # Create DiDProblem
     problem = jl.DiDProblem(
-        jl_outcomes,
-        jl_treatment,
-        jl_post,
-        jl_unit_id,
-        jl_time,
-        jl.seval(f"(alpha={alpha},)")
+        jl_outcomes, jl_treatment, jl_post, jl_unit_id, jl_time, jl.seval(f"(alpha={alpha},)")
     )
 
     # Create EventStudy estimator
@@ -1180,10 +1170,7 @@ def julia_event_study(
     n_lags_jl = n_lags if n_lags is not None else jl.seval("nothing")
 
     estimator = jl.EventStudy(
-        n_leads=n_leads_jl,
-        n_lags=n_lags_jl,
-        omit_period=omit_period,
-        cluster_se=cluster_se
+        n_leads=n_leads_jl, n_lags=n_lags_jl, omit_period=omit_period, cluster_se=cluster_se
     )
 
     # Solve
@@ -1261,7 +1248,7 @@ def julia_staggered_twfe(
         jl_time,
         jl_unit_id,
         jl_treatment_time,
-        jl.seval(f"(alpha={alpha},)")
+        jl.seval(f"(alpha={alpha},)"),
     )
 
     # Create StaggeredTWFE estimator
@@ -1349,17 +1336,17 @@ def julia_callaway_santanna(
         jl_time,
         jl_unit_id,
         jl_treatment_time,
-        jl.seval(f"(alpha={alpha},)")
+        jl.seval(f"(alpha={alpha},)"),
     )
 
     # Create CallawaySantAnna estimator
     random_seed_jl = random_seed if random_seed is not None else jl.seval("nothing")
     estimator = jl.CallawaySantAnna(
-        aggregation=jl.seval(f':{aggregation}'),
-        control_group=jl.seval(f':{control_group}'),
+        aggregation=jl.seval(f":{aggregation}"),
+        control_group=jl.seval(f":{control_group}"),
         alpha=alpha,
         n_bootstrap=n_bootstrap,
-        random_seed=random_seed_jl
+        random_seed=random_seed_jl,
     )
 
     # Solve
@@ -1368,15 +1355,17 @@ def julia_callaway_santanna(
     # Extract ATT(g,t) results
     att_gt_list = []
     for item in solution.att_gt:
-        att_gt_list.append({
-            "cohort": int(item.cohort),
-            "time": int(item.time),
-            "event_time": int(item.event_time),
-            "att": float(item.att),
-            "weight": int(item.weight),
-            "n_treated": int(item.n_treated),
-            "n_control": int(item.n_control),
-        })
+        att_gt_list.append(
+            {
+                "cohort": int(item.cohort),
+                "time": int(item.time),
+                "event_time": int(item.event_time),
+                "att": float(item.att),
+                "weight": int(item.weight),
+                "n_treated": int(item.n_treated),
+                "n_control": int(item.n_control),
+            }
+        )
 
     # Extract results
     result = {
@@ -1467,7 +1456,7 @@ def julia_sun_abraham(
         jl_time,
         jl_unit_id,
         jl_treatment_time,
-        jl.seval(f"(alpha={alpha},)")
+        jl.seval(f"(alpha={alpha},)"),
     )
 
     # Create SunAbraham estimator
@@ -1479,26 +1468,30 @@ def julia_sun_abraham(
     # Extract cohort effects
     cohort_effects_list = []
     for item in solution.cohort_effects:
-        cohort_effects_list.append({
-            "cohort": int(item.cohort),
-            "event_time": int(item.event_time),
-            "coef": float(item.coef),
-            "se": float(item.se),
-            "t_stat": float(item.t_stat),
-            "p_value": float(item.p_value),
-            "ci_lower": float(item.ci_lower),
-            "ci_upper": float(item.ci_upper),
-        })
+        cohort_effects_list.append(
+            {
+                "cohort": int(item.cohort),
+                "event_time": int(item.event_time),
+                "coef": float(item.coef),
+                "se": float(item.se),
+                "t_stat": float(item.t_stat),
+                "p_value": float(item.p_value),
+                "ci_lower": float(item.ci_lower),
+                "ci_upper": float(item.ci_upper),
+            }
+        )
 
     # Extract weights
     weights_list = []
     for item in solution.weights:
-        weights_list.append({
-            "cohort": int(item.cohort),
-            "event_time": int(item.event_time),
-            "weight": float(item.weight),
-            "n_obs": int(item.n_obs),
-        })
+        weights_list.append(
+            {
+                "cohort": int(item.cohort),
+                "event_time": int(item.event_time),
+                "weight": float(item.weight),
+                "n_obs": int(item.n_obs),
+            }
+        )
 
     # Extract results
     return {
@@ -1571,12 +1564,7 @@ def julia_psm_nearest_neighbor(
     jl_covariates = jl.seval("Matrix")(covariates.astype(np.float64))
 
     # Create PSMProblem
-    problem = jl.PSMProblem(
-        jl_outcomes,
-        jl_treatment,
-        jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
-    )
+    problem = jl.PSMProblem(jl_outcomes, jl_treatment, jl_covariates, jl.seval(f"(alpha={alpha},)"))
 
     # Create NearestNeighborPSM estimator
     # Convert variance_method string to Julia Symbol
@@ -1584,10 +1572,7 @@ def julia_psm_nearest_neighbor(
     caliper_jl = caliper if not np.isinf(caliper) else jl.seval("Inf")
 
     estimator = jl.NearestNeighborPSM(
-        M=M,
-        with_replacement=with_replacement,
-        caliper=caliper_jl,
-        variance_method=variance_symbol
+        M=M, with_replacement=with_replacement, caliper=caliper_jl, variance_method=variance_symbol
     )
 
     # Solve
@@ -1605,10 +1590,18 @@ def julia_psm_nearest_neighbor(
     balance = solution.balance_metrics
     try:
         balance_dict = {
-            "smd_before": [float(x) for x in balance.smd_before] if hasattr(balance, 'smd_before') else None,
-            "smd_after": [float(x) for x in balance.smd_after] if hasattr(balance, 'smd_after') else None,
-            "vr_before": [float(x) for x in balance.vr_before] if hasattr(balance, 'vr_before') else None,
-            "vr_after": [float(x) for x in balance.vr_after] if hasattr(balance, 'vr_after') else None,
+            "smd_before": [float(x) for x in balance.smd_before]
+            if hasattr(balance, "smd_before")
+            else None,
+            "smd_after": [float(x) for x in balance.smd_after]
+            if hasattr(balance, "smd_after")
+            else None,
+            "vr_before": [float(x) for x in balance.vr_before]
+            if hasattr(balance, "vr_before")
+            else None,
+            "vr_after": [float(x) for x in balance.vr_after]
+            if hasattr(balance, "vr_after")
+            else None,
         }
     except Exception:
         balance_dict = {"smd_before": None, "smd_after": None, "vr_before": None, "vr_after": None}
@@ -1687,7 +1680,9 @@ def julia_observational_ipw(
         jl_treatment,
         jl_covariates,
         jl_propensity,
-        jl.seval(f"(alpha={alpha}, trim_threshold={trim_threshold}, stabilize={str(stabilize).lower()})")
+        jl.seval(
+            f"(alpha={alpha}, trim_threshold={trim_threshold}, stabilize={str(stabilize).lower()})"
+        ),
     )
 
     # Solve with ObservationalIPW
@@ -1767,7 +1762,7 @@ def julia_doubly_robust(
         jl_treatment,
         jl_covariates,
         jl_propensity,
-        jl.seval(f"(alpha={alpha}, trim_threshold={trim_threshold}, stabilize=false)")
+        jl.seval(f"(alpha={alpha}, trim_threshold={trim_threshold}, stabilize=false)"),
     )
 
     # Solve with DoublyRobust
@@ -2101,14 +2096,12 @@ def julia_synthetic_control(
         jl_treatment,
         int(treatment_period),
         jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
+        jl.seval(f"(alpha={alpha},)"),
     )
 
     # Create SyntheticControl estimator
     estimator = jl.SyntheticControl(
-        inference=jl.seval(f":{inference}"),
-        n_placebo=n_placebo,
-        covariate_weight=covariate_weight
+        inference=jl.seval(f":{inference}"), n_placebo=n_placebo, covariate_weight=covariate_weight
     )
 
     # Solve
@@ -2193,7 +2186,7 @@ def julia_augmented_scm(
         jl_treatment,
         int(treatment_period),
         jl_covariates,
-        jl.seval(f"(alpha={alpha},)")
+        jl.seval(f"(alpha={alpha},)"),
     )
 
     # Create AugmentedSC estimator
@@ -2333,7 +2326,7 @@ def julia_rosenbaum_bounds(
         jl_control,
         gamma_range=jl.seval(f"({gamma_range[0]}, {gamma_range[1]})"),
         n_gamma=n_gamma,
-        alpha=alpha
+        alpha=alpha,
     )
 
     # Solve
@@ -2405,12 +2398,7 @@ def julia_mccrary_test(
     jl_bandwidth = None if bandwidth is None else float(bandwidth)
 
     # Create McCraryProblem
-    problem = jl.McCraryProblem(
-        jl_x,
-        jl_cutoff,
-        jl_bandwidth,
-        jl.seval(f"(alpha={alpha},)")
-    )
+    problem = jl.McCraryProblem(jl_x, jl_cutoff, jl_bandwidth, jl.seval(f"(alpha={alpha},)"))
 
     # Solve
     solution = jl.solve(problem, jl.McCraryDensityTest())
@@ -2485,9 +2473,12 @@ def julia_sharp_rkd(
 
     # Create RKDProblem
     problem = jl.RKDProblem(
-        jl_y, jl_x, jl_d, jl_cutoff,
+        jl_y,
+        jl_x,
+        jl_d,
+        jl_cutoff,
         None,  # No covariates
-        jl.seval(f"(alpha={alpha},)")
+        jl.seval(f"(alpha={alpha},)"),
     )
 
     # Create estimator
@@ -2496,14 +2487,14 @@ def julia_sharp_rkd(
             bandwidth=None,
             kernel=jl.seval(f":{kernel}"),
             polynomial_order=polynomial_order,
-            alpha=alpha
+            alpha=alpha,
         )
     else:
         estimator = jl.SharpRKD(
             bandwidth=float(bandwidth),
             kernel=jl.seval(f":{kernel}"),
             polynomial_order=polynomial_order,
-            alpha=alpha
+            alpha=alpha,
         )
 
     # Solve
@@ -2708,11 +2699,13 @@ def julia_compute_elasticity(
     if not JULIA_AVAILABLE:
         raise RuntimeError("Julia not available. Install juliacall.")
 
-    return float(jl.compute_elasticity(
-        float(excess_mass),
-        float(t1_rate),
-        float(t2_rate),
-    ))
+    return float(
+        jl.compute_elasticity(
+            float(excess_mass),
+            float(t1_rate),
+            float(t2_rate),
+        )
+    )
 
 
 # =============================================================================
@@ -2766,11 +2759,7 @@ def julia_heckman_two_step(
 
     # Create HeckmanProblem
     problem = jl.HeckmanProblem(
-        jl_outcomes,
-        jl_selected,
-        jl_sel_cov,
-        jl_out_cov,
-        jl.seval(f"(alpha={alpha},)")
+        jl_outcomes, jl_selected, jl_sel_cov, jl_out_cov, jl.seval(f"(alpha={alpha},)")
     )
 
     # Solve with HeckmanTwoStep
@@ -3871,7 +3860,9 @@ def julia_cace_2sls(
     return _format_cace_result(result, strata_props)
 
 
-def _format_cace_result(result, strata_props: Dict[str, float]) -> Dict[str, Union[float, int, Dict]]:
+def _format_cace_result(
+    result, strata_props: Dict[str, float]
+) -> Dict[str, Union[float, int, Dict]]:
     """Format Julia CACE result as Python dict."""
     return {
         "cace": float(result.cace),
@@ -3932,8 +3923,7 @@ def julia_cace_em(
 
     # Call convenience function
     result = jl.cace_em(
-        jl_outcome, jl_treatment, jl_instrument,
-        max_iter=max_iter, tol=tol, alpha=alpha
+        jl_outcome, jl_treatment, jl_instrument, max_iter=max_iter, tol=tol, alpha=alpha
     )
 
     # Extract strata proportions
@@ -3994,7 +3984,9 @@ def julia_wald_estimator(
     return _format_cace_result(result, strata_props)
 
 
-def _format_cace_result(result, strata_props: Dict[str, float]) -> Dict[str, Union[float, int, Dict]]:
+def _format_cace_result(
+    result, strata_props: Dict[str, float]
+) -> Dict[str, Union[float, int, Dict]]:
     """Format Julia CACE result as Python dict."""
     return {
         "cace": float(result.cace),
@@ -4055,8 +4047,7 @@ def julia_cace_em(
 
     # Call convenience function
     result = jl.cace_em(
-        jl_outcome, jl_treatment, jl_instrument,
-        max_iter=max_iter, tol=tol, alpha=alpha
+        jl_outcome, jl_treatment, jl_instrument, max_iter=max_iter, tol=tol, alpha=alpha
     )
 
     # Extract strata proportions
@@ -4177,8 +4168,7 @@ def julia_ps_bounds_monotonicity(
     jl_instrument = jl.collect(instrument.astype(np.float64))
 
     result = jl.ps_bounds_monotonicity(
-        jl_outcome, jl_treatment, jl_instrument,
-        direct_effect_bound=direct_effect_bound
+        jl_outcome, jl_treatment, jl_instrument, direct_effect_bound=direct_effect_bound
     )
 
     return {
@@ -4213,8 +4203,7 @@ def julia_ps_bounds_no_assumption(
 
     if outcome_support is not None:
         result = jl.ps_bounds_no_assumption(
-            jl_outcome, jl_treatment, jl_instrument,
-            outcome_support=outcome_support
+            jl_outcome, jl_treatment, jl_instrument, outcome_support=outcome_support
         )
     else:
         result = jl.ps_bounds_no_assumption(jl_outcome, jl_treatment, jl_instrument)
@@ -4265,10 +4254,7 @@ def julia_sace_bounds(
     jl_treatment = jl.collect(treatment.astype(np.float64))
     jl_survival = jl.collect(survival.astype(np.float64))
 
-    result = jl.sace_bounds(
-        jl_outcome, jl_treatment, jl_survival,
-        monotonicity=monotonicity
-    )
+    result = jl.sace_bounds(jl_outcome, jl_treatment, jl_survival, monotonicity=monotonicity)
 
     return {
         "sace": float(result.sace),
@@ -4336,8 +4322,7 @@ def julia_dml_continuous(
 
     # Call Julia dml_continuous
     result = jl.dml_continuous(
-        jl_outcomes, jl_treatment, jl_covariates,
-        n_folds=n_folds, model=jl_model, alpha=alpha
+        jl_outcomes, jl_treatment, jl_covariates, n_folds=n_folds, model=jl_model, alpha=alpha
     )
 
     return {
@@ -4568,9 +4553,7 @@ def julia_panel_rif_qte(
     panel = jl.PanelData(jl_outcomes, jl_treatment, jl_covariates, jl_unit_id, jl_time)
 
     # Call Julia panel_rif_qte
-    result = jl.panel_rif_qte(
-        panel, tau=tau, alpha=alpha, include_covariates=include_covariates
-    )
+    result = jl.panel_rif_qte(panel, tau=tau, alpha=alpha, include_covariates=include_covariates)
 
     return {
         "qte": float(result.qte),
@@ -4649,9 +4632,7 @@ def julia_panel_rif_qte_band(
             panel, quantiles=jl_quantiles, alpha=alpha, include_covariates=include_covariates
         )
     else:
-        result = jl.panel_rif_qte_band(
-            panel, alpha=alpha, include_covariates=include_covariates
-        )
+        result = jl.panel_rif_qte_band(panel, alpha=alpha, include_covariates=include_covariates)
 
     return {
         "quantiles": np.array([float(q) for q in result.quantiles]),
@@ -4796,8 +4777,9 @@ def julia_generate_random_dag(
         dag = jl.generate_random_dag(n_vars, edge_prob=edge_prob)
 
     # Convert adjacency matrix to numpy
-    adj = np.array([[int(dag.adjacency[i, j]) for j in range(1, n_vars + 1)]
-                    for i in range(1, n_vars + 1)])
+    adj = np.array(
+        [[int(dag.adjacency[i, j]) for j in range(1, n_vars + 1)] for i in range(1, n_vars + 1)]
+    )
 
     return {
         "n_nodes": int(dag.n_nodes),
@@ -4847,10 +4829,10 @@ def julia_generate_dag_data(
         data, B = jl.generate_dag_data(dag, n_samples, noise_type=noise_sym)
 
     # Convert to numpy
-    data_np = np.array([[float(data[i, j]) for j in range(1, n_vars + 1)]
-                        for i in range(1, n_samples + 1)])
-    B_np = np.array([[float(B[i, j]) for j in range(1, n_vars + 1)]
-                     for i in range(1, n_vars + 1)])
+    data_np = np.array(
+        [[float(data[i, j]) for j in range(1, n_vars + 1)] for i in range(1, n_samples + 1)]
+    )
+    B_np = np.array([[float(B[i, j]) for j in range(1, n_vars + 1)] for i in range(1, n_vars + 1)])
 
     return {
         "data": data_np,
@@ -4889,17 +4871,26 @@ def julia_pc_algorithm(
     result = jl.pc_algorithm(jl_data, alpha=alpha)
 
     # Extract skeleton adjacency
-    skeleton_adj = np.array([[int(result.skeleton.adjacency[i, j])
-                              for j in range(1, n_vars + 1)]
-                             for i in range(1, n_vars + 1)])
+    skeleton_adj = np.array(
+        [
+            [int(result.skeleton.adjacency[i, j]) for j in range(1, n_vars + 1)]
+            for i in range(1, n_vars + 1)
+        ]
+    )
 
     # Extract CPDAG (directed and undirected)
-    cpdag_directed = np.array([[int(result.cpdag.directed[i, j])
-                                for j in range(1, n_vars + 1)]
-                               for i in range(1, n_vars + 1)])
-    cpdag_undirected = np.array([[int(result.cpdag.undirected[i, j])
-                                  for j in range(1, n_vars + 1)]
-                                 for i in range(1, n_vars + 1)])
+    cpdag_directed = np.array(
+        [
+            [int(result.cpdag.directed[i, j]) for j in range(1, n_vars + 1)]
+            for i in range(1, n_vars + 1)
+        ]
+    )
+    cpdag_undirected = np.array(
+        [
+            [int(result.cpdag.undirected[i, j]) for j in range(1, n_vars + 1)]
+            for i in range(1, n_vars + 1)
+        ]
+    )
 
     return {
         "skeleton": skeleton_adj,
@@ -4944,17 +4935,23 @@ def julia_direct_lingam(
         result = jl.direct_lingam(jl_data)
 
     # Extract DAG adjacency
-    dag_adj = np.array([[int(result.dag.adjacency[i, j])
-                         for j in range(1, n_vars + 1)]
-                        for i in range(1, n_vars + 1)])
+    dag_adj = np.array(
+        [
+            [int(result.dag.adjacency[i, j]) for j in range(1, n_vars + 1)]
+            for i in range(1, n_vars + 1)
+        ]
+    )
 
     # Extract causal order (convert to 0-indexed)
     causal_order = [int(result.causal_order[i]) - 1 for i in range(1, n_vars + 1)]
 
     # Extract adjacency matrix (weighted)
-    adj_matrix = np.array([[float(result.adjacency_matrix[i, j])
-                            for j in range(1, n_vars + 1)]
-                           for i in range(1, n_vars + 1)])
+    adj_matrix = np.array(
+        [
+            [float(result.adjacency_matrix[i, j]) for j in range(1, n_vars + 1)]
+            for i in range(1, n_vars + 1)
+        ]
+    )
 
     return {
         "dag_adjacency": dag_adj,

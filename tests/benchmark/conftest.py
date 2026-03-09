@@ -99,7 +99,7 @@ def assert_timing_regression(
             f"Baseline: {baseline_ms:.2f}ms\n"
             f"Current:  {current_ms:.2f}ms\n"
             f"Change:   {change_pct:+.1f}%\n"
-            f"Tolerance: ±{tolerance*100:.0f}%\n"
+            f"Tolerance: ±{tolerance * 100:.0f}%\n"
             f"Max allowed: {max_allowed:.2f}ms"
         )
 

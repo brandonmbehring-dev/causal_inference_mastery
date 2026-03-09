@@ -130,12 +130,14 @@ class DynamicDMLResult:
             ci_hi = self.ci_upper[h] if self.ci_upper.ndim == 1 else self.ci_upper[h, 0]
             lines.append(f"{h:<6} {effect:<12.4f} {se:<12.4f} [{ci_lo:.4f}, {ci_hi:.4f}]")
 
-        lines.extend([
-            "-" * 50,
-            f"Cumulative effect: {self.cumulative_effect:.4f} "
-            f"(SE: {self.cumulative_effect_se:.4f})",
-            f"Discount factor: {self.discount_factor}",
-        ])
+        lines.extend(
+            [
+                "-" * 50,
+                f"Cumulative effect: {self.cumulative_effect:.4f} "
+                f"(SE: {self.cumulative_effect_se:.4f})",
+                f"Discount factor: {self.discount_factor}",
+            ]
+        )
 
         return "\n".join(lines)
 
@@ -491,9 +493,7 @@ def validate_dynamic_inputs(
         raise ValueError(f"max_lag must be non-negative, got {max_lag}")
 
     if max_lag >= n:
-        raise ValueError(
-            f"max_lag ({max_lag}) must be less than number of observations ({n})"
-        )
+        raise ValueError(f"max_lag ({max_lag}) must be less than number of observations ({n})")
 
     # Check sufficient observations after trimming
     n_valid = n - max_lag

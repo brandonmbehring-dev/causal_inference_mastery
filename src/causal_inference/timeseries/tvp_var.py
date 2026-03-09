@@ -148,9 +148,7 @@ class TVPVARResult:
             Shape (n_vars, n_vars*lags+1) coefficient matrix at time t
         """
         if t < 0 or t >= self.n_obs_effective:
-            raise ValueError(
-                f"Time index {t} out of bounds [0, {self.n_obs_effective - 1}]"
-            )
+            raise ValueError(f"Time index {t} out of bounds [0, {self.n_obs_effective - 1}]")
 
         if smoothed and self.has_smoothed:
             return self.coefficients_smoothed[t]
@@ -337,9 +335,7 @@ def tvp_var_estimate(
     n_obs_effective = n_obs - lags
 
     if n_obs_effective < 10:
-        raise ValueError(
-            f"Insufficient observations. Need at least {lags + 10}, got {n_obs}"
-        )
+        raise ValueError(f"Insufficient observations. Need at least {lags + 10}, got {n_obs}")
 
     if np.any(np.isnan(data)):
         raise ValueError("Data contains NaN values")
@@ -348,9 +344,7 @@ def tvp_var_estimate(
     if var_names is None:
         var_names = [f"var_{i + 1}" for i in range(n_vars)]
     elif len(var_names) != n_vars:
-        raise ValueError(
-            f"var_names length ({len(var_names)}) must match n_vars ({n_vars})"
-        )
+        raise ValueError(f"var_names length ({len(var_names)}) must match n_vars ({n_vars})")
 
     # Build design matrices
     Y, X_full = _build_var_matrices(data, lags, include_constant=True)
@@ -371,16 +365,13 @@ def tvp_var_estimate(
         _, _, sigma = _initialize_from_ols(data, lags, n_vars, n_params_per_eq, state_dim)
     elif initialization == "custom":
         if beta_init is None or P_init is None:
-            raise ValueError(
-                "beta_init and P_init must be provided for custom initialization"
-            )
+            raise ValueError("beta_init and P_init must be provided for custom initialization")
         beta_init_vec = np.asarray(beta_init, dtype=np.float64).ravel()
         P_init_mat = np.asarray(P_init, dtype=np.float64)
 
         if beta_init_vec.shape[0] != state_dim:
             raise ValueError(
-                f"beta_init has wrong shape. Expected ({state_dim},), "
-                f"got {beta_init_vec.shape}"
+                f"beta_init has wrong shape. Expected ({state_dim},), got {beta_init_vec.shape}"
             )
         if P_init_mat.shape != (state_dim, state_dim):
             raise ValueError(
@@ -392,9 +383,7 @@ def tvp_var_estimate(
         if sigma_init is not None:
             sigma = np.asarray(sigma_init, dtype=np.float64)
         else:
-            _, _, sigma = _initialize_from_ols(
-                data, lags, n_vars, n_params_per_eq, state_dim
-            )
+            _, _, sigma = _initialize_from_ols(data, lags, n_vars, n_params_per_eq, state_dim)
     else:
         raise ValueError(
             f"initialization must be 'ols', 'diffuse', or 'custom', got {initialization}"
@@ -405,8 +394,7 @@ def tvp_var_estimate(
         sigma = np.asarray(sigma_init, dtype=np.float64)
         if sigma.shape != (n_vars, n_vars):
             raise ValueError(
-                f"sigma_init has wrong shape. Expected ({n_vars}, {n_vars}), "
-                f"got {sigma.shape}"
+                f"sigma_init has wrong shape. Expected ({n_vars}, {n_vars}), got {sigma.shape}"
             )
 
     # State transition covariance Q
@@ -414,8 +402,7 @@ def tvp_var_estimate(
         Q = np.asarray(Q_init, dtype=np.float64)
         if Q.shape != (state_dim, state_dim):
             raise ValueError(
-                f"Q_init has wrong shape. Expected ({state_dim}, {state_dim}), "
-                f"got {Q.shape}"
+                f"Q_init has wrong shape. Expected ({state_dim}, {state_dim}), got {Q.shape}"
             )
         # Ensure Q is positive semi-definite
         eigvals = np.linalg.eigvalsh(Q)
@@ -441,9 +428,7 @@ def tvp_var_estimate(
 
     # RTS smoother
     if smooth:
-        beta_smooth, P_smooth = _rts_smoother(
-            beta_filt, P_filt, beta_pred, P_pred, Q
-        )
+        beta_smooth, P_smooth = _rts_smoother(beta_filt, P_filt, beta_pred, P_pred, Q)
         coef_smoothed = beta_smooth.reshape(n_obs_effective, n_vars, n_params_per_eq)
     else:
         coef_smoothed = None
@@ -547,14 +532,10 @@ def compute_tvp_irf(
     >>> print(f"IRF shape: {irf.shape}")  # (n_vars, 21)
     """
     if t < 0 or t >= result.n_obs_effective:
-        raise ValueError(
-            f"Time index {t} out of bounds [0, {result.n_obs_effective - 1}]"
-        )
+        raise ValueError(f"Time index {t} out of bounds [0, {result.n_obs_effective - 1}]")
 
     if shock_idx < 0 or shock_idx >= result.n_vars:
-        raise ValueError(
-            f"shock_idx {shock_idx} out of bounds [0, {result.n_vars - 1}]"
-        )
+        raise ValueError(f"shock_idx {shock_idx} out of bounds [0, {result.n_vars - 1}]")
 
     if horizons < 0:
         raise ValueError(f"horizons must be >= 0, got {horizons}")

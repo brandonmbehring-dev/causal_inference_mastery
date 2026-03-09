@@ -19,8 +19,7 @@ from .julia_interface import is_julia_available, julia_dml_cre, julia_dml_cre_co
 
 # Skip all tests if Julia is not available
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-language validation"
+    not is_julia_available(), reason="Julia not available for cross-language validation"
 )
 
 
@@ -105,9 +104,7 @@ class TestDMLCREBinaryParity:
 
     def test_dimensions_parity(self):
         """n_obs, n_units, n_folds match exactly."""
-        Y, D, X, unit_id, time = generate_panel_dgp(
-            n_units=30, n_periods=8, random_state=123
-        )
+        Y, D, X, unit_id, time = generate_panel_dgp(n_units=30, n_periods=8, random_state=123)
 
         py_panel = PanelData(Y, D, X, unit_id, time)
         py_result = dml_cre(py_panel, n_folds=5)
@@ -120,9 +117,7 @@ class TestDMLCREBinaryParity:
 
     def test_cate_length_parity(self):
         """CATE arrays have same length."""
-        Y, D, X, unit_id, time = generate_panel_dgp(
-            n_units=20, n_periods=5, random_state=456
-        )
+        Y, D, X, unit_id, time = generate_panel_dgp(n_units=20, n_periods=5, random_state=456)
 
         py_panel = PanelData(Y, D, X, unit_id, time)
         py_result = dml_cre(py_panel, n_folds=3)
@@ -133,9 +128,7 @@ class TestDMLCREBinaryParity:
 
     def test_unit_effects_length_parity(self):
         """Unit effects arrays have same length."""
-        Y, D, X, unit_id, time = generate_panel_dgp(
-            n_units=25, n_periods=6, random_state=789
-        )
+        Y, D, X, unit_id, time = generate_panel_dgp(n_units=25, n_periods=6, random_state=789)
 
         py_panel = PanelData(Y, D, X, unit_id, time)
         py_result = dml_cre(py_panel, n_folds=4)
@@ -151,8 +144,7 @@ class TestDMLCREContinuousParity:
     def test_ate_parity(self):
         """ATE estimates match within rtol=0.02."""
         Y, D, X, unit_id, time = generate_panel_dgp(
-            n_units=50, n_periods=10, true_ate=2.0,
-            binary_treatment=False, random_state=42
+            n_units=50, n_periods=10, true_ate=2.0, binary_treatment=False, random_state=42
         )
 
         py_panel = PanelData(Y, D, X, unit_id, time)
@@ -168,8 +160,7 @@ class TestDMLCREContinuousParity:
     def test_se_parity(self):
         """SE estimates match within rtol=0.15."""
         Y, D, X, unit_id, time = generate_panel_dgp(
-            n_units=50, n_periods=10, true_ate=2.0,
-            binary_treatment=False, random_state=42
+            n_units=50, n_periods=10, true_ate=2.0, binary_treatment=False, random_state=42
         )
 
         py_panel = PanelData(Y, D, X, unit_id, time)
@@ -252,8 +243,7 @@ class TestDMLCREParityVariants:
     def test_high_dimensional_parity(self):
         """High-dimensional covariates parity."""
         Y, D, X, unit_id, time = generate_panel_dgp(
-            n_units=50, n_periods=8, n_covariates=15,
-            binary_treatment=False, random_state=303
+            n_units=50, n_periods=8, n_covariates=15, binary_treatment=False, random_state=303
         )
 
         py_panel = PanelData(Y, D, X, unit_id, time)

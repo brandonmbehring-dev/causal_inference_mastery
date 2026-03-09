@@ -26,10 +26,7 @@ class TestSimpleATEErrorHandling:
         - Expected vs Got
         """
         with pytest.raises(ValueError) as exc_info:
-            simple_ate(
-                outcomes=empty_arrays["outcomes"],
-                treatment=empty_arrays["treatment"]
-            )
+            simple_ate(outcomes=empty_arrays["outcomes"], treatment=empty_arrays["treatment"])
 
         error_msg = str(exc_info.value)
 
@@ -50,8 +47,7 @@ class TestSimpleATEErrorHandling:
         """
         with pytest.raises(ValueError) as exc_info:
             simple_ate(
-                outcomes=mismatched_arrays["outcomes"],
-                treatment=mismatched_arrays["treatment"]
+                outcomes=mismatched_arrays["outcomes"], treatment=mismatched_arrays["treatment"]
             )
 
         error_msg = str(exc_info.value)
@@ -68,10 +64,7 @@ class TestSimpleATEErrorHandling:
         NaN values indicate data quality issues and should never be silently ignored.
         """
         with pytest.raises(ValueError) as exc_info:
-            simple_ate(
-                outcomes=arrays_with_nan["outcomes"],
-                treatment=arrays_with_nan["treatment"]
-            )
+            simple_ate(outcomes=arrays_with_nan["outcomes"], treatment=arrays_with_nan["treatment"])
 
         error_msg = str(exc_info.value)
 
@@ -85,17 +78,16 @@ class TestSimpleATEErrorHandling:
         Cannot estimate treatment effect without control group.
         """
         with pytest.raises(ValueError) as exc_info:
-            simple_ate(
-                outcomes=all_treated["outcomes"],
-                treatment=all_treated["treatment"]
-            )
+            simple_ate(outcomes=all_treated["outcomes"], treatment=all_treated["treatment"])
 
         error_msg = str(exc_info.value)
 
         assert "CRITICAL ERROR" in error_msg
-        assert ("control" in error_msg.lower() or
-                "no variation" in error_msg.lower() or
-                "all treated" in error_msg.lower())
+        assert (
+            "control" in error_msg.lower()
+            or "no variation" in error_msg.lower()
+            or "all treated" in error_msg.lower()
+        )
 
     def test_all_control_fails_fast(self, all_control):
         """
@@ -104,17 +96,16 @@ class TestSimpleATEErrorHandling:
         Cannot estimate treatment effect without treated group.
         """
         with pytest.raises(ValueError) as exc_info:
-            simple_ate(
-                outcomes=all_control["outcomes"],
-                treatment=all_control["treatment"]
-            )
+            simple_ate(outcomes=all_control["outcomes"], treatment=all_control["treatment"])
 
         error_msg = str(exc_info.value)
 
         assert "CRITICAL ERROR" in error_msg
-        assert ("treated" in error_msg.lower() or
-                "no variation" in error_msg.lower() or
-                "all control" in error_msg.lower())
+        assert (
+            "treated" in error_msg.lower()
+            or "no variation" in error_msg.lower()
+            or "all control" in error_msg.lower()
+        )
 
     def test_invalid_alpha_fails_fast(self, simple_rct_data):
         """
@@ -127,7 +118,7 @@ class TestSimpleATEErrorHandling:
             simple_ate(
                 outcomes=simple_rct_data["outcomes"],
                 treatment=simple_rct_data["treatment"],
-                alpha=0.0
+                alpha=0.0,
             )
 
         error_msg = str(exc_info.value)
@@ -139,7 +130,7 @@ class TestSimpleATEErrorHandling:
             simple_ate(
                 outcomes=simple_rct_data["outcomes"],
                 treatment=simple_rct_data["treatment"],
-                alpha=1.0
+                alpha=1.0,
             )
 
         error_msg = str(exc_info.value)
@@ -151,7 +142,7 @@ class TestSimpleATEErrorHandling:
             simple_ate(
                 outcomes=simple_rct_data["outcomes"],
                 treatment=simple_rct_data["treatment"],
-                alpha=-0.05
+                alpha=-0.05,
             )
 
         error_msg = str(exc_info.value)
@@ -172,9 +163,11 @@ class TestSimpleATEErrorHandling:
 
         error_msg = str(exc_info.value)
         assert "CRITICAL ERROR" in error_msg
-        assert ("binary" in error_msg.lower() or
-                "0 or 1" in error_msg or
-                "treatment" in error_msg.lower())
+        assert (
+            "binary" in error_msg.lower()
+            or "0 or 1" in error_msg
+            or "treatment" in error_msg.lower()
+        )
 
     def test_infinite_values_fail_fast(self):
         """
@@ -188,8 +181,7 @@ class TestSimpleATEErrorHandling:
 
         error_msg = str(exc_info.value)
         assert "CRITICAL ERROR" in error_msg
-        assert ("inf" in error_msg.lower() or
-                "infinite" in error_msg.lower())
+        assert "inf" in error_msg.lower() or "infinite" in error_msg.lower()
 
 
 class TestInputValidation:

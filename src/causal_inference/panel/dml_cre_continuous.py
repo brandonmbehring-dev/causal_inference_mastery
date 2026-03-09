@@ -202,7 +202,7 @@ def _clustered_influence_se(
     n_units = len(unique_units)
 
     # Denominator: E[D_tilde²]
-    D_tilde_sq_mean = np.mean(D_tilde ** 2)
+    D_tilde_sq_mean = np.mean(D_tilde**2)
 
     if D_tilde_sq_mean < 1e-10:
         return np.std(Y_tilde) / np.sqrt(n)
@@ -217,7 +217,7 @@ def _clustered_influence_se(
         cluster_psi[i] = np.sum(psi[unit_idx])
 
     # Clustered variance: Var(θ̂) = (1/n²) * Σᵢ (Σₜ ψᵢₜ)²
-    var_theta = np.sum(cluster_psi ** 2) / (n ** 2)
+    var_theta = np.sum(cluster_psi**2) / (n**2)
 
     return np.sqrt(var_theta)
 
@@ -277,12 +277,10 @@ def _compute_fold_estimates(
         D_fold = D_tilde[test_idx]
         unit_fold = unit_id[test_idx]
 
-        D_sq_sum = np.sum(D_fold ** 2)
+        D_sq_sum = np.sum(D_fold**2)
         if D_sq_sum > 1e-10:
             fold_estimates[i] = np.sum(Y_fold * D_fold) / D_sq_sum
-            fold_ses[i] = _clustered_influence_se(
-                Y_fold, D_fold, fold_estimates[i], unit_fold
-            )
+            fold_ses[i] = _clustered_influence_se(Y_fold, D_fold, fold_estimates[i], unit_fold)
         else:
             fold_estimates[i] = np.nan
             fold_ses[i] = np.nan
@@ -432,7 +430,7 @@ def dml_cre_continuous(
     # =========================================================================
     # Step 4: Estimate ATE (marginal effect)
     # =========================================================================
-    D_tilde_sq_sum = np.sum(D_tilde ** 2)
+    D_tilde_sq_sum = np.sum(D_tilde**2)
 
     if D_tilde_sq_sum < 1e-10:
         raise ValueError(
@@ -475,9 +473,7 @@ def dml_cre_continuous(
     # =========================================================================
     # Step 8: Per-fold estimates
     # =========================================================================
-    fold_estimates, fold_ses = _compute_fold_estimates(
-        Y_tilde, D_tilde, panel.unit_id, fold_info
-    )
+    fold_estimates, fold_ses = _compute_fold_estimates(Y_tilde, D_tilde, panel.unit_id, fold_info)
 
     return DMLCREResult(
         ate=float(ate),

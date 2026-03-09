@@ -124,7 +124,7 @@ def vecm_estimate(
     if lags < 1:
         raise ValueError(f"lags must be >= 1, got {lags}")
     if T < 2 * lags + k + 10:
-        raise ValueError(f"Insufficient observations: T={T}, need at least {2*lags + k + 10}")
+        raise ValueError(f"Insufficient observations: T={T}, need at least {2 * lags + k + 10}")
     if det_order not in [-1, 0, 1]:
         raise ValueError(f"det_order must be -1, 0, or 1, got {det_order}")
 

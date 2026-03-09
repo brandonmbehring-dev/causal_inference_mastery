@@ -457,9 +457,7 @@ class TestRegistryCoverage:
 
     def test_minimum_method_count(self) -> None:
         """Registry should have minimum number of methods."""
-        total_methods = sum(
-            len(methods) for methods in JULIA_BENCHMARK_REGISTRY.values()
-        )
+        total_methods = sum(len(methods) for methods in JULIA_BENCHMARK_REGISTRY.values())
         # Should have at least 20 methods across families
         assert total_methods >= 20, f"Only {total_methods} methods registered"
 

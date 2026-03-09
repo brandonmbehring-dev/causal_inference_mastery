@@ -172,7 +172,9 @@ def synthetic_control(
         se = np.nan
         p_value = np.nan
     else:
-        raise ValueError(f"Unknown inference method: {inference}. Use 'placebo', 'bootstrap', or 'none'")
+        raise ValueError(
+            f"Unknown inference method: {inference}. Use 'placebo', 'bootstrap', or 'none'"
+        )
 
     # Confidence interval
     z = stats.norm.ppf(1 - alpha / 2)
@@ -327,9 +329,7 @@ def _bootstrap_inference(
         boot_control_pre = control_pre[:, pre_idx]
 
         try:
-            weights, _ = compute_scm_weights(
-                boot_treated_pre.reshape(1, -1), boot_control_pre
-            )
+            weights, _ = compute_scm_weights(boot_treated_pre.reshape(1, -1), boot_control_pre)
 
             # Apply weights to post-treatment (no resampling)
             boot_synthetic_post = control_post.T @ weights

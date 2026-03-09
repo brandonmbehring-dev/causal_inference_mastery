@@ -205,23 +205,23 @@ class TestHeckmanVsSampleSelection:
         assert r_result is not None, "R implementation returned None"
 
         # Compare core estimate
-        assert np.isclose(
-            py_result["estimate"], r_result["estimate"], rtol=0.02
-        ), f"Estimate mismatch: Python={py_result['estimate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["estimate"], r_result["estimate"], rtol=0.02), (
+            f"Estimate mismatch: Python={py_result['estimate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
         # Compare standard error
-        assert np.isclose(
-            py_result["se"], r_result["se"], rtol=0.05
-        ), f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
+        assert np.isclose(py_result["se"], r_result["se"], rtol=0.05), (
+            f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
+        )
 
         # Compare selection parameters
-        assert np.isclose(
-            py_result["rho"], r_result["rho"], rtol=0.02
-        ), f"rho mismatch: Python={py_result['rho']:.4f}, R={r_result['rho']:.4f}"
+        assert np.isclose(py_result["rho"], r_result["rho"], rtol=0.02), (
+            f"rho mismatch: Python={py_result['rho']:.4f}, R={r_result['rho']:.4f}"
+        )
 
-        assert np.isclose(
-            py_result["sigma"], r_result["sigma"], rtol=0.02
-        ), f"sigma mismatch: Python={py_result['sigma']:.4f}, R={r_result['sigma']:.4f}"
+        assert np.isclose(py_result["sigma"], r_result["sigma"], rtol=0.02), (
+            f"sigma mismatch: Python={py_result['sigma']:.4f}, R={r_result['sigma']:.4f}"
+        )
 
     def test_strong_selection(self):
         """Strong positive selection (ρ=0.8)."""
@@ -383,19 +383,19 @@ class TestHeckmanDiagnosticsVsR:
 
         # Lambda = rho * sigma
         expected_lambda = py_result["rho"] * py_result["sigma"]
-        assert np.isclose(
-            py_result["lambda_coef"], expected_lambda, rtol=0.01
-        ), "Lambda should equal rho * sigma"
+        assert np.isclose(py_result["lambda_coef"], expected_lambda, rtol=0.01), (
+            "Lambda should equal rho * sigma"
+        )
 
         # Lambda should match R
-        assert np.isclose(
-            py_result["lambda_coef"], r_result["lambda_coef"], rtol=0.02
-        ), f"Lambda mismatch: Python={py_result['lambda_coef']:.4f}, R={r_result['lambda_coef']:.4f}"
+        assert np.isclose(py_result["lambda_coef"], r_result["lambda_coef"], rtol=0.02), (
+            f"Lambda mismatch: Python={py_result['lambda_coef']:.4f}, R={r_result['lambda_coef']:.4f}"
+        )
 
         # Lambda SE
-        assert np.isclose(
-            py_result["lambda_se"], r_result["lambda_se"], rtol=0.05
-        ), f"Lambda SE mismatch: Python={py_result['lambda_se']:.4f}, R={r_result['lambda_se']:.4f}"
+        assert np.isclose(py_result["lambda_se"], r_result["lambda_se"], rtol=0.05), (
+            f"Lambda SE mismatch: Python={py_result['lambda_se']:.4f}, R={r_result['lambda_se']:.4f}"
+        )
 
     def test_coefficient_arrays(self):
         """Selection and outcome coefficient arrays should match."""
@@ -424,9 +424,9 @@ class TestHeckmanDiagnosticsVsR:
         assert len(py_gamma) == len(r_gamma), "Gamma length mismatch"
 
         for i in range(len(py_gamma)):
-            assert np.isclose(
-                py_gamma[i], r_gamma[i], rtol=0.02
-            ), f"Gamma[{i}] mismatch: Python={py_gamma[i]:.4f}, R={r_gamma[i]:.4f}"
+            assert np.isclose(py_gamma[i], r_gamma[i], rtol=0.02), (
+                f"Gamma[{i}] mismatch: Python={py_gamma[i]:.4f}, R={r_gamma[i]:.4f}"
+            )
 
         # Outcome coefficients (beta)
         py_beta = py_result["beta"]
@@ -435,9 +435,9 @@ class TestHeckmanDiagnosticsVsR:
         assert len(py_beta) == len(r_beta), "Beta length mismatch"
 
         for i in range(len(py_beta)):
-            assert np.isclose(
-                py_beta[i], r_beta[i], rtol=0.02
-            ), f"Beta[{i}] mismatch: Python={py_beta[i]:.4f}, R={r_beta[i]:.4f}"
+            assert np.isclose(py_beta[i], r_beta[i], rtol=0.02), (
+                f"Beta[{i}] mismatch: Python={py_beta[i]:.4f}, R={r_beta[i]:.4f}"
+            )
 
 
 # =============================================================================

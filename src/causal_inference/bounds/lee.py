@@ -538,12 +538,13 @@ def check_monotonicity(
 
     # Standard error for difference in proportions
     se = np.sqrt(
-        obs_rate_treated * (1 - obs_rate_treated) / n_treated +
-        obs_rate_control * (1 - obs_rate_control) / n_control
+        obs_rate_treated * (1 - obs_rate_treated) / n_treated
+        + obs_rate_control * (1 - obs_rate_control) / n_control
     )
 
     z_stat = diff / se if se > 0 else 0
     from scipy.stats import norm
+
     p_value = 2 * (1 - norm.cdf(abs(z_stat)))
 
     if diff > 0:

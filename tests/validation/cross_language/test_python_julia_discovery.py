@@ -38,8 +38,7 @@ from tests.validation.cross_language.julia_interface import (
 
 
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-validation"
+    not is_julia_available(), reason="Julia not available for cross-validation"
 )
 
 
@@ -109,8 +108,7 @@ class TestPCSkeletonParity:
         jl_skeleton = jl_result["skeleton"]
 
         np.testing.assert_array_equal(
-            py_skeleton, jl_skeleton,
-            err_msg="Skeleton adjacency mismatch between Python and Julia"
+            py_skeleton, jl_skeleton, err_msg="Skeleton adjacency mismatch between Python and Julia"
         )
 
     def test_n_ci_tests_match(self):
@@ -120,8 +118,9 @@ class TestPCSkeletonParity:
         py_result = pc_algorithm(test_data["data"], alpha=0.01)
         jl_result = julia_pc_algorithm(test_data["data"], alpha=0.01)
 
-        assert py_result.n_ci_tests == jl_result["n_ci_tests"], \
+        assert py_result.n_ci_tests == jl_result["n_ci_tests"], (
             f"CI test count mismatch: Python={py_result.n_ci_tests}, Julia={jl_result['n_ci_tests']}"
+        )
 
     def test_skeleton_f1_parity(self):
         """Skeleton F1 metrics should match."""
@@ -134,8 +133,7 @@ class TestPCSkeletonParity:
 
         # Julia F1
         jl_result = julia_skeleton_f1(
-            py_result.skeleton.adjacency_matrix,
-            test_data["true_adjacency"]
+            py_result.skeleton.adjacency_matrix, test_data["true_adjacency"]
         )
 
         np.testing.assert_allclose(py_prec, jl_result["precision"], rtol=0.05)
@@ -163,8 +161,7 @@ class TestPCOrientationParity:
         jl_directed = jl_result["cpdag_directed"]
 
         np.testing.assert_array_equal(
-            py_directed, jl_directed,
-            err_msg="CPDAG directed edges mismatch"
+            py_directed, jl_directed, err_msg="CPDAG directed edges mismatch"
         )
 
     def test_cpdag_undirected_edges_match(self):
@@ -179,8 +176,7 @@ class TestPCOrientationParity:
         jl_undirected = jl_result["cpdag_undirected"]
 
         np.testing.assert_array_equal(
-            py_undirected, jl_undirected,
-            err_msg="CPDAG undirected edges mismatch"
+            py_undirected, jl_undirected, err_msg="CPDAG undirected edges mismatch"
         )
 
     def test_shd_parity(self):
@@ -196,11 +192,10 @@ class TestPCOrientationParity:
         jl_shd = julia_compute_shd(
             py_result.cpdag.directed_matrix,
             py_result.cpdag.undirected_matrix,
-            test_data["true_adjacency"]
+            test_data["true_adjacency"],
         )
 
-        assert py_shd == jl_shd["shd"], \
-            f"SHD mismatch: Python={py_shd}, Julia={jl_shd['shd']}"
+        assert py_shd == jl_shd["shd"], f"SHD mismatch: Python={py_shd}, Julia={jl_shd['shd']}"
 
 
 # =============================================================================
@@ -223,8 +218,9 @@ class TestLiNGAMCausalOrderParity:
 
         # Causal order should match
         np.testing.assert_array_equal(
-            py_result.causal_order, jl_result["causal_order"],
-            err_msg="Causal order mismatch between Python and Julia"
+            py_result.causal_order,
+            jl_result["causal_order"],
+            err_msg="Causal order mismatch between Python and Julia",
         )
 
     def test_dag_structure_matches(self):
@@ -238,8 +234,9 @@ class TestLiNGAMCausalOrderParity:
 
         # DAG adjacency should match
         np.testing.assert_array_equal(
-            py_result.dag.adjacency_matrix, jl_result["dag_adjacency"],
-            err_msg="DAG adjacency mismatch"
+            py_result.dag.adjacency_matrix,
+            jl_result["dag_adjacency"],
+            err_msg="DAG adjacency mismatch",
         )
 
     def test_adjacency_coefficients_similar(self):
@@ -253,9 +250,11 @@ class TestLiNGAMCausalOrderParity:
 
         # Coefficients should be close (rtol=0.10 for estimation noise)
         np.testing.assert_allclose(
-            py_result.adjacency_matrix, jl_result["adjacency_matrix"],
-            rtol=0.10, atol=0.05,
-            err_msg="Adjacency coefficients differ significantly"
+            py_result.adjacency_matrix,
+            jl_result["adjacency_matrix"],
+            rtol=0.10,
+            atol=0.05,
+            err_msg="Adjacency coefficients differ significantly",
         )
 
 
@@ -273,8 +272,9 @@ class TestDiscoveryMetricsParity:
         jl_dag = julia_generate_random_dag(5, edge_prob=0.3, seed=42)
 
         np.testing.assert_array_equal(
-            py_dag.adjacency_matrix, jl_dag["adjacency_matrix"],
-            err_msg="Random DAG generation differs between Python and Julia"
+            py_dag.adjacency_matrix,
+            jl_dag["adjacency_matrix"],
+            err_msg="Random DAG generation differs between Python and Julia",
         )
 
     def test_data_generation_parity(self):
@@ -288,16 +288,12 @@ class TestDiscoveryMetricsParity:
 
         # Data should match closely (floating point precision)
         np.testing.assert_allclose(
-            py_data, jl_result["data"],
-            rtol=1e-10,
-            err_msg="Data generation differs"
+            py_data, jl_result["data"], rtol=1e-10, err_msg="Data generation differs"
         )
 
         # Coefficient matrix should match
         np.testing.assert_allclose(
-            py_B, jl_result["B"],
-            rtol=1e-10,
-            err_msg="Coefficient matrix differs"
+            py_B, jl_result["B"], rtol=1e-10, err_msg="Coefficient matrix differs"
         )
 
 
@@ -359,14 +355,10 @@ class TestLargerDAGParity:
         jl_result = julia_pc_algorithm(test_data["data"], alpha=0.01)
 
         # Skeleton match
-        np.testing.assert_array_equal(
-            py_result.skeleton.adjacency_matrix, jl_result["skeleton"]
-        )
+        np.testing.assert_array_equal(py_result.skeleton.adjacency_matrix, jl_result["skeleton"])
 
         # CPDAG match
-        np.testing.assert_array_equal(
-            py_result.cpdag.directed_matrix, jl_result["cpdag_directed"]
-        )
+        np.testing.assert_array_equal(py_result.cpdag.directed_matrix, jl_result["cpdag_directed"])
 
     @pytest.mark.slow
     def test_lingam_8_node_dag(self):
@@ -379,6 +371,4 @@ class TestLargerDAGParity:
         jl_result = julia_direct_lingam(test_data["data"], seed=123)
 
         # Causal order should match
-        np.testing.assert_array_equal(
-            py_result.causal_order, jl_result["causal_order"]
-        )
+        np.testing.assert_array_equal(py_result.causal_order, jl_result["causal_order"])

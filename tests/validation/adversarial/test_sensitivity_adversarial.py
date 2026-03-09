@@ -519,9 +519,7 @@ class TestRosenbaumGammaRange:
         treated = np.random.randn(20) + 2.0
         control = np.random.randn(20)
 
-        result = rosenbaum_bounds(
-            treated, control, gamma_range=(1.0, 1.01), n_gamma=10
-        )
+        result = rosenbaum_bounds(treated, control, gamma_range=(1.0, 1.01), n_gamma=10)
         assert len(result["gamma_values"]) == 10
 
     def test_n_gamma_one(self):
@@ -667,8 +665,14 @@ class TestRosenbaumResultStructure:
         result = rosenbaum_bounds(treated, control)
 
         expected_keys = [
-            "gamma_values", "p_upper", "p_lower", "gamma_critical",
-            "observed_statistic", "n_pairs", "alpha", "interpretation"
+            "gamma_values",
+            "p_upper",
+            "p_lower",
+            "gamma_critical",
+            "observed_statistic",
+            "n_pairs",
+            "alpha",
+            "interpretation",
         ]
         for key in expected_keys:
             assert key in result, f"Missing key: {key}"

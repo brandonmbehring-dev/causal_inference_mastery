@@ -113,20 +113,17 @@ class PanelData:
         # Check for NaN/Inf
         if np.any(np.isnan(self.outcomes)) or np.any(np.isinf(self.outcomes)):
             raise ValueError(
-                f"CRITICAL ERROR: NaN or Inf in outcomes.\n"
-                f"Function: PanelData._validate"
+                f"CRITICAL ERROR: NaN or Inf in outcomes.\nFunction: PanelData._validate"
             )
 
         if np.any(np.isnan(self.treatment)) or np.any(np.isinf(self.treatment)):
             raise ValueError(
-                f"CRITICAL ERROR: NaN or Inf in treatment.\n"
-                f"Function: PanelData._validate"
+                f"CRITICAL ERROR: NaN or Inf in treatment.\nFunction: PanelData._validate"
             )
 
         if np.any(np.isnan(self.covariates)) or np.any(np.isinf(self.covariates)):
             raise ValueError(
-                f"CRITICAL ERROR: NaN or Inf in covariates.\n"
-                f"Function: PanelData._validate"
+                f"CRITICAL ERROR: NaN or Inf in covariates.\nFunction: PanelData._validate"
             )
 
         # Check minimum units

@@ -259,10 +259,12 @@ class TestExtremePropensities:
         n = 400
 
         # Create bimodal covariate
-        X1 = np.concatenate([
-            np.random.normal(-2, 0.5, n // 2),  # Cluster 1
-            np.random.normal(2, 0.5, n // 2)    # Cluster 2
-        ])
+        X1 = np.concatenate(
+            [
+                np.random.normal(-2, 0.5, n // 2),  # Cluster 1
+                np.random.normal(2, 0.5, n // 2),  # Cluster 2
+            ]
+        )
         np.random.shuffle(X1)
 
         logit = 1.5 * X1

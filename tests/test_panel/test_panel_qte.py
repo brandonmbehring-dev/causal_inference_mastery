@@ -112,9 +112,7 @@ class TestPanelRIFQTE:
 
     def test_basic_estimation(self):
         """Basic estimation produces valid result structure."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
         result = panel_rif_qte(panel, quantile=0.5)
 
         assert isinstance(result, PanelQTEResult)
@@ -130,23 +128,30 @@ class TestPanelRIFQTE:
         """Median QTE is near true value (randomized, no unit effect confounding)."""
         # Use non-confounded DGP and no unit effects for clean known-answer test
         panel, true_qte = generate_panel_qte_dgp(
-            n_units=100, n_periods=10, true_qte=2.0,
-            confounded=False, unit_effect_strength=0.0, random_state=42
+            n_units=100,
+            n_periods=10,
+            true_qte=2.0,
+            confounded=False,
+            unit_effect_strength=0.0,
+            random_state=42,
         )
         result = panel_rif_qte(panel, quantile=0.5)
 
         # Within 3 SEs of true value (or within 0.5 absolute)
-        assert (
-            abs(result.qte - true_qte) < 3 * result.qte_se
-            or abs(result.qte - true_qte) < 0.5
-        ), f"QTE={result.qte:.3f}, true={true_qte}, SE={result.qte_se:.3f}"
+        assert abs(result.qte - true_qte) < 3 * result.qte_se or abs(result.qte - true_qte) < 0.5, (
+            f"QTE={result.qte:.3f}, true={true_qte}, SE={result.qte_se:.3f}"
+        )
 
     def test_ci_covers_true_value(self):
         """Confidence interval covers true value (randomized, no unit effects)."""
         # Use unit_effect_strength=0 to remove confounding from unit effects
         panel, true_qte = generate_panel_qte_dgp(
-            n_units=100, n_periods=10, true_qte=2.0,
-            confounded=False, unit_effect_strength=0.0, random_state=123
+            n_units=100,
+            n_periods=10,
+            true_qte=2.0,
+            confounded=False,
+            unit_effect_strength=0.0,
+            random_state=123,
         )
         result = panel_rif_qte(panel, quantile=0.5)
 
@@ -161,35 +166,36 @@ class TestPanelRIFQTE:
     def test_zero_effect_detection(self):
         """Zero effect is detected (CI contains 0)."""
         panel, _ = generate_panel_qte_dgp(
-            n_units=100, n_periods=10, true_qte=0.0,
-            confounded=False, unit_effect_strength=0.0, random_state=456
+            n_units=100,
+            n_periods=10,
+            true_qte=0.0,
+            confounded=False,
+            unit_effect_strength=0.0,
+            random_state=456,
         )
         result = panel_rif_qte(panel, quantile=0.5)
 
         # CI should contain 0 or estimate should be close to 0
-        assert (
-            result.ci_lower < 0 < result.ci_upper
-            or abs(result.qte) < 0.3
-        )
+        assert result.ci_lower < 0 < result.ci_upper or abs(result.qte) < 0.3
 
     def test_negative_effect_detection(self):
         """Negative effect is correctly estimated."""
         panel, true_qte = generate_panel_qte_dgp(
-            n_units=100, n_periods=10, true_qte=-1.5,
-            confounded=False, unit_effect_strength=0.0, random_state=789
+            n_units=100,
+            n_periods=10,
+            true_qte=-1.5,
+            confounded=False,
+            unit_effect_strength=0.0,
+            random_state=789,
         )
         result = panel_rif_qte(panel, quantile=0.5)
 
         assert result.qte < 0, f"Expected negative, got {result.qte:.3f}"
-        assert abs(result.qte - true_qte) < 0.5, (
-            f"QTE={result.qte:.3f}, true={true_qte}"
-        )
+        assert abs(result.qte - true_qte) < 0.5, f"QTE={result.qte:.3f}, true={true_qte}"
 
     def test_different_quantiles(self):
         """Estimation works at different quantiles."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
 
         for q in [0.1, 0.25, 0.5, 0.75, 0.9]:
             result = panel_rif_qte(panel, quantile=q)
@@ -199,9 +205,7 @@ class TestPanelRIFQTE:
 
     def test_density_at_quantile_positive(self):
         """Density estimate at quantile is positive."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
         result = panel_rif_qte(panel, quantile=0.5)
 
         assert result.density_at_quantile > 0
@@ -209,9 +213,7 @@ class TestPanelRIFQTE:
 
     def test_without_covariates(self):
         """Estimation works without covariates."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
         result = panel_rif_qte(panel, quantile=0.5, include_covariates=False)
 
         assert not np.isnan(result.qte)
@@ -223,9 +225,7 @@ class TestPanelQTEBand:
 
     def test_default_quantiles(self):
         """Default quantiles [0.1, 0.25, 0.5, 0.75, 0.9] work."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
         result = panel_rif_qte_band(panel)
 
         assert isinstance(result, PanelQTEBandResult)
@@ -237,9 +237,7 @@ class TestPanelQTEBand:
 
     def test_custom_quantiles(self):
         """Custom quantiles work."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
         quantiles = [0.2, 0.5, 0.8]
         result = panel_rif_qte_band(panel, quantiles=quantiles)
 
@@ -248,9 +246,7 @@ class TestPanelQTEBand:
 
     def test_qte_varies_across_quantiles(self):
         """QTE estimates vary across quantiles (not identical)."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
         result = panel_rif_qte_band(panel)
 
         # Should have some variation (not all identical)
@@ -260,16 +256,18 @@ class TestPanelQTEBand:
     def test_homogeneous_effect_similar_qtes(self):
         """Homogeneous additive effect gives similar QTEs across quantiles."""
         panel, true_qte = generate_panel_qte_dgp(
-            n_units=100, n_periods=10, true_qte=2.0,
-            heterogeneous_quantile=False, confounded=False, random_state=42
+            n_units=100,
+            n_periods=10,
+            true_qte=2.0,
+            heterogeneous_quantile=False,
+            confounded=False,
+            random_state=42,
         )
         result = panel_rif_qte_band(panel, quantiles=[0.25, 0.5, 0.75])
 
         # QTEs should be similar (within 1.0 of each other)
         qte_range = np.max(result.qtes) - np.min(result.qtes)
-        assert qte_range < 1.5, (
-            f"QTE range {qte_range:.3f} too large for homogeneous effect"
-        )
+        assert qte_range < 1.5, f"QTE range {qte_range:.3f} too large for homogeneous effect"
 
 
 class TestPanelUnconditionalQTE:
@@ -277,12 +275,8 @@ class TestPanelUnconditionalQTE:
 
     def test_basic_estimation(self):
         """Basic estimation produces valid result."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
-        result = panel_unconditional_qte(
-            panel, quantile=0.5, n_bootstrap=100, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
+        result = panel_unconditional_qte(panel, quantile=0.5, n_bootstrap=100, random_state=42)
 
         assert isinstance(result, PanelQTEResult)
         assert result.method == "panel_unconditional_qte"
@@ -291,17 +285,13 @@ class TestPanelUnconditionalQTE:
 
     def test_cluster_bootstrap_larger_se(self):
         """Cluster bootstrap gives larger SE than naive bootstrap."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
 
         result_cluster = panel_unconditional_qte(
-            panel, quantile=0.5, n_bootstrap=200,
-            cluster_bootstrap=True, random_state=42
+            panel, quantile=0.5, n_bootstrap=200, cluster_bootstrap=True, random_state=42
         )
         result_naive = panel_unconditional_qte(
-            panel, quantile=0.5, n_bootstrap=200,
-            cluster_bootstrap=False, random_state=42
+            panel, quantile=0.5, n_bootstrap=200, cluster_bootstrap=False, random_state=42
         )
 
         # Cluster SE should typically be larger due to within-unit correlation
@@ -340,8 +330,11 @@ class TestPanelQTEClustering:
         # Compute naive SE (treating observations as independent)
         # This is a rough approximation
         from causal_inference.panel.panel_qte import (
-            _silverman_bandwidth, _kernel_density_at_quantile, _compute_rif
+            _silverman_bandwidth,
+            _kernel_density_at_quantile,
+            _compute_rif,
         )
+
         q_tau = np.quantile(Y, 0.5)
         h = _silverman_bandwidth(Y)
         f_q = _kernel_density_at_quantile(Y, q_tau, h)
@@ -354,14 +347,13 @@ class TestPanelQTEClustering:
 
         # Naive SE (OLS standard error)
         ZtZ_inv = np.linalg.inv(Z.T @ Z)
-        sigma2 = np.sum(residuals ** 2) / (n_obs - Z.shape[1])
+        sigma2 = np.sum(residuals**2) / (n_obs - Z.shape[1])
         naive_se = np.sqrt(sigma2 * ZtZ_inv[-1, -1])
 
         # Clustered SE should be larger or similar
         # (it can be smaller in rare cases, so just check it's reasonable)
         assert clustered_se > 0.5 * naive_se, (
-            f"Clustered SE ({clustered_se:.4f}) unexpectedly small "
-            f"vs naive SE ({naive_se:.4f})"
+            f"Clustered SE ({clustered_se:.4f}) unexpectedly small vs naive SE ({naive_se:.4f})"
         )
 
 
@@ -370,9 +362,7 @@ class TestPanelQTEAdversarial:
 
     def test_small_panel(self):
         """Small panel (5 units) works."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=5, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=5, n_periods=10, random_state=42)
         result = panel_rif_qte(panel, quantile=0.5)
 
         assert not np.isnan(result.qte)
@@ -415,7 +405,9 @@ class TestPanelQTEAdversarial:
     def test_extreme_quantile_warning(self):
         """Extreme quantile issues warning."""
         panel, _ = generate_panel_qte_dgp(
-            n_units=20, n_periods=5, random_state=42  # Small sample
+            n_units=20,
+            n_periods=5,
+            random_state=42,  # Small sample
         )
 
         with pytest.warns(UserWarning, match="Extreme quantile"):
@@ -423,9 +415,7 @@ class TestPanelQTEAdversarial:
 
     def test_invalid_quantile_error(self):
         """Invalid quantile raises error."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
 
         with pytest.raises(ValueError, match="Invalid quantile"):
             _ = panel_rif_qte(panel, quantile=0.0)
@@ -464,10 +454,10 @@ class TestPanelQTEMonteCarlo:
             D = (np.random.rand(n_obs) < 0.5).astype(float)
             Y = true_qte * D + np.random.randn(n_obs)
 
-            panel = PanelData(outcomes=Y, treatment=D, covariates=X,
-                              unit_id=unit_id, time=time)
-            result = panel_unconditional_qte(panel, quantile=0.5, n_bootstrap=100,
-                                             random_state=seed)
+            panel = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
+            result = panel_unconditional_qte(
+                panel, quantile=0.5, n_bootstrap=100, random_state=seed
+            )
             estimates.append(result.qte)
 
         estimates = np.array(estimates)
@@ -487,9 +477,12 @@ class TestPanelQTEMonteCarlo:
 
         for seed in range(n_simulations):
             panel, _ = generate_panel_qte_dgp(
-                n_units=50, n_periods=10, true_qte=true_qte,
-                confounded=False, unit_effect_strength=0.0,
-                random_state=seed + 1000
+                n_units=50,
+                n_periods=10,
+                true_qte=true_qte,
+                confounded=False,
+                unit_effect_strength=0.0,
+                random_state=seed + 1000,
             )
             result = panel_rif_qte(panel, quantile=0.5)
             estimates.append(result.qte)
@@ -511,9 +504,12 @@ class TestPanelQTEMonteCarlo:
 
         for seed in range(n_simulations):
             panel, _ = generate_panel_qte_dgp(
-                n_units=50, n_periods=10, true_qte=true_qte,
-                confounded=False, unit_effect_strength=0.0,
-                random_state=seed + 3000
+                n_units=50,
+                n_periods=10,
+                true_qte=true_qte,
+                confounded=False,
+                unit_effect_strength=0.0,
+                random_state=seed + 3000,
             )
             result = panel_unconditional_qte(
                 panel, quantile=0.5, n_bootstrap=200, random_state=seed
@@ -534,9 +530,13 @@ class TestPanelQTEConsistency:
         from causal_inference.panel import dml_cre
 
         panel, true_qte = generate_panel_qte_dgp(
-            n_units=100, n_periods=10, true_qte=2.0,
-            heterogeneous_quantile=False, confounded=False,
-            unit_effect_strength=0.0, random_state=42
+            n_units=100,
+            n_periods=10,
+            true_qte=2.0,
+            heterogeneous_quantile=False,
+            confounded=False,
+            unit_effect_strength=0.0,
+            random_state=42,
         )
 
         qte_result = panel_rif_qte(panel, quantile=0.5)
@@ -551,15 +551,12 @@ class TestPanelQTEConsistency:
 
     def test_band_contains_single_qte(self):
         """Band result matches individual QTE estimates."""
-        panel, _ = generate_panel_qte_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_qte_dgp(n_units=50, n_periods=10, random_state=42)
 
         band = panel_rif_qte_band(panel, quantiles=[0.25, 0.5, 0.75])
 
         for i, q in enumerate(band.quantiles):
             single = panel_rif_qte(panel, quantile=q)
             assert np.isclose(band.qtes[i], single.qte, rtol=1e-10), (
-                f"Band QTE ({band.qtes[i]:.6f}) != single QTE ({single.qte:.6f}) "
-                f"at τ={q}"
+                f"Band QTE ({band.qtes[i]:.6f}) != single QTE ({single.qte:.6f}) at τ={q}"
             )

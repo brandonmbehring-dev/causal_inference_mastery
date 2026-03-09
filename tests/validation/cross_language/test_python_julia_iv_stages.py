@@ -27,14 +27,14 @@ try:
         julia_reduced_form,
         julia_second_stage,
     )
+
     JULIA_AVAILABLE = is_julia_available()
 except ImportError:
     JULIA_AVAILABLE = False
 
 
 pytestmark = pytest.mark.skipif(
-    not JULIA_AVAILABLE,
-    reason="Julia not available for cross-language validation"
+    not JULIA_AVAILABLE, reason="Julia not available for cross-language validation"
 )
 
 

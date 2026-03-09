@@ -143,9 +143,7 @@ def late_estimator(
 
     # Delta method variance
     var_late = (1 / first_stage**2) * (
-        var_reduced_form
-        + late**2 * var_first_stage
-        - 2 * late * cov_rf_fs
+        var_reduced_form + late**2 * var_first_stage - 2 * late * cov_rf_fs
     )
     se = np.sqrt(max(var_late, 0))
 
@@ -382,22 +380,17 @@ def _validate_late_inputs(Y: np.ndarray, D: np.ndarray, Z: np.ndarray) -> None:
     # Length checks
     if len(D) != n or len(Z) != n:
         raise ValueError(
-            f"Input length mismatch: outcome ({n}), treatment ({len(D)}), "
-            f"instrument ({len(Z)})"
+            f"Input length mismatch: outcome ({n}), treatment ({len(D)}), instrument ({len(Z)})"
         )
 
     # Binary checks
     unique_z = np.unique(Z[~np.isnan(Z)])
     if not np.all(np.isin(unique_z, [0, 1])):
-        raise ValueError(
-            f"Instrument must be binary (0/1). Found values: {unique_z}"
-        )
+        raise ValueError(f"Instrument must be binary (0/1). Found values: {unique_z}")
 
     unique_d = np.unique(D[~np.isnan(D)])
     if not np.all(np.isin(unique_d, [0, 1])):
-        raise ValueError(
-            f"Treatment must be binary (0/1). Found values: {unique_d}"
-        )
+        raise ValueError(f"Treatment must be binary (0/1). Found values: {unique_d}")
 
     # Variation checks
     if len(unique_z) < 2:

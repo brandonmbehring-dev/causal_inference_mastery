@@ -24,10 +24,7 @@ class TestDiDMinimumSamples:
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
         treatment = np.concatenate([np.zeros(10), np.ones(10)])
         post = np.concatenate([np.zeros(5), np.ones(5), np.zeros(5), np.ones(5)])
-        unit_id = np.concatenate([
-            np.arange(5), np.arange(5),
-            np.arange(5, 10), np.arange(5, 10)
-        ])
+        unit_id = np.concatenate([np.arange(5), np.arange(5), np.arange(5, 10), np.arange(5, 10)])
 
         # Should run but with warning about small clusters
         with pytest.warns(RuntimeWarning, match="Small number of clusters"):
@@ -39,8 +36,18 @@ class TestDiDMinimumSamples:
     def test_extreme_small_sample(self):
         """DiD with n=2 per group (extreme minimum)."""
         # 2 control, 2 treated
-        outcomes = np.array([10.0, 15.0, 11.0, 16.0,  # Control
-                             12.0, 20.0, 13.0, 21.0])  # Treated
+        outcomes = np.array(
+            [
+                10.0,
+                15.0,
+                11.0,
+                16.0,  # Control
+                12.0,
+                20.0,
+                13.0,
+                21.0,
+            ]
+        )  # Treated
         treatment = np.array([0, 0, 0, 0, 1, 1, 1, 1])
         post = np.array([0, 1, 0, 1, 0, 1, 0, 1])
         unit_id = np.array([0, 0, 1, 1, 2, 2, 3, 3])
@@ -69,19 +76,18 @@ class TestDiDExtremeImbalance:
         treated_post = np.full(n_treated, 17.0) + np.random.normal(0, 1.0, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         result = did_2x2(outcomes, treatment, post, unit_id, cluster_se=True)
 
@@ -102,19 +108,18 @@ class TestDiDExtremeImbalance:
         treated_post = np.full(n_treated, 17.0) + np.random.normal(0, 1.0, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         result = did_2x2(outcomes, treatment, post, unit_id, cluster_se=True)
 
@@ -139,19 +144,18 @@ class TestDiDHighVariance:
         treated_post = np.full(n_treated, 17.0) + np.random.normal(0, 50.0, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         result = did_2x2(outcomes, treatment, post, unit_id, cluster_se=True)
 
@@ -242,19 +246,18 @@ class TestDiDUnbalancedPanel:
         treated_post = np.full(n_treated, 17.0) + np.random.normal(0, 0.5, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         # Use only first 30 control and 30 treated units (drop 10 of each)
         # Keep units 0-29 (control) and 40-69 (treated)
@@ -293,19 +296,18 @@ class TestDiDPerfectSeparation:
         treated_post = np.full(n_treated, 1005.0) + np.random.normal(0, 10.0, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         result = did_2x2(outcomes, treatment, post, unit_id, cluster_se=True)
 
@@ -330,19 +332,18 @@ class TestDiDNegativeOutcomes:
         treated_post = np.full(n_treated, -90.0) + np.random.normal(0, 5.0, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         result = did_2x2(outcomes, treatment, post, unit_id, cluster_se=True)
 
@@ -471,19 +472,18 @@ class TestDiDCollinearity:
         treated_post = np.full(n_treated, 15.0) + np.random.normal(0, 2.0, n_treated)
 
         outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-        treatment = np.concatenate([
-            np.zeros(n_control * 2),
-            np.ones(n_treated * 2)
-        ])
-        post = np.concatenate([
-            np.zeros(n_control), np.ones(n_control),
-            np.zeros(n_treated), np.ones(n_treated)
-        ])
-        unit_id = np.concatenate([
-            np.arange(n_control), np.arange(n_control),
-            np.arange(n_control, n_control + n_treated),
-            np.arange(n_control, n_control + n_treated)
-        ])
+        treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+        post = np.concatenate(
+            [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+        )
+        unit_id = np.concatenate(
+            [
+                np.arange(n_control),
+                np.arange(n_control),
+                np.arange(n_control, n_control + n_treated),
+                np.arange(n_control, n_control + n_treated),
+            ]
+        )
 
         result = did_2x2(outcomes, treatment, post, unit_id, cluster_se=True)
 

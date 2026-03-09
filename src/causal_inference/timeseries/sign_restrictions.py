@@ -316,9 +316,7 @@ def sign_restriction_svar(
         elif rotation_method == "qr":
             Q = _random_orthogonal_qr(n_vars, rng)
         else:
-            raise ValueError(
-                f"rotation_method must be 'givens' or 'qr', got '{rotation_method}'"
-            )
+            raise ValueError(f"rotation_method must be 'givens' or 'qr', got '{rotation_method}'")
 
         # Candidate impact matrix: B₀⁻¹ = P @ Q
         B0_inv_candidate = P @ Q
@@ -576,17 +574,11 @@ def validate_constraints(
     """
     for i, c in enumerate(constraints):
         if c.shock_idx >= n_vars:
-            raise ValueError(
-                f"Constraint {i}: shock_idx {c.shock_idx} >= n_vars {n_vars}"
-            )
+            raise ValueError(f"Constraint {i}: shock_idx {c.shock_idx} >= n_vars {n_vars}")
         if c.response_idx >= n_vars:
-            raise ValueError(
-                f"Constraint {i}: response_idx {c.response_idx} >= n_vars {n_vars}"
-            )
+            raise ValueError(f"Constraint {i}: response_idx {c.response_idx} >= n_vars {n_vars}")
         if c.horizon > horizons:
-            raise ValueError(
-                f"Constraint {i}: horizon {c.horizon} > max horizons {horizons}"
-            )
+            raise ValueError(f"Constraint {i}: horizon {c.horizon} > max horizons {horizons}")
 
 
 def create_monetary_policy_constraints(

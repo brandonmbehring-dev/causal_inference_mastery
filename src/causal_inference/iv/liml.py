@@ -106,9 +106,7 @@ class LIML:
         alpha: float = 0.05,
     ):
         if inference not in ["standard", "robust"]:
-            raise ValueError(
-                f"inference must be 'standard' or 'robust', got '{inference}'"
-            )
+            raise ValueError(f"inference must be 'standard' or 'robust', got '{inference}'")
         if not 0 < alpha < 1:
             raise ValueError(f"alpha must be in (0, 1), got {alpha}")
 
@@ -222,9 +220,7 @@ class LIML:
 
         return self
 
-    def _compute_kappa(
-        self, Y: np.ndarray, D: np.ndarray, Z: np.ndarray, X: np.ndarray
-    ) -> float:
+    def _compute_kappa(self, Y: np.ndarray, D: np.ndarray, Z: np.ndarray, X: np.ndarray) -> float:
         """
         Compute LIML kappa parameter (smallest eigenvalue).
 
@@ -265,6 +261,7 @@ class LIML:
 
         # Solve generalized eigenvalue problem: numerator @ v = lambda * denominator @ v
         from scipy.linalg import eigh
+
         try:
             eigvals, _ = eigh(numerator, denominator)
         except np.linalg.LinAlgError:
@@ -466,8 +463,8 @@ class LIML:
                 "Std. Error": self.se_,
                 "t-statistic": self.t_stats_,
                 "p-value": self.p_values_,
-                f"CI Lower ({(1-self.alpha)*100:.0f}%)": self.ci_[:, 0],
-                f"CI Upper ({(1-self.alpha)*100:.0f}%)": self.ci_[:, 1],
+                f"CI Lower ({(1 - self.alpha) * 100:.0f}%)": self.ci_[:, 0],
+                f"CI Upper ({(1 - self.alpha) * 100:.0f}%)": self.ci_[:, 1],
             }
         )
 

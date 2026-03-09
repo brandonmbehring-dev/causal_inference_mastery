@@ -75,10 +75,20 @@ class TestResultStructure:
         result = shift_share_iv(Y, D, shares, shocks)
 
         required_fields = [
-            "estimate", "se", "t_stat", "p_value",
-            "ci_lower", "ci_upper", "first_stage",
-            "rotemberg", "n_obs", "n_sectors",
-            "share_sum_mean", "inference", "alpha", "message",
+            "estimate",
+            "se",
+            "t_stat",
+            "p_value",
+            "ci_lower",
+            "ci_upper",
+            "first_stage",
+            "rotemberg",
+            "n_obs",
+            "n_sectors",
+            "share_sum_mean",
+            "inference",
+            "alpha",
+            "message",
         ]
         for field in required_fields:
             assert field in result, f"Missing field: {field}"
@@ -376,9 +386,7 @@ class TestEdgeCases:
 
     def test_few_sectors(self):
         """Works with few sectors (3)."""
-        Y, D, shares, shocks, X, _ = generate_shift_share_data(
-            n=100, n_sectors=3, random_state=42
-        )
+        Y, D, shares, shocks, X, _ = generate_shift_share_data(n=100, n_sectors=3, random_state=42)
         result = shift_share_iv(Y, D, shares, shocks)
 
         assert result["n_sectors"] == 3
@@ -403,9 +411,7 @@ class TestEdgeCases:
 
     def test_zero_shock_some_sectors(self):
         """Works when some sectors have zero shock."""
-        Y, D, shares, shocks, X, _ = generate_shift_share_data(
-            n=100, n_sectors=10, random_state=42
-        )
+        Y, D, shares, shocks, X, _ = generate_shift_share_data(n=100, n_sectors=10, random_state=42)
         # Set half the shocks to zero
         shocks[5:] = 0
 

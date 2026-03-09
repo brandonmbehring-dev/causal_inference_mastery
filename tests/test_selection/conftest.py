@@ -75,10 +75,12 @@ def generate_heckman_dgp(
 
     # Generate correlated errors (u, v)
     # Covariance matrix: [[σ²_u, ρ*σ_u], [ρ*σ_u, 1]]
-    cov_matrix = np.array([
-        [sigma_u**2, rho * sigma_u],
-        [rho * sigma_u, 1.0],
-    ])
+    cov_matrix = np.array(
+        [
+            [sigma_u**2, rho * sigma_u],
+            [rho * sigma_u, 1.0],
+        ]
+    )
     errors = np.random.multivariate_normal([0, 0], cov_matrix, n)
     u = errors[:, 0]  # Outcome error
     v = errors[:, 1]  # Selection error

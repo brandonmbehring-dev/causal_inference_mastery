@@ -151,9 +151,7 @@ def bayesian_propensity_stratified(
     n = len(treatment)
 
     if len(covariates) != n:
-        raise ValueError(
-            f"Length mismatch: treatment ({n}) != covariates ({len(covariates)})"
-        )
+        raise ValueError(f"Length mismatch: treatment ({n}) != covariates ({len(covariates)})")
 
     if not np.all(np.isin(treatment, [0, 1])):
         raise ValueError("Treatment must be binary (0 or 1)")
@@ -190,19 +188,21 @@ def bayesian_propensity_stratified(
         # Assign to all observations in this stratum
         posterior_samples[:, mask] = samples[:, np.newaxis]
 
-        stratum_info.append(StratumInfo(
-            stratum_id=s,
-            n_obs=int(n_in_stratum),
-            n_treated=int(n_treated),
-            n_control=int(n_control),
-            posterior_alpha=post_alpha,
-            posterior_beta=post_beta,
-            posterior_mean=post_mean,
-            posterior_sd=np.sqrt(
-                (post_alpha * post_beta) /
-                ((post_alpha + post_beta) ** 2 * (post_alpha + post_beta + 1))
-            ),
-        ))
+        stratum_info.append(
+            StratumInfo(
+                stratum_id=s,
+                n_obs=int(n_in_stratum),
+                n_treated=int(n_treated),
+                n_control=int(n_control),
+                posterior_alpha=post_alpha,
+                posterior_beta=post_beta,
+                posterior_mean=post_mean,
+                posterior_sd=np.sqrt(
+                    (post_alpha * post_beta)
+                    / ((post_alpha + post_beta) ** 2 * (post_alpha + post_beta + 1))
+                ),
+            )
+        )
 
     # Compute summary statistics
     posterior_mean = np.mean(posterior_samples, axis=0)
@@ -332,9 +332,7 @@ def bayesian_propensity_logistic(
     n, p = covariates.shape
 
     if len(treatment) != n:
-        raise ValueError(
-            f"Length mismatch: treatment ({len(treatment)}) != covariates ({n})"
-        )
+        raise ValueError(f"Length mismatch: treatment ({len(treatment)}) != covariates ({n})")
 
     if not np.all(np.isin(treatment, [0, 1])):
         raise ValueError("Treatment must be binary (0 or 1)")
@@ -371,15 +369,11 @@ def bayesian_propensity_logistic(
 
     # Draw coefficient samples from approximate posterior
     try:
-        beta_samples = np.random.multivariate_normal(
-            beta_map, cov_matrix, size=n_posterior_samples
-        )
+        beta_samples = np.random.multivariate_normal(beta_map, cov_matrix, size=n_posterior_samples)
     except np.linalg.LinAlgError:
         # Fallback to independent normals if covariance is problematic
         stds = np.sqrt(np.diag(cov_matrix))
-        beta_samples = np.random.normal(
-            beta_map, stds, size=(n_posterior_samples, n_coef)
-        )
+        beta_samples = np.random.normal(beta_map, stds, size=(n_posterior_samples, n_coef))
 
     # Compute propensity samples
     linear_samples = beta_samples @ X.T  # (n_samples, n)

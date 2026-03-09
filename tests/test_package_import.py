@@ -51,7 +51,13 @@ class TestSubmoduleImports:
 
         assert all(
             callable(f)
-            for f in [simple_ate, stratified_ate, regression_adjusted_ate, permutation_test, ipw_ate]
+            for f in [
+                simple_ate,
+                stratified_ate,
+                regression_adjusted_ate,
+                permutation_test,
+                ipw_ate,
+            ]
         )
 
     def test_observational_submodule(self):

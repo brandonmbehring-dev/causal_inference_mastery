@@ -52,8 +52,7 @@ class TestGMMEquivalence:
 
             # Point estimates should be identical (or very close)
             assert np.isclose(gmm.coef_[0], tsls.coef_[0], rtol=1e-6), (
-                f"GMM one-step ({gmm.coef_[0]:.6f}) should equal "
-                f"2SLS ({tsls.coef_[0]:.6f})"
+                f"GMM one-step ({gmm.coef_[0]:.6f}) should equal 2SLS ({tsls.coef_[0]:.6f})"
             )
 
     @pytest.mark.slow
@@ -74,8 +73,7 @@ class TestGMMEquivalence:
             tsls.fit(data.Y, data.D, data.Z)
 
             assert np.isclose(gmm.coef_[0], tsls.coef_[0], rtol=1e-6), (
-                f"Just-identified: GMM ({gmm.coef_[0]:.6f}) should equal "
-                f"2SLS ({tsls.coef_[0]:.6f})"
+                f"Just-identified: GMM ({gmm.coef_[0]:.6f}) should equal 2SLS ({tsls.coef_[0]:.6f})"
             )
 
 
@@ -179,9 +177,7 @@ class TestHansenJTestSize:
 
         for seed in range(n_runs):
             # Valid instruments (no exclusion violation)
-            data = dgp_iv_over_identified(
-                n=500, true_beta=0.5, n_instruments=3, random_state=seed
-            )
+            data = dgp_iv_over_identified(n=500, true_beta=0.5, n_instruments=3, random_state=seed)
 
             gmm = GMM(steps="two", inference="robust")
             gmm.fit(data.Y, data.D, data.Z)

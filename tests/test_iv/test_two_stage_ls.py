@@ -27,9 +27,9 @@ class TestTwoStageLeastSquaresBasic:
         iv.fit(Y, D, Z, X)
 
         # Check point estimate within 10% of truth
-        assert np.isclose(
-            iv.coef_[0], true_beta, rtol=0.10
-        ), f"Expected β ≈ {true_beta}, got {iv.coef_[0]:.4f}"
+        assert np.isclose(iv.coef_[0], true_beta, rtol=0.10), (
+            f"Expected β ≈ {true_beta}, got {iv.coef_[0]:.4f}"
+        )
 
     def test_over_identified_coefficient(self, iv_over_identified):
         """Test 2SLS with multiple instruments (overidentified, q > p)."""
@@ -39,9 +39,9 @@ class TestTwoStageLeastSquaresBasic:
         iv.fit(Y, D, Z, X)
 
         # With 2 instruments, should still recover true effect (±15% tolerance for overID)
-        assert np.isclose(
-            iv.coef_[0], true_beta, rtol=0.15
-        ), f"Expected β ≈ {true_beta}, got {iv.coef_[0]:.4f}"
+        assert np.isclose(iv.coef_[0], true_beta, rtol=0.15), (
+            f"Expected β ≈ {true_beta}, got {iv.coef_[0]:.4f}"
+        )
 
     def test_strong_instrument_coefficient(self, iv_strong_instrument):
         """Test 2SLS with strong instrument (F > 20)."""
@@ -51,9 +51,9 @@ class TestTwoStageLeastSquaresBasic:
         iv.fit(Y, D, Z, X)
 
         # Strong instrument should give accurate estimate
-        assert np.isclose(
-            iv.coef_[0], true_beta, rtol=0.10
-        ), f"Expected β ≈ {true_beta}, got {iv.coef_[0]:.4f}"
+        assert np.isclose(iv.coef_[0], true_beta, rtol=0.10), (
+            f"Expected β ≈ {true_beta}, got {iv.coef_[0]:.4f}"
+        )
 
     def test_with_controls_coefficient(self, iv_with_controls):
         """Test 2SLS with exogenous controls (Z + X → D, D + X → Y)."""
@@ -63,14 +63,12 @@ class TestTwoStageLeastSquaresBasic:
         iv.fit(Y, D, Z, X)
 
         # First coefficient is treatment effect (should match true_beta)
-        assert np.isclose(
-            iv.coef_[0], true_beta, rtol=0.15
-        ), f"Expected β_D ≈ {true_beta}, got {iv.coef_[0]:.4f}"
+        assert np.isclose(iv.coef_[0], true_beta, rtol=0.15), (
+            f"Expected β_D ≈ {true_beta}, got {iv.coef_[0]:.4f}"
+        )
 
         # Should have 3 coefficients: [D, X1, X2]
-        assert (
-            len(iv.coef_) == 3
-        ), f"Expected 3 coefficients [D, X1, X2], got {len(iv.coef_)}"
+        assert len(iv.coef_) == 3, f"Expected 3 coefficients [D, X1, X2], got {len(iv.coef_)}"
 
 
 class TestStandardErrors:
@@ -87,9 +85,7 @@ class TestStandardErrors:
         assert np.all(iv.se_ > 0), f"Standard errors must be positive. Got: {iv.se_}"
 
         # All SEs should be finite
-        assert np.all(
-            np.isfinite(iv.se_)
-        ), f"Standard errors must be finite. Got: {iv.se_}"
+        assert np.all(np.isfinite(iv.se_)), f"Standard errors must be finite. Got: {iv.se_}"
 
     def test_robust_vs_standard_se(self, iv_heteroskedastic):
         """Test that robust SEs >= standard SEs with heteroskedasticity."""
@@ -104,16 +100,16 @@ class TestStandardErrors:
         iv_robust.fit(Y, D, Z, X)
 
         # Coefficients should be the same
-        assert np.allclose(
-            iv_std.coef_, iv_robust.coef_
-        ), "Coefficients should be identical regardless of SE type"
+        assert np.allclose(iv_std.coef_, iv_robust.coef_), (
+            "Coefficients should be identical regardless of SE type"
+        )
 
         # Robust SEs should be larger (or equal) with heteroskedasticity
         # Note: Can be smaller in some cases, but typically larger
         # For this specific heteroskedastic DGP, robust should be noticeably larger
-        assert (
-            iv_robust.se_[0] >= iv_std.se_[0] * 0.9
-        ), f"Robust SE ({iv_robust.se_[0]:.4f}) should be >= 90% of standard SE ({iv_std.se_[0]:.4f})"
+        assert iv_robust.se_[0] >= iv_std.se_[0] * 0.9, (
+            f"Robust SE ({iv_robust.se_[0]:.4f}) should be >= 90% of standard SE ({iv_std.se_[0]:.4f})"
+        )
 
     def test_standard_errors_scale_with_sample_size(self, iv_strong_instrument):
         """Test that SEs decrease with √n (asymptotic theory)."""
@@ -133,9 +129,7 @@ class TestStandardErrors:
         # SE should be approximately √2 times larger with half sample
         # Allow 0.5 to 3.0 factor (wide tolerance due to random variation)
         ratio = se_half / se_full
-        assert (
-            0.5 < ratio < 3.0
-        ), f"Expected SE ratio ≈ √2 = 1.41, got {ratio:.2f}"
+        assert 0.5 < ratio < 3.0, f"Expected SE ratio ≈ √2 = 1.41, got {ratio:.2f}"
 
 
 class TestInference:
@@ -151,9 +145,9 @@ class TestInference:
         # Manually compute t-statistic
         expected_t = iv.coef_[0] / iv.se_[0]
 
-        assert np.isclose(
-            iv.t_stats_[0], expected_t
-        ), f"Expected t-stat = {expected_t:.4f}, got {iv.t_stats_[0]:.4f}"
+        assert np.isclose(iv.t_stats_[0], expected_t), (
+            f"Expected t-stat = {expected_t:.4f}, got {iv.t_stats_[0]:.4f}"
+        )
 
     def test_p_values_two_sided(self, iv_just_identified):
         """Test that p-values are for two-sided tests."""
@@ -178,9 +172,9 @@ class TestInference:
         ci_lower, ci_upper = iv.ci_[0]
 
         # 95% CI should contain true value (with high probability)
-        assert (
-            ci_lower <= true_beta <= ci_upper
-        ), f"95% CI [{ci_lower:.4f}, {ci_upper:.4f}] does not contain true β = {true_beta}"
+        assert ci_lower <= true_beta <= ci_upper, (
+            f"95% CI [{ci_lower:.4f}, {ci_upper:.4f}] does not contain true β = {true_beta}"
+        )
 
     def test_confidence_interval_width_reasonable(self, iv_strong_instrument):
         """Test that CI width is reasonable (not too wide or too narrow)."""
@@ -195,9 +189,9 @@ class TestInference:
         # CI width should be approximately 4 * SE (±1.96 SE on each side)
         expected_width = 4 * iv.se_[0]
 
-        assert np.isclose(
-            ci_width, expected_width, rtol=0.05
-        ), f"Expected CI width ≈ {expected_width:.4f}, got {ci_width:.4f}"
+        assert np.isclose(ci_width, expected_width, rtol=0.05), (
+            f"Expected CI width ≈ {expected_width:.4f}, got {ci_width:.4f}"
+        )
 
 
 class TestFirstStageDiagnostics:
@@ -211,9 +205,9 @@ class TestFirstStageDiagnostics:
         iv.fit(Y, D, Z, X)
 
         # F-statistic should be > 20 (strong instrument threshold)
-        assert (
-            iv.first_stage_f_stat_ > 20
-        ), f"Expected F > 20 for strong IV, got F = {iv.first_stage_f_stat_:.2f}"
+        assert iv.first_stage_f_stat_ > 20, (
+            f"Expected F > 20 for strong IV, got F = {iv.first_stage_f_stat_:.2f}"
+        )
 
     def test_first_stage_f_stat_weak_instrument(self, iv_weak_instrument):
         """Test first-stage F-statistic with weak instrument (F < 12)."""
@@ -224,9 +218,9 @@ class TestFirstStageDiagnostics:
 
         # F-statistic should be < 12 (below conventional weak IV threshold of 10)
         # Allowing small tolerance for random variation
-        assert (
-            iv.first_stage_f_stat_ < 12
-        ), f"Expected F < 12 for weak IV, got F = {iv.first_stage_f_stat_:.2f}"
+        assert iv.first_stage_f_stat_ < 12, (
+            f"Expected F < 12 for weak IV, got F = {iv.first_stage_f_stat_:.2f}"
+        )
 
     def test_first_stage_r2_bounds(self, iv_just_identified):
         """Test that first-stage R² is between 0 and 1."""
@@ -235,9 +229,9 @@ class TestFirstStageDiagnostics:
         iv = TwoStageLeastSquares(inference="robust")
         iv.fit(Y, D, Z, X)
 
-        assert (
-            0 < iv.first_stage_r2_ < 1
-        ), f"First-stage R² must be in (0, 1), got {iv.first_stage_r2_:.4f}"
+        assert 0 < iv.first_stage_r2_ < 1, (
+            f"First-stage R² must be in (0, 1), got {iv.first_stage_r2_:.4f}"
+        )
 
 
 class TestInputValidation:
@@ -337,9 +331,7 @@ class TestSummaryOutput:
 
         required_cols = ["coef", "se", "t_stat", "p_value", "ci_lower", "ci_upper"]
         for col in required_cols:
-            assert (
-                col in summary.columns
-            ), f"summary() must have column '{col}'"
+            assert col in summary.columns, f"summary() must have column '{col}'"
 
     def test_summary_with_controls(self, iv_with_controls):
         """Test summary table with controls (multiple rows)."""
@@ -355,7 +347,9 @@ class TestSummaryOutput:
 
         # Row names should be ['D', 'X1', 'X2']
         expected_names = ["D", "X1", "X2"]
-        assert list(summary.index) == expected_names, f"Expected row names {expected_names}, got {list(summary.index)}"
+        assert list(summary.index) == expected_names, (
+            f"Expected row names {expected_names}, got {list(summary.index)}"
+        )
 
     def test_summary_before_fit_raises_error(self):
         """Test that calling summary() before fit() raises error."""
@@ -427,6 +421,6 @@ class TestClusteredStandardErrors:
 
         # Clustered SEs should be larger (or similar) to robust
         # Allow some tolerance as clustering may not matter in this simple DGP
-        assert (
-            iv_cluster.se_[0] >= iv_robust.se_[0] * 0.8
-        ), f"Clustered SE ({iv_cluster.se_[0]:.4f}) should be >= 80% of robust SE ({iv_robust.se_[0]:.4f})"
+        assert iv_cluster.se_[0] >= iv_robust.se_[0] * 0.8, (
+            f"Clustered SE ({iv_cluster.se_[0]:.4f}) should be >= 80% of robust SE ({iv_robust.se_[0]:.4f})"
+        )

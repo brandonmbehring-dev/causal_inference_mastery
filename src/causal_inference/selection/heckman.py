@@ -224,11 +224,13 @@ def heckman_two_step(
 
     # Add intercept if requested
     if add_intercept:
-        X_selected = np.column_stack([
-            np.ones(n_selected),
-            outcome_covariates_selected,
-            imr_selected,
-        ])
+        X_selected = np.column_stack(
+            [
+                np.ones(n_selected),
+                outcome_covariates_selected,
+                imr_selected,
+            ]
+        )
     else:
         X_selected = np.column_stack([outcome_covariates_selected, imr_selected])
 
@@ -250,7 +252,8 @@ def heckman_two_step(
     vcov = _compute_heckman_vcov(
         outcome_selected=outcome_selected,
         X_selected=X_selected,
-        Z_full=selection_covariates if not add_intercept
+        Z_full=selection_covariates
+        if not add_intercept
         else np.column_stack([np.ones(n), selection_covariates]),
         selected=selected,
         gamma=gamma,
@@ -463,9 +466,7 @@ def _compute_imr(selection_probs: np.ndarray) -> np.ndarray:
     return imr
 
 
-def _fit_ols(
-    y: np.ndarray, X: np.ndarray
-) -> Tuple[np.ndarray, np.ndarray, float]:
+def _fit_ols(y: np.ndarray, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray, float]:
     """
     Fit OLS regression.
 

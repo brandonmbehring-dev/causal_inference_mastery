@@ -135,9 +135,7 @@ def local_iv(
         D_boot = D_trim[idx]
         P_boot = P_trim[idx]
 
-        bootstrap_mte[b, :] = _estimate_mte_grid(
-            Y_boot, D_boot, P_boot, u_grid, bandwidth
-        )
+        bootstrap_mte[b, :] = _estimate_mte_grid(Y_boot, D_boot, P_boot, u_grid, bandwidth)
 
     # Standard errors and CIs
     se_grid = np.nanstd(bootstrap_mte, axis=0, ddof=1)
@@ -499,6 +497,7 @@ def _validate_mte_inputs(Y: np.ndarray, D: np.ndarray, Z: np.ndarray) -> None:
     # Minimum sample size
     if n < 50:
         import warnings
+
         warnings.warn(
             f"Small sample size ({n}). MTE estimation may be unreliable.",
             UserWarning,

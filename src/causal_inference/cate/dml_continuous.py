@@ -306,7 +306,7 @@ def _influence_function_se_continuous(
     n = len(Y_tilde)
 
     # Denominator: E[D_tilde^2]
-    D_tilde_sq_mean = np.mean(D_tilde ** 2)
+    D_tilde_sq_mean = np.mean(D_tilde**2)
 
     if D_tilde_sq_mean < 1e-10:
         # Fallback for degenerate case
@@ -351,12 +351,10 @@ def _compute_fold_estimates(
         D_fold = D_tilde[test_idx]
 
         # Fold-specific estimate
-        D_sq_sum = np.sum(D_fold ** 2)
+        D_sq_sum = np.sum(D_fold**2)
         if D_sq_sum > 1e-10:
             fold_estimates[i] = np.sum(Y_fold * D_fold) / D_sq_sum
-            fold_ses[i] = _influence_function_se_continuous(
-                Y_fold, D_fold, fold_estimates[i]
-            )
+            fold_ses[i] = _influence_function_se_continuous(Y_fold, D_fold, fold_estimates[i])
         else:
             fold_estimates[i] = np.nan
             fold_ses[i] = np.nan
@@ -465,9 +463,7 @@ def dml_continuous(
     dml_panel : DML for panel data.
     """
     # Validate inputs (no binary check)
-    outcomes, treatment, covariates = _validate_continuous_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = _validate_continuous_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 
@@ -520,7 +516,7 @@ def dml_continuous(
     # Step 4: Estimate ATE
     # =========================================================================
     # For continuous treatment: theta_hat = Sum(Y_tilde * D_tilde) / Sum(D_tilde^2)
-    D_tilde_sq_sum = np.sum(D_tilde ** 2)
+    D_tilde_sq_sum = np.sum(D_tilde**2)
 
     if D_tilde_sq_sum < 1e-10:
         raise ValueError(

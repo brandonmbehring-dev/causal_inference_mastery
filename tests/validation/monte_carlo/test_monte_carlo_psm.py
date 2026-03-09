@@ -188,7 +188,9 @@ class TestPSMMonteCarloStrongConfounding:
 class TestPSMMonteCarloLimitedOverlap:
     """Monte Carlo validation with limited common support."""
 
-    @pytest.mark.xfail(reason="Limited overlap DGP too extreme for PSM (coverage 31% - CIs underconservative)")
+    @pytest.mark.xfail(
+        reason="Limited overlap DGP too extreme for PSM (coverage 31% - CIs underconservative)"
+    )
     def test_psm_limited_overlap_n200(self):
         """
         Validate PSM with limited overlap (partial common support).

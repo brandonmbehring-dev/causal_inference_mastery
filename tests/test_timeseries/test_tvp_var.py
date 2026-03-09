@@ -68,10 +68,12 @@ def generate_constant_var_dgp(
 
     # Stable coefficient matrix
     if n_vars == 2:
-        A1 = np.array([
-            [0.5, 0.1],
-            [0.0, 0.4],
-        ])
+        A1 = np.array(
+            [
+                [0.5, 0.1],
+                [0.0, 0.4],
+            ]
+        )
     else:
         A1 = np.eye(n_vars) * 0.4
 
@@ -123,16 +125,20 @@ def generate_structural_break_dgp(
     break_idx = int(n * break_point)
 
     # Pre-break coefficients
-    A1_before = np.array([
-        [0.6, 0.1],
-        [0.0, 0.5],
-    ])[:n_vars, :n_vars]
+    A1_before = np.array(
+        [
+            [0.6, 0.1],
+            [0.0, 0.5],
+        ]
+    )[:n_vars, :n_vars]
 
     # Post-break coefficients (different persistence)
-    A1_after = np.array([
-        [0.3, 0.2],
-        [0.1, 0.3],
-    ])[:n_vars, :n_vars]
+    A1_after = np.array(
+        [
+            [0.3, 0.2],
+            [0.1, 0.3],
+        ]
+    )[:n_vars, :n_vars]
 
     sigma = np.eye(n_vars) * 0.5
     eps = np.random.multivariate_normal(np.zeros(n_vars), sigma, size=n)
@@ -184,10 +190,12 @@ def generate_gradually_changing_dgp(
     for t in range(lags, n):
         # Coefficient varies sinusoidally over time
         phase = 2 * np.pi * t / n
-        A1_t = np.array([
-            [0.4 + 0.2 * np.sin(phase), 0.1],
-            [0.0, 0.3 + 0.1 * np.cos(phase)],
-        ])[:n_vars, :n_vars]
+        A1_t = np.array(
+            [
+                [0.4 + 0.2 * np.sin(phase), 0.1],
+                [0.0, 0.3 + 0.1 * np.cos(phase)],
+            ]
+        )[:n_vars, :n_vars]
 
         A1_trajectory[t] = A1_t
 
@@ -521,8 +529,8 @@ class TestTVPVARMonteCarlo:
         coef_00 = result.coefficient_trajectory(0, 1, smoothed=True)
 
         # Mean before and after break
-        pre_mean = np.mean(coef_00[:break_eff - 20])
-        post_mean = np.mean(coef_00[break_eff + 20:])
+        pre_mean = np.mean(coef_00[: break_eff - 20])
+        post_mean = np.mean(coef_00[break_eff + 20 :])
 
         # True values
         true_pre = A1_before[0, 0]
@@ -718,10 +726,12 @@ class TestCheckTVPStability:
         lags = 1
 
         # Stable coefficients (small diagonal)
-        coef = np.array([
-            [0.5, 0.3, 0.1],  # Intercept, A1[0,0], A1[0,1]
-            [0.5, 0.0, 0.3],  # Intercept, A1[1,0], A1[1,1]
-        ])
+        coef = np.array(
+            [
+                [0.5, 0.3, 0.1],  # Intercept, A1[0,0], A1[0,1]
+                [0.5, 0.0, 0.3],  # Intercept, A1[1,0], A1[1,1]
+            ]
+        )
 
         is_stable, eigvals = check_tvp_stability(coef, lags, n_vars)
 
@@ -734,10 +744,12 @@ class TestCheckTVPStability:
         lags = 1
 
         # Unstable coefficients (eigenvalue > 1)
-        coef = np.array([
-            [0.5, 0.9, 0.3],
-            [0.5, 0.3, 0.9],
-        ])
+        coef = np.array(
+            [
+                [0.5, 0.9, 0.3],
+                [0.5, 0.3, 0.9],
+            ]
+        )
 
         is_stable, eigvals = check_tvp_stability(coef, lags, n_vars)
 

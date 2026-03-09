@@ -68,8 +68,10 @@ class TestGMMBasicFunctionality:
         # Two-step is asymptotically more efficient, but with strong IV
         # they should be similar
         np.testing.assert_allclose(
-            gmm_one.coef_[0], gmm_two.coef_[0], rtol=0.2,
-            err_msg="One-step and two-step GMM should be similar with strong IV"
+            gmm_one.coef_[0],
+            gmm_two.coef_[0],
+            rtol=0.2,
+            err_msg="One-step and two-step GMM should be similar with strong IV",
         )
 
     def test_gmm_summary_table(self, iv_strong_instrument):
@@ -239,9 +241,7 @@ class TestGMMInference:
         gmm_robust.fit(Y, D, Z, X)
 
         # Coefficients should be identical
-        np.testing.assert_allclose(
-            gmm_standard.coef_, gmm_robust.coef_, rtol=1e-6
-        )
+        np.testing.assert_allclose(gmm_standard.coef_, gmm_robust.coef_, rtol=1e-6)
 
         # Both should produce finite SEs
         assert np.all(np.isfinite(gmm_standard.se_))

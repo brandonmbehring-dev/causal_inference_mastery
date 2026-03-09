@@ -328,9 +328,7 @@ class ControlFunction:
         rho_se_naive = fit.bse[2]
 
         # Murphy-Topel corrected SEs
-        se_corrected, rho_se_corrected = self._murphy_topel_se(
-            Y, D, Z, X, nu_hat, fit, first_stage
-        )
+        se_corrected, rho_se_corrected = self._murphy_topel_se(Y, D, Z, X, nu_hat, fit, first_stage)
 
         # Inference
         t_stat = beta / se_corrected
@@ -542,16 +540,12 @@ class ControlFunction:
             message=message,
         )
 
-    def _generate_message(
-        self, first_stage: FirstStageResult, endogeneity_detected: bool
-    ) -> str:
+    def _generate_message(self, first_stage: FirstStageResult, endogeneity_detected: bool) -> str:
         """Generate descriptive message."""
         parts = []
 
         if first_stage["weak_iv_warning"]:
-            parts.append(
-                f"WARNING: Weak instruments (F={first_stage['f_statistic']:.1f} < 10)"
-            )
+            parts.append(f"WARNING: Weak instruments (F={first_stage['f_statistic']:.1f} < 10)")
 
         if endogeneity_detected:
             parts.append("Endogeneity detected (control coefficient significant)")

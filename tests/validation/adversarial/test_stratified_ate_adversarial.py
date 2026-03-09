@@ -43,9 +43,9 @@ class TestStratifiedATEStratumEdgeCases:
         # Large stratum (s=0): n=990
         np.random.seed(42)
         t_large = np.array([1] * 495 + [0] * 495)
-        y_large = np.where(t_large == 1,
-                          np.random.normal(2.0, 1.0, 990),
-                          np.random.normal(0.0, 1.0, 990))
+        y_large = np.where(
+            t_large == 1, np.random.normal(2.0, 1.0, 990), np.random.normal(0.0, 1.0, 990)
+        )
         outcomes.extend(y_large)
         treatment.extend(t_large)
         strata.extend([0] * 990)
@@ -110,12 +110,16 @@ class TestStratifiedATEStratumEdgeCases:
         # Stratum 0: 20 units (10 treated with Y=10, 10 control with Y=5)
         # Stratum 1: 20 units (10 treated with Y=20, 10 control with Y=15)
         outcomes = np.array(
-            [10.0] * 10 + [5.0] * 10 +  # Stratum 0
-            [20.0] * 10 + [15.0] * 10    # Stratum 1
+            [10.0] * 10
+            + [5.0] * 10  # Stratum 0
+            + [20.0] * 10
+            + [15.0] * 10  # Stratum 1
         )
         treatment = np.array(
-            [1] * 10 + [0] * 10 +  # Stratum 0
-            [1] * 10 + [0] * 10    # Stratum 1
+            [1] * 10
+            + [0] * 10  # Stratum 0
+            + [1] * 10
+            + [0] * 10  # Stratum 1
         )
         strata = np.array([0] * 20 + [1] * 20)
 
@@ -149,10 +153,12 @@ class TestStratifiedATEWeighting:
         # Stratum 1: ATE=10, n=50
         # Stratum 2: ATE=0, n=150
         # Overall ATE = 0.25*10 + 0.75*0 = 2.5
-        outcomes = np.concatenate([
-            np.array([10.0] * 25 + [0.0] * 25),  # s1
-            np.array([0.0] * 75 + [0.0] * 75),   # s2
-        ])
+        outcomes = np.concatenate(
+            [
+                np.array([10.0] * 25 + [0.0] * 25),  # s1
+                np.array([0.0] * 75 + [0.0] * 75),  # s2
+            ]
+        )
         treatment = np.array([1] * 25 + [0] * 25 + [1] * 75 + [0] * 75)
         strata = np.array([0] * 50 + [1] * 150)
 

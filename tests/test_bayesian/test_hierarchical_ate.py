@@ -338,9 +338,9 @@ class TestPartialPooling:
         outcomes = np.zeros(n)
         idx = 0
         for i, n_g in enumerate(n_per_group):
-            outcomes[idx:idx + n_g] = (
-                true_effects[i] * treatment[idx:idx + n_g] + np.random.randn(n_g)
-            )
+            outcomes[idx : idx + n_g] = true_effects[i] * treatment[
+                idx : idx + n_g
+            ] + np.random.randn(n_g)
             idx += n_g
 
         result = hierarchical_bayesian_ate(

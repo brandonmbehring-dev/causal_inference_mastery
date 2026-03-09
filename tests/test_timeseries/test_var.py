@@ -266,10 +266,12 @@ class TestCheckStationarity:
         """Check stationarity for multiple series."""
         np.random.seed(456)  # Different seed
         n = 300  # Longer series
-        data = np.column_stack([
-            np.random.randn(n),  # Stationary
-            np.cumsum(np.random.randn(n)),  # Non-stationary
-        ])
+        data = np.column_stack(
+            [
+                np.random.randn(n),  # Stationary
+                np.cumsum(np.random.randn(n)),  # Non-stationary
+            ]
+        )
 
         results = check_stationarity(
             data,

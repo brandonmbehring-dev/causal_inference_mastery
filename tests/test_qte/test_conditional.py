@@ -20,9 +20,7 @@ class TestConditionalQTEKnownAnswers:
         """Test median treatment effect with covariates."""
         outcome, treatment, covariates = data_with_covariates
 
-        result = conditional_qte(
-            outcome, treatment, covariates, quantile=0.5
-        )
+        result = conditional_qte(outcome, treatment, covariates, quantile=0.5)
 
         # True effect is 2.0, should be close
         assert np.isclose(result["tau_q"], 2.0, atol=0.5)
@@ -34,9 +32,7 @@ class TestConditionalQTEKnownAnswers:
         """P-value should be computed for conditional QTE."""
         outcome, treatment, covariates = data_with_covariates
 
-        result = conditional_qte(
-            outcome, treatment, covariates, quantile=0.5
-        )
+        result = conditional_qte(outcome, treatment, covariates, quantile=0.5)
 
         assert result["pvalue"] is not None
         assert 0 <= result["pvalue"] <= 1
@@ -49,9 +45,7 @@ class TestConditionalQTEProperties:
         """Standard error should be positive."""
         outcome, treatment, covariates = data_with_covariates
 
-        result = conditional_qte(
-            outcome, treatment, covariates, quantile=0.5
-        )
+        result = conditional_qte(outcome, treatment, covariates, quantile=0.5)
 
         assert result["se"] > 0
 
@@ -59,9 +53,7 @@ class TestConditionalQTEProperties:
         """CI should be valid (lower < upper)."""
         outcome, treatment, covariates = data_with_covariates
 
-        result = conditional_qte(
-            outcome, treatment, covariates, quantile=0.5
-        )
+        result = conditional_qte(outcome, treatment, covariates, quantile=0.5)
 
         assert result["ci_lower"] < result["ci_upper"]
 
@@ -70,9 +62,7 @@ class TestConditionalQTEProperties:
         outcome, treatment = simple_rct_data
         covariates = np.random.normal(0, 1, len(outcome))
 
-        result = conditional_qte(
-            outcome, treatment, covariates, quantile=0.5
-        )
+        result = conditional_qte(outcome, treatment, covariates, quantile=0.5)
 
         assert np.isfinite(result["tau_q"])
 
@@ -85,9 +75,7 @@ class TestConditionalQTEBand:
         outcome, treatment, covariates = data_with_covariates
 
         quantiles = [0.25, 0.5, 0.75]
-        result = conditional_qte_band(
-            outcome, treatment, covariates, quantiles=quantiles
-        )
+        result = conditional_qte_band(outcome, treatment, covariates, quantiles=quantiles)
 
         assert len(result["quantiles"]) == 3
         assert len(result["qte_estimates"]) == 3
@@ -97,9 +85,7 @@ class TestConditionalQTEBand:
         """With homogeneous DGP, QTE should be similar across quantiles."""
         outcome, treatment, covariates = data_with_covariates
 
-        result = conditional_qte_band(
-            outcome, treatment, covariates, quantiles=[0.25, 0.5, 0.75]
-        )
+        result = conditional_qte_band(outcome, treatment, covariates, quantiles=[0.25, 0.5, 0.75])
 
         # Effects should be similar (within 1.0)
         assert np.std(result["qte_estimates"]) < 1.0
@@ -111,9 +97,7 @@ class TestConditionalQTEInputValidation:
     def test_empty_arrays(self):
         """Empty arrays should raise ValueError."""
         with pytest.raises(ValueError, match="CRITICAL ERROR.*Empty"):
-            conditional_qte(
-                np.array([]), np.array([]), np.array([]).reshape(-1, 1), quantile=0.5
-            )
+            conditional_qte(np.array([]), np.array([]), np.array([]).reshape(-1, 1), quantile=0.5)
 
     def test_invalid_quantile(self, data_with_covariates):
         """Invalid quantile should raise ValueError."""
@@ -136,5 +120,8 @@ class TestConditionalQTEInputValidation:
 
         with pytest.raises(ValueError, match="CRITICAL ERROR.*lengths"):
             conditional_qte(
-                outcome, treatment, covariates[:-10], quantile=0.5  # Wrong length
+                outcome,
+                treatment,
+                covariates[:-10],
+                quantile=0.5,  # Wrong length
             )

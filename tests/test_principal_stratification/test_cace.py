@@ -145,9 +145,7 @@ class TestCACEKnownAnswer:
         props = result["strata_proportions"]
         total = props["compliers"] + props["always_takers"] + props["never_takers"]
 
-        assert_allclose(
-            total, 1.0, atol=1e-10, err_msg="Strata proportions should sum to 1"
-        )
+        assert_allclose(total, 1.0, atol=1e-10, err_msg="Strata proportions should sum to 1")
 
     def test_perfect_compliance_cace_equals_ate(self):
         """With 100% compliers, CACE should equal ATE."""
@@ -201,9 +199,7 @@ class TestCACEAdversarial:
     def test_weak_first_stage_warning(self):
         """Low first-stage F should flag weak instrument."""
         # Few compliers => weak first stage
-        data = generate_ps_dgp(
-            n=500, pi_c=0.05, pi_a=0.475, pi_n=0.475, true_cace=2.0, seed=202
-        )
+        data = generate_ps_dgp(n=500, pi_c=0.05, pi_a=0.475, pi_n=0.475, true_cace=2.0, seed=202)
 
         result = cace_2sls(data["Y"], data["D"], data["Z"])
 
@@ -259,9 +255,7 @@ class TestCACEAdversarial:
     def test_extreme_proportions_still_works(self):
         """Should work with extreme but valid proportions."""
         # 95% compliers, 2.5% each always/never
-        data = generate_ps_dgp(
-            n=2000, pi_c=0.95, pi_a=0.025, pi_n=0.025, true_cace=1.5, seed=606
-        )
+        data = generate_ps_dgp(n=2000, pi_c=0.95, pi_a=0.025, pi_n=0.025, true_cace=1.5, seed=606)
 
         result = cace_2sls(data["Y"], data["D"], data["Z"])
 
@@ -332,9 +326,7 @@ class TestCACEMonteCarlo:
 
         coverage = covered / n_runs
 
-        assert (
-            0.93 <= coverage <= 0.97
-        ), f"Coverage {coverage:.2%} outside [93%, 97%]"
+        assert 0.93 <= coverage <= 0.97, f"Coverage {coverage:.2%} outside [93%, 97%]"
 
     @pytest.mark.slow
     def test_se_accuracy_5000_runs(self):
@@ -513,9 +505,7 @@ class TestCACEInference:
         result_standard = cace_2sls(Y, D, Z, inference="standard")
 
         # Point estimates should be same
-        assert_allclose(
-            result_robust["cace"], result_standard["cace"], rtol=1e-10
-        )
+        assert_allclose(result_robust["cace"], result_standard["cace"], rtol=1e-10)
 
         # SEs may differ (though not guaranteed)
         # Just check both are valid

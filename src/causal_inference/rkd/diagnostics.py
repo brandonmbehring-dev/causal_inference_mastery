@@ -248,13 +248,17 @@ def density_smoothness_test(
 
     # Interpretation
     if p_value < 0.01:
-        interpretation = f"Strong evidence of density kink (p={p_value:.4f}). Potential manipulation."
+        interpretation = (
+            f"Strong evidence of density kink (p={p_value:.4f}). Potential manipulation."
+        )
     elif p_value < 0.05:
         interpretation = f"Evidence of density kink (p={p_value:.4f}). Possible manipulation."
     elif p_value < 0.10:
         interpretation = f"Weak evidence of density kink (p={p_value:.4f}). Caution advised."
     else:
-        interpretation = f"No evidence of density kink (p={p_value:.4f}). Smoothness assumption supported."
+        interpretation = (
+            f"No evidence of density kink (p={p_value:.4f}). Smoothness assumption supported."
+        )
 
     return DensitySmoothnessResult(
         slope_left=float(slope_left),
@@ -320,7 +324,7 @@ def covariate_smoothness_test(
     n, k = covariates.shape
 
     if covariate_names is None:
-        covariate_names = [f"Covariate_{i+1}" for i in range(k)]
+        covariate_names = [f"Covariate_{i + 1}" for i in range(k)]
 
     if bandwidth is None:
         sigma = np.std(x)
@@ -331,7 +335,7 @@ def covariate_smoothness_test(
 
     for j in range(k):
         cov = covariates[:, j]
-        name = covariate_names[j] if j < len(covariate_names) else f"Covariate_{j+1}"
+        name = covariate_names[j] if j < len(covariate_names) else f"Covariate_{j + 1}"
 
         # Filter to bandwidth region
         in_bw = np.abs(x - cutoff) <= bandwidth
@@ -342,16 +346,18 @@ def covariate_smoothness_test(
         right_mask = x_bw >= cutoff
 
         if np.sum(left_mask) < 5 or np.sum(right_mask) < 5:
-            results.append(CovariateSmoothnessResult(
-                covariate_name=name,
-                slope_left=np.nan,
-                slope_right=np.nan,
-                slope_difference=np.nan,
-                se=np.nan,
-                t_stat=np.nan,
-                p_value=1.0,
-                is_smooth=True,  # Can't reject smoothness with insufficient data
-            ))
+            results.append(
+                CovariateSmoothnessResult(
+                    covariate_name=name,
+                    slope_left=np.nan,
+                    slope_right=np.nan,
+                    slope_difference=np.nan,
+                    se=np.nan,
+                    t_stat=np.nan,
+                    p_value=1.0,
+                    is_smooth=True,  # Can't reject smoothness with insufficient data
+                )
+            )
             continue
 
         # Fit local polynomial on each side
@@ -365,16 +371,18 @@ def covariate_smoothness_test(
             slope_left, _, _, _, se_left = stats.linregress(x_left, cov_left)
             slope_right, _, _, _, se_right = stats.linregress(x_right, cov_right)
         except Exception:
-            results.append(CovariateSmoothnessResult(
-                covariate_name=name,
-                slope_left=np.nan,
-                slope_right=np.nan,
-                slope_difference=np.nan,
-                se=np.nan,
-                t_stat=np.nan,
-                p_value=1.0,
-                is_smooth=True,
-            ))
+            results.append(
+                CovariateSmoothnessResult(
+                    covariate_name=name,
+                    slope_left=np.nan,
+                    slope_right=np.nan,
+                    slope_difference=np.nan,
+                    se=np.nan,
+                    t_stat=np.nan,
+                    p_value=1.0,
+                    is_smooth=True,
+                )
+            )
             continue
 
         slope_diff = slope_right - slope_left
@@ -391,16 +399,18 @@ def covariate_smoothness_test(
 
         is_smooth = p_value >= 0.05
 
-        results.append(CovariateSmoothnessResult(
-            covariate_name=name,
-            slope_left=float(slope_left),
-            slope_right=float(slope_right),
-            slope_difference=float(slope_diff),
-            se=float(se_diff),
-            t_stat=float(t_stat),
-            p_value=float(p_value),
-            is_smooth=is_smooth,
-        ))
+        results.append(
+            CovariateSmoothnessResult(
+                covariate_name=name,
+                slope_left=float(slope_left),
+                slope_right=float(slope_right),
+                slope_difference=float(slope_diff),
+                se=float(se_diff),
+                t_stat=float(t_stat),
+                p_value=float(p_value),
+                is_smooth=is_smooth,
+            )
+        )
 
     return results
 

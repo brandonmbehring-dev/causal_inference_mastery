@@ -19,16 +19,12 @@ from .julia_interface import is_julia_available, julia_dml_continuous
 
 # Skip all tests if Julia is not available
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-language validation"
+    not is_julia_available(), reason="Julia not available for cross-language validation"
 )
 
 
 def generate_continuous_dgp(
-    n: int = 500,
-    p: int = 3,
-    true_effect: float = 2.0,
-    random_state: int = 42
+    n: int = 500, p: int = 3, true_effect: float = 2.0, random_state: int = 42
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Generate test data for continuous treatment DML.
 
@@ -115,9 +111,7 @@ class TestDMLContinuousParity:
         diff = np.abs(py_result.cate - jl_result["cate"]).mean()
         rel_diff = diff / py_cate_mean if py_cate_mean > 0 else diff
 
-        assert rel_diff < 0.05, (
-            f"CATE mean relative difference {rel_diff:.4f} > 0.05"
-        )
+        assert rel_diff < 0.05, f"CATE mean relative difference {rel_diff:.4f} > 0.05"
 
     def test_diagnostics_parity(self):
         """Diagnostic fields (R², n, n_folds) match exactly."""

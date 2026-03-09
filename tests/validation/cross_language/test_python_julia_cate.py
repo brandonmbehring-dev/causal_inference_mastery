@@ -24,8 +24,7 @@ from tests.validation.cross_language.julia_interface import (
 
 
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-validation"
+    not is_julia_available(), reason="Julia not available for cross-validation"
 )
 
 

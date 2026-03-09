@@ -122,8 +122,7 @@ def a_learning(
         )
     if data.n_obs < 50:
         warnings.warn(
-            f"Small sample size (n={data.n_obs}). "
-            "A-learning estimates may be unstable.",
+            f"Small sample size (n={data.n_obs}). A-learning estimates may be unstable.",
             UserWarning,
         )
 
@@ -154,16 +153,12 @@ def a_learning(
 
         # Fit baseline outcome model (on controls)
         if doubly_robust:
-            baseline_pred, _ = _fit_baseline_outcome(
-                pseudo_outcome, A_k, H_k, outcome_model
-            )
+            baseline_pred, _ = _fit_baseline_outcome(pseudo_outcome, A_k, H_k, outcome_model)
         else:
             baseline_pred = np.zeros(n)
 
         # Solve A-learning estimating equation
-        psi_k = _solve_a_learning_equation(
-            pseudo_outcome, A_k, H_k, propensity, baseline_pred
-        )
+        psi_k = _solve_a_learning_equation(pseudo_outcome, A_k, H_k, propensity, baseline_pred)
 
         # Compute standard errors
         psi_se = _compute_a_learning_se(
@@ -212,9 +207,7 @@ def a_learning(
     else:
         baseline_1 = np.zeros(n)
 
-    value_estimate = np.mean(
-        baseline_1 + np.maximum(0, H_1_aug @ blip_coefficients[0])
-    )
+    value_estimate = np.mean(baseline_1 + np.maximum(0, H_1_aug @ blip_coefficients[0]))
 
     # Compute value SE
     if se_method == "bootstrap":
@@ -575,8 +568,8 @@ def _compute_a_learning_se(
         # Meat matrix
         meat = np.zeros((H.shape[1], H.shape[1]))
         for i in range(n):
-            Hi = blip_design[i:i+1].T
-            meat += weights[i]**2 * residual[i]**2 * (Hi @ Hi.T)
+            Hi = blip_design[i : i + 1].T
+            meat += weights[i] ** 2 * residual[i] ** 2 * (Hi @ Hi.T)
 
         # Sandwich variance
         var_mat = XtWX_inv @ meat @ XtWX_inv

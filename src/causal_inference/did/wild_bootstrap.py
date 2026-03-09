@@ -183,7 +183,7 @@ def wild_cluster_bootstrap_se(
         raise ValueError(
             f"CRITICAL ERROR: coef_idx out of bounds.\n"
             f"Function: wild_cluster_bootstrap_se\n"
-            f"Got: coef_idx = {coef_idx}, but X has {k} columns (indices 0 to {k-1})"
+            f"Got: coef_idx = {coef_idx}, but X has {k} columns (indices 0 to {k - 1})"
         )
 
     if weight_type not in ["auto", "rademacher", "webb"]:

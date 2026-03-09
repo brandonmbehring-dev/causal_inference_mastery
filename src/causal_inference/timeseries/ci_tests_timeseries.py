@@ -92,18 +92,14 @@ def parcorr_test(
         # Build conditioning matrix Z
         z_matrix = np.zeros((n_effective, len(z_indices)))
         for i, (var_idx, lag) in enumerate(z_indices):
-            z_matrix[:, i] = data[
-                max_lag - lag : n_obs - lag if lag > 0 else None, var_idx
-            ]
+            z_matrix[:, i] = data[max_lag - lag : n_obs - lag if lag > 0 else None, var_idx]
 
         # Compute partial correlation via regression residuals
         rho = _partial_correlation(x_series, y_series, z_matrix)
         dof = n_effective - len(z_indices) - 2
 
     if dof <= 0:
-        return CITestResult(
-            statistic=0.0, p_value=1.0, is_independent=True, dof=0
-        )
+        return CITestResult(statistic=0.0, p_value=1.0, is_independent=True, dof=0)
 
     # Compute t-statistic
     # Handle edge cases
@@ -115,19 +111,15 @@ def parcorr_test(
         t_stat = 0.0
         p_value = 1.0
     else:
-        t_stat = rho * np.sqrt(dof / (1 - rho ** 2 + 1e-10))
+        t_stat = rho * np.sqrt(dof / (1 - rho**2 + 1e-10))
         p_value = 2 * (1 - stats.t.cdf(np.abs(t_stat), dof))
 
     is_independent = p_value >= alpha
 
-    return CITestResult(
-        statistic=rho, p_value=p_value, is_independent=is_independent, dof=dof
-    )
+    return CITestResult(statistic=rho, p_value=p_value, is_independent=is_independent, dof=dof)
 
 
-def _partial_correlation(
-    x: np.ndarray, y: np.ndarray, z: np.ndarray
-) -> float:
+def _partial_correlation(x: np.ndarray, y: np.ndarray, z: np.ndarray) -> float:
     """
     Compute partial correlation between x and y given z.
 
@@ -163,7 +155,7 @@ def _partial_correlation(
         y_centered = y_resid - np.mean(y_resid)
 
         numerator = np.sum(x_centered * y_centered)
-        denominator = np.sqrt(np.sum(x_centered ** 2) * np.sum(y_centered ** 2))
+        denominator = np.sqrt(np.sum(x_centered**2) * np.sum(y_centered**2))
 
         if denominator < 1e-10:
             return 0.0
@@ -234,8 +226,7 @@ def cmi_knn_test(
 
     if n_effective <= knn + 1:
         raise ValueError(
-            f"Insufficient observations ({n_effective}) for knn={knn}. "
-            f"Need at least {knn + 2}."
+            f"Insufficient observations ({n_effective}) for knn={knn}. Need at least {knn + 2}."
         )
 
     # Extract time-aligned data
@@ -249,9 +240,7 @@ def cmi_knn_test(
         # Build conditioning matrix Z
         z_matrix = np.zeros((n_effective, len(z_indices)))
         for i, (var_idx, lag) in enumerate(z_indices):
-            z_matrix[:, i] = data[
-                max_lag - lag : n_obs - lag if lag > 0 else None, var_idx
-            ]
+            z_matrix[:, i] = data[max_lag - lag : n_obs - lag if lag > 0 else None, var_idx]
 
         cmi_val = _conditional_mutual_info_ksg(
             x_series.reshape(-1, 1), y_series.reshape(-1, 1), z_matrix, knn
@@ -259,21 +248,20 @@ def cmi_knn_test(
 
     # Permutation test for significance
     p_value = _cmi_permutation_test(
-        x_series, y_series,
+        x_series,
+        y_series,
         z_matrix if len(z_indices) > 0 else None,
-        cmi_val, knn, n_permutations=100
+        cmi_val,
+        knn,
+        n_permutations=100,
     )
 
     is_independent = p_value >= alpha
 
-    return CITestResult(
-        statistic=cmi_val, p_value=p_value, is_independent=is_independent, dof=0
-    )
+    return CITestResult(statistic=cmi_val, p_value=p_value, is_independent=is_independent, dof=0)
 
 
-def _mutual_info_ksg(
-    x: np.ndarray, y: np.ndarray, k: int = 7
-) -> float:
+def _mutual_info_ksg(x: np.ndarray, y: np.ndarray, k: int = 7) -> float:
     """
     Estimate mutual information using KSG estimator.
 
@@ -307,10 +295,12 @@ def _mutual_info_ksg(
     eps = dists_xy[:, -1]  # Distance to k-th neighbor
 
     # Count neighbors within eps in marginal spaces
-    nx = np.array([tree_x.query_ball_point(x[i], eps[i] - 1e-10, return_length=True) - 1
-                   for i in range(n)])
-    ny = np.array([tree_y.query_ball_point(y[i], eps[i] - 1e-10, return_length=True) - 1
-                   for i in range(n)])
+    nx = np.array(
+        [tree_x.query_ball_point(x[i], eps[i] - 1e-10, return_length=True) - 1 for i in range(n)]
+    )
+    ny = np.array(
+        [tree_y.query_ball_point(y[i], eps[i] - 1e-10, return_length=True) - 1 for i in range(n)]
+    )
 
     # Handle edge cases
     nx = np.maximum(nx, 1)
@@ -318,14 +308,13 @@ def _mutual_info_ksg(
 
     # KSG estimator: I(X;Y) ≈ ψ(k) - <ψ(nx) + ψ(ny)> + ψ(n)
     from scipy.special import digamma
+
     mi = digamma(k) - np.mean(digamma(nx) + digamma(ny)) + digamma(n)
 
     return max(0.0, mi)
 
 
-def _conditional_mutual_info_ksg(
-    x: np.ndarray, y: np.ndarray, z: np.ndarray, k: int = 7
-) -> float:
+def _conditional_mutual_info_ksg(x: np.ndarray, y: np.ndarray, z: np.ndarray, k: int = 7) -> float:
     """
     Estimate conditional mutual information I(X; Y | Z) using KSG.
 
@@ -377,13 +366,9 @@ def _cmi_permutation_test(
         y_perm = y[perm_idx]
 
         if z is None:
-            perm_cmi = _mutual_info_ksg(
-                x.reshape(-1, 1), y_perm.reshape(-1, 1), knn
-            )
+            perm_cmi = _mutual_info_ksg(x.reshape(-1, 1), y_perm.reshape(-1, 1), knn)
         else:
-            perm_cmi = _conditional_mutual_info_ksg(
-                x.reshape(-1, 1), y_perm.reshape(-1, 1), z, knn
-            )
+            perm_cmi = _conditional_mutual_info_ksg(x.reshape(-1, 1), y_perm.reshape(-1, 1), z, knn)
 
         if perm_cmi >= observed_cmi:
             count_greater += 1

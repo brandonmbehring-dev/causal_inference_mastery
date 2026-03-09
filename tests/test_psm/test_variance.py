@@ -224,10 +224,10 @@ class TestMatchedPairsVariance:
         expected_variance = 4.0
         expected_se = 2.0
 
-        assert np.isclose(variance, expected_variance), \
+        assert np.isclose(variance, expected_variance), (
             f"Expected variance = {expected_variance}, got {variance}"
-        assert np.isclose(se, expected_se), \
-            f"Expected SE = {expected_se}, got {se}"
+        )
+        assert np.isclose(se, expected_se), f"Expected SE = {expected_se}, got {se}"
 
     def test_paired_variance_single_pair(self):
         """

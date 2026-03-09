@@ -92,9 +92,7 @@ class PropensityScoreEstimator:
         self.eps = eps
         self.model_: Optional[LogisticRegression] = None
 
-    def fit(
-        self, treatment: np.ndarray, covariates: np.ndarray
-    ) -> PropensityResult:
+    def fit(self, treatment: np.ndarray, covariates: np.ndarray) -> PropensityResult:
         """
         Estimate propensity scores via logistic regression.
 
@@ -240,9 +238,7 @@ class PropensityScoreEstimator:
         # Check Common Support
         # ====================================================================
 
-        has_support, support_region, n_outside = self.check_common_support(
-            propensity, treatment
-        )
+        has_support, support_region, n_outside = self.check_common_support(propensity, treatment)
 
         # ====================================================================
         # Warn on Perfect Separation
@@ -253,7 +249,7 @@ class PropensityScoreEstimator:
         if n_extreme > 0.1 * n:
             warnings.warn(
                 f"Possible perfect separation detected.\n"
-                f"{n_extreme}/{n} ({100*n_extreme/n:.1f}%) units have extreme propensity (<0.01 or >0.99).\n"
+                f"{n_extreme}/{n} ({100 * n_extreme / n:.1f}%) units have extreme propensity (<0.01 or >0.99).\n"
                 f"This suggests treatment strongly predicted by covariates.\n"
                 f"Consider:\n"
                 f"  - Trimming extreme propensities\n"
@@ -374,7 +370,7 @@ class PropensityScoreEstimator:
             n_outside = 0
         elif upper > lower:
             # Normal case: check if width sufficient
-            has_support = (upper - lower >= min_overlap)
+            has_support = upper - lower >= min_overlap
             # Count units outside overlap
             if has_support:
                 outside = (propensity < lower) | (propensity > upper)

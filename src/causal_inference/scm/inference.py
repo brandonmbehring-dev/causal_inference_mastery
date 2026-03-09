@@ -258,9 +258,7 @@ def bootstrap_se(
         boot_control_pre = control_outcomes[:, boot_pre_idx]
 
         try:
-            weights, _ = compute_scm_weights(
-                boot_treated_pre.reshape(1, -1), boot_control_pre
-            )
+            weights, _ = compute_scm_weights(boot_treated_pre.reshape(1, -1), boot_control_pre)
 
             # Apply weights to original post-treatment (no resampling)
             boot_synthetic_post = control_outcomes[:, n_pre:].T @ weights
@@ -362,8 +360,7 @@ def compute_p_value(
         n_extreme = np.sum(placebo_effects <= observed_effect)
     else:
         raise ValueError(
-            f"Unknown alternative: {alternative}. "
-            "Use 'two-sided', 'greater', or 'less'."
+            f"Unknown alternative: {alternative}. Use 'two-sided', 'greater', or 'less'."
         )
 
     # Add 1 for observed effect itself

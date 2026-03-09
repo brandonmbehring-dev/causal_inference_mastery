@@ -47,8 +47,12 @@ class TestSimpleATEMonteCarloHomoskedastic:
 
         # Assert all checks pass
         assert validation["bias_ok"], f"Bias {validation['bias']:.4f} exceeds threshold"
-        assert validation["coverage_ok"], f"Coverage {validation['coverage']:.4f} outside [0.94, 0.96]"
-        assert validation["se_accuracy_ok"], f"SE accuracy {validation['se_accuracy']:.4f} exceeds 10%"
+        assert validation["coverage_ok"], (
+            f"Coverage {validation['coverage']:.4f} outside [0.94, 0.96]"
+        )
+        assert validation["se_accuracy_ok"], (
+            f"SE accuracy {validation['se_accuracy']:.4f} exceeds 10%"
+        )
         assert validation["all_pass"], "Monte Carlo validation failed"
 
 
@@ -66,7 +70,9 @@ class TestSimpleATEMonteCarloHeteroskedastic:
         ci_uppers = []
 
         for seed in range(n_runs):
-            outcomes, treatment = dgp_heteroskedastic_rct(n=200, true_ate=true_ate, random_state=seed)
+            outcomes, treatment = dgp_heteroskedastic_rct(
+                n=200, true_ate=true_ate, random_state=seed
+            )
             result = simple_ate(outcomes, treatment)
 
             estimates.append(result["estimate"])
@@ -80,9 +86,13 @@ class TestSimpleATEMonteCarloHeteroskedastic:
         )
 
         assert validation["bias_ok"], f"Bias {validation['bias']:.4f} exceeds threshold"
-        assert validation["coverage_ok"], f"Coverage {validation['coverage']:.4f} outside [0.94, 0.96]"
+        assert validation["coverage_ok"], (
+            f"Coverage {validation['coverage']:.4f} outside [0.94, 0.96]"
+        )
         # SE accuracy may be slightly worse with heteroskedasticity, but should still be reasonable
-        assert validation["se_accuracy"] < 0.15, f"SE accuracy {validation['se_accuracy']:.4f} exceeds 15%"
+        assert validation["se_accuracy"] < 0.15, (
+            f"SE accuracy {validation['se_accuracy']:.4f} exceeds 15%"
+        )
 
 
 class TestSimpleATEMonteCarloSmallSample:
@@ -113,8 +123,12 @@ class TestSimpleATEMonteCarloSmallSample:
         )
 
         assert validation["bias_ok"], f"Bias {validation['bias']:.4f} exceeds threshold"
-        assert validation["coverage_ok"], f"Coverage {validation['coverage']:.4f} outside [0.94, 0.96]"
-        assert validation["se_accuracy_ok"], f"SE accuracy {validation['se_accuracy']:.4f} exceeds 10%"
+        assert validation["coverage_ok"], (
+            f"Coverage {validation['coverage']:.4f} outside [0.94, 0.96]"
+        )
+        assert validation["se_accuracy_ok"], (
+            f"SE accuracy {validation['se_accuracy']:.4f} exceeds 10%"
+        )
 
 
 class TestSimpleATEMonteCarloDiagnostics:
@@ -139,7 +153,6 @@ class TestSimpleATEMonteCarloDiagnostics:
         # Check that estimates span reasonable range
         assert np.std(estimates) > 0.1  # Should have variation
         assert np.std(estimates) < 0.5  # But not too much
-
 
     def test_se_estimates_reasonable(self):
         """Verify SE estimates are in reasonable range."""

@@ -101,9 +101,7 @@ def validate_panel_data(
 
     # Shape validation
     if outcomes.ndim != 2:
-        raise ValueError(
-            f"outcomes must be 2D (n_units, n_periods), got {outcomes.ndim}D"
-        )
+        raise ValueError(f"outcomes must be 2D (n_units, n_periods), got {outcomes.ndim}D")
 
     n_units, n_periods = outcomes.shape
 
@@ -111,16 +109,12 @@ def validate_panel_data(
         raise ValueError(f"treatment must be 1D (n_units,), got {treatment.ndim}D")
 
     if len(treatment) != n_units:
-        raise ValueError(
-            f"treatment length ({len(treatment)}) != number of units ({n_units})"
-        )
+        raise ValueError(f"treatment length ({len(treatment)}) != number of units ({n_units})")
 
     # Treatment indicator validation
     unique_vals = np.unique(treatment)
     if not np.all(np.isin(unique_vals, [0, 1])):
-        raise ValueError(
-            f"treatment must be binary (0 or 1), got values: {unique_vals}"
-        )
+        raise ValueError(f"treatment must be binary (0 or 1), got values: {unique_vals}")
 
     n_treated = np.sum(treatment == 1)
     n_control = np.sum(treatment == 0)
@@ -132,15 +126,11 @@ def validate_panel_data(
         raise ValueError("No control units found (need donor pool for synthetic control)")
 
     if n_control < 2:
-        raise ValueError(
-            f"Need at least 2 control units for synthetic control, got {n_control}"
-        )
+        raise ValueError(f"Need at least 2 control units for synthetic control, got {n_control}")
 
     # Treatment period validation
     if not isinstance(treatment_period, (int, np.integer)):
-        raise TypeError(
-            f"treatment_period must be int, got {type(treatment_period).__name__}"
-        )
+        raise TypeError(f"treatment_period must be int, got {type(treatment_period).__name__}")
 
     if treatment_period < 1:
         raise ValueError(
@@ -170,9 +160,7 @@ def validate_panel_data(
     # Covariates validation
     if covariates is not None:
         if not isinstance(covariates, np.ndarray):
-            raise TypeError(
-                f"covariates must be np.ndarray, got {type(covariates).__name__}"
-            )
+            raise TypeError(f"covariates must be np.ndarray, got {type(covariates).__name__}")
 
         if covariates.ndim != 2:
             raise ValueError(
@@ -180,9 +168,7 @@ def validate_panel_data(
             )
 
         if covariates.shape[0] != n_units:
-            raise ValueError(
-                f"covariates rows ({covariates.shape[0]}) != n_units ({n_units})"
-            )
+            raise ValueError(f"covariates rows ({covariates.shape[0]}) != n_units ({n_units})")
 
     # Check for missing values
     if np.any(np.isnan(outcomes)):
@@ -211,18 +197,12 @@ def validate_weights(weights: np.ndarray, n_control: int, tol: float = 1e-6) -> 
         If weights violate constraints
     """
     if len(weights) != n_control:
-        raise ValueError(
-            f"weights length ({len(weights)}) != n_control ({n_control})"
-        )
+        raise ValueError(f"weights length ({len(weights)}) != n_control ({n_control})")
 
     if np.any(weights < -tol):
         min_w = np.min(weights)
-        raise ValueError(
-            f"weights must be non-negative, min weight = {min_w:.6f}"
-        )
+        raise ValueError(f"weights must be non-negative, min weight = {min_w:.6f}")
 
     weight_sum = np.sum(weights)
     if abs(weight_sum - 1.0) > tol:
-        raise ValueError(
-            f"weights must sum to 1, sum = {weight_sum:.6f}"
-        )
+        raise ValueError(f"weights must sum to 1, sum = {weight_sum:.6f}")

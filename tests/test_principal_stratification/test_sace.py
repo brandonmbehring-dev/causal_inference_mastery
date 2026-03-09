@@ -174,9 +174,7 @@ class TestSACEBoundsMonotonicity:
         data = generate_sace_dgp(n=500, seed=42)
 
         result_none = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="none")
-        result_selection = sace_bounds(
-            data["Y"], data["D"], data["S"], monotonicity="selection"
-        )
+        result_selection = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="selection")
 
         # Both should produce valid bounds
         assert result_none["lower_bound"] <= result_none["upper_bound"]
@@ -191,9 +189,7 @@ class TestSACEBoundsMonotonicity:
         data = generate_selection_monotonicity_dgp(n=500, seed=42)
 
         result_none = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="none")
-        result_selection = sace_bounds(
-            data["Y"], data["D"], data["S"], monotonicity="selection"
-        )
+        result_selection = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="selection")
 
         # Both produce valid, ordered bounds
         assert result_none["lower_bound"] <= result_none["upper_bound"]
@@ -207,12 +203,8 @@ class TestSACEBoundsMonotonicity:
         """Both monotonicity assumptions should give tightest bounds."""
         data = generate_selection_monotonicity_dgp(n=500, seed=42)
 
-        result_selection = sace_bounds(
-            data["Y"], data["D"], data["S"], monotonicity="selection"
-        )
-        result_both = sace_bounds(
-            data["Y"], data["D"], data["S"], monotonicity="both"
-        )
+        result_selection = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="selection")
+        result_both = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="both")
 
         width_selection = result_selection["upper_bound"] - result_selection["lower_bound"]
         width_both = result_both["upper_bound"] - result_both["lower_bound"]
@@ -231,13 +223,9 @@ class TestSACEBoundsKnownAnswer:
 
     def test_bounds_contain_true_sace_selection_monotonicity(self):
         """Under selection monotonicity, bounds should contain true SACE."""
-        data = generate_selection_monotonicity_dgp(
-            n=1000, true_sace=1.5, p_AS=0.7, seed=42
-        )
+        data = generate_selection_monotonicity_dgp(n=1000, true_sace=1.5, p_AS=0.7, seed=42)
 
-        result = sace_bounds(
-            data["Y"], data["D"], data["S"], monotonicity="selection"
-        )
+        result = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="selection")
 
         # True SACE should be within bounds
         assert result["lower_bound"] <= data["true_sace"] <= result["upper_bound"]
@@ -404,13 +392,9 @@ class TestSACEMonteCarlo:
                 n=500, true_sace=true_sace, p_AS=0.65, seed=seed
             )
 
-            result = sace_bounds(
-                data["Y"], data["D"], data["S"], monotonicity="selection"
-            )
+            result = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="selection")
 
-            covers.append(
-                result["lower_bound"] <= true_sace <= result["upper_bound"]
-            )
+            covers.append(result["lower_bound"] <= true_sace <= result["upper_bound"])
 
         coverage = np.mean(covers)
         # Should cover in at least 85% of simulations
@@ -442,4 +426,4 @@ class TestSACEMonteCarlo:
 
         validity = np.mean(valid_bounds)
         # All simulations should produce valid bounds
-        assert validity == 1.0, f"Invalid bounds in {(1-validity)*100:.1f}% of simulations"
+        assert validity == 1.0, f"Invalid bounds in {(1 - validity) * 100:.1f}% of simulations"

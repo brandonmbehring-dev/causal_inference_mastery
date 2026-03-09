@@ -143,9 +143,7 @@ def att_from_mte(
     # Compute ATT weights
     if propensity is not None and treatment is not None:
         # Empirical weights from data
-        weights = _compute_att_weights_empirical(
-            u_valid, propensity[treatment == 1]
-        )
+        weights = _compute_att_weights_empirical(u_valid, propensity[treatment == 1])
     else:
         # Theoretical weights: ω_ATT(u) ∝ (P - u) for u < P
         # Approximation: linearly decreasing weights
@@ -229,9 +227,7 @@ def atu_from_mte(
 
     # Compute ATU weights
     if propensity is not None and treatment is not None:
-        weights = _compute_atu_weights_empirical(
-            u_valid, propensity[treatment == 0]
-        )
+        weights = _compute_atu_weights_empirical(u_valid, propensity[treatment == 0])
     else:
         # Theoretical: linearly increasing weights
         weights = _compute_atu_weights_theoretical(u_valid, p_min, p_max)
@@ -325,8 +321,7 @@ def prte(
     else:
         if len(policy_weights) != len(u_grid):
             raise ValueError(
-                f"Policy weights length ({len(policy_weights)}) != "
-                f"grid length ({len(u_grid)})"
+                f"Policy weights length ({len(policy_weights)}) != grid length ({len(u_grid)})"
             )
         weights = policy_weights[valid]
 
@@ -426,8 +421,7 @@ def late_from_mte(
 
     if n_bootstrap > 0 and np.any(se_range[valid] > 0):
         se, ci_lower, ci_upper = _bootstrap_integral(
-            mte_range[valid], u_range[valid], se_range[valid],
-            n_bootstrap, normalize=range_width
+            mte_range[valid], u_range[valid], se_range[valid], n_bootstrap, normalize=range_width
         )
     else:
         se = np.nanmedian(se_range[valid])
@@ -449,9 +443,7 @@ def late_from_mte(
 # --- Helper Functions ---
 
 
-def _compute_att_weights_theoretical(
-    u_grid: np.ndarray, p_min: float, p_max: float
-) -> np.ndarray:
+def _compute_att_weights_theoretical(u_grid: np.ndarray, p_min: float, p_max: float) -> np.ndarray:
     """
     Compute theoretical ATT weights.
 
@@ -486,9 +478,7 @@ def _compute_att_weights_empirical(
     return weights
 
 
-def _compute_atu_weights_theoretical(
-    u_grid: np.ndarray, p_min: float, p_max: float
-) -> np.ndarray:
+def _compute_atu_weights_theoretical(u_grid: np.ndarray, p_min: float, p_max: float) -> np.ndarray:
     """
     Compute theoretical ATU weights.
 

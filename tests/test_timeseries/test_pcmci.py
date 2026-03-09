@@ -111,11 +111,13 @@ def independent_data():
     """Generate independent time series (no causal links)."""
     np.random.seed(789)
     n = 200
-    data = np.column_stack([
-        np.random.randn(n),
-        np.random.randn(n),
-        np.random.randn(n),
-    ])
+    data = np.column_stack(
+        [
+            np.random.randn(n),
+            np.random.randn(n),
+            np.random.randn(n),
+        ]
+    )
     true_links: Set[Tuple[int, int, int]] = set()
     return data, true_links
 
@@ -425,8 +427,7 @@ class TestPCMCIMonteCarlo:
 
             # Check if true link (0, 1, 1) is found
             found = any(
-                l.source_var == 0 and l.target_var == 1 and l.lag == 1
-                for l in result.links
+                l.source_var == 0 and l.target_var == 1 and l.lag == 1 for l in result.links
             )
             if found:
                 detected += 1
@@ -481,9 +482,7 @@ class TestPCMCIMonteCarlo:
 
             result = pcmci(data, max_lag=2, alpha=0.05)
 
-            discovered_skeleton = {
-                (l.source_var, l.target_var) for l in result.links
-            }
+            discovered_skeleton = {(l.source_var, l.target_var) for l in result.links}
 
             # Compute F1
             tp = len(true_skeleton & discovered_skeleton)
@@ -611,16 +610,12 @@ class TestPCMCITypes:
     def test_time_series_link_invalid_lag(self):
         """TimeSeriesLink rejects negative lag."""
         with pytest.raises(ValueError):
-            TimeSeriesLink(
-                source_var=0, target_var=1, lag=-1, strength=0.5, p_value=0.01
-            )
+            TimeSeriesLink(source_var=0, target_var=1, lag=-1, strength=0.5, p_value=0.01)
 
     def test_time_series_link_invalid_pvalue(self):
         """TimeSeriesLink rejects invalid p-value."""
         with pytest.raises(ValueError):
-            TimeSeriesLink(
-                source_var=0, target_var=1, lag=1, strength=0.5, p_value=1.5
-            )
+            TimeSeriesLink(source_var=0, target_var=1, lag=1, strength=0.5, p_value=1.5)
 
     def test_lagged_dag_operations(self):
         """LaggedDAG add/remove/query operations."""

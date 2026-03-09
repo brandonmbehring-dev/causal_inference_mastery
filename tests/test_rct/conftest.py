@@ -237,9 +237,7 @@ def multi_covariate_data():
     X = np.column_stack([X1, X2, X3])
     treatment = np.array([1] * 50 + [0] * 50)
     # Y = 3*T + 2*X1 + 1*X2 + 0.5*X3 + epsilon
-    outcomes = (
-        3.0 * treatment + 2.0 * X1 + 1.0 * X2 + 0.5 * X3 + np.random.normal(0, 1, n)
-    )
+    outcomes = 3.0 * treatment + 2.0 * X1 + 1.0 * X2 + 0.5 * X3 + np.random.normal(0, 1, n)
     return {"outcomes": outcomes, "treatment": treatment, "X": X, "true_ate": 3.0}
 
 

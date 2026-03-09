@@ -44,6 +44,7 @@ try:
         r_vecm_estimate,
         r_vecm_irf,
     )
+
     R_AVAILABLE = True
 except ImportError:
     R_AVAILABLE = False
@@ -60,10 +61,7 @@ def check_r_available():
 
 
 # Skip if R/urca not available
-pytestmark = pytest.mark.skipif(
-    not check_r_available(),
-    reason="R or urca package not available"
-)
+pytestmark = pytest.mark.skipif(not check_r_available(), reason="R or urca package not available")
 
 
 # =============================================================================
@@ -152,16 +150,20 @@ def generate_cointegrated_dgp(
 
     elif k == 3 and coint_rank == 2:
         # Trivariate with two cointegrating relations
-        true_beta = np.array([
-            [1.0, 0.0],
-            [-0.5, 1.0],
-            [-0.3, -0.6],
-        ])
-        true_alpha = np.array([
-            [-0.20, -0.10],
-            [0.15, -0.15],
-            [0.05, 0.20],
-        ])
+        true_beta = np.array(
+            [
+                [1.0, 0.0],
+                [-0.5, 1.0],
+                [-0.3, -0.6],
+            ]
+        )
+        true_alpha = np.array(
+            [
+                [-0.20, -0.10],
+                [0.15, -0.15],
+                [0.05, 0.20],
+            ]
+        )
 
         # One common trend only
         trend = np.cumsum(np.random.randn(T))
@@ -301,9 +303,7 @@ class TestJohansenVsR:
 
         # Both should detect rank=1 cointegration
         # Allow for statistical variation (0 or 1 are both reasonable with finite samples)
-        assert abs(py_rank - r_rank) <= 1, (
-            f"Rank mismatch too large: Python={py_rank}, R={r_rank}"
-        )
+        assert abs(py_rank - r_rank) <= 1, f"Rank mismatch too large: Python={py_rank}, R={r_rank}"
 
     def test_rank_determination_no_cointegration(self):
         """Test rank=0 when no cointegration exists."""
@@ -342,9 +342,7 @@ class TestJohansenVsR:
 
         # Check direction (may differ in sign)
         cos_sim = abs(np.dot(py_beta_norm, r_beta_norm))
-        assert cos_sim > 0.90, (
-            f"Eigenvector direction differs: cos_similarity={cos_sim:.3f}"
-        )
+        assert cos_sim > 0.90, f"Eigenvector direction differs: cos_similarity={cos_sim:.3f}"
 
 
 class TestVECMEstimationVsR:
@@ -366,13 +364,11 @@ class TestVECMEstimationVsR:
 
         # Beta may have different normalization; compare direction
         py_beta_norm = py_beta / np.linalg.norm(py_beta)
-        r_beta_flat = r_beta.flatten()[:len(py_beta_norm)]
+        r_beta_flat = r_beta.flatten()[: len(py_beta_norm)]
         r_beta_norm = r_beta_flat / np.linalg.norm(r_beta_flat)
 
         cos_sim = abs(np.dot(py_beta_norm.flatten(), r_beta_norm))
-        assert cos_sim > 0.85, (
-            f"Beta direction differs: cos_similarity={cos_sim:.3f}"
-        )
+        assert cos_sim > 0.85, f"Beta direction differs: cos_similarity={cos_sim:.3f}"
 
     def test_alpha_parity(self):
         """Test adjustment coefficients (alpha) estimation parity."""
@@ -641,9 +637,7 @@ class TestVECMMonteCarloTriangulation:
 
         # Average similarity should be high
         avg_sim = np.mean(similarities) if similarities else 0
-        assert avg_sim > 0.70, (
-            f"Average beta direction similarity too low: {avg_sim:.3f}"
-        )
+        assert avg_sim > 0.70, f"Average beta direction similarity too low: {avg_sim:.3f}"
 
 
 # =============================================================================

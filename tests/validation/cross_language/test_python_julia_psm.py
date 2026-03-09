@@ -33,8 +33,7 @@ from tests.validation.cross_language.julia_interface import (
 
 
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-validation"
+    not is_julia_available(), reason="Julia not available for cross-validation"
 )
 
 
@@ -112,9 +111,7 @@ class TestPSMBasicParity:
     def test_basic_1to1_matching(self):
         """Basic 1:1 matching without replacement."""
         true_effect = 1.5
-        Y, treatment, X = generate_psm_data(
-            n=200, true_effect=true_effect, seed=42
-        )
+        Y, treatment, X = generate_psm_data(n=200, true_effect=true_effect, seed=42)
 
         # Python
         py_result = psm_ate(
@@ -137,8 +134,7 @@ class TestPSMBasicParity:
         )
 
         # Check Julia succeeded
-        assert jl_result["retcode"] == "Success", \
-            f"Julia PSM failed: {jl_result['retcode']}"
+        assert jl_result["retcode"] == "Success", f"Julia PSM failed: {jl_result['retcode']}"
 
         # Both should recover effect direction
         # Note: PSM has high variance, so we just check direction and rough magnitude
@@ -147,15 +143,14 @@ class TestPSMBasicParity:
 
         # Estimates should be in same ballpark (within 2x)
         ratio = py_result["estimate"] / jl_result["estimate"]
-        assert 0.3 < ratio < 3.0, \
+        assert 0.3 < ratio < 3.0, (
             f"Estimate ratio out of range: Python={py_result['estimate']:.3f}, Julia={jl_result['estimate']:.3f}"
+        )
 
     def test_large_sample_n500(self):
         """Larger sample should give more similar estimates."""
         true_effect = 2.0
-        Y, treatment, X = generate_psm_data(
-            n=500, true_effect=true_effect, seed=123
-        )
+        Y, treatment, X = generate_psm_data(n=500, true_effect=true_effect, seed=123)
 
         py_result = psm_ate(
             outcomes=Y,
@@ -182,9 +177,7 @@ class TestPSMBasicParity:
     def test_zero_treatment_effect(self):
         """PSM with zero treatment effect."""
         true_effect = 0.0
-        Y, treatment, X = generate_psm_data(
-            n=300, true_effect=true_effect, seed=456
-        )
+        Y, treatment, X = generate_psm_data(n=300, true_effect=true_effect, seed=456)
 
         py_result = psm_ate(
             outcomes=Y,
@@ -215,9 +208,7 @@ class TestPSMConfigurationParity:
     def test_m2_matching(self):
         """2:1 matching (M=2)."""
         true_effect = 1.5
-        Y, treatment, X = generate_psm_data(
-            n=300, true_effect=true_effect, seed=789
-        )
+        Y, treatment, X = generate_psm_data(n=300, true_effect=true_effect, seed=789)
 
         py_result = psm_ate(
             outcomes=Y,
@@ -244,9 +235,7 @@ class TestPSMConfigurationParity:
     def test_with_replacement(self):
         """Matching with replacement."""
         true_effect = 1.0
-        Y, treatment, X = generate_psm_data(
-            n=200, true_effect=true_effect, seed=999
-        )
+        Y, treatment, X = generate_psm_data(n=200, true_effect=true_effect, seed=999)
 
         py_result = psm_ate(
             outcomes=Y,
@@ -337,8 +326,9 @@ class TestPSMDiagnosticsParity:
             # but should be close
             py_matched = py_result["n_matched"]
             jl_matched = jl_result["n_matched"]
-            assert abs(py_matched - jl_matched) <= max(py_matched, jl_matched) * 0.2, \
+            assert abs(py_matched - jl_matched) <= max(py_matched, jl_matched) * 0.2, (
                 f"N matched differs: Python={py_matched}, Julia={jl_matched}"
+            )
 
     def test_propensity_scores_correlation(self):
         """Propensity scores should be highly correlated."""
@@ -366,5 +356,4 @@ class TestPSMDiagnosticsParity:
 
             # Propensity scores should be highly correlated
             correlation = np.corrcoef(py_scores, jl_scores)[0, 1]
-            assert correlation > 0.9, \
-                f"Propensity score correlation too low: {correlation:.3f}"
+            assert correlation > 0.9, f"Propensity score correlation too low: {correlation:.3f}"

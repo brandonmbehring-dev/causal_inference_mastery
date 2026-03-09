@@ -299,8 +299,7 @@ def rosenbaum_bounds(
 
     if gamma_range[1] < gamma_range[0]:
         raise ValueError(
-            f"gamma_range upper ({gamma_range[1]}) must be >= "
-            f"lower ({gamma_range[0]})"
+            f"gamma_range upper ({gamma_range[1]}) must be >= lower ({gamma_range[0]})"
         )
 
     # =========================================================================
@@ -338,21 +337,15 @@ def rosenbaum_bounds(
     p_lower = np.zeros(n_gamma)
 
     for i, gamma in enumerate(gamma_values):
-        e_upper, e_lower, var_upper, var_lower = _compute_bounds_at_gamma(
-            ranks, signs, gamma
-        )
+        e_upper, e_lower, var_upper, var_lower = _compute_bounds_at_gamma(ranks, signs, gamma)
 
         # Upper bound p-value: use the distribution most favorable to null
         # When observed T+ is large, this means using HIGH expectation
-        p_upper[i] = _normal_approximation_p(
-            t_plus, e_upper, var_upper, alternative="greater"
-        )
+        p_upper[i] = _normal_approximation_p(t_plus, e_upper, var_upper, alternative="greater")
 
         # Lower bound p-value: use distribution most favorable to alternative
         # This means using LOW expectation
-        p_lower[i] = _normal_approximation_p(
-            t_plus, e_lower, var_lower, alternative="greater"
-        )
+        p_lower[i] = _normal_approximation_p(t_plus, e_lower, var_lower, alternative="greater")
 
     # =========================================================================
     # Find critical Gamma
@@ -371,9 +364,7 @@ def rosenbaum_bounds(
     # Generate interpretation
     # =========================================================================
 
-    interpretation = _generate_interpretation(
-        gamma_critical, gamma_range, n_pairs, t_plus, alpha
-    )
+    interpretation = _generate_interpretation(gamma_critical, gamma_range, n_pairs, t_plus, alpha)
 
     return RosenbaumResult(
         gamma_values=gamma_values,

@@ -154,14 +154,10 @@ def hierarchical_bayesian_ate(
     n = len(Y)
 
     if len(T) != n:
-        raise ValueError(
-            f"Length mismatch: outcomes ({n}) != treatment ({len(T)})"
-        )
+        raise ValueError(f"Length mismatch: outcomes ({n}) != treatment ({len(T)})")
 
     if len(G) != n:
-        raise ValueError(
-            f"Length mismatch: outcomes ({n}) != groups ({len(G)})"
-        )
+        raise ValueError(f"Length mismatch: outcomes ({n}) != groups ({len(G)})")
 
     if not np.all(np.isin(T, [0, 1])):
         raise ValueError("Treatment must be binary (0 or 1)")

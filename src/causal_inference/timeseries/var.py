@@ -76,11 +76,9 @@ def var_estimate(
         )
 
     if var_names is None:
-        var_names = [f"var_{i+1}" for i in range(n_vars)]
+        var_names = [f"var_{i + 1}" for i in range(n_vars)]
     elif len(var_names) != n_vars:
-        raise ValueError(
-            f"var_names length ({len(var_names)}) must match n_vars ({n_vars})"
-        )
+        raise ValueError(f"var_names length ({len(var_names)}) must match n_vars ({n_vars})")
 
     # Build design matrix and dependent variable
     Y, X = _build_var_matrices(data, lags, include_constant)
@@ -217,16 +215,10 @@ def var_forecast(
     lags = result.lags
 
     if data.shape[1] != n_vars:
-        raise ValueError(
-            f"Data has {data.shape[1]} variables, "
-            f"model expects {n_vars}"
-        )
+        raise ValueError(f"Data has {data.shape[1]} variables, model expects {n_vars}")
 
     if data.shape[0] < lags:
-        raise ValueError(
-            f"Need at least {lags} observations for forecasting, "
-            f"got {data.shape[0]}"
-        )
+        raise ValueError(f"Need at least {lags} observations for forecasting, got {data.shape[0]}")
 
     forecasts = np.zeros((steps, n_vars))
     intercepts = result.get_intercepts()
@@ -276,10 +268,7 @@ def var_residuals(
     data = np.asarray(data, dtype=np.float64)
 
     if data.shape[1] != result.n_vars:
-        raise ValueError(
-            f"Data has {data.shape[1]} variables, "
-            f"model expects {result.n_vars}"
-        )
+        raise ValueError(f"Data has {data.shape[1]} variables, model expects {result.n_vars}")
 
     Y, X = _build_var_matrices(data, result.lags, include_constant=True)
     fitted = X @ result.coefficients.T

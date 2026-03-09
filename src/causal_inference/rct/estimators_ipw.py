@@ -121,9 +121,7 @@ def ipw_ate(
     # Check for empty
     if n == 0:
         raise ValueError(
-            f"CRITICAL ERROR: Empty input arrays.\n"
-            f"Function: ipw_ate\n"
-            f"Expected: Non-empty arrays"
+            f"CRITICAL ERROR: Empty input arrays.\nFunction: ipw_ate\nExpected: Non-empty arrays"
         )
 
     # Check for NaN
@@ -277,16 +275,14 @@ def ipw_ate(
 
     # Treated variance
     residuals_treated = outcomes[treated_mask] - mean_treated
-    var_treated = (
-        np.sum((weights_treated_norm ** 2) * (residuals_treated ** 2))
-        / (sum_weights_treated ** 2)
+    var_treated = np.sum((weights_treated_norm**2) * (residuals_treated**2)) / (
+        sum_weights_treated**2
     )
 
     # Control variance
     residuals_control = outcomes[control_mask] - mean_control
-    var_control = (
-        np.sum((weights_control_norm ** 2) * (residuals_control ** 2))
-        / (sum_weights_control ** 2)
+    var_control = np.sum((weights_control_norm**2) * (residuals_control**2)) / (
+        sum_weights_control**2
     )
 
     # Variance of ATE
@@ -310,8 +306,8 @@ def ipw_ate(
 
     # Effective sample size (sum of weights)^2 / sum of squared weights
     # This measures how much information we have accounting for variable weights
-    effective_n_treated = (sum_weights_treated ** 2) / np.sum(weights_treated_norm ** 2)
-    effective_n_control = (sum_weights_control ** 2) / np.sum(weights_control_norm ** 2)
+    effective_n_treated = (sum_weights_treated**2) / np.sum(weights_treated_norm**2)
+    effective_n_control = (sum_weights_control**2) / np.sum(weights_control_norm**2)
     effective_n = effective_n_treated + effective_n_control
 
     # ============================================================================

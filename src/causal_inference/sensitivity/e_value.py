@@ -229,8 +229,7 @@ def e_value(
         rr = _ate_to_rr(estimate, baseline_risk)
     else:
         raise ValueError(
-            f"Unknown effect_type: {effect_type}. "
-            f"Must be one of: 'rr', 'or', 'hr', 'smd', 'ate'."
+            f"Unknown effect_type: {effect_type}. Must be one of: 'rr', 'or', 'hr', 'smd', 'ate'."
         )
 
     # Validate RR
@@ -291,9 +290,7 @@ def e_value(
     )
 
 
-def _generate_interpretation(
-    e_val: float, e_val_ci: float, rr: float, effect_type: str
-) -> str:
+def _generate_interpretation(e_val: float, e_val_ci: float, rr: float, effect_type: str) -> str:
     """Generate human-readable interpretation of E-value results."""
     direction = "harmful" if rr >= 1 else "protective"
 

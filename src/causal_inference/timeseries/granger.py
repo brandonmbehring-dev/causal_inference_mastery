@@ -91,22 +91,20 @@ def granger_causality(
 
     if n_obs <= 2 * lags + 1:
         raise ValueError(
-            f"Insufficient observations ({n_obs}) for {lags} lags. "
-            f"Need at least {2 * lags + 2}."
+            f"Insufficient observations ({n_obs}) for {lags} lags. Need at least {2 * lags + 2}."
         )
 
     if cause_idx >= n_vars or effect_idx >= n_vars:
         raise ValueError(
-            f"cause_idx ({cause_idx}) and effect_idx ({effect_idx}) "
-            f"must be < n_vars ({n_vars})"
+            f"cause_idx ({cause_idx}) and effect_idx ({effect_idx}) must be < n_vars ({n_vars})"
         )
 
     if var_names is None:
-        var_names = [f"var_{i+1}" for i in range(n_vars)]
+        var_names = [f"var_{i + 1}" for i in range(n_vars)]
 
     # Extract the two series
     y = data[:, effect_idx]  # Effect variable
-    x = data[:, cause_idx]   # Cause variable
+    x = data[:, cause_idx]  # Cause variable
 
     # Build design matrices
     n_effective = n_obs - lags
@@ -143,7 +141,7 @@ def granger_causality(
     rss_r = np.sum(resid_r**2)
 
     # Compute R-squared
-    tss = np.sum((y_dep - np.mean(y_dep))**2)
+    tss = np.sum((y_dep - np.mean(y_dep)) ** 2)
     r2_u = 1 - rss_u / tss if tss > 0 else 0.0
     r2_r = 1 - rss_r / tss if tss > 0 else 0.0
 
@@ -277,7 +275,7 @@ def granger_causality_matrix(
     n_obs, n_vars = data.shape
 
     if var_names is None:
-        var_names = [f"var_{i+1}" for i in range(n_vars)]
+        var_names = [f"var_{i + 1}" for i in range(n_vars)]
 
     pairwise_results: Dict[Tuple[str, str], GrangerResult] = {}
     causality_matrix = np.zeros((n_vars, n_vars), dtype=bool)
@@ -440,8 +438,11 @@ def granger_with_lag_selection(
 
         try:
             result = granger_causality(
-                data, lags=lag, alpha=alpha,
-                cause_idx=cause_idx, effect_idx=effect_idx,
+                data,
+                lags=lag,
+                alpha=alpha,
+                cause_idx=cause_idx,
+                effect_idx=effect_idx,
                 var_names=var_names,
             )
 
@@ -461,8 +462,11 @@ def granger_with_lag_selection(
 
     # Final test with optimal lag
     final_result = granger_causality(
-        data, lags=best_lag, alpha=alpha,
-        cause_idx=cause_idx, effect_idx=effect_idx,
+        data,
+        lags=best_lag,
+        alpha=alpha,
+        cause_idx=cause_idx,
+        effect_idx=effect_idx,
         var_names=var_names,
     )
 

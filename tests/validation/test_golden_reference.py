@@ -594,9 +594,7 @@ class TestGoldenReferenceVECM:
         result = vecm_estimate(Y, coint_rank=1, lags=1)
 
         # Result is a dataclass, use attribute access
-        assert np.allclose(result.alpha, expected["alpha"], rtol=1e-6), (
-            f"VECM alpha mismatch"
-        )
+        assert np.allclose(result.alpha, expected["alpha"], rtol=1e-6), f"VECM alpha mismatch"
 
 
 class TestGoldenReferenceSelection:

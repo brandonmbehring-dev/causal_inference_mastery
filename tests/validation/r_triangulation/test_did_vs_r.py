@@ -205,9 +205,9 @@ class TestDiDCallawayVsR:
         )
 
         # Compare
-        assert np.isclose(
-            py_result["att"], r_result["att"], rtol=0.05
-        ), f"ATT mismatch: Python={py_result['att']:.4f}, R={r_result['att']:.4f}"
+        assert np.isclose(py_result["att"], r_result["att"], rtol=0.05), (
+            f"ATT mismatch: Python={py_result['att']:.4f}, R={r_result['att']:.4f}"
+        )
 
     def test_se_parity(self):
         """Python SE should match R SE within rtol=0.15."""
@@ -238,9 +238,9 @@ class TestDiDCallawayVsR:
         )
 
         # SE comparison with looser tolerance
-        assert np.isclose(
-            py_result["se"], r_result["se"], rtol=0.15
-        ), f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
+        assert np.isclose(py_result["se"], r_result["se"], rtol=0.15), (
+            f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
+        )
 
     def test_dynamic_aggregation_parity(self):
         """Dynamic (event-time) aggregation should match R."""
@@ -271,9 +271,9 @@ class TestDiDCallawayVsR:
         )
 
         # Overall ATT should still match
-        assert np.isclose(
-            py_result["att"], r_result["att"], rtol=0.10
-        ), f"Dynamic ATT mismatch: Python={py_result['att']:.4f}, R={r_result['att']:.4f}"
+        assert np.isclose(py_result["att"], r_result["att"], rtol=0.10), (
+            f"Dynamic ATT mismatch: Python={py_result['att']:.4f}, R={r_result['att']:.4f}"
+        )
 
     def test_group_aggregation_parity(self):
         """Group (cohort) aggregation should match R."""
@@ -303,9 +303,9 @@ class TestDiDCallawayVsR:
             aggregation="group",
         )
 
-        assert np.isclose(
-            py_result["att"], r_result["att"], rtol=0.10
-        ), f"Group ATT mismatch: Python={py_result['att']:.4f}, R={r_result['att']:.4f}"
+        assert np.isclose(py_result["att"], r_result["att"], rtol=0.10), (
+            f"Group ATT mismatch: Python={py_result['att']:.4f}, R={r_result['att']:.4f}"
+        )
 
     def test_notyettreated_control(self):
         """Not-yet-treated control group should produce similar results."""
@@ -336,9 +336,9 @@ class TestDiDCallawayVsR:
             aggregation="simple",
         )
 
-        assert np.isclose(
-            py_result["att"], r_result["att"], rtol=0.10
-        ), f"NYT ATT mismatch: Python={py_result['att']:.4f}, R={r_result['att']:.4f}"
+        assert np.isclose(py_result["att"], r_result["att"], rtol=0.10), (
+            f"NYT ATT mismatch: Python={py_result['att']:.4f}, R={r_result['att']:.4f}"
+        )
 
     def test_ci_coverage_consistency(self):
         """CI bounds should be consistent between Python and R."""
@@ -373,9 +373,8 @@ class TestDiDCallawayVsR:
         # At minimum, both should agree on coverage
         # (may fail occasionally due to randomness, but usually agree)
         # Just check that CIs are in same ballpark
-        ci_width_ratio = (
-            (py_result["ci_upper"] - py_result["ci_lower"])
-            / (r_result["ci_upper"] - r_result["ci_lower"] + 1e-10)
+        ci_width_ratio = (py_result["ci_upper"] - py_result["ci_lower"]) / (
+            r_result["ci_upper"] - r_result["ci_lower"] + 1e-10
         )
         assert 0.5 < ci_width_ratio < 2.0, f"CI width ratio {ci_width_ratio:.2f} out of range"
 
@@ -410,9 +409,9 @@ class TestDiDEdgeCases:
             first_treated=data["first_treated"],
         )
 
-        assert np.isclose(
-            py_result["att"], r_result["att"], rtol=0.10
-        ), f"Single cohort ATT mismatch"
+        assert np.isclose(py_result["att"], r_result["att"], rtol=0.10), (
+            f"Single cohort ATT mismatch"
+        )
 
     def test_high_never_treated_fraction(self):
         """High never-treated fraction should still work."""
@@ -440,9 +439,9 @@ class TestDiDEdgeCases:
             first_treated=data["first_treated"],
         )
 
-        assert np.isclose(
-            py_result["att"], r_result["att"], rtol=0.10
-        ), f"High never-treated fraction ATT mismatch"
+        assert np.isclose(py_result["att"], r_result["att"], rtol=0.10), (
+            f"High never-treated fraction ATT mismatch"
+        )
 
 
 @requires_did_python

@@ -165,9 +165,7 @@ class TestSharpRKDKnownAnswer:
 
         assert result.retcode in ("success", "warning")
         # Effect should be close to zero
-        assert abs(result.estimate) < 0.5, (
-            f"Spurious effect detected: {result.estimate:.3f}"
-        )
+        assert abs(result.estimate) < 0.5, f"Spurious effect detected: {result.estimate:.3f}"
 
     def test_different_kink_magnitudes(self):
         """Test with different kink sizes."""
@@ -687,6 +685,4 @@ class TestBug3DenominatorVariance:
         coverage = np.mean(covers)
 
         # Coverage should be close to 95% (allow 85-99% due to MC variance)
-        assert 0.85 <= coverage <= 0.99, (
-            f"Coverage {coverage:.2%} should be approximately 95%"
-        )
+        assert 0.85 <= coverage <= 0.99, f"Coverage {coverage:.2%} should be approximately 95%"

@@ -111,9 +111,7 @@ class TestRosenbaumBoundsParity:
 
         # Check observed statistic matches
         assert np.isclose(
-            py_result["observed_statistic"],
-            jl_result["observed_statistic"],
-            rtol=1e-10
+            py_result["observed_statistic"], jl_result["observed_statistic"], rtol=1e-10
         )
 
         # Check n_pairs matches
@@ -146,7 +144,7 @@ class TestRosenbaumBoundsParity:
             assert np.isclose(
                 py_result["gamma_critical"],
                 jl_result["gamma_critical"],
-                rtol=0.15  # Allow some tolerance due to grid discretization
+                rtol=0.15,  # Allow some tolerance due to grid discretization
             )
         else:
             # Both should be None (robust to all tested values)
@@ -206,5 +204,11 @@ class TestSensitivityIntegration:
         assert len(py_result["p_lower"]) == len(jl_result["p_lower"])
 
         # Interpretations should contain robustness assessment
-        assert "robust" in py_result["interpretation"].lower() or "sensitive" in py_result["interpretation"].lower()
-        assert "robust" in jl_result["interpretation"].lower() or "sensitive" in jl_result["interpretation"].lower()
+        assert (
+            "robust" in py_result["interpretation"].lower()
+            or "sensitive" in py_result["interpretation"].lower()
+        )
+        assert (
+            "robust" in jl_result["interpretation"].lower()
+            or "sensitive" in jl_result["interpretation"].lower()
+        )

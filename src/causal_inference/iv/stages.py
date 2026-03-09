@@ -202,14 +202,17 @@ class FirstStage:
 
         # Create variable names
         q = np.sum(self.coef_ != 0)  # Approximate number of instruments
-        var_names = [f"Z{i+1}" for i in range(len(self.coef_))]
+        var_names = [f"Z{i + 1}" for i in range(len(self.coef_))]
 
-        return pd.DataFrame({
-            "coef": self.coef_,
-            "se": self.se_,
-            "t_stat": self._result.tvalues[1:],
-            "p_value": self._result.pvalues[1:],
-        }, index=var_names)
+        return pd.DataFrame(
+            {
+                "coef": self.coef_,
+                "se": self.se_,
+                "t_stat": self._result.tvalues[1:],
+                "p_value": self._result.pvalues[1:],
+            },
+            index=var_names,
+        )
 
 
 class ReducedForm:
@@ -326,14 +329,19 @@ class ReducedForm:
         if self._result is None:
             raise ValueError("Must call fit() before summary()")
 
-        var_names = [f"Z{i+1}" if i < len(self.coef_) else f"X{i+1}" for i in range(len(self.coef_))]
+        var_names = [
+            f"Z{i + 1}" if i < len(self.coef_) else f"X{i + 1}" for i in range(len(self.coef_))
+        ]
 
-        return pd.DataFrame({
-            "coef": self.coef_,
-            "se": self.se_,
-            "t_stat": self._result.tvalues[1:],
-            "p_value": self._result.pvalues[1:],
-        }, index=var_names)
+        return pd.DataFrame(
+            {
+                "coef": self.coef_,
+                "se": self.se_,
+                "t_stat": self._result.tvalues[1:],
+                "p_value": self._result.pvalues[1:],
+            },
+            index=var_names,
+        )
 
 
 class SecondStage:
@@ -473,11 +481,14 @@ class SecondStage:
             raise ValueError("Must call fit() before summary()")
 
         p = np.sum([c != 0 for c in self.coef_ if c is not None])
-        var_names = [f"D{i+1}" if i < p else f"X{i-p+1}" for i in range(len(self.coef_))]
+        var_names = [f"D{i + 1}" if i < p else f"X{i - p + 1}" for i in range(len(self.coef_))]
 
-        return pd.DataFrame({
-            "coef": self.coef_,
-            "se_naive": self.se_naive_,
-            "t_stat_naive": self._result.tvalues[1:],
-            "p_value_naive": self._result.pvalues[1:],
-        }, index=var_names)
+        return pd.DataFrame(
+            {
+                "coef": self.coef_,
+                "se_naive": self.se_naive_,
+                "t_stat_naive": self._result.tvalues[1:],
+                "p_value_naive": self._result.pvalues[1:],
+            },
+            index=var_names,
+        )

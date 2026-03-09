@@ -124,9 +124,7 @@ class TestManskiWorstCaseParity:
         """Test with custom outcome support bounds."""
         outcome, treatment = generate_bounds_data(n=500, seed=42)
 
-        jl_result = julia_manski_worst_case(
-            outcome, treatment, outcome_support=(-5.0, 5.0)
-        )
+        jl_result = julia_manski_worst_case(outcome, treatment, outcome_support=(-5.0, 5.0))
 
         # Bounds should be finite
         assert np.isfinite(jl_result["bounds_lower"])
@@ -146,7 +144,9 @@ class TestLeeBoundsParity:
         outcome, treatment, observed = generate_lee_data(n=1000, seed=42)
 
         jl_result = julia_lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             monotonicity="positive",
             n_bootstrap=100,
             seed=42,
@@ -161,12 +161,12 @@ class TestLeeBoundsParity:
     def test_contains_true_ate(self):
         """True ATE should be within Lee bounds."""
         true_ate = 2.0
-        outcome, treatment, observed = generate_lee_data(
-            n=2000, true_ate=true_ate, seed=42
-        )
+        outcome, treatment, observed = generate_lee_data(n=2000, true_ate=true_ate, seed=42)
 
         jl_result = julia_lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             n_bootstrap=200,
             seed=42,
         )
@@ -181,7 +181,9 @@ class TestLeeBoundsParity:
         outcome, treatment, observed = generate_lee_data(n=1000, seed=42)
 
         jl_result = julia_lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             n_bootstrap=500,
             seed=42,
         )
@@ -198,7 +200,9 @@ class TestLeeBoundsParity:
         )
 
         jl_result = julia_lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             n_bootstrap=50,
             seed=42,
         )
@@ -211,7 +215,9 @@ class TestLeeBoundsParity:
         outcome, treatment, observed = generate_lee_data(n=1000, seed=42)
 
         jl_result = julia_lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             monotonicity="negative",
             n_bootstrap=50,
             seed=42,
@@ -224,7 +230,9 @@ class TestLeeBoundsParity:
         outcome, treatment, observed = generate_lee_data(n=1000, seed=42)
 
         jl_result = julia_lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             n_bootstrap=50,
             seed=42,
         )
@@ -278,7 +286,9 @@ class TestBoundsEdgeCases:
         outcome = 2.0 * treatment + rng.standard_normal(n)
 
         jl_result = julia_lee_bounds(
-            outcome, treatment, observed,
+            outcome,
+            treatment,
+            observed,
             n_bootstrap=50,
             seed=42,
         )

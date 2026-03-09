@@ -270,10 +270,12 @@ class TestBayesianDRPropensityMethods:
         """Stratified method works with discrete covariates."""
         np.random.seed(42)
         n = 200
-        X = np.column_stack([
-            np.random.choice([0, 1], n),
-            np.random.choice([0, 1, 2], n),
-        ]).astype(float)
+        X = np.column_stack(
+            [
+                np.random.choice([0, 1], n),
+                np.random.choice([0, 1, 2], n),
+            ]
+        ).astype(float)
         prob = 0.3 + 0.2 * X[:, 0] + 0.1 * X[:, 1]
         T = np.random.binomial(1, prob).astype(float)
         Y = 2.0 * T + 0.5 * X[:, 0] + np.random.normal(0, 1, n)

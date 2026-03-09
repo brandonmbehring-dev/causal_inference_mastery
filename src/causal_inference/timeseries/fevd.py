@@ -152,9 +152,7 @@ def historical_decomposition(
         for s in range(min(t + 1, n_obs)):
             # Contribution at time t from shock at time t-s
             if t - s >= 0:
-                contributions[:, :, t] += np.outer(
-                    Psi[:, :, s].sum(axis=1), shocks[t - s, :]
-                )
+                contributions[:, :, t] += np.outer(Psi[:, :, s].sum(axis=1), shocks[t - s, :])
                 # More precise: contributions[i, j, t] += Ψ[i,j,s] * ε[j,t-s]
                 for i in range(n_vars):
                     for j in range(n_vars):
@@ -260,9 +258,7 @@ def variance_contribution_table(
         Nested dict: result[response_var][shock_var] = contribution
     """
     if horizon > fevd_result.horizons:
-        raise ValueError(
-            f"horizon {horizon} exceeds max {fevd_result.horizons}"
-        )
+        raise ValueError(f"horizon {horizon} exceeds max {fevd_result.horizons}")
 
     table = {}
     for i, resp_name in enumerate(fevd_result.var_names):
@@ -357,17 +353,13 @@ def bootstrap_fevd(
             # Resample residuals with replacement
             indices = rng.integers(0, n_effective, size=n_effective)
             resid_boot = residuals[indices, :]
-            data_boot = _reconstruct_var_data_fevd(
-                data, var_result, resid_boot, lags
-            )
+            data_boot = _reconstruct_var_data_fevd(data, var_result, resid_boot, lags)
 
         elif method == "wild":
             # Wild bootstrap: multiply residuals by Rademacher random variable
             signs = rng.choice([-1, 1], size=n_effective)
             resid_boot = residuals * signs[:, np.newaxis]
-            data_boot = _reconstruct_var_data_fevd(
-                data, var_result, resid_boot, lags
-            )
+            data_boot = _reconstruct_var_data_fevd(data, var_result, resid_boot, lags)
 
         else:  # block
             # Moving block bootstrap

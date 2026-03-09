@@ -293,14 +293,14 @@ class TestSimpleATEVsR:
             pytest.skip("R simple_ate unavailable")
 
         # Compare estimates
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
         # Compare SE (may differ due to variance formula)
-        assert np.isclose(
-            py_result["se"], r_result["se"], rtol=0.15
-        ), f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
+        assert np.isclose(py_result["se"], r_result["se"], rtol=0.15), (
+            f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
+        )
 
     def test_unbalanced_design(self):
         """Python and R should agree on unbalanced RCT."""
@@ -312,9 +312,9 @@ class TestSimpleATEVsR:
         if r_result is None:
             pytest.skip("R simple_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
     def test_small_sample(self):
         """Python and R should agree on small sample (n=20)."""
@@ -326,9 +326,9 @@ class TestSimpleATEVsR:
         if r_result is None:
             pytest.skip("R simple_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
 
 @requires_rct_python
@@ -340,32 +340,28 @@ class TestStratifiedATEVsR:
         data = generate_stratified_rct_data(n=100, n_strata=5, true_ate=2.0, seed=42)
 
         py_result = stratified_ate(data["outcomes"], data["treatment"], data["strata"])
-        r_result = r_stratified_ate(
-            data["outcomes"], data["treatment"], data["strata"]
-        )
+        r_result = r_stratified_ate(data["outcomes"], data["treatment"], data["strata"])
 
         if r_result is None:
             pytest.skip("R stratified_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
     def test_two_strata(self):
         """Python and R should agree with 2 strata (binary stratification)."""
         data = generate_stratified_rct_data(n=100, n_strata=2, true_ate=1.5, seed=123)
 
         py_result = stratified_ate(data["outcomes"], data["treatment"], data["strata"])
-        r_result = r_stratified_ate(
-            data["outcomes"], data["treatment"], data["strata"]
-        )
+        r_result = r_stratified_ate(data["outcomes"], data["treatment"], data["strata"])
 
         if r_result is None:
             pytest.skip("R stratified_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
 
 @requires_rct_python
@@ -377,24 +373,20 @@ class TestRegressionATEVsR:
         """Python and R should agree with single covariate adjustment."""
         data = generate_regression_rct_data(n=100, true_ate=2.0, seed=42)
 
-        py_result = regression_adjusted_ate(
-            data["outcomes"], data["treatment"], data["covariates"]
-        )
-        r_result = r_regression_ate(
-            data["outcomes"], data["treatment"], data["covariates"]
-        )
+        py_result = regression_adjusted_ate(data["outcomes"], data["treatment"], data["covariates"])
+        r_result = r_regression_ate(data["outcomes"], data["treatment"], data["covariates"])
 
         if r_result is None:
             pytest.skip("R regression_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
         # SE comparison (HC3 implementations may vary slightly)
-        assert np.isclose(
-            py_result["se"], r_result["se"], rtol=0.15
-        ), f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
+        assert np.isclose(py_result["se"], r_result["se"], rtol=0.15), (
+            f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
+        )
 
     def test_multiple_covariates(self):
         """Python and R should agree with multiple covariates."""
@@ -411,9 +403,9 @@ class TestRegressionATEVsR:
         if r_result is None:
             pytest.skip("R regression_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
 
 @requires_rct_python
@@ -435,15 +427,15 @@ class TestPermutationTestVsR:
             pytest.skip("R permutation_test unavailable")
 
         # Observed statistic should match exactly
-        assert np.isclose(
-            py_result["observed_diff"], r_result["observed_statistic"], rtol=1e-10
-        ), f"Observed stat mismatch: Python={py_result['observed_diff']:.4f}, R={r_result['observed_statistic']:.4f}"
+        assert np.isclose(py_result["observed_diff"], r_result["observed_statistic"], rtol=1e-10), (
+            f"Observed stat mismatch: Python={py_result['observed_diff']:.4f}, R={r_result['observed_statistic']:.4f}"
+        )
 
         # P-values should be similar (allow for Monte Carlo variance)
         # With same seed and n_permutations, should be close
-        assert np.isclose(
-            py_result["p_value"], r_result["p_value"], atol=0.05
-        ), f"P-value mismatch: Python={py_result['p_value']:.4f}, R={r_result['p_value']:.4f}"
+        assert np.isclose(py_result["p_value"], r_result["p_value"], atol=0.05), (
+            f"P-value mismatch: Python={py_result['p_value']:.4f}, R={r_result['p_value']:.4f}"
+        )
 
     def test_larger_sample(self):
         """Test with larger sample."""
@@ -460,9 +452,7 @@ class TestPermutationTestVsR:
             pytest.skip("R permutation_test unavailable")
 
         # Observed statistics should match
-        assert np.isclose(
-            py_result["observed_diff"], r_result["observed_statistic"], rtol=0.05
-        )
+        assert np.isclose(py_result["observed_diff"], r_result["observed_statistic"], rtol=0.05)
 
 
 @requires_rct_python
@@ -479,9 +469,9 @@ class TestIPWATEVsR:
         if r_result is None:
             pytest.skip("R ipw_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
     def test_constant_propensity(self):
         """Python and R should agree with constant propensity (equal to simple ATE)."""
@@ -497,15 +487,13 @@ class TestIPWATEVsR:
         if r_result is None:
             pytest.skip("R ipw_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
     def test_varying_propensity(self):
         """Python and R should agree with varying propensity scores."""
-        data = generate_ipw_data(
-            n=100, true_ate=1.5, propensity_range=(0.2, 0.8), seed=999
-        )
+        data = generate_ipw_data(n=100, true_ate=1.5, propensity_range=(0.2, 0.8), seed=999)
 
         py_result = ipw_ate(data["outcomes"], data["treatment"], data["propensity"])
         r_result = r_ipw_ate(data["outcomes"], data["treatment"], data["propensity"])
@@ -513,9 +501,9 @@ class TestIPWATEVsR:
         if r_result is None:
             pytest.skip("R ipw_ate unavailable")
 
-        assert np.isclose(
-            py_result["ate"], r_result["estimate"], rtol=0.05
-        ), f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        assert np.isclose(py_result["ate"], r_result["estimate"], rtol=0.05), (
+            f"ATE mismatch: Python={py_result['ate']:.4f}, R={r_result['estimate']:.4f}"
+        )
 
 
 # =============================================================================
@@ -565,6 +553,6 @@ class TestRCTEstimatorsConsistency:
         mean_ate = np.mean(ate_values)
 
         for name, ate in estimates:
-            assert np.isclose(
-                ate, mean_ate, rtol=0.20
-            ), f"{name} ATE={ate:.4f} differs from mean={mean_ate:.4f}"
+            assert np.isclose(ate, mean_ate, rtol=0.20), (
+                f"{name} ATE={ate:.4f} differs from mean={mean_ate:.4f}"
+            )

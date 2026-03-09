@@ -175,7 +175,7 @@ def check_separation(propensity: np.ndarray) -> None:
         warnings.warn(
             f"Extreme propensity scores detected (potential positivity violation). "
             f"{n_extreme_low} units with P(T=1|X)<{extreme_threshold}, "
-            f"{n_extreme_high} units with P(T=1|X)>{1-extreme_threshold}. "
+            f"{n_extreme_high} units with P(T=1|X)>{1 - extreme_threshold}. "
             f"IPW estimates may be unstable. Consider trimming extreme weights.",
             UserWarning,
         )
@@ -258,9 +258,7 @@ def compute_propensity_diagnostics(
         "auc": auc,
         "pseudo_r2": pseudo_r2,
         "converged": True,
-        "n_iter": (
-            model.n_iter_[0] if hasattr(model.n_iter_, "__getitem__") else model.n_iter_
-        ),
+        "n_iter": (model.n_iter_[0] if hasattr(model.n_iter_, "__getitem__") else model.n_iter_),
         "coef": model.coef_.flatten(),
         "intercept": model.intercept_[0],
     }

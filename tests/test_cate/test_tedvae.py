@@ -16,15 +16,13 @@ from .conftest import generate_cate_dgp
 def _torch_available():
     try:
         import torch
+
         return True
     except ImportError:
         return False
 
 
-pytestmark = pytest.mark.skipif(
-    not _torch_available(),
-    reason="PyTorch required for TEDVAE tests"
-)
+pytestmark = pytest.mark.skipif(not _torch_available(), reason="PyTorch required for TEDVAE tests")
 
 
 # Import conditionally
@@ -102,7 +100,9 @@ class TestTEDVAEKnownAnswer:
         """Should accept custom architecture parameters."""
         Y, T, X, _ = constant_effect_data
         result = tedvae(
-            Y, T, X,
+            Y,
+            T,
+            X,
             latent_dim_t=4,
             latent_dim_c=8,
             latent_dim_y=4,
@@ -202,7 +202,9 @@ class TestTEDVAEAdversarial:
         """Should accept various hyperparameters."""
         Y, T, X, _ = constant_effect_data
         result = tedvae(
-            Y, T, X,
+            Y,
+            T,
+            X,
             latent_dim_t=4,
             latent_dim_c=12,
             latent_dim_y=4,

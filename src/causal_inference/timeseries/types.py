@@ -126,8 +126,7 @@ class MultiGrangerResult:
     def __repr__(self) -> str:
         n_causal = int(self.causality_matrix.sum())
         return (
-            f"MultiGrangerResult(n_vars={self.n_vars}, "
-            f"n_causal_pairs={n_causal}, lags={self.lags})"
+            f"MultiGrangerResult(n_vars={self.n_vars}, n_causal_pairs={n_causal}, lags={self.lags})"
         )
 
 
@@ -424,8 +423,7 @@ class PPResult:
     def __repr__(self) -> str:
         status = "Stationary" if self.is_stationary else "Non-stationary"
         return (
-            f"PPResult({status}, stat={self.statistic:.4f}, "
-            f"p={self.p_value:.4f}, lags={self.lags})"
+            f"PPResult({status}, stat={self.statistic:.4f}, p={self.p_value:.4f}, lags={self.lags})"
         )
 
 
@@ -516,10 +514,7 @@ class JohansenResult:
 
     def __repr__(self) -> str:
         coint = "Cointegrated" if self.has_cointegration else "No cointegration"
-        return (
-            f"JohansenResult({coint}, rank={self.rank}, "
-            f"n_vars={self.n_vars}, lags={self.lags})"
-        )
+        return f"JohansenResult({coint}, rank={self.rank}, n_vars={self.n_vars}, lags={self.lags})"
 
 
 @dataclass

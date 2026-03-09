@@ -80,23 +80,17 @@ def _validate_inputs(
     # Check binary treatment
     D_vals = np.unique(D[~np.isnan(D)])
     if not np.all(np.isin(D_vals, [0, 1])):
-        raise ValueError(
-            f"Treatment must be binary (0 or 1), got unique values: {D_vals}"
-        )
+        raise ValueError(f"Treatment must be binary (0 or 1), got unique values: {D_vals}")
 
     # Check binary instrument
     Z_vals = np.unique(Z[~np.isnan(Z)])
     if not np.all(np.isin(Z_vals, [0, 1])):
-        raise ValueError(
-            f"Instrument must be binary (0 or 1), got unique values: {Z_vals}"
-        )
+        raise ValueError(f"Instrument must be binary (0 or 1), got unique values: {Z_vals}")
 
     return Y, D.astype(float), Z.astype(float)
 
 
-def _compute_cell_means(
-    Y: np.ndarray, D: np.ndarray, Z: np.ndarray
-) -> dict:
+def _compute_cell_means(Y: np.ndarray, D: np.ndarray, Z: np.ndarray) -> dict:
     """Compute cell means for (D, Z) combinations.
 
     Returns
@@ -180,9 +174,7 @@ def ps_bounds_monotonicity(
     Y, D, Z = _validate_inputs(outcome, treatment, instrument)
 
     if direct_effect_bound < 0:
-        raise ValueError(
-            f"direct_effect_bound must be non-negative, got {direct_effect_bound}"
-        )
+        raise ValueError(f"direct_effect_bound must be non-negative, got {direct_effect_bound}")
 
     # Compute reduced form and first stage
     cells = _compute_cell_means(Y, D, Z)
@@ -294,9 +286,7 @@ def ps_bounds_no_assumption(
     if outcome_support is not None:
         Y_min, Y_max = outcome_support
         if Y_min >= Y_max:
-            raise ValueError(
-                f"outcome_support must have Y_min < Y_max, got ({Y_min}, {Y_max})"
-            )
+            raise ValueError(f"outcome_support must have Y_min < Y_max, got ({Y_min}, {Y_max})")
     else:
         Y_min = np.min(Y)
         Y_max = np.max(Y)

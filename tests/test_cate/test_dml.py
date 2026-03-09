@@ -385,9 +385,7 @@ class TestDMLMonteCarlo:
 
         bias = np.mean(estimates) - true_ate
 
-        assert abs(bias) < 0.15, (
-            f"DML bias with confounding {bias:.4f} exceeds threshold 0.15"
-        )
+        assert abs(bias) < 0.15, f"DML bias with confounding {bias:.4f} exceeds threshold 0.15"
 
 
 class TestDMLComparison:

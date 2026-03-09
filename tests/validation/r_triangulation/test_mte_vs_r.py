@@ -43,6 +43,7 @@ try:
         r_mte_estimate,
         r_mte_policy_effect,
     )
+
     R_AVAILABLE = True
 except ImportError:
     R_AVAILABLE = False
@@ -60,8 +61,7 @@ def check_r_available():
 
 # Skip if R/localIV not available
 pytestmark = pytest.mark.skipif(
-    not check_r_available(),
-    reason="R or localIV package not available"
+    not check_r_available(), reason="R or localIV package not available"
 )
 
 
@@ -126,16 +126,22 @@ def generate_mte_dgp(
 
     # Define MTE function based on heterogeneity type
     if effect_heterogeneity == "constant":
+
         def mte_func(u):
             return np.full_like(u, 2.0)
+
         true_ate = 2.0
     elif effect_heterogeneity == "linear":
+
         def mte_func(u):
             return 3.0 - 2.0 * u  # Decreasing: MTE(0)=3, MTE(1)=1
+
         true_ate = 2.0  # Integral of 3 - 2u from 0 to 1
     elif effect_heterogeneity == "nonlinear":
+
         def mte_func(u):
             return 2.0 + 0.5 * np.sin(2 * np.pi * u)
+
         true_ate = 2.0  # Sin integrates to 0
     else:
         raise ValueError(f"Unknown effect_heterogeneity: {effect_heterogeneity}")
@@ -451,14 +457,10 @@ class TestLATEVsR:
         )
 
         # Check SE is reasonable (not too small or too large)
-        assert 0.05 < py_result["se"] < 1.0, (
-            f"LATE SE {py_result['se']:.3f} seems unreasonable"
-        )
+        assert 0.05 < py_result["se"] < 1.0, f"LATE SE {py_result['se']:.3f} seems unreasonable"
 
         # Check CI covers true value
-        covers_true = (
-            py_result["ci_lower"] < data["true_late"] < py_result["ci_upper"]
-        )
+        covers_true = py_result["ci_lower"] < data["true_late"] < py_result["ci_upper"]
         # Not a strict test, but should usually cover
         if not covers_true:
             pytest.xfail(

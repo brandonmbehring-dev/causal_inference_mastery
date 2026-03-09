@@ -118,7 +118,7 @@ def generate_dynamic_dgp(
 
     # True lag effects (default: geometrically decaying)
     if lag_effects is None:
-        lag_effects = [2.0 * (0.5 ** h) for h in range(max_lag + 1)]
+        lag_effects = [2.0 * (0.5**h) for h in range(max_lag + 1)]
     lag_effects = np.array(lag_effects[: max_lag + 1])
 
     # Generate covariates (with some autocorrelation)
@@ -377,8 +377,7 @@ class TestDynamicDMLHACInferenceVsR:
         r_positive = all(e > 0 for e in r_result["lag_effects"])
 
         assert py_positive == r_positive, (
-            f"Sign mismatch: Python effects={py_result.theta}, "
-            f"R effects={r_result['lag_effects']}"
+            f"Sign mismatch: Python effects={py_result.theta}, R effects={r_result['lag_effects']}"
         )
 
 

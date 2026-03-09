@@ -64,9 +64,7 @@ class StaggeredData:
         # Check array lengths
         n_obs = len(self.outcomes)
         if not (
-            len(self.treatment) == n_obs
-            and len(self.time) == n_obs
-            and len(self.unit_id) == n_obs
+            len(self.treatment) == n_obs and len(self.time) == n_obs and len(self.unit_id) == n_obs
         ):
             raise ValueError(
                 f"outcomes, treatment, time, unit_id must have same length. "
@@ -194,9 +192,7 @@ def create_staggered_data(
     """
     # Validate input arrays
     n_obs = len(outcomes)
-    if not (
-        len(treatment) == n_obs and len(time) == n_obs and len(unit_id) == n_obs
-    ):
+    if not (len(treatment) == n_obs and len(time) == n_obs and len(unit_id) == n_obs):
         raise ValueError(
             f"All input arrays must have same length. "
             f"Got outcomes={len(outcomes)}, treatment={len(treatment)}, "
@@ -209,12 +205,8 @@ def create_staggered_data(
 
     # Check treatment is binary
     unique_treatment = np.unique(treatment)
-    if not np.array_equal(unique_treatment, [0, 1]) and not np.array_equal(
-        unique_treatment, [0]
-    ):
-        raise ValueError(
-            f"treatment must be binary (0, 1). Got unique values: {unique_treatment}"
-        )
+    if not np.array_equal(unique_treatment, [0, 1]) and not np.array_equal(unique_treatment, [0]):
+        raise ValueError(f"treatment must be binary (0, 1). Got unique values: {unique_treatment}")
 
     # Infer treatment_time if not provided
     if treatment_time is None:
@@ -371,14 +363,10 @@ def twfe_staggered(
     """
     # Input validation
     if not np.any(data.treatment == 1):
-        raise ValueError(
-            "No treated units found. treatment array contains only zeros."
-        )
+        raise ValueError("No treated units found. treatment array contains only zeros.")
 
     if not np.any(data.treatment == 0):
-        raise ValueError(
-            "No control observations found. treatment array contains only ones."
-        )
+        raise ValueError("No control observations found. treatment array contains only ones.")
 
     # Create DataFrame for regression
     df = pd.DataFrame(
@@ -391,12 +379,8 @@ def twfe_staggered(
     )
 
     # Create unit and time fixed effects
-    unit_dummies = pd.get_dummies(df["unit_id"], prefix="unit", drop_first=True).astype(
-        float
-    )
-    time_dummies = pd.get_dummies(df["time"], prefix="time", drop_first=True).astype(
-        float
-    )
+    unit_dummies = pd.get_dummies(df["unit_id"], prefix="unit", drop_first=True).astype(float)
+    time_dummies = pd.get_dummies(df["time"], prefix="time", drop_first=True).astype(float)
 
     # Construct design matrix: [treatment, unit FE, time FE]
     X = pd.concat([df[["treatment"]], unit_dummies, time_dummies], axis=1)
@@ -406,9 +390,7 @@ def twfe_staggered(
     if cluster_se:
         # Cluster-robust standard errors at unit level
         model = sm.OLS(y, X)
-        results = model.fit(
-            cov_type="cluster", cov_kwds={"groups": df["unit_id"].values}
-        )
+        results = model.fit(cov_type="cluster", cov_kwds={"groups": df["unit_id"].values})
     else:
         # Regular OLS standard errors
         model = sm.OLS(y, X)

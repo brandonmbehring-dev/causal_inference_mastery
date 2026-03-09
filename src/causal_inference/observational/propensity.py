@@ -146,8 +146,7 @@ def estimate_propensity(
 
     if method != "logistic":
         raise ValueError(
-            f"Unsupported estimation method. "
-            f"Expected: method='logistic', got: method='{method}'"
+            f"Unsupported estimation method. Expected: method='logistic', got: method='{method}'"
         )
 
     # Fit logistic regression model

@@ -472,9 +472,7 @@ class TestPCMonteCarlo:
                 continue
 
             f1 = skeleton_f1(py_skeleton.adjacency, r_result["skeleton"])
-            assert f1 >= 0.80, (
-                f"Skeleton F1 too low for n={n_samples}: {f1:.3f}"
-            )
+            assert f1 >= 0.80, f"Skeleton F1 too low for n={n_samples}: {f1:.3f}"
 
 
 class TestPCEdgeCases:

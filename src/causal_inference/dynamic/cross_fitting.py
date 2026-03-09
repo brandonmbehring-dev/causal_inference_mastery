@@ -67,9 +67,7 @@ class BlockedTimeSeriesSplit:
         self.n_splits = n_splits
         self.gap = gap
 
-    def split(
-        self, X: np.ndarray
-    ) -> Generator[tuple[np.ndarray, np.ndarray], None, None]:
+    def split(self, X: np.ndarray) -> Generator[tuple[np.ndarray, np.ndarray], None, None]:
         """Generate indices for train/test splits.
 
         Parameters
@@ -100,10 +98,7 @@ class BlockedTimeSeriesSplit:
             train_before_end = max(0, test_start - self.gap)
             train_after_start = min(n_samples, test_end + self.gap)
 
-            train_idx = np.concatenate([
-                indices[:train_before_end],
-                indices[train_after_start:]
-            ])
+            train_idx = np.concatenate([indices[:train_before_end], indices[train_after_start:]])
 
             if len(train_idx) > 0:
                 yield train_idx, test_idx
@@ -173,9 +168,7 @@ class RollingOriginSplit:
         self.gap = gap
         self.max_train_size = max_train_size
 
-    def split(
-        self, X: np.ndarray
-    ) -> Generator[tuple[np.ndarray, np.ndarray], None, None]:
+    def split(self, X: np.ndarray) -> Generator[tuple[np.ndarray, np.ndarray], None, None]:
         """Generate indices for train/test splits.
 
         Parameters
@@ -377,9 +370,7 @@ class ProgressiveBlockSplit:
         self.n_blocks = n_blocks
         self.min_train_blocks = min_train_blocks
 
-    def split(
-        self, X: np.ndarray
-    ) -> Generator[tuple[np.ndarray, np.ndarray], None, None]:
+    def split(self, X: np.ndarray) -> Generator[tuple[np.ndarray, np.ndarray], None, None]:
         """Generate indices for train/test splits.
 
         Parameters

@@ -81,7 +81,9 @@ class TestCovariateBalance:
         """Test that balanced covariates show p > 0.05."""
         Y, X, cutoff, _, W = rdd_with_covariates_dgp
 
-        results = covariate_balance_test(X, W, cutoff, bandwidth="ik", covariate_names=["age", "gender"])
+        results = covariate_balance_test(
+            X, W, cutoff, bandwidth="ik", covariate_names=["age", "gender"]
+        )
 
         # Both covariates should be balanced (p > 0.05)
         assert len(results) == 2, f"Expected 2 rows, got {len(results)}"
@@ -124,15 +126,18 @@ class TestBandwidthSensitivity:
 
         # Estimates should all be within 50% of truth (loose tolerance)
         estimates = results["estimate"].values
-        assert all(np.abs(est - true_tau) < 0.5 * true_tau for est in estimates), \
+        assert all(np.abs(est - true_tau) < 0.5 * true_tau for est in estimates), (
             f"Estimates should be stable, got range: {estimates.min():.2f} - {estimates.max():.2f}"
+        )
 
     def test_bandwidth_sensitivity_grid(self, sharp_rdd_linear_dgp):
         """Test that custom bandwidth grid works."""
         Y, X, cutoff, _ = sharp_rdd_linear_dgp
 
         custom_grid = np.array([0.5, 1.0, 1.5])
-        results = bandwidth_sensitivity_analysis(Y, X, cutoff, h_optimal=1.0, bandwidth_grid=custom_grid)
+        results = bandwidth_sensitivity_analysis(
+            Y, X, cutoff, h_optimal=1.0, bandwidth_grid=custom_grid
+        )
 
         assert len(results) == 3, "Should have one row per bandwidth"
         assert list(results["bandwidth"]) == list(custom_grid), "Bandwidths should match grid"
@@ -165,13 +170,15 @@ class TestPolynomialOrderSensitivity:
         # p=0 (local constant) IS biased for linear DGP with slope - this is correct behavior
         # Only p>=1 should recover the effect
         estimates_p1_plus = results[results["order"] >= 1]["estimate"].values
-        assert all(np.abs(est - true_tau) < 0.6 for est in estimates_p1_plus), \
+        assert all(np.abs(est - true_tau) < 0.6 for est in estimates_p1_plus), (
             "Local linear (p>=1) should recover effect for linear DGP"
+        )
 
         # p=0 should show bias (demonstrating that it doesn't work for DGP with slope)
         est_p0 = results[results["order"] == 0]["estimate"].values[0]
-        assert np.abs(est_p0 - true_tau) > 0.5, \
+        assert np.abs(est_p0 - true_tau) > 0.5, (
             "Local constant (p=0) should be biased when DGP has slope"
+        )
 
     def test_polynomial_order_0_to_3(self, sharp_rdd_quadratic_dgp):
         """Test that orders 0-3 all produce finite estimates."""
@@ -207,8 +214,9 @@ class TestDonutHoleRDD:
 
         # Estimates should be stable (within 40% of truth)
         valid_estimates = results["estimate"].dropna()
-        assert all(np.abs(est - true_tau) < 0.8 for est in valid_estimates), \
+        assert all(np.abs(est - true_tau) < 0.8 for est in valid_estimates), (
             "Donut-hole estimates should be stable"
+        )
 
     def test_donut_hole_sample_size_reduction(self, sharp_rdd_linear_dgp):
         """Test that n_excluded increases with hole_width."""

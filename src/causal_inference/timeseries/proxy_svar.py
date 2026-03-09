@@ -306,8 +306,7 @@ def proxy_svar(
 
     if np.var(instrument) < 1e-10:
         raise ValueError(
-            "Instrument has near-zero variance (constant). "
-            "Cannot compute first-stage regression."
+            "Instrument has near-zero variance (constant). Cannot compute first-stage regression."
         )
 
     if np.any(np.isnan(instrument)):
@@ -318,8 +317,7 @@ def proxy_svar(
 
     if target_shock_idx < 0 or target_shock_idx >= n_vars:
         raise ValueError(
-            f"target_shock_idx ({target_shock_idx}) out of bounds. "
-            f"Must be in [0, {n_vars - 1}]."
+            f"target_shock_idx ({target_shock_idx}) out of bounds. Must be in [0, {n_vars - 1}]."
         )
 
     if target_residual_idx is None:
@@ -484,8 +482,7 @@ def _compute_proxy_impact_column(
         # If target coefficient is near zero, can't normalize
         # Use unit scaling instead
         warnings.warn(
-            "Target coefficient near zero in second stage. "
-            "Using unit scaling.",
+            "Target coefficient near zero in second stage. Using unit scaling.",
             UserWarning,
         )
         scale = 1.0
@@ -541,7 +538,7 @@ def _first_stage_regression(
 
     # R-squared
     ss_res = np.sum(residuals**2)
-    ss_tot = np.sum((y - np.mean(y))**2)
+    ss_tot = np.sum((y - np.mean(y)) ** 2)
     r2 = 1 - ss_res / ss_tot if ss_tot > 0 else 0.0
 
     # F-statistic: F = (R² / (1-R²)) × ((n-k) / (k-1))
@@ -698,6 +695,7 @@ def _proxy_bootstrap(
 def _normal_critical_value(alpha: float) -> float:
     """Get critical value from standard normal for two-sided CI."""
     from scipy.stats import norm
+
     return norm.ppf(1 - alpha / 2)
 
 
@@ -750,9 +748,9 @@ def weak_instrument_diagnostics(
     # Stock-Yogo critical values for single instrument, single endogenous
     stock_yogo = {
         0.10: 16.38,  # 10% maximal size
-        0.15: 8.96,   # 15% maximal size
-        0.20: 6.66,   # 20% maximal size
-        0.25: 5.53,   # 25% maximal size
+        0.15: 8.96,  # 15% maximal size
+        0.20: 6.66,  # 20% maximal size
+        0.25: 5.53,  # 25% maximal size
     }
 
     is_weak = f_stat < 10.0
@@ -764,8 +762,7 @@ def weak_instrument_diagnostics(
     # Interpretation
     if f_stat >= 16.38:
         interpretation = (
-            f"Strong instrument (F={f_stat:.2f} ≥ 16.38). "
-            "Standard inference is reliable."
+            f"Strong instrument (F={f_stat:.2f} ≥ 16.38). Standard inference is reliable."
         )
         recommended = "standard"
     elif f_stat >= 10.0:

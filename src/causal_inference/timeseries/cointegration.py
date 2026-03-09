@@ -307,9 +307,7 @@ def johansen_test(
         raise ValueError(f"Need at least 2 variables for cointegration, got {n_vars}")
 
     if n_vars > 6:
-        raise ValueError(
-            f"Critical values only available for up to 6 variables, got {n_vars}"
-        )
+        raise ValueError(f"Critical values only available for up to 6 variables, got {n_vars}")
 
     if n_obs < 3 * n_vars + lags:
         raise ValueError(

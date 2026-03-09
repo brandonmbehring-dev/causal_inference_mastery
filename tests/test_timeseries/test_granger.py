@@ -50,9 +50,7 @@ class TestGrangerKnownAnswer:
 
     def test_bidirectional_detection(self, sample_bidirectional_causality):
         """Both directions should be detected in feedback system."""
-        result_xy, result_yx = bidirectional_granger(
-            sample_bidirectional_causality, lags=2
-        )
+        result_xy, result_yx = bidirectional_granger(sample_bidirectional_causality, lags=2)
 
         assert result_xy.granger_causes  # Use truthy check
         assert result_yx.granger_causes
@@ -324,7 +322,8 @@ class TestGrangerMonteCarlo:
 
         # Kolmogorov-Smirnov test for uniformity (lenient)
         from scipy import stats
-        ks_stat, ks_pval = stats.kstest(p_values, 'uniform')
+
+        ks_stat, ks_pval = stats.kstest(p_values, "uniform")
         # Don't require perfect uniformity, just reasonable
         assert ks_pval > 0.01 or p_values.std() > 0.2
 

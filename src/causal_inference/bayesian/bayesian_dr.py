@@ -212,8 +212,7 @@ def bayesian_dr_ate(
 
     if np.any(np.isinf(outcomes)) or np.any(np.isinf(treatment)) or np.any(np.isinf(covariates)):
         raise ValueError(
-            f"CRITICAL ERROR: Infinite values detected in input.\n"
-            f"Function: bayesian_dr_ate"
+            f"CRITICAL ERROR: Infinite values detected in input.\nFunction: bayesian_dr_ate"
         )
 
     unique_treatment = np.unique(treatment)
@@ -306,12 +305,8 @@ def bayesian_dr_ate(
     # Compute influence function residuals (outcome model contribution)
     propensity_mean_clipped = np.clip(propensity_mean, trim_threshold, 1 - trim_threshold)
 
-    treated_contrib = (
-        treatment / propensity_mean_clipped * (outcomes - mu1) + mu1
-    )
-    control_contrib = (
-        (1 - treatment) / (1 - propensity_mean_clipped) * (outcomes - mu0) + mu0
-    )
+    treated_contrib = treatment / propensity_mean_clipped * (outcomes - mu1) + mu1
+    control_contrib = (1 - treatment) / (1 - propensity_mean_clipped) * (outcomes - mu0) + mu0
 
     dr_point_estimate = np.mean(treated_contrib - control_contrib)
     influence_function = treated_contrib - control_contrib - dr_point_estimate

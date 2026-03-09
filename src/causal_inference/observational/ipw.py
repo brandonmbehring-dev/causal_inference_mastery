@@ -201,9 +201,7 @@ def ipw_ate_observational(
 
     if trim_at is not None:
         # Trim extreme propensities
-        trim_result = trim_propensity(
-            propensity, treatment, outcomes, covariates, trim_at=trim_at
-        )
+        trim_result = trim_propensity(propensity, treatment, outcomes, covariates, trim_at=trim_at)
 
         # Update arrays to trimmed versions
         propensity = trim_result["propensity"]
@@ -249,7 +247,7 @@ def ipw_ate_observational(
         # Warn user about clipping - silent failures are unacceptable
         warnings.warn(
             f"Propensity values clipped for numerical stability. "
-            f"{n_propensity_clipped} values outside ({epsilon}, {1-epsilon}) were clipped. "
+            f"{n_propensity_clipped} values outside ({epsilon}, {1 - epsilon}) were clipped. "
             f"This may indicate positivity violations.",
             UserWarning,
         )

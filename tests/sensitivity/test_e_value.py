@@ -293,9 +293,11 @@ class TestEValueIntegration:
         # Should have reasonable E-values
         assert result["e_value"] > 1.5
         assert result["e_value_ci"] > 1.0
-        assert "moderately robust" in result["interpretation"].lower() or \
-               "strongly robust" in result["interpretation"].lower() or \
-               "weakly robust" in result["interpretation"].lower()
+        assert (
+            "moderately robust" in result["interpretation"].lower()
+            or "strongly robust" in result["interpretation"].lower()
+            or "weakly robust" in result["interpretation"].lower()
+        )
 
     def test_non_significant_result(self):
         """Non-significant result (CI includes null)."""
@@ -304,8 +306,10 @@ class TestEValueIntegration:
 
         # E-value_CI should be 1.0 since CI includes null
         assert result["e_value_ci"] == 1.0
-        assert "includes the null" in result["interpretation"].lower() or \
-               "no confounding is needed" in result["interpretation"].lower()
+        assert (
+            "includes the null" in result["interpretation"].lower()
+            or "no confounding is needed" in result["interpretation"].lower()
+        )
 
     def test_clinical_trial_smd(self):
         """Clinical trial with standardized mean difference."""

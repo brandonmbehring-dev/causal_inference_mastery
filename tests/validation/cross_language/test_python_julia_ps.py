@@ -18,14 +18,14 @@ try:
         julia_wald_estimator,
         julia_cace_em,
     )
+
     JULIA_AVAILABLE = is_julia_available()
 except ImportError:
     JULIA_AVAILABLE = False
 
 
 pytestmark = pytest.mark.skipif(
-    not JULIA_AVAILABLE,
-    reason="Julia not available for cross-language tests"
+    not JULIA_AVAILABLE, reason="Julia not available for cross-language tests"
 )
 
 
@@ -129,9 +129,10 @@ class TestCACE2SLSParity:
 
         # Primary estimate parity
         assert_allclose(
-            py_result["cace"], jl_result["cace"],
+            py_result["cace"],
+            jl_result["cace"],
             rtol=0.05,
-            err_msg=f"CACE mismatch: Python={py_result['cace']:.4f}, Julia={jl_result['cace']:.4f}"
+            err_msg=f"CACE mismatch: Python={py_result['cace']:.4f}, Julia={jl_result['cace']:.4f}",
         )
 
     def test_se_parity(self):
@@ -152,9 +153,10 @@ class TestCACE2SLSParity:
 
         # SE parity (robust SE may differ slightly)
         assert_allclose(
-            py_result["se"], jl_result["se"],
+            py_result["se"],
+            jl_result["se"],
             rtol=0.10,
-            err_msg=f"SE mismatch: Python={py_result['se']:.4f}, Julia={jl_result['se']:.4f}"
+            err_msg=f"SE mismatch: Python={py_result['se']:.4f}, Julia={jl_result['se']:.4f}",
         )
 
     def test_ci_parity(self):
@@ -174,15 +176,11 @@ class TestCACE2SLSParity:
         )
 
         assert_allclose(
-            py_result["ci_lower"], jl_result["ci_lower"],
-            rtol=0.10,
-            err_msg=f"CI lower mismatch"
+            py_result["ci_lower"], jl_result["ci_lower"], rtol=0.10, err_msg=f"CI lower mismatch"
         )
 
         assert_allclose(
-            py_result["ci_upper"], jl_result["ci_upper"],
-            rtol=0.10,
-            err_msg=f"CI upper mismatch"
+            py_result["ci_upper"], jl_result["ci_upper"], rtol=0.10, err_msg=f"CI upper mismatch"
         )
 
     def test_first_stage_parity(self):
@@ -203,16 +201,18 @@ class TestCACE2SLSParity:
 
         # First-stage coefficient = complier proportion
         assert_allclose(
-            py_result["first_stage_coef"], jl_result["first_stage_coef"],
+            py_result["first_stage_coef"],
+            jl_result["first_stage_coef"],
             rtol=0.05,
-            err_msg=f"First-stage mismatch"
+            err_msg=f"First-stage mismatch",
         )
 
         # F-statistic
         assert_allclose(
-            py_result["first_stage_f"], jl_result["first_stage_f"],
+            py_result["first_stage_f"],
+            jl_result["first_stage_f"],
             rtol=0.10,
-            err_msg=f"First-stage F mismatch"
+            err_msg=f"First-stage F mismatch",
         )
 
     def test_strata_proportions_parity(self):
@@ -236,21 +236,21 @@ class TestCACE2SLSParity:
             py_result["strata_proportions"]["compliers"],
             jl_result["strata_proportions"]["compliers"],
             rtol=0.05,
-            err_msg="Complier proportion mismatch"
+            err_msg="Complier proportion mismatch",
         )
 
         assert_allclose(
             py_result["strata_proportions"]["always_takers"],
             jl_result["strata_proportions"]["always_takers"],
             rtol=0.10,
-            err_msg="Always-taker proportion mismatch"
+            err_msg="Always-taker proportion mismatch",
         )
 
         assert_allclose(
             py_result["strata_proportions"]["never_takers"],
             jl_result["strata_proportions"]["never_takers"],
             rtol=0.10,
-            err_msg="Never-taker proportion mismatch"
+            err_msg="Never-taker proportion mismatch",
         )
 
 
@@ -284,9 +284,10 @@ class TestWaldEstimatorParity:
 
         # Primary estimate parity
         assert_allclose(
-            py_result["cace"], jl_result["cace"],
+            py_result["cace"],
+            jl_result["cace"],
             rtol=0.05,
-            err_msg=f"Wald CACE mismatch: Python={py_result['cace']:.4f}, Julia={jl_result['cace']:.4f}"
+            err_msg=f"Wald CACE mismatch: Python={py_result['cace']:.4f}, Julia={jl_result['cace']:.4f}",
         )
 
     def test_wald_equals_2sls(self):
@@ -319,17 +320,11 @@ class TestWaldEstimatorParity:
 
         # Python: Wald = 2SLS
         assert_allclose(
-            py_2sls["cace"], py_wald["cace"],
-            rtol=1e-10,
-            err_msg="Python: 2SLS != Wald"
+            py_2sls["cace"], py_wald["cace"], rtol=1e-10, err_msg="Python: 2SLS != Wald"
         )
 
         # Julia: Wald = 2SLS
-        assert_allclose(
-            jl_2sls["cace"], jl_wald["cace"],
-            rtol=1e-10,
-            err_msg="Julia: 2SLS != Wald"
-        )
+        assert_allclose(jl_2sls["cace"], jl_wald["cace"], rtol=1e-10, err_msg="Julia: 2SLS != Wald")
 
     def test_reduced_form_identity(self):
         """Reduced form = CACE * first-stage in both languages."""
@@ -350,17 +345,13 @@ class TestWaldEstimatorParity:
         # Python identity
         py_rf_computed = py_result["cace"] * py_result["first_stage_coef"]
         assert_allclose(
-            py_result["reduced_form"], py_rf_computed,
-            rtol=1e-10,
-            err_msg="Python: RF != CACE * FS"
+            py_result["reduced_form"], py_rf_computed, rtol=1e-10, err_msg="Python: RF != CACE * FS"
         )
 
         # Julia identity
         jl_rf_computed = jl_result["cace"] * jl_result["first_stage_coef"]
         assert_allclose(
-            jl_result["reduced_form"], jl_rf_computed,
-            rtol=1e-10,
-            err_msg="Julia: RF != CACE * FS"
+            jl_result["reduced_form"], jl_rf_computed, rtol=1e-10, err_msg="Julia: RF != CACE * FS"
         )
 
 
@@ -390,9 +381,7 @@ class TestCrossLanguageRobustness:
 
         # Tighter tolerance with large samples
         assert_allclose(
-            py_result["cace"], jl_result["cace"],
-            rtol=0.02,
-            err_msg="Large sample CACE mismatch"
+            py_result["cace"], jl_result["cace"], rtol=0.02, err_msg="Large sample CACE mismatch"
         )
 
     def test_varying_complier_proportions(self):
@@ -420,9 +409,10 @@ class TestCrossLanguageRobustness:
             )
 
             assert_allclose(
-                py_result["cace"], jl_result["cace"],
+                py_result["cace"],
+                jl_result["cace"],
                 rtol=0.10,
-                err_msg=f"CACE mismatch at pi_c={pi_c}"
+                err_msg=f"CACE mismatch at pi_c={pi_c}",
             )
 
     def test_varying_treatment_effects(self):
@@ -447,9 +437,10 @@ class TestCrossLanguageRobustness:
             )
 
             assert_allclose(
-                py_result["cace"], jl_result["cace"],
+                py_result["cace"],
+                jl_result["cace"],
                 rtol=0.10,
-                err_msg=f"CACE mismatch at true_cace={true_cace}"
+                err_msg=f"CACE mismatch at true_cace={true_cace}",
             )
 
 
@@ -492,9 +483,10 @@ class TestMonteCarloParity:
 
         # Both languages should have similar bias
         assert_allclose(
-            py_bias, jl_bias,
+            py_bias,
+            jl_bias,
             atol=0.05,
-            err_msg=f"Bias mismatch: Python={py_bias:.4f}, Julia={jl_bias:.4f}"
+            err_msg=f"Bias mismatch: Python={py_bias:.4f}, Julia={jl_bias:.4f}",
         )
 
         # Both should be approximately unbiased
@@ -532,9 +524,10 @@ class TestCACEEMParity:
 
         # Primary estimate parity (wider tolerance for EM)
         assert_allclose(
-            py_result["cace"], jl_result["cace"],
+            py_result["cace"],
+            jl_result["cace"],
             rtol=0.15,
-            err_msg=f"EM CACE mismatch: Python={py_result['cace']:.4f}, Julia={jl_result['cace']:.4f}"
+            err_msg=f"EM CACE mismatch: Python={py_result['cace']:.4f}, Julia={jl_result['cace']:.4f}",
         )
 
     def test_strata_parity(self):
@@ -558,7 +551,7 @@ class TestCACEEMParity:
             py_result["strata_proportions"]["compliers"],
             jl_result["strata_proportions"]["compliers"],
             rtol=0.15,
-            err_msg="EM complier proportion mismatch"
+            err_msg="EM complier proportion mismatch",
         )
 
     def test_method_field(self):
@@ -610,16 +603,18 @@ class TestCACEEMParity:
 
         # Python: EM close to 2SLS
         assert_allclose(
-            py_em["cace"], py_2sls["cace"],
+            py_em["cace"],
+            py_2sls["cace"],
             rtol=0.20,
-            err_msg=f"Python: EM ({py_em['cace']:.4f}) too far from 2SLS ({py_2sls['cace']:.4f})"
+            err_msg=f"Python: EM ({py_em['cace']:.4f}) too far from 2SLS ({py_2sls['cace']:.4f})",
         )
 
         # Julia: EM close to 2SLS
         assert_allclose(
-            jl_em["cace"], jl_2sls["cace"],
+            jl_em["cace"],
+            jl_2sls["cace"],
             rtol=0.20,
-            err_msg=f"Julia: EM ({jl_em['cace']:.4f}) too far from 2SLS ({jl_2sls['cace']:.4f})"
+            err_msg=f"Julia: EM ({jl_em['cace']:.4f}) too far from 2SLS ({jl_2sls['cace']:.4f})",
         )
 
 
@@ -630,6 +625,7 @@ class TestCACEEMParity:
 # Check if PyMC is available for Bayesian tests
 try:
     import pymc as pm
+
     PYMC_AVAILABLE = True
 except ImportError:
     PYMC_AVAILABLE = False
@@ -649,7 +645,9 @@ class TestCACEBayesianParity:
         data = generate_ps_dgp(n=300, true_cace=2.0, random_seed=4001)
 
         # Python
-        from src.causal_inference.principal_stratification.bayesian import cace_bayesian as py_cace_bayesian
+        from src.causal_inference.principal_stratification.bayesian import (
+            cace_bayesian as py_cace_bayesian,
+        )
 
         py_result = py_cace_bayesian(
             outcome=data["outcome"],
@@ -814,26 +812,24 @@ class TestBoundsParity:
         """ps_bounds_monotonicity should match between languages."""
         data = generate_bounds_dgp(n=500, seed=5001)
 
-        py_result = ps_bounds_monotonicity(
-            data["Y"], data["D"], data["Z"],
-            direct_effect_bound=0.5
-        )
+        py_result = ps_bounds_monotonicity(data["Y"], data["D"], data["Z"], direct_effect_bound=0.5)
 
         jl_result = julia_ps_bounds_monotonicity(
-            data["Y"], data["D"], data["Z"],
-            direct_effect_bound=0.5
+            data["Y"], data["D"], data["Z"], direct_effect_bound=0.5
         )
 
         assert_allclose(
-            py_result["lower_bound"], jl_result["lower_bound"],
+            py_result["lower_bound"],
+            jl_result["lower_bound"],
             rtol=0.05,
-            err_msg="Lower bound mismatch"
+            err_msg="Lower bound mismatch",
         )
 
         assert_allclose(
-            py_result["upper_bound"], jl_result["upper_bound"],
+            py_result["upper_bound"],
+            jl_result["upper_bound"],
             rtol=0.05,
-            err_msg="Upper bound mismatch"
+            err_msg="Upper bound mismatch",
         )
 
     def test_no_assumption_bounds_parity(self):
@@ -844,15 +840,17 @@ class TestBoundsParity:
         jl_result = julia_ps_bounds_no_assumption(data["Y"], data["D"], data["Z"])
 
         assert_allclose(
-            py_result["lower_bound"], jl_result["lower_bound"],
+            py_result["lower_bound"],
+            jl_result["lower_bound"],
             rtol=0.10,
-            err_msg="Manski lower bound mismatch"
+            err_msg="Manski lower bound mismatch",
         )
 
         assert_allclose(
-            py_result["upper_bound"], jl_result["upper_bound"],
+            py_result["upper_bound"],
+            jl_result["upper_bound"],
             rtol=0.10,
-            err_msg="Manski upper bound mismatch"
+            err_msg="Manski upper bound mismatch",
         )
 
     def test_identified_flag_parity(self):
@@ -860,13 +858,14 @@ class TestBoundsParity:
         data = generate_bounds_dgp(n=500, seed=5003)
 
         py_result = ps_bounds_monotonicity(
-            data["Y"], data["D"], data["Z"],
-            direct_effect_bound=0.0  # Point identified
+            data["Y"],
+            data["D"],
+            data["Z"],
+            direct_effect_bound=0.0,  # Point identified
         )
 
         jl_result = julia_ps_bounds_monotonicity(
-            data["Y"], data["D"], data["Z"],
-            direct_effect_bound=0.0
+            data["Y"], data["D"], data["Z"], direct_effect_bound=0.0
         )
 
         assert py_result["identified"] == jl_result["identified"]
@@ -879,26 +878,22 @@ class TestSACEParity:
         """sace_bounds should match between languages."""
         data = generate_sace_dgp(n=500, seed=6001)
 
-        py_result = sace_bounds(
-            data["Y"], data["D"], data["S"],
-            monotonicity="selection"
-        )
+        py_result = sace_bounds(data["Y"], data["D"], data["S"], monotonicity="selection")
 
-        jl_result = julia_sace_bounds(
-            data["Y"], data["D"], data["S"],
-            monotonicity="selection"
+        jl_result = julia_sace_bounds(data["Y"], data["D"], data["S"], monotonicity="selection")
+
+        assert_allclose(
+            py_result["lower_bound"],
+            jl_result["lower_bound"],
+            rtol=0.10,
+            err_msg="SACE lower bound mismatch",
         )
 
         assert_allclose(
-            py_result["lower_bound"], jl_result["lower_bound"],
+            py_result["upper_bound"],
+            jl_result["upper_bound"],
             rtol=0.10,
-            err_msg="SACE lower bound mismatch"
-        )
-
-        assert_allclose(
-            py_result["upper_bound"], jl_result["upper_bound"],
-            rtol=0.10,
-            err_msg="SACE upper bound mismatch"
+            err_msg="SACE upper bound mismatch",
         )
 
     def test_survival_proportions_parity(self):
@@ -912,14 +907,14 @@ class TestSACEParity:
             py_result["proportion_survivors_treat"],
             jl_result["proportion_survivors_treat"],
             rtol=0.05,
-            err_msg="Treated survival proportion mismatch"
+            err_msg="Treated survival proportion mismatch",
         )
 
         assert_allclose(
             py_result["proportion_survivors_control"],
             jl_result["proportion_survivors_control"],
             rtol=0.05,
-            err_msg="Control survival proportion mismatch"
+            err_msg="Control survival proportion mismatch",
         )
 
     def test_sample_size_parity(self):

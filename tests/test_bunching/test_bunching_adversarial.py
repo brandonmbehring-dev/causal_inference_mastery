@@ -416,10 +416,12 @@ class TestNumericalStability:
         """Some bins have zero counts."""
         rng = np.random.default_rng(42)
         # Sparse data
-        data = np.concatenate([
-            rng.normal(20, 2, size=100),
-            rng.normal(80, 2, size=100),
-        ])
+        data = np.concatenate(
+            [
+                rng.normal(20, 2, size=100),
+                rng.normal(80, 2, size=100),
+            ]
+        )
 
         result = estimate_counterfactual(
             data=data,

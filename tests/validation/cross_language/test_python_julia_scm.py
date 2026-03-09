@@ -17,14 +17,14 @@ try:
         julia_synthetic_control,
         julia_augmented_scm,
     )
+
     JULIA_AVAILABLE = is_julia_available()
 except ImportError:
     JULIA_AVAILABLE = False
 
 
 pytestmark = pytest.mark.skipif(
-    not JULIA_AVAILABLE,
-    reason="Julia not available for cross-language tests"
+    not JULIA_AVAILABLE, reason="Julia not available for cross-language tests"
 )
 
 
@@ -59,7 +59,7 @@ def generate_scm_data(
     # Treated unit = weighted average of controls pre-treatment + effect post-treatment
     weights = np.random.dirichlet(np.ones(n_control))
     treated_outcome = control_outcomes.T @ weights  # (n_periods,)
-    treated_outcome[treatment_period - 1:] += true_effect  # Julia 1-indexed
+    treated_outcome[treatment_period - 1 :] += true_effect  # Julia 1-indexed
 
     # Combine into panel
     outcomes = np.vstack([treated_outcome.reshape(1, -1), control_outcomes])
@@ -97,9 +97,10 @@ class TestSyntheticControlParity:
         )
 
         assert_allclose(
-            py_result["estimate"], jl_result["estimate"],
+            py_result["estimate"],
+            jl_result["estimate"],
             rtol=0.10,
-            err_msg=f"ATE mismatch: Python={py_result['estimate']:.4f}, Julia={jl_result['estimate']:.4f}"
+            err_msg=f"ATE mismatch: Python={py_result['estimate']:.4f}, Julia={jl_result['estimate']:.4f}",
         )
 
     def test_weights_correlation(self):
@@ -146,10 +147,11 @@ class TestSyntheticControlParity:
         # Note: When DGP creates perfect fit, Python may find exact weights (RMSE≈0)
         # while Julia may settle slightly differently. Use atol for small values.
         assert_allclose(
-            py_result["pre_rmse"], jl_result["pre_rmse"],
+            py_result["pre_rmse"],
+            jl_result["pre_rmse"],
             rtol=0.20,
             atol=0.01,  # Allow small absolute difference when both are near zero
-            err_msg=f"Pre-RMSE mismatch: Python={py_result['pre_rmse']:.4f}, Julia={jl_result['pre_rmse']:.4f}"
+            err_msg=f"Pre-RMSE mismatch: Python={py_result['pre_rmse']:.4f}, Julia={jl_result['pre_rmse']:.4f}",
         )
 
     def test_sample_sizes(self):
@@ -231,9 +233,10 @@ class TestAugmentedSCMParity:
         )
 
         assert_allclose(
-            py_result["estimate"], jl_result["estimate"],
+            py_result["estimate"],
+            jl_result["estimate"],
             rtol=0.15,  # Slightly higher tolerance due to ridge CV
-            err_msg=f"ASCM estimate mismatch: Python={py_result['estimate']:.4f}, Julia={jl_result['estimate']:.4f}"
+            err_msg=f"ASCM estimate mismatch: Python={py_result['estimate']:.4f}, Julia={jl_result['estimate']:.4f}",
         )
 
     def test_weights_sum_to_one(self):
@@ -259,9 +262,7 @@ class TestAugmentedSCMParity:
 
     def test_jackknife_se(self):
         """Jackknife SE should be similar."""
-        outcomes, treatment, treatment_period, _ = generate_scm_data(
-            n_control=8, random_seed=303
-        )
+        outcomes, treatment, treatment_period, _ = generate_scm_data(n_control=8, random_seed=303)
 
         py_result = augmented_synthetic_control(
             outcomes=outcomes,
@@ -328,15 +329,15 @@ class TestSCMIntegration:
 
         # Both should have similar adjustment direction (can be small noise)
         if abs(py_diff) > 0.5 and abs(jl_diff) > 0.5:
-            assert np.sign(py_diff) == np.sign(jl_diff), \
+            assert np.sign(py_diff) == np.sign(jl_diff), (
                 f"ASCM adjustment direction mismatch: Python={py_diff:.3f}, Julia={jl_diff:.3f}"
+            )
 
     def test_known_effect_recovery(self):
         """Both implementations should recover known effect reasonably well."""
         true_effect = 5.0
         outcomes, treatment, treatment_period, _ = generate_scm_data(
-            true_effect=true_effect,
-            random_seed=505
+            true_effect=true_effect, random_seed=505
         )
 
         py_result = synthetic_control(

@@ -99,8 +99,7 @@ class TestCovariateBalance:
         synthetic_cov = np.array([1.0, 2.0])
 
         result = check_covariate_balance(
-            treated_cov, synthetic_cov,
-            covariate_names=["GDP", "Population"]
+            treated_cov, synthetic_cov, covariate_names=["GDP", "Population"]
         )
 
         assert "GDP" in result
@@ -141,10 +140,7 @@ class TestWeightProperties:
         """Should list top donors correctly."""
         weights = np.array([0.5, 0.3, 0.1, 0.1, 0.0])
 
-        result = check_weight_properties(
-            weights,
-            control_labels=["A", "B", "C", "D", "E"]
-        )
+        result = check_weight_properties(weights, control_labels=["A", "B", "C", "D", "E"])
 
         # Top donor should be "A" with 0.5
         assert result["top_donors"][0] == ("A", 0.5)

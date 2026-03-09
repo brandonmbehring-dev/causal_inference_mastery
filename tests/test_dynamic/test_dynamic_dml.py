@@ -137,7 +137,9 @@ class TestAdversarial:
         assert result.theta_se[0] > 0, "HAC SE should be positive"
 
         # Bias check
-        assert abs(result.theta[0] - 2.0) < 0.5, f"Bias with autocorrelation: {result.theta[0] - 2.0:.3f}"
+        assert abs(result.theta[0] - 2.0) < 0.5, (
+            f"Bias with autocorrelation: {result.theta[0] - 2.0:.3f}"
+        )
 
     def test_confounded_treatment(self, adversarial_confounded_dgp):
         """Test with strong confounding (DML should reduce bias)."""
@@ -247,9 +249,7 @@ class TestMonteCarlo:
                 seed=seed,
             )
 
-            result = dynamic_dml(
-                Y, D, X, max_lag=0, n_folds=3, nuisance_model="ridge", alpha=0.05
-            )
+            result = dynamic_dml(Y, D, X, max_lag=0, n_folds=3, nuisance_model="ridge", alpha=0.05)
 
             if result.ci_lower[0] < true_effect < result.ci_upper[0]:
                 coverage_count += 1

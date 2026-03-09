@@ -183,9 +183,7 @@ class SharpRKD:
         self.bandwidth_: Optional[float] = None
         self.result_: Optional[SharpRKDResult] = None
 
-    def _compute_kernel_weights(
-        self, x: np.ndarray, bandwidth: float
-    ) -> np.ndarray:
+    def _compute_kernel_weights(self, x: np.ndarray, bandwidth: float) -> np.ndarray:
         """Compute kernel weights based on distance from cutoff."""
         u = (x - self.cutoff) / bandwidth
 
@@ -257,9 +255,7 @@ class SharpRKD:
 
         return coef, vcov, residual_var
 
-    def _estimate_kink_slopes(
-        self, d: np.ndarray, x: np.ndarray
-    ) -> tuple[float, float]:
+    def _estimate_kink_slopes(self, d: np.ndarray, x: np.ndarray) -> tuple[float, float]:
         """
         Estimate the slopes of D on each side of the cutoff.
 
@@ -294,9 +290,7 @@ class SharpRKD:
 
         return slope_left, slope_right
 
-    def _select_bandwidth(
-        self, y: np.ndarray, x: np.ndarray
-    ) -> float:
+    def _select_bandwidth(self, y: np.ndarray, x: np.ndarray) -> float:
         """
         Select optimal bandwidth for RKD.
 
@@ -348,9 +342,7 @@ class SharpRKD:
         d = np.asarray(d).flatten()
 
         if len(y) != len(x) or len(y) != len(d):
-            raise ValueError(
-                f"Input length mismatch: y({len(y)}), x({len(x)}), d({len(d)})"
-            )
+            raise ValueError(f"Input length mismatch: y({len(y)}), x({len(x)}), d({len(d)})")
 
         if len(y) < 10:
             raise ValueError(f"Insufficient observations: {len(y)} < 10")

@@ -33,6 +33,7 @@ def _check_torch_available() -> bool:
     """Check if PyTorch is available."""
     try:
         import torch
+
         return True
     except ImportError:
         return False
@@ -70,8 +71,9 @@ if _check_torch_available():
             self.fc2 = nn.Linear(hidden_dim, hidden_dim)
             self.fc3 = nn.Linear(hidden_dim, 1)
 
-        def forward(self, x: torch.Tensor, t: torch.Tensor, y: torch.Tensor,
-                    noise: torch.Tensor) -> torch.Tensor:
+        def forward(
+            self, x: torch.Tensor, t: torch.Tensor, y: torch.Tensor, noise: torch.Tensor
+        ) -> torch.Tensor:
             """Generate counterfactual outcome.
 
             Parameters
@@ -115,8 +117,7 @@ if _check_torch_available():
             self.fc2 = nn.Linear(hidden_dim, hidden_dim)
             self.fc3 = nn.Linear(hidden_dim, 1)
 
-        def forward(self, x: torch.Tensor, y0: torch.Tensor,
-                    y1: torch.Tensor) -> torch.Tensor:
+        def forward(self, x: torch.Tensor, y0: torch.Tensor, y1: torch.Tensor) -> torch.Tensor:
             """Discriminate real vs generated outcomes.
 
             Parameters
@@ -158,8 +159,9 @@ if _check_torch_available():
             self.fc2 = nn.Linear(hidden_dim, hidden_dim)
             self.fc3 = nn.Linear(hidden_dim, 1)
 
-        def forward(self, x: torch.Tensor, y0_hat: torch.Tensor,
-                    y1_hat: torch.Tensor) -> torch.Tensor:
+        def forward(
+            self, x: torch.Tensor, y0_hat: torch.Tensor, y1_hat: torch.Tensor
+        ) -> torch.Tensor:
             """Generate ITE estimate.
 
             Parameters
@@ -201,8 +203,9 @@ if _check_torch_available():
             self.fc2 = nn.Linear(hidden_dim, hidden_dim)
             self.fc3 = nn.Linear(hidden_dim, 1)
 
-        def forward(self, x: torch.Tensor, y0_hat: torch.Tensor,
-                    y1_hat: torch.Tensor, ite: torch.Tensor) -> torch.Tensor:
+        def forward(
+            self, x: torch.Tensor, y0_hat: torch.Tensor, y1_hat: torch.Tensor, ite: torch.Tensor
+        ) -> torch.Tensor:
             """Discriminate ITE quality.
 
             Parameters
@@ -304,10 +307,7 @@ if _check_torch_available():
                 Fitted model.
             """
             if not _check_torch_available():
-                raise ImportError(
-                    "PyTorch is required for GANITE. "
-                    "Install with: pip install torch"
-                )
+                raise ImportError("PyTorch is required for GANITE. Install with: pip install torch")
 
             # Set random seed
             torch.manual_seed(self.random_state)
@@ -432,8 +432,10 @@ if _check_torch_available():
                         ite_pred_d = self.ite_generator(batch_x, y0_hat, y1_hat).detach()
                         d_fake = self.ite_discriminator(batch_x, y0_hat, y1_hat, ite_pred_d)
 
-                        d_ite_loss = (F.binary_cross_entropy(d_real, torch.ones_like(d_real)) +
-                                      F.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))) / 2
+                        d_ite_loss = (
+                            F.binary_cross_entropy(d_real, torch.ones_like(d_real))
+                            + F.binary_cross_entropy(d_fake, torch.zeros_like(d_fake))
+                        ) / 2
                         d_ite_loss.backward()
                         opt_ite_d.step()
 
@@ -670,6 +672,7 @@ if _check_torch_available():
 
         # Simple propensity estimate (logistic on X)
         from sklearn.linear_model import LogisticRegression
+
         prop_model = LogisticRegression(random_state=random_state, max_iter=1000)
         prop_model.fit(covariates, treatment)
         propensity = prop_model.predict_proba(covariates)[:, 1]

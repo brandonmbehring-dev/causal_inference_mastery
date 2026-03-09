@@ -193,9 +193,7 @@ class TestSLearnerVsEconML:
 
         # S-learner with linear model may not capture heterogeneity well
         # Lower threshold since both implementations use same algorithm
-        assert correlation > 0.30, (
-            f"S-learner CATE correlation too low: r={correlation:.3f}"
-        )
+        assert correlation > 0.30, f"S-learner CATE correlation too low: r={correlation:.3f}"
 
 
 @requires_meta_learners
@@ -230,7 +228,7 @@ class TestTLearnerVsEconML:
             our_result["ate"],
             econml_ate,
             rtol=0.05,
-            err_msg=f"T-learner ATE mismatch: ours={our_result["ate"]:.4f}, econml={econml_ate:.4f}",
+            err_msg=f"T-learner ATE mismatch: ours={our_result['ate']:.4f}, econml={econml_ate:.4f}",
         )
 
     def test_cate_correlation(self):
@@ -256,9 +254,7 @@ class TestTLearnerVsEconML:
 
         correlation, _ = stats.pearsonr(our_result["cate"], econml_cate)
 
-        assert correlation > 0.95, (
-            f"T-learner CATE correlation too low: r={correlation:.3f}"
-        )
+        assert correlation > 0.95, f"T-learner CATE correlation too low: r={correlation:.3f}"
 
 
 @requires_meta_learners
@@ -298,7 +294,7 @@ class TestXLearnerVsEconML:
             our_result["ate"],
             econml_ate,
             rtol=0.10,
-            err_msg=f"X-learner ATE mismatch: ours={our_result["ate"]:.4f}, econml={econml_ate:.4f}",
+            err_msg=f"X-learner ATE mismatch: ours={our_result['ate']:.4f}, econml={econml_ate:.4f}",
         )
 
     def test_cate_correlation(self):
@@ -329,9 +325,7 @@ class TestXLearnerVsEconML:
         correlation, _ = stats.pearsonr(our_result["cate"], econml_cate)
 
         # Slightly looser for X-learner (more complex algorithm)
-        assert correlation > 0.85, (
-            f"X-learner CATE correlation too low: r={correlation:.3f}"
-        )
+        assert correlation > 0.85, f"X-learner CATE correlation too low: r={correlation:.3f}"
 
 
 @requires_meta_learners
@@ -372,7 +366,7 @@ class TestRLearnerVsEconML:
             our_result["ate"],
             econml_ate,
             rtol=0.15,
-            err_msg=f"R-learner ATE mismatch: ours={our_result["ate"]:.4f}, econml={econml_ate:.4f}",
+            err_msg=f"R-learner ATE mismatch: ours={our_result['ate']:.4f}, econml={econml_ate:.4f}",
         )
 
     def test_cate_correlation(self):
@@ -404,9 +398,7 @@ class TestRLearnerVsEconML:
         correlation, _ = stats.pearsonr(our_result["cate"], econml_cate)
 
         # R-learner implementations can differ more
-        assert correlation > 0.80, (
-            f"R-learner CATE correlation too low: r={correlation:.3f}"
-        )
+        assert correlation > 0.80, f"R-learner CATE correlation too low: r={correlation:.3f}"
 
 
 @requires_meta_learners

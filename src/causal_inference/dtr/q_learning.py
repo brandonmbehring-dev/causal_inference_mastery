@@ -102,8 +102,7 @@ def q_learning(
         )
     if data.n_obs < 50:
         warnings.warn(
-            f"Small sample size (n={data.n_obs}). "
-            "Q-learning estimates may be unstable.",
+            f"Small sample size (n={data.n_obs}). Q-learning estimates may be unstable.",
             UserWarning,
         )
 
@@ -178,8 +177,9 @@ def q_learning(
     # This is the mean of V_1(H_1) under the first-stage optimal decisions
     H_1 = data.get_history(1)
     H_1_aug = np.column_stack([np.ones(n), H_1])
-    value_estimate = np.mean(H_1_aug @ baseline_coefficients[0] +
-                            np.maximum(0, H_1_aug @ blip_coefficients[0]))
+    value_estimate = np.mean(
+        H_1_aug @ baseline_coefficients[0] + np.maximum(0, H_1_aug @ blip_coefficients[0])
+    )
 
     # Compute value SE via bootstrap or influence function
     if se_method == "bootstrap":
@@ -308,9 +308,7 @@ def _fit_stage_q_function(
 
     if model == "ols":
         # OLS: solve (X'X)^{-1} X'Y
-        coefficients, residuals, rank, s = np.linalg.lstsq(
-            design, pseudo_outcome, rcond=None
-        )
+        coefficients, residuals, rank, s = np.linalg.lstsq(design, pseudo_outcome, rcond=None)
     else:
         raise ValueError(f"Unknown model: {model}")
 

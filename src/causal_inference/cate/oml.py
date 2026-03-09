@@ -358,9 +358,7 @@ def irm_dml(
     double_ml : PLR model (simpler, requires outcome model correct).
     """
     # Validate inputs
-    outcomes, treatment, covariates = validate_cate_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = validate_cate_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 
@@ -384,6 +382,7 @@ def irm_dml(
 
     if n_folds > n // 10:
         import warnings
+
         warnings.warn(
             f"n_folds={n_folds} results in small fold sizes ({n // n_folds}). "
             f"Consider using fewer folds for n={n} observations.",
@@ -450,7 +449,9 @@ def irm_dml(
         direct = np.mean(treatment * (outcomes - g0_hat)) / p_treated
 
         # Add IPW adjustment
-        ipw_adjust = np.mean(m_hat * (1 - treatment) * (outcomes - g0_hat) / (1 - m_hat)) / p_treated
+        ipw_adjust = (
+            np.mean(m_hat * (1 - treatment) * (outcomes - g0_hat) / (1 - m_hat)) / p_treated
+        )
 
         theta = direct - ipw_adjust
 

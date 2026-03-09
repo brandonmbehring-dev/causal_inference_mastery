@@ -303,7 +303,9 @@ class TestASCMBiasReduction:
 
         # Document the biases for this DGP
         print(f"SCM bias: {bias_scm:.4f}, ASCM bias: {bias_ascm:.4f}")
-        print(f"Bias reduction: {bias_scm - bias_ascm:.4f} ({100*(bias_scm - bias_ascm)/bias_scm:.1f}%)")
+        print(
+            f"Bias reduction: {bias_scm - bias_ascm:.4f} ({100 * (bias_scm - bias_ascm) / bias_scm:.1f}%)"
+        )
 
         # ASCM should substantially reduce bias compared to SCM
         # With poor fit, SCM can have large bias (treated outside convex hull)
@@ -313,9 +315,7 @@ class TestASCMBiasReduction:
         )
 
         # ASCM should achieve reasonable bias (< 1.0)
-        assert bias_ascm < 1.2, (
-            f"ASCM bias {bias_ascm:.4f} exceeds 1.2 with poor fit."
-        )
+        assert bias_ascm < 1.2, f"ASCM bias {bias_ascm:.4f} exceeds 1.2 with poor fit."
 
     @pytest.mark.slow
     @pytest.mark.monte_carlo
@@ -419,15 +419,12 @@ class TestSCMCoverage:
             ci_lowers.append(result["ci_lower"])
             ci_uppers.append(result["ci_upper"])
 
-        coverage = np.mean(
-            (np.array(ci_lowers) <= true_att) & (true_att <= np.array(ci_uppers))
-        )
+        coverage = np.mean((np.array(ci_lowers) <= true_att) & (true_att <= np.array(ci_uppers)))
 
         # Placebo inference tends to be conservative (wide CIs)
         # Coverage >= 88% is acceptable; coverage > 99% means CIs are very wide
         assert coverage >= 0.88, (
-            f"SCM coverage {coverage:.2%} below 88%. "
-            f"Placebo inference may be underconservative."
+            f"SCM coverage {coverage:.2%} below 88%. Placebo inference may be underconservative."
         )
         # Document if coverage is very high (conservative)
         if coverage > 0.99:
@@ -469,14 +466,10 @@ class TestSCMCoverage:
             ci_lowers.append(result["ci_lower"])
             ci_uppers.append(result["ci_upper"])
 
-        coverage = np.mean(
-            (np.array(ci_lowers) <= true_att) & (true_att <= np.array(ci_uppers))
-        )
+        coverage = np.mean((np.array(ci_lowers) <= true_att) & (true_att <= np.array(ci_uppers)))
 
         # Jackknife SE can be conservative (high coverage is acceptable)
-        assert coverage >= 0.85, (
-            f"ASCM jackknife coverage {coverage:.2%} below 85%."
-        )
+        assert coverage >= 0.85, f"ASCM jackknife coverage {coverage:.2%} below 85%."
         if coverage > 0.99:
             print(f"Note: ASCM coverage {coverage:.2%} is very high (jackknife is conservative)")
 
@@ -687,16 +680,10 @@ class TestSCMDonorPoolSize:
             ci_uppers.append(result["ci_upper"])
 
         bias = abs(np.mean(estimates) - true_att)
-        coverage = np.mean(
-            (np.array(ci_lowers) <= true_att) & (true_att <= np.array(ci_uppers))
-        )
+        coverage = np.mean((np.array(ci_lowers) <= true_att) & (true_att <= np.array(ci_uppers)))
 
-        assert bias < 0.25, (
-            f"SCM bias {bias:.4f} exceeds 0.25 with few controls."
-        )
-        assert coverage > 0.80, (
-            f"SCM coverage {coverage:.2%} below 80% with few controls."
-        )
+        assert bias < 0.25, f"SCM bias {bias:.4f} exceeds 0.25 with few controls."
+        assert coverage > 0.80, f"SCM coverage {coverage:.2%} below 80% with few controls."
 
     @pytest.mark.slow
     @pytest.mark.monte_carlo

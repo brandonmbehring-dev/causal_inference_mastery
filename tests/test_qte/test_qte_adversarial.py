@@ -111,10 +111,12 @@ class TestNumericalStability:
         """Test when all treated outcomes are identical."""
         n = 100
         treatment = np.array([1] * 50 + [0] * 50, dtype=float)
-        outcome = np.concatenate([
-            np.ones(50) * 5.0,  # All treated have same outcome
-            np.random.normal(3, 1, 50)  # Control varies
-        ])
+        outcome = np.concatenate(
+            [
+                np.ones(50) * 5.0,  # All treated have same outcome
+                np.random.normal(3, 1, 50),  # Control varies
+            ]
+        )
 
         result = unconditional_qte(
             outcome, treatment, quantile=0.5, n_bootstrap=300, random_state=42
@@ -134,7 +136,7 @@ class TestNumericalStability:
         outcome = np.where(
             treatment == 1,
             np.random.normal(5, 10, n),  # High variance
-            np.random.normal(3, 0.1, n)  # Low variance
+            np.random.normal(3, 0.1, n),  # Low variance
         )
 
         result = unconditional_qte(
@@ -164,10 +166,12 @@ class TestTiedValues:
         """Test when all values in one group are the same."""
         n = 50
         treatment = np.array([1] * 25 + [0] * 25, dtype=float)
-        outcome = np.concatenate([
-            np.ones(25) * 10,  # All treated = 10
-            np.random.normal(5, 1, 25)  # Control varies
-        ])
+        outcome = np.concatenate(
+            [
+                np.ones(25) * 10,  # All treated = 10
+                np.random.normal(5, 1, 25),  # Control varies
+            ]
+        )
 
         result = unconditional_qte(
             outcome, treatment, quantile=0.5, n_bootstrap=300, random_state=42
@@ -205,9 +209,7 @@ class TestRIFEdgeCases:
         outcome = np.ones(n) + np.random.normal(0, 0.001, n)
         outcome[treatment == 1] += 0.5
 
-        result = rif_qte(
-            outcome, treatment, quantile=0.5, n_bootstrap=200, random_state=42
-        )
+        result = rif_qte(outcome, treatment, quantile=0.5, n_bootstrap=200, random_state=42)
 
         assert np.isfinite(result["tau_q"])
 
@@ -236,8 +238,27 @@ class TestBandEdgeCases:
         treatment = np.random.binomial(1, 0.5, n).astype(float)
         outcome = np.random.normal(0, 1, n) + 2.0 * treatment
 
-        quantiles = [0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45,
-                     0.5, 0.55, 0.6, 0.65, 0.7, 0.75, 0.8, 0.85, 0.9, 0.95]
+        quantiles = [
+            0.05,
+            0.1,
+            0.15,
+            0.2,
+            0.25,
+            0.3,
+            0.35,
+            0.4,
+            0.45,
+            0.5,
+            0.55,
+            0.6,
+            0.65,
+            0.7,
+            0.75,
+            0.8,
+            0.85,
+            0.9,
+            0.95,
+        ]
 
         result = unconditional_qte_band(
             outcome, treatment, quantiles=quantiles, n_bootstrap=200, random_state=42
@@ -259,9 +280,7 @@ class TestConditionalQTEEdgeCases:
         covariates = np.random.normal(0, 1, (n, p))
         outcome = np.random.normal(0, 1, n) + 2.0 * treatment
 
-        result = conditional_qte(
-            outcome, treatment, covariates, quantile=0.5
-        )
+        result = conditional_qte(outcome, treatment, covariates, quantile=0.5)
 
         assert np.isfinite(result["tau_q"])
 
@@ -280,9 +299,7 @@ class TestConditionalQTEEdgeCases:
         outcome = x1 + 2.0 * treatment + np.random.normal(0, 1, n)
 
         # May have numerical issues but should still work
-        result = conditional_qte(
-            outcome, treatment, covariates, quantile=0.5
-        )
+        result = conditional_qte(outcome, treatment, covariates, quantile=0.5)
 
         assert np.isfinite(result["tau_q"])
 

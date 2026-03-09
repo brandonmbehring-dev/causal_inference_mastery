@@ -42,6 +42,7 @@ def _check_torch_available() -> bool:
     """Check if PyTorch is available."""
     try:
         import torch
+
         return True
     except ImportError:
         return False
@@ -101,9 +102,7 @@ if _check_torch_available():
             log_var = self.fc_logvar(h)
             return mu, log_var
 
-        def reparameterize(
-            self, mu: torch.Tensor, log_var: torch.Tensor
-        ) -> torch.Tensor:
+        def reparameterize(self, mu: torch.Tensor, log_var: torch.Tensor) -> torch.Tensor:
             """Sample from latent distribution using reparameterization trick.
 
             Parameters
@@ -155,9 +154,7 @@ if _check_torch_available():
             self.fc2 = nn.Linear(hidden_dim, hidden_dim)
             self.fc_out = nn.Linear(hidden_dim, output_dim)
 
-        def forward(
-            self, zt: torch.Tensor, zc: torch.Tensor, zy: torch.Tensor
-        ) -> torch.Tensor:
+        def forward(self, zt: torch.Tensor, zc: torch.Tensor, zy: torch.Tensor) -> torch.Tensor:
             """Reconstruct X from latent factors.
 
             Parameters
@@ -245,9 +242,7 @@ if _check_torch_available():
             self.fc2 = nn.Linear(hidden_dim, hidden_dim // 2)
             self.fc_out = nn.Linear(hidden_dim // 2, 1)
 
-        def forward(
-            self, zc: torch.Tensor, zy: torch.Tensor, t: torch.Tensor
-        ) -> torch.Tensor:
+        def forward(self, zc: torch.Tensor, zy: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
             """Predict outcome.
 
             Parameters
@@ -331,9 +326,7 @@ if _check_torch_available():
             self.treatment_model = None
             self.outcome_model = None
 
-        def _kl_divergence(
-            self, mu: torch.Tensor, log_var: torch.Tensor
-        ) -> torch.Tensor:
+        def _kl_divergence(self, mu: torch.Tensor, log_var: torch.Tensor) -> torch.Tensor:
             """Compute KL divergence from standard normal.
 
             KL(q(z|x) || p(z)) where p(z) = N(0, I).
@@ -370,10 +363,7 @@ if _check_torch_available():
                 Fitted model.
             """
             if not _check_torch_available():
-                raise ImportError(
-                    "PyTorch is required for TEDVAE. "
-                    "Install with: pip install torch"
-                )
+                raise ImportError("PyTorch is required for TEDVAE. Install with: pip install torch")
 
             # Set random seed
             torch.manual_seed(self.random_state)
@@ -406,8 +396,7 @@ if _check_torch_available():
             self.encoder_c = TEDVAEEncoder(p, self.hidden_dim, self.latent_dim_c)
             self.encoder_y = TEDVAEEncoder(p, self.hidden_dim, self.latent_dim_y)
             self.decoder = TEDVAEDecoder(
-                p, self.hidden_dim,
-                self.latent_dim_t, self.latent_dim_c, self.latent_dim_y
+                p, self.hidden_dim, self.latent_dim_t, self.latent_dim_c, self.latent_dim_y
             )
             self.treatment_model = TEDVAETreatmentModel(
                 self.hidden_dim, self.latent_dim_t, self.latent_dim_c
@@ -418,12 +407,12 @@ if _check_torch_available():
 
             # Collect all parameters
             all_params = (
-                list(self.encoder_t.parameters()) +
-                list(self.encoder_c.parameters()) +
-                list(self.encoder_y.parameters()) +
-                list(self.decoder.parameters()) +
-                list(self.treatment_model.parameters()) +
-                list(self.outcome_model.parameters())
+                list(self.encoder_t.parameters())
+                + list(self.encoder_c.parameters())
+                + list(self.encoder_y.parameters())
+                + list(self.decoder.parameters())
+                + list(self.treatment_model.parameters())
+                + list(self.outcome_model.parameters())
             )
             optimizer = torch.optim.Adam(all_params, lr=self.learning_rate)
 
@@ -475,9 +464,7 @@ if _check_torch_available():
             self._fitted = True
             return self
 
-        def encode(
-            self, X: np.ndarray
-        ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+        def encode(self, X: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
             """Encode X to disentangled latent factors.
 
             Parameters

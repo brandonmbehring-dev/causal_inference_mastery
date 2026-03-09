@@ -124,9 +124,7 @@ class GMM:
         if steps not in ["one", "two"]:
             raise ValueError(f"steps must be 'one' or 'two', got '{steps}'")
         if inference not in ["standard", "robust"]:
-            raise ValueError(
-                f"inference must be 'standard' or 'robust', got '{inference}'"
-            )
+            raise ValueError(f"inference must be 'standard' or 'robust', got '{inference}'")
         if not 0 < alpha < 1:
             raise ValueError(f"alpha must be in (0, 1), got {alpha}")
 
@@ -230,9 +228,7 @@ class GMM:
         self.ci_ = np.column_stack([ci_lower, ci_upper])
 
         # Hansen J-test
-        self.j_statistic_, self.j_pvalue_, self.j_df_ = self._hansen_j_test(
-            residuals, Z, W
-        )
+        self.j_statistic_, self.j_pvalue_, self.j_df_ = self._hansen_j_test(residuals, Z, W)
 
         return self
 
@@ -462,8 +458,8 @@ class GMM:
                 "Std. Error": self.se_,
                 "t-statistic": self.t_stats_,
                 "p-value": self.p_values_,
-                f"CI Lower ({(1-self.alpha)*100:.0f}%)": self.ci_[:, 0],
-                f"CI Upper ({(1-self.alpha)*100:.0f}%)": self.ci_[:, 1],
+                f"CI Lower ({(1 - self.alpha) * 100:.0f}%)": self.ci_[:, 0],
+                f"CI Upper ({(1 - self.alpha) * 100:.0f}%)": self.ci_[:, 1],
             }
         )
 
@@ -475,8 +471,8 @@ class GMM:
                 "Std. Error": [""],
                 "t-statistic": [""],
                 "p-value": [""],
-                f"CI Lower ({(1-self.alpha)*100:.0f}%)": [""],
-                f"CI Upper ({(1-self.alpha)*100:.0f}%)": [""],
+                f"CI Lower ({(1 - self.alpha) * 100:.0f}%)": [""],
+                f"CI Upper ({(1 - self.alpha) * 100:.0f}%)": [""],
             }
         )
         j_test = pd.DataFrame(
@@ -486,8 +482,8 @@ class GMM:
                 "Std. Error": [""],
                 "t-statistic": [""],
                 "p-value": [f"{self.j_pvalue_:.4f}"],
-                f"CI Lower ({(1-self.alpha)*100:.0f}%)": [""],
-                f"CI Upper ({(1-self.alpha)*100:.0f}%)": [""],
+                f"CI Lower ({(1 - self.alpha) * 100:.0f}%)": [""],
+                f"CI Upper ({(1 - self.alpha) * 100:.0f}%)": [""],
             }
         )
 

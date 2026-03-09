@@ -393,9 +393,7 @@ def _g_squared_2d(contingency: np.ndarray) -> Tuple[float, int]:
     return g2, dof
 
 
-def _g_squared_conditional(
-    x: np.ndarray, y: np.ndarray, z: np.ndarray
-) -> Tuple[float, int]:
+def _g_squared_conditional(x: np.ndarray, y: np.ndarray, z: np.ndarray) -> Tuple[float, int]:
     """Compute conditional G² statistic.
 
     Sum G² over strata defined by Z values.

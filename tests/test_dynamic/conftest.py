@@ -35,7 +35,7 @@ def lagged_dgp():
     X = np.zeros((n, 3))
     X[0] = np.random.randn(3)
     for t in range(1, n):
-        X[t] = 0.3 * X[t-1] + np.sqrt(0.91) * np.random.randn(3)
+        X[t] = 0.3 * X[t - 1] + np.sqrt(0.91) * np.random.randn(3)
 
     # Treatment with mild confounding
     propensity = 0.5 + 0.2 * X[:, 0]
@@ -129,11 +129,13 @@ def adversarial_confounded_dgp():
     U = np.random.randn(n)
 
     # Observed covariates
-    X = np.column_stack([
-        U + 0.5 * np.random.randn(n),  # Proxies for confounder
-        np.random.randn(n),
-        np.random.randn(n),
-    ])
+    X = np.column_stack(
+        [
+            U + 0.5 * np.random.randn(n),  # Proxies for confounder
+            np.random.randn(n),
+            np.random.randn(n),
+        ]
+    )
 
     # Treatment strongly depends on confounder
     propensity = 1 / (1 + np.exp(-0.8 * U))
@@ -176,7 +178,7 @@ def autocorrelated_dgp():
     epsilon[0] = np.random.randn()
     rho = 0.8
     for t in range(1, n):
-        epsilon[t] = rho * epsilon[t-1] + np.sqrt(1 - rho**2) * np.random.randn()
+        epsilon[t] = rho * epsilon[t - 1] + np.sqrt(1 - rho**2) * np.random.randn()
 
     Y = 2.0 * D + X @ [1.0, 0.5, 0.2] + epsilon
 

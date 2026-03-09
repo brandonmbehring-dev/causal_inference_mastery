@@ -367,8 +367,7 @@ class TestPSMMatchingVsMatchIt:
         # But should be within 10%
         match_ratio = py_result["n_matched"] / r_result["n_matched"]
         assert 0.9 <= match_ratio <= 1.1, (
-            f"Match count difference: Python={py_result['n_matched']}, "
-            f"R={r_result['n_matched']}"
+            f"Match count difference: Python={py_result['n_matched']}, R={r_result['n_matched']}"
         )
 
     def test_matching_2to1_with_replacement(self):
@@ -583,9 +582,7 @@ class TestPSMBalanceVsR:
         data = generate_psm_data(n=200, p=3, seed=400)
 
         # Python SMD
-        py_smd = compute_smd(
-            data["covariates"], data["treatment"].astype(bool)
-        )
+        py_smd = compute_smd(data["covariates"], data["treatment"].astype(bool))
 
         # Get propensity scores for R function
         py_estimator = PropensityScoreEstimator()
@@ -600,7 +597,7 @@ class TestPSMBalanceVsR:
             treatment=data["treatment"],
             propensity_scores=py_estimator.propensity_scores,
             matched_treated=treated_idx,
-            matched_control=control_idx[:len(treated_idx)],  # Match to same count
+            matched_control=control_idx[: len(treated_idx)],  # Match to same count
         )
         assert r_result is not None, "R balance metrics failed"
 

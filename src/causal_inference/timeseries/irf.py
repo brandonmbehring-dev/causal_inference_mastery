@@ -207,9 +207,7 @@ def bootstrap_irf(
             resid_boot = residuals * signs[:, np.newaxis]
 
         # Reconstruct bootstrap data
-        data_boot = _reconstruct_var_data(
-            data, var_result, resid_boot, lags
-        )
+        data_boot = _reconstruct_var_data(data, var_result, resid_boot, lags)
 
         # Re-estimate VAR and SVAR
         try:
@@ -704,12 +702,8 @@ def joint_confidence_bands(
                     lower_pct = 100 * (alpha_h / 2)
                     upper_pct = 100 * (1 - alpha_h / 2)
 
-                    irf_lower[i, j, h] = np.nanpercentile(
-                        irf_boots[:, i, j, h], lower_pct
-                    )
-                    irf_upper[i, j, h] = np.nanpercentile(
-                        irf_boots[:, i, j, h], upper_pct
-                    )
+                    irf_lower[i, j, h] = np.nanpercentile(irf_boots[:, i, j, h], lower_pct)
+                    irf_upper[i, j, h] = np.nanpercentile(irf_boots[:, i, j, h], upper_pct)
 
     return irf_lower, irf_upper
 
@@ -814,9 +808,7 @@ def moving_block_bootstrap_irf_joint(
             irf_boots[b, :, :, :] = np.nan
 
     # Compute joint confidence bands
-    irf_lower, irf_upper = joint_confidence_bands(
-        irf_boots, alpha=alpha, method=joint_method
-    )
+    irf_lower, irf_upper = joint_confidence_bands(irf_boots, alpha=alpha, method=joint_method)
 
     # Point estimate from original
     irf_point = structural_vma_coefficients(svar_result, horizons)

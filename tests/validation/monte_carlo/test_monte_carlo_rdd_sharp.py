@@ -143,9 +143,7 @@ class TestSharpRDDUnbiasedness:
             p_values.append(rdd.p_value_)
 
         bias = abs(np.mean(estimates) - true_tau)
-        coverage = np.mean(
-            (np.array(ci_lowers) <= true_tau) & (true_tau <= np.array(ci_uppers))
-        )
+        coverage = np.mean((np.array(ci_lowers) <= true_tau) & (true_tau <= np.array(ci_uppers)))
 
         # Type I error: reject rate when H₀ is true
         type1_error = np.mean(np.array(p_values) < 0.05)
@@ -212,14 +210,10 @@ class TestSharpRDDCoverage:
         standard_covers = []
 
         for seed in range(n_runs):
-            data = dgp_rdd_heteroskedastic(
-                n=500, true_tau=true_tau, random_state=seed
-            )
+            data = dgp_rdd_heteroskedastic(n=500, true_tau=true_tau, random_state=seed)
 
             # Robust inference
-            rdd_robust = SharpRDD(
-                cutoff=data.cutoff, bandwidth="ik", inference="robust"
-            )
+            rdd_robust = SharpRDD(cutoff=data.cutoff, bandwidth="ik", inference="robust")
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 rdd_robust.fit(data.Y, data.X)
@@ -228,9 +222,7 @@ class TestSharpRDDCoverage:
             robust_covers.append(robust_covered)
 
             # Standard inference
-            rdd_standard = SharpRDD(
-                cutoff=data.cutoff, bandwidth="ik", inference="standard"
-            )
+            rdd_standard = SharpRDD(cutoff=data.cutoff, bandwidth="ik", inference="standard")
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 rdd_standard.fit(data.Y, data.X)
@@ -302,9 +294,7 @@ class TestSharpRDDSEAccuracy:
 
         for seed in range(n_runs):
             # Low noise (error_sd = 1.0)
-            data_low = dgp_rdd_linear(
-                n=500, true_tau=true_tau, error_sd=1.0, random_state=seed
-            )
+            data_low = dgp_rdd_linear(n=500, true_tau=true_tau, error_sd=1.0, random_state=seed)
             rdd_low = SharpRDD(cutoff=data_low.cutoff, bandwidth="ik", inference="robust")
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -362,18 +352,14 @@ class TestSharpRDDBandwidthRobustness:
             estimates_ik.append(rdd_ik.coef_)
 
             # Narrow bandwidth (0.5 × h_IK)
-            rdd_narrow = SharpRDD(
-                cutoff=data.cutoff, bandwidth=0.5 * h_ik, inference="robust"
-            )
+            rdd_narrow = SharpRDD(cutoff=data.cutoff, bandwidth=0.5 * h_ik, inference="robust")
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 rdd_narrow.fit(data.Y, data.X)
             estimates_narrow.append(rdd_narrow.coef_)
 
             # Wide bandwidth (2.0 × h_IK)
-            rdd_wide = SharpRDD(
-                cutoff=data.cutoff, bandwidth=2.0 * h_ik, inference="robust"
-            )
+            rdd_wide = SharpRDD(cutoff=data.cutoff, bandwidth=2.0 * h_ik, inference="robust")
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 rdd_wide.fit(data.Y, data.X)
@@ -444,9 +430,7 @@ class TestSharpRDDKernelComparison:
         mean_diff = np.mean(
             np.abs(np.array(estimates_triangular) - np.array(estimates_rectangular))
         )
-        assert mean_diff < 0.30, (
-            f"Kernels disagree too much: |tri - rect| = {mean_diff:.4f}"
-        )
+        assert mean_diff < 0.30, f"Kernels disagree too much: |tri - rect| = {mean_diff:.4f}"
 
 
 class TestSharpRDDSampleSize:
@@ -479,9 +463,7 @@ class TestSharpRDDSampleSize:
             ci_uppers.append(rdd.ci_[1])
 
         bias = abs(np.mean(estimates) - true_tau)
-        coverage = np.mean(
-            (np.array(ci_lowers) <= true_tau) & (true_tau <= np.array(ci_uppers))
-        )
+        coverage = np.mean((np.array(ci_lowers) <= true_tau) & (true_tau <= np.array(ci_uppers)))
 
         # Small sample: bias acceptable, coverage may be slightly lower
         assert bias < 0.15, f"Small sample bias {bias:.4f} too large"
@@ -565,13 +547,10 @@ class TestSharpRDDDifferentSlopes:
             ci_uppers.append(rdd.ci_[1])
 
         bias = abs(np.mean(estimates) - true_tau)
-        coverage = np.mean(
-            (np.array(ci_lowers) <= true_tau) & (true_tau <= np.array(ci_uppers))
-        )
+        coverage = np.mean((np.array(ci_lowers) <= true_tau) & (true_tau <= np.array(ci_uppers)))
 
         assert bias < 0.10, (
-            f"Different slopes bias {bias:.4f} too large. "
-            f"Mean estimate: {np.mean(estimates):.4f}"
+            f"Different slopes bias {bias:.4f} too large. Mean estimate: {np.mean(estimates):.4f}"
         )
         assert 0.90 < coverage < 0.98, (
             f"Different slopes coverage {coverage:.2%} outside acceptable range"

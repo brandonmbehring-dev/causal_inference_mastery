@@ -38,8 +38,7 @@ class TestPermutationTestKnownAnswers:
 
         # Under true null, p-value should be reasonably large (not extreme)
         # With 1000 permutations, expect p > 0.05 most of the time
-        assert result["p_value"] > 0.05, \
-            f"Under null, expected p > 0.05, got {result['p_value']}"
+        assert result["p_value"] > 0.05, f"Under null, expected p > 0.05, got {result['p_value']}"
 
     def test_permutation_with_strong_effect(self):
         """
@@ -58,8 +57,9 @@ class TestPermutationTestKnownAnswers:
         result = permutation_test(outcomes, treatment, n_permutations=1000, random_seed=42)
 
         # With strong effect, p-value should be very small
-        assert result["p_value"] < 0.01, \
+        assert result["p_value"] < 0.01, (
             f"With strong effect, expected p < 0.01, got {result['p_value']}"
+        )
 
     def test_permutation_distribution_properties(self):
         """
@@ -242,8 +242,9 @@ class TestPermutationTestProperties:
         # Should be close to 0.05 (within Monte Carlo error)
         # With 100 simulations, SE ≈ sqrt(0.05*0.95/100) ≈ 0.022
         # So within 2 SE ≈ 0.044, expect rejection rate in [0.006, 0.094]
-        assert 0.0 <= rejection_rate <= 0.15, \
+        assert 0.0 <= rejection_rate <= 0.15, (
             f"Rejection rate {rejection_rate} should be close to 0.05 under null"
+        )
 
     def test_permutation_reproducibility_with_seed(self):
         """
@@ -257,7 +258,9 @@ class TestPermutationTestProperties:
 
         # Should be identical with same seed
         assert result1["p_value"] == result2["p_value"]
-        assert np.array_equal(result1["permutation_distribution"], result2["permutation_distribution"])
+        assert np.array_equal(
+            result1["permutation_distribution"], result2["permutation_distribution"]
+        )
 
     def test_permutation_power_increases_with_effect_size(self):
         """
@@ -270,11 +273,15 @@ class TestPermutationTestProperties:
 
         # Small effect
         outcomes_small = 1 * treatment + np.random.normal(0, 2, 30)
-        result_small = permutation_test(outcomes_small, treatment, n_permutations=500, random_seed=42)
+        result_small = permutation_test(
+            outcomes_small, treatment, n_permutations=500, random_seed=42
+        )
 
         # Large effect
         outcomes_large = 5 * treatment + np.random.normal(0, 2, 30)
-        result_large = permutation_test(outcomes_large, treatment, n_permutations=500, random_seed=42)
+        result_large = permutation_test(
+            outcomes_large, treatment, n_permutations=500, random_seed=42
+        )
 
         # Larger effect should have smaller p-value (higher power)
         assert result_large["p_value"] < result_small["p_value"]

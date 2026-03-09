@@ -35,24 +35,27 @@ class TestFuzzyRDDKnownAnswers:
         Y, X, D, cutoff, true_late = fuzzy_rdd_perfect_compliance_dgp
 
         # Fit Fuzzy RDD
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         # Fit Sharp RDD
-        sharp = SharpRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        sharp = SharpRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         sharp.fit(Y, X)
 
         # Estimates should be very close (within numerical precision)
-        assert np.abs(fuzzy.coef_ - sharp.coef_) < 0.05, \
+        assert np.abs(fuzzy.coef_ - sharp.coef_) < 0.05, (
             f"Fuzzy ({fuzzy.coef_:.3f}) should match Sharp ({sharp.coef_:.3f}) with perfect compliance"
+        )
 
         # Both should recover true effect
-        assert np.abs(fuzzy.coef_ - true_late) < 0.3, \
+        assert np.abs(fuzzy.coef_ - true_late) < 0.3, (
             f"Fuzzy RDD should recover true LATE={true_late}, got {fuzzy.coef_:.3f}"
+        )
 
         # Compliance should be ≈ 1.0
-        assert fuzzy.compliance_rate_ > 0.95, \
+        assert fuzzy.compliance_rate_ > 0.95, (
             f"Perfect compliance should be ≈1.0, got {fuzzy.compliance_rate_:.3f}"
+        )
 
     def test_high_compliance_recovers_late(self, fuzzy_rdd_high_compliance_dgp):
         """
@@ -62,24 +65,28 @@ class TestFuzzyRDDKnownAnswers:
         """
         Y, X, D, cutoff, true_late = fuzzy_rdd_high_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         # Should recover LATE within 30% tolerance
-        assert np.abs(fuzzy.coef_ - true_late) < 0.6, \
+        assert np.abs(fuzzy.coef_ - true_late) < 0.6, (
             f"Should recover LATE={true_late}, got {fuzzy.coef_:.3f}"
+        )
 
         # Compliance should be ≈ 0.8
-        assert 0.65 < fuzzy.compliance_rate_ < 0.95, \
+        assert 0.65 < fuzzy.compliance_rate_ < 0.95, (
             f"Expected compliance ≈0.8, got {fuzzy.compliance_rate_:.3f}"
+        )
 
         # Strong instrument: F > 50
-        assert fuzzy.first_stage_f_stat_ > 50, \
+        assert fuzzy.first_stage_f_stat_ > 50, (
             f"Expected F > 50 with high compliance, got {fuzzy.first_stage_f_stat_:.1f}"
+        )
 
         # Should not trigger weak instrument warning
-        assert not fuzzy.weak_instrument_warning_, \
+        assert not fuzzy.weak_instrument_warning_, (
             "Should not warn about weak instrument with high compliance"
+        )
 
     def test_moderate_compliance_recovers_late(self, fuzzy_rdd_moderate_compliance_dgp):
         """
@@ -89,20 +96,23 @@ class TestFuzzyRDDKnownAnswers:
         """
         Y, X, D, cutoff, true_late = fuzzy_rdd_moderate_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         # Should recover LATE (relaxed tolerance for moderate compliance)
-        assert np.abs(fuzzy.coef_ - true_late) < 0.8, \
+        assert np.abs(fuzzy.coef_ - true_late) < 0.8, (
             f"Should recover LATE={true_late}, got {fuzzy.coef_:.3f}"
+        )
 
         # Compliance should be ≈ 0.5
-        assert 0.35 < fuzzy.compliance_rate_ < 0.65, \
+        assert 0.35 < fuzzy.compliance_rate_ < 0.65, (
             f"Expected compliance ≈0.5, got {fuzzy.compliance_rate_:.3f}"
+        )
 
         # Decent instrument: F > 20
-        assert fuzzy.first_stage_f_stat_ > 20, \
+        assert fuzzy.first_stage_f_stat_ > 20, (
             f"Expected F > 20 with moderate compliance, got {fuzzy.first_stage_f_stat_:.1f}"
+        )
 
     def test_zero_effect_not_significant(self, fuzzy_rdd_zero_effect_dgp):
         """
@@ -113,19 +123,18 @@ class TestFuzzyRDDKnownAnswers:
         """
         Y, X, D, cutoff, true_late = fuzzy_rdd_zero_effect_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         # With zero true effect, estimate should be moderate (not extreme)
         # Relaxed tolerance due to partial compliance and finite sample bias
-        assert np.abs(fuzzy.coef_) < 3.0, \
+        assert np.abs(fuzzy.coef_) < 3.0, (
             f"Expected moderate estimate with no effect, got {fuzzy.coef_:.3f}"
+        )
 
         # Estimate should be finite
-        assert np.isfinite(fuzzy.coef_), \
-            "Estimate should be finite"
-        assert np.isfinite(fuzzy.se_), \
-            "Standard error should be finite"
+        assert np.isfinite(fuzzy.coef_), "Estimate should be finite"
+        assert np.isfinite(fuzzy.se_), "Standard error should be finite"
 
     def test_first_stage_f_statistic(self, fuzzy_rdd_high_compliance_dgp):
         """
@@ -133,18 +142,17 @@ class TestFuzzyRDDKnownAnswers:
         """
         Y, X, D, cutoff, _ = fuzzy_rdd_high_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         # F-stat should be finite and positive
-        assert np.isfinite(fuzzy.first_stage_f_stat_), \
-            "F-statistic should be finite"
-        assert fuzzy.first_stage_f_stat_ > 0, \
-            "F-statistic should be positive"
+        assert np.isfinite(fuzzy.first_stage_f_stat_), "F-statistic should be finite"
+        assert fuzzy.first_stage_f_stat_ > 0, "F-statistic should be positive"
 
         # With high compliance, F should be strong
-        assert fuzzy.first_stage_f_stat_ > 10, \
+        assert fuzzy.first_stage_f_stat_ > 10, (
             f"Expected F > 10 for strong instrument, got {fuzzy.first_stage_f_stat_:.1f}"
+        )
 
     def test_compliance_rate_calculation(self, fuzzy_rdd_moderate_compliance_dgp):
         """
@@ -152,20 +160,21 @@ class TestFuzzyRDDKnownAnswers:
         """
         Y, X, D, cutoff, _ = fuzzy_rdd_moderate_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         # Compliance should be finite
-        assert np.isfinite(fuzzy.compliance_rate_), \
-            "Compliance rate should be finite"
+        assert np.isfinite(fuzzy.compliance_rate_), "Compliance rate should be finite"
 
         # Compliance should be in (0, 1) for partial compliance
-        assert 0 < fuzzy.compliance_rate_ < 1, \
+        assert 0 < fuzzy.compliance_rate_ < 1, (
             f"Compliance should be in (0, 1), got {fuzzy.compliance_rate_:.3f}"
+        )
 
         # For moderate DGP, should be ≈ 0.5
-        assert 0.3 < fuzzy.compliance_rate_ < 0.7, \
+        assert 0.3 < fuzzy.compliance_rate_ < 0.7, (
             f"Expected compliance ≈0.5, got {fuzzy.compliance_rate_:.3f}"
+        )
 
     def test_bandwidth_selection_ik(self, fuzzy_rdd_high_compliance_dgp):
         """
@@ -173,18 +182,17 @@ class TestFuzzyRDDKnownAnswers:
         """
         Y, X, D, cutoff, _ = fuzzy_rdd_high_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         # Bandwidth should be positive and finite
-        assert fuzzy.bandwidth_left_ > 0, \
-            "Bandwidth should be positive"
-        assert np.isfinite(fuzzy.bandwidth_left_), \
-            "Bandwidth should be finite"
+        assert fuzzy.bandwidth_left_ > 0, "Bandwidth should be positive"
+        assert np.isfinite(fuzzy.bandwidth_left_), "Bandwidth should be finite"
 
         # Left and right bandwidths should be equal (symmetric)
-        assert fuzzy.bandwidth_left_ == fuzzy.bandwidth_right_, \
+        assert fuzzy.bandwidth_left_ == fuzzy.bandwidth_right_, (
             "Left and right bandwidths should be equal"
+        )
 
     def test_confidence_intervals(self, fuzzy_rdd_high_compliance_dgp):
         """
@@ -192,23 +200,23 @@ class TestFuzzyRDDKnownAnswers:
         """
         Y, X, D, cutoff, true_late = fuzzy_rdd_high_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         # CI should be a tuple
-        assert isinstance(fuzzy.ci_, tuple), \
-            "CI should be a tuple"
-        assert len(fuzzy.ci_) == 2, \
-            "CI should have 2 elements"
+        assert isinstance(fuzzy.ci_, tuple), "CI should be a tuple"
+        assert len(fuzzy.ci_) == 2, "CI should have 2 elements"
 
         # CI should be ordered
-        assert fuzzy.ci_[0] < fuzzy.ci_[1], \
+        assert fuzzy.ci_[0] < fuzzy.ci_[1], (
             f"CI lower ({fuzzy.ci_[0]:.3f}) should be < upper ({fuzzy.ci_[1]:.3f})"
+        )
 
         # CI should contain true effect (loose check, may fail occasionally)
         # Using 90% nominal coverage for robustness
-        assert fuzzy.ci_[0] - 0.5 < true_late < fuzzy.ci_[1] + 0.5, \
+        assert fuzzy.ci_[0] - 0.5 < true_late < fuzzy.ci_[1] + 0.5, (
             f"CI [{fuzzy.ci_[0]:.3f}, {fuzzy.ci_[1]:.3f}] should contain true LATE={true_late}"
+        )
 
 
 class TestFuzzyRDDAdversarial:
@@ -220,7 +228,7 @@ class TestFuzzyRDDAdversarial:
         """
         Y, X, D, cutoff, _ = fuzzy_rdd_low_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
 
         # Should trigger RuntimeWarning for weak instrument
         with warnings.catch_warnings(record=True) as w:
@@ -229,14 +237,12 @@ class TestFuzzyRDDAdversarial:
 
             # Check if weak instrument warning was raised
             weak_instrument_warnings = [
-                warning for warning in w
-                if "Weak instrument" in str(warning.message)
+                warning for warning in w if "Weak instrument" in str(warning.message)
             ]
 
             # May or may not trigger depending on sample (F ≈ 10-15)
             # Just check that F-stat is computed
-            assert np.isfinite(fuzzy.first_stage_f_stat_), \
-                "F-statistic should be computed"
+            assert np.isfinite(fuzzy.first_stage_f_stat_), "F-statistic should be computed"
 
     def test_very_low_compliance_warning(self, fuzzy_rdd_low_compliance_dgp):
         """
@@ -244,7 +250,7 @@ class TestFuzzyRDDAdversarial:
         """
         Y, X, D, cutoff, _ = fuzzy_rdd_low_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -252,13 +258,11 @@ class TestFuzzyRDDAdversarial:
 
             # May trigger low compliance warning
             low_compliance_warnings = [
-                warning for warning in w
-                if "low compliance" in str(warning.message).lower()
+                warning for warning in w if "low compliance" in str(warning.message).lower()
             ]
 
             # Check compliance is computed
-            assert np.isfinite(fuzzy.compliance_rate_), \
-                "Compliance rate should be computed"
+            assert np.isfinite(fuzzy.compliance_rate_), "Compliance rate should be computed"
 
     def test_no_variation_in_treatment_raises_error(self, sharp_rdd_linear_dgp):
         """
@@ -269,7 +273,7 @@ class TestFuzzyRDDAdversarial:
         # All units untreated
         D = np.zeros_like(X)
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik")
 
         with pytest.raises(ValueError, match="No variation in treatment"):
             fuzzy.fit(Y, X, D)
@@ -280,7 +284,7 @@ class TestFuzzyRDDAdversarial:
         """
         Y, X, D, cutoff, _ = fuzzy_rdd_sparse_data_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik")
 
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
@@ -288,12 +292,10 @@ class TestFuzzyRDDAdversarial:
 
             # Should trigger small sample warning
             small_sample_warnings = [
-                warning for warning in w
-                if "Small effective sample" in str(warning.message)
+                warning for warning in w if "Small effective sample" in str(warning.message)
             ]
 
-            assert len(small_sample_warnings) > 0, \
-                "Should warn about small effective sample size"
+            assert len(small_sample_warnings) > 0, "Should warn about small effective sample size"
 
     def test_all_observations_one_side_raises_error(self):
         """
@@ -307,7 +309,7 @@ class TestFuzzyRDDAdversarial:
         Y = X + np.random.normal(0, 1, n)
         D = np.random.binomial(1, 0.5, n).astype(float)
 
-        fuzzy = FuzzyRDD(cutoff=0.0, bandwidth='ik')
+        fuzzy = FuzzyRDD(cutoff=0.0, bandwidth="ik")
 
         with pytest.raises(ValueError, match="No observations with X >= cutoff"):
             fuzzy.fit(Y, X, D)
@@ -321,16 +323,14 @@ class TestFuzzyRDDAdversarial:
         # Use bandwidth larger than data range
         h_large = 100.0
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth=h_large, inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth=h_large, inference="robust")
         fuzzy.fit(Y, X, D)
 
         # Should still estimate effect (may be biased due to large h)
-        assert np.isfinite(fuzzy.coef_), \
-            "Estimate should be finite with large bandwidth"
+        assert np.isfinite(fuzzy.coef_), "Estimate should be finite with large bandwidth"
 
         # n_obs should be close to total sample size
-        assert fuzzy.n_obs_ == len(Y), \
-            "Should use all observations with very large bandwidth"
+        assert fuzzy.n_obs_ == len(Y), "Should use all observations with very large bandwidth"
 
     def test_invalid_bandwidth_raises_error(self, fuzzy_rdd_high_compliance_dgp):
         """
@@ -338,7 +338,7 @@ class TestFuzzyRDDAdversarial:
         """
         Y, X, D, cutoff, _ = fuzzy_rdd_high_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='unknown_method')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="unknown_method")
 
         with pytest.raises(ValueError, match="Unknown bandwidth"):
             fuzzy.fit(Y, X, D)
@@ -349,7 +349,7 @@ class TestFuzzyRDDAdversarial:
         """
         Y, X, D, cutoff, _ = fuzzy_rdd_high_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik")
 
         # Mismatched lengths
         with pytest.raises(ValueError, match="same length"):
@@ -373,39 +373,33 @@ class TestFuzzyRDDSummary:
 
     def test_summary_before_fit(self):
         """Test that summary before fit returns informative message."""
-        fuzzy = FuzzyRDD(cutoff=0.0, bandwidth='ik')
+        fuzzy = FuzzyRDD(cutoff=0.0, bandwidth="ik")
 
         summary = fuzzy.summary()
 
-        assert "not fitted" in summary.lower(), \
-            "Summary should indicate model not fitted"
+        assert "not fitted" in summary.lower(), "Summary should indicate model not fitted"
 
     def test_summary_after_fit(self, fuzzy_rdd_high_compliance_dgp):
         """Test that summary after fit returns formatted table."""
         Y, X, D, cutoff, _ = fuzzy_rdd_high_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik', inference='robust')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik", inference="robust")
         fuzzy.fit(Y, X, D)
 
         summary = fuzzy.summary()
 
         # Check key elements are present
-        assert "Fuzzy RDD" in summary, \
-            "Summary should mention Fuzzy RDD"
-        assert "LATE" in summary, \
-            "Summary should mention LATE"
-        assert "Compliance rate" in summary, \
-            "Summary should include compliance rate"
-        assert "F-statistic" in summary, \
-            "Summary should include first-stage F-statistic"
-        assert str(fuzzy.coef_)[:5] in summary, \
-            "Summary should include estimate value"
+        assert "Fuzzy RDD" in summary, "Summary should mention Fuzzy RDD"
+        assert "LATE" in summary, "Summary should mention LATE"
+        assert "Compliance rate" in summary, "Summary should include compliance rate"
+        assert "F-statistic" in summary, "Summary should include first-stage F-statistic"
+        assert str(fuzzy.coef_)[:5] in summary, "Summary should include estimate value"
 
     def test_summary_with_warnings(self, fuzzy_rdd_low_compliance_dgp):
         """Test that summary includes warnings when present."""
         Y, X, D, cutoff, _ = fuzzy_rdd_low_compliance_dgp
 
-        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth='ik')
+        fuzzy = FuzzyRDD(cutoff=cutoff, bandwidth="ik")
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
@@ -415,13 +409,15 @@ class TestFuzzyRDDSummary:
 
         # If weak instrument, summary should mention it
         if fuzzy.weak_instrument_warning_:
-            assert "WARNING" in summary or "Weak instrument" in summary, \
+            assert "WARNING" in summary or "Weak instrument" in summary, (
                 "Summary should mention weak instrument warning"
+            )
 
         # If low compliance, summary should mention it
         if fuzzy.compliance_rate_ < 0.3:
-            assert "WARNING" in summary or "low compliance" in summary, \
+            assert "WARNING" in summary or "low compliance" in summary, (
                 "Summary should mention low compliance warning"
+            )
 
 
 class TestKernelWeighting:

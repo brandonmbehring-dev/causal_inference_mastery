@@ -56,6 +56,7 @@ def get_nuisance_model(
             return RandomForestRegressor(n_estimators=100, max_depth=5, random_state=42)
         else:
             from sklearn.ensemble import RandomForestClassifier
+
             return RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42)
 
     elif model_type == "gradient_boosting":
@@ -63,6 +64,7 @@ def get_nuisance_model(
             return GradientBoostingRegressor(n_estimators=100, max_depth=3, random_state=42)
         else:
             from sklearn.ensemble import GradientBoostingClassifier
+
             return GradientBoostingClassifier(n_estimators=100, max_depth=3, random_state=42)
 
     else:
@@ -184,7 +186,7 @@ def sequential_g_estimation(
         # theta = Cov(Y_tilde, T_tilde) / Var(T_tilde)
         # Using training data for estimation
         cov = np.mean(Y_tilde_train * T_tilde_train)
-        var_t = np.mean(T_tilde_train ** 2)
+        var_t = np.mean(T_tilde_train**2)
 
         if var_t > 1e-10:
             theta_h = cov / var_t
@@ -286,7 +288,7 @@ def compute_cumulative_effect(
         theta = theta[:, 0]  # Use first treatment for now
 
     max_lag_plus_1 = len(theta)
-    weights = np.array([discount_factor ** h for h in range(max_lag_plus_1)])
+    weights = np.array([discount_factor**h for h in range(max_lag_plus_1)])
     cumulative = np.sum(weights * theta)
 
     return cumulative, weights

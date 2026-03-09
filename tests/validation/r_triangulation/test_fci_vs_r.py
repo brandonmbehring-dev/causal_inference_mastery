@@ -266,8 +266,10 @@ def python_pag_to_bidirected(pag: "PAG") -> set:
     for i in range(pag.n_nodes):
         for j in range(i + 1, pag.n_nodes):
             # Check if bidirected: both are arrows
-            if (pag.endpoints[i, j, 0] == PAG.MARK_ARROW and
-                    pag.endpoints[i, j, 1] == PAG.MARK_ARROW):
+            if (
+                pag.endpoints[i, j, 0] == PAG.MARK_ARROW
+                and pag.endpoints[i, j, 1] == PAG.MARK_ARROW
+            ):
                 bidirected.add((i, j))
     return bidirected
 
@@ -282,8 +284,10 @@ def python_pag_to_directed(pag: "PAG") -> set:
         for j in range(pag.n_nodes):
             if i != j:
                 # Check if i --> j: tail at i, arrow at j
-                if (pag.endpoints[i, j, 0] == PAG.MARK_TAIL and
-                        pag.endpoints[i, j, 1] == PAG.MARK_ARROW):
+                if (
+                    pag.endpoints[i, j, 0] == PAG.MARK_TAIL
+                    and pag.endpoints[i, j, 1] == PAG.MARK_ARROW
+                ):
                     directed.add((i, j))
     return directed
 
@@ -293,8 +297,10 @@ def python_pag_to_circle(pag: "PAG") -> set:
     circles = set()
     for i in range(pag.n_nodes):
         for j in range(i + 1, pag.n_nodes):
-            if (pag.endpoints[i, j, 0] == PAG.MARK_CIRCLE or
-                    pag.endpoints[i, j, 1] == PAG.MARK_CIRCLE):
+            if (
+                pag.endpoints[i, j, 0] == PAG.MARK_CIRCLE
+                or pag.endpoints[i, j, 1] == PAG.MARK_CIRCLE
+            ):
                 circles.add((i, j))
     return circles
 
@@ -329,8 +335,7 @@ class TestFCISkeletonVsR:
         py_skeleton = py_result.skeleton.to_adjacency_matrix()
 
         np.testing.assert_array_equal(
-            r_skeleton, py_skeleton,
-            err_msg="Chain skeleton mismatch between Python and R"
+            r_skeleton, py_skeleton, err_msg="Chain skeleton mismatch between Python and R"
         )
 
     @requires_discovery_python
@@ -348,8 +353,7 @@ class TestFCISkeletonVsR:
         py_skeleton = py_result.skeleton.to_adjacency_matrix()
 
         np.testing.assert_array_equal(
-            r_skeleton, py_skeleton,
-            err_msg="Collider skeleton mismatch between Python and R"
+            r_skeleton, py_skeleton, err_msg="Collider skeleton mismatch between Python and R"
         )
 
     @requires_discovery_python
@@ -367,8 +371,7 @@ class TestFCISkeletonVsR:
         py_skeleton = py_result.skeleton.to_adjacency_matrix()
 
         np.testing.assert_array_equal(
-            r_skeleton, py_skeleton,
-            err_msg="Fork skeleton mismatch between Python and R"
+            r_skeleton, py_skeleton, err_msg="Fork skeleton mismatch between Python and R"
         )
 
 
@@ -712,12 +715,14 @@ class TestFCIMonteCarlo:
 
             py_result = fci_algorithm(data, alpha=0.05)
 
-            results.append({
-                "r_skeleton_edges": count_skeleton_edges(r_result["skeleton"]),
-                "py_skeleton_edges": py_result.skeleton.n_edges(),
-                "r_bidirected": r_result["n_bidirected"],
-                "py_bidirected": py_result.pag.n_bidirected_edges(),
-            })
+            results.append(
+                {
+                    "r_skeleton_edges": count_skeleton_edges(r_result["skeleton"]),
+                    "py_skeleton_edges": py_result.skeleton.n_edges(),
+                    "r_bidirected": r_result["n_bidirected"],
+                    "py_bidirected": py_result.pag.n_bidirected_edges(),
+                }
+            )
 
         assert len(results) >= 15, f"Only {len(results)} runs completed"
 
@@ -794,9 +799,7 @@ class TestFCIEdgeCases:
         # Higher alpha = more edges (less stringent independence test)
         # Both should show similar pattern
         if len(r_edges) >= 2:
-            assert r_edges[-1] >= r_edges[0], (
-                f"R edges should increase with alpha: {r_edges}"
-            )
+            assert r_edges[-1] >= r_edges[0], f"R edges should increase with alpha: {r_edges}"
         if len(py_edges) >= 2:
             assert py_edges[-1] >= py_edges[0], (
                 f"Python edges should increase with alpha: {py_edges}"
@@ -859,6 +862,4 @@ class TestFCISummaryStats:
         r_edges = count_skeleton_edges(r_result["skeleton"])
         py_edges = py_result.skeleton.n_edges()
 
-        assert r_edges == py_edges, (
-            f"Skeleton edge count mismatch: R={r_edges}, Python={py_edges}"
-        )
+        assert r_edges == py_edges, f"Skeleton edge count mismatch: R={r_edges}, Python={py_edges}"

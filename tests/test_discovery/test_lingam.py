@@ -68,9 +68,7 @@ class TestLiNGAMKnownStructures:
 
     def test_fork_detection(self, fork_dag):
         """Fork X0 <- X1 -> X2: X1 should be first in order."""
-        data, B = generate_dag_data(
-            fork_dag, n_samples=1000, noise_type="laplace", seed=42
-        )
+        data, B = generate_dag_data(fork_dag, n_samples=1000, noise_type="laplace", seed=42)
         result = direct_lingam(data, seed=42)
 
         # X1 is the root, should be first
@@ -165,9 +163,7 @@ class TestLiNGAMAdversarial:
 
     def test_small_sample_handling(self, chain_dag):
         """LiNGAM should handle small samples."""
-        data, B = generate_dag_data(
-            chain_dag, n_samples=100, noise_type="laplace", seed=42
-        )
+        data, B = generate_dag_data(chain_dag, n_samples=100, noise_type="laplace", seed=42)
         result = direct_lingam(data, seed=42)
 
         # Should complete without error
@@ -175,9 +171,7 @@ class TestLiNGAMAdversarial:
 
     def test_near_gaussian_data(self, chain_dag):
         """LiNGAM performance degrades with Gaussian data."""
-        data, B = generate_dag_data(
-            chain_dag, n_samples=1000, noise_type="gaussian", seed=42
-        )
+        data, B = generate_dag_data(chain_dag, n_samples=1000, noise_type="gaussian", seed=42)
 
         # Should still run, but may give poor results
         result = direct_lingam(data, seed=42)
@@ -199,9 +193,7 @@ class TestLiNGAMAdversarial:
 
     def test_exponential_noise(self, chain_dag):
         """LiNGAM should work with exponential noise (asymmetric)."""
-        data, B = generate_dag_data(
-            chain_dag, n_samples=1000, noise_type="exponential", seed=42
-        )
+        data, B = generate_dag_data(chain_dag, n_samples=1000, noise_type="exponential", seed=42)
         result = direct_lingam(data, seed=42)
 
         # Exponential is strongly non-Gaussian - should complete without error
@@ -210,9 +202,7 @@ class TestLiNGAMAdversarial:
 
     def test_uniform_noise(self, chain_dag):
         """LiNGAM with uniform noise (platykurtic)."""
-        data, B = generate_dag_data(
-            chain_dag, n_samples=1000, noise_type="uniform", seed=42
-        )
+        data, B = generate_dag_data(chain_dag, n_samples=1000, noise_type="uniform", seed=42)
         result = direct_lingam(data, seed=42)
 
         # Uniform is non-Gaussian
@@ -266,9 +256,7 @@ class TestLiNGAMMonteCarlo:
 
         for seed in range(n_runs):
             dag = generate_random_dag(5, edge_prob=0.4, seed=seed)
-            data, B = generate_dag_data(
-                dag, n_samples=1000, noise_type="laplace", seed=seed
-            )
+            data, B = generate_dag_data(dag, n_samples=1000, noise_type="laplace", seed=seed)
 
             result = direct_lingam(data, seed=seed)
             true_order = dag.topological_order()
@@ -287,9 +275,7 @@ class TestLiNGAMMonteCarlo:
 
         for seed in range(n_runs):
             dag = generate_random_dag(5, edge_prob=0.4, seed=seed)
-            data, B = generate_dag_data(
-                dag, n_samples=1000, noise_type="laplace", seed=seed
-            )
+            data, B = generate_dag_data(dag, n_samples=1000, noise_type="laplace", seed=seed)
 
             result = direct_lingam(data, seed=seed)
 
@@ -322,9 +308,7 @@ class TestLiNGAMMonteCarlo:
         for noise in noise_types:
             accs = []
             for seed in range(20):
-                data, B = generate_dag_data(
-                    dag, n_samples=1000, noise_type=noise, seed=seed
-                )
+                data, B = generate_dag_data(dag, n_samples=1000, noise_type=noise, seed=seed)
                 result = direct_lingam(data, seed=seed)
                 true_order = dag.topological_order()
                 accs.append(result.causal_order_accuracy(true_order))
@@ -353,9 +337,7 @@ class TestLiNGAMSampleSize:
         accuracies = []
 
         for n in sample_sizes:
-            data, B = generate_dag_data(
-                dag, n_samples=n, noise_type="laplace", seed=42
-            )
+            data, B = generate_dag_data(dag, n_samples=n, noise_type="laplace", seed=42)
             result = direct_lingam(data, seed=42)
             acc = result.causal_order_accuracy(true_order)
             accuracies.append(acc)
@@ -374,9 +356,7 @@ class TestLiNGAMRegression:
 
     def test_deterministic_with_seed(self, five_node_dag):
         """LiNGAM should give same result with same seed."""
-        data, B = generate_dag_data(
-            five_node_dag, n_samples=1000, noise_type="laplace", seed=42
-        )
+        data, B = generate_dag_data(five_node_dag, n_samples=1000, noise_type="laplace", seed=42)
 
         result1 = direct_lingam(data, seed=42)
         result2 = direct_lingam(data, seed=42)

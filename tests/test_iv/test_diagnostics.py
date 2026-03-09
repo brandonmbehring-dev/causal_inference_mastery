@@ -53,9 +53,9 @@ class TestStockYogoClassification:
         )
 
         assert classification == "weak", f"Expected 'weak', got '{classification}'"
-        assert (
-            iv.first_stage_f_stat_ <= critical_value
-        ), "Weak instrument should have F <= critical value"
+        assert iv.first_stage_f_stat_ <= critical_value, (
+            "Weak instrument should have F <= critical value"
+        )
 
     def test_very_weak_instrument_classification(self, iv_very_weak_instrument):
         """Test that very weak instruments (F < 10) are classified correctly."""
@@ -127,9 +127,9 @@ class TestCraggDonaldStatistic:
         iv.fit(Y, D, Z, X)
 
         # Should be approximately equal (within numerical tolerance)
-        assert np.isclose(
-            cd_stat, iv.first_stage_f_stat_, rtol=0.05
-        ), f"CD={cd_stat:.2f} should ≈ F={iv.first_stage_f_stat_:.2f} when p=1"
+        assert np.isclose(cd_stat, iv.first_stage_f_stat_, rtol=0.05), (
+            f"CD={cd_stat:.2f} should ≈ F={iv.first_stage_f_stat_:.2f} when p=1"
+        )
 
     def test_cragg_donald_with_multiple_instruments(self, iv_over_identified):
         """Test Cragg-Donald with multiple instruments (q > p)."""
@@ -179,9 +179,9 @@ class TestAndersonRubinTest:
 
         # CI should contain true beta (with high probability)
         assert ci_lower <= ci_upper, f"CI bounds inverted: [{ci_lower}, {ci_upper}]"
-        assert not (
-            np.isnan(ci_lower) or np.isnan(ci_upper)
-        ), "CI should not be NaN with valid instruments"
+        assert not (np.isnan(ci_lower) or np.isnan(ci_upper)), (
+            "CI should not be NaN with valid instruments"
+        )
 
     def test_anderson_rubin_with_weak_instrument(self, iv_weak_instrument):
         """Test that AR test works with weak instruments."""
@@ -268,9 +268,9 @@ class TestWeakInstrumentSummary:
         assert "Interpretation" in summary.columns
 
         # Should mention "strong" in recommendation
-        recommendation = summary[summary["Diagnostic"] == "Recommendation"]["Interpretation"].values[
-            0
-        ]
+        recommendation = summary[summary["Diagnostic"] == "Recommendation"][
+            "Interpretation"
+        ].values[0]
         assert "strong" in recommendation.lower()
 
     def test_summary_with_weak_instrument(self, iv_weak_instrument):
@@ -285,10 +285,12 @@ class TestWeakInstrumentSummary:
         )
 
         # Should contain warning about weak instruments
-        recommendation = summary[summary["Diagnostic"] == "Recommendation"]["Interpretation"].values[
-            0
-        ]
-        assert "weak" in recommendation.lower() or "LIML" in recommendation or "AR" in recommendation
+        recommendation = summary[summary["Diagnostic"] == "Recommendation"][
+            "Interpretation"
+        ].values[0]
+        assert (
+            "weak" in recommendation.lower() or "LIML" in recommendation or "AR" in recommendation
+        )
 
     def test_summary_with_cragg_donald(self, iv_over_identified):
         """Test summary includes Cragg-Donald statistic."""
@@ -390,14 +392,10 @@ class TestBug4ARTestResidualizeZ:
         Y = true_beta * D + 0.4 * X.ravel() + np.random.normal(0, 1, n)
 
         # Run AR test WITH controls (should use residualized Z)
-        ar_stat_with_x, p_value_with_x, ci_with_x = anderson_rubin_test(
-            Y, D, Z, X, alpha=0.05
-        )
+        ar_stat_with_x, p_value_with_x, ci_with_x = anderson_rubin_test(Y, D, Z, X, alpha=0.05)
 
         # Run AR test WITHOUT controls
-        ar_stat_no_x, p_value_no_x, ci_no_x = anderson_rubin_test(
-            Y, D, Z, X=None, alpha=0.05
-        )
+        ar_stat_no_x, p_value_no_x, ci_no_x = anderson_rubin_test(Y, D, Z, X=None, alpha=0.05)
 
         # With correlated X and Z, the results SHOULD differ
         # The "with controls" version should have wider CI (less power)
@@ -464,6 +462,5 @@ class TestBug4ARTestResidualizeZ:
 
         # 95% CI should contain true value
         assert ci_lower <= true_beta <= ci_upper, (
-            f"AR CI [{ci_lower:.3f}, {ci_upper:.3f}] should contain "
-            f"true β={true_beta}"
+            f"AR CI [{ci_lower:.3f}, {ci_upper:.3f}] should contain true β={true_beta}"
         )

@@ -616,7 +616,9 @@ class TestEventStudyOutputStructure:
         )
 
         # 3 leads requested, but k=-1 omitted → 2 leads
-        assert len(result["leads"]) == 2, f"Expected 2 leads (omit k=-1), got {len(result['leads'])}"
+        assert len(result["leads"]) == 2, (
+            f"Expected 2 leads (omit k=-1), got {len(result['leads'])}"
+        )
 
         # 3 lags requested (k=0, 1, 2) → 3 lags
         assert len(result["lags"]) == 3, f"Expected 3 lags, got {len(result['lags'])}"

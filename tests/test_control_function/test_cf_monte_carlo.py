@@ -150,9 +150,7 @@ class TestCoverage:
         )
 
         coverage = np.mean(covers)
-        assert 0.93 <= coverage <= 0.97, (
-            f"Coverage {coverage:.1%} outside [93%, 97%]"
-        )
+        assert 0.93 <= coverage <= 0.97, f"Coverage {coverage:.1%} outside [93%, 97%]"
 
     @pytest.mark.slow
     def test_coverage_analytical(self):
@@ -168,9 +166,7 @@ class TestCoverage:
 
         coverage = np.mean(covers)
         # Analytical may have slightly different coverage
-        assert 0.90 <= coverage <= 0.98, (
-            f"Analytical coverage {coverage:.1%} outside [90%, 98%]"
-        )
+        assert 0.90 <= coverage <= 0.98, f"Analytical coverage {coverage:.1%} outside [90%, 98%]"
 
     @pytest.mark.slow
     def test_coverage_large_sample(self):
@@ -209,9 +205,7 @@ class TestSEAccuracy:
         avg_se = np.mean(ses)
 
         ratio = avg_se / empirical_sd
-        assert 0.85 <= ratio <= 1.15, (
-            f"SE/SD ratio {ratio:.2f} outside [0.85, 1.15]"
-        )
+        assert 0.85 <= ratio <= 1.15, f"SE/SD ratio {ratio:.2f} outside [0.85, 1.15]"
 
     @pytest.mark.slow
     def test_se_accuracy_analytical(self):
@@ -230,9 +224,7 @@ class TestSEAccuracy:
 
         ratio = avg_se / empirical_sd
         # Allow wider range for analytical (Murphy-Topel approximation)
-        assert 0.70 <= ratio <= 1.30, (
-            f"Analytical SE/SD ratio {ratio:.2f} outside [0.70, 1.30]"
-        )
+        assert 0.70 <= ratio <= 1.30, f"Analytical SE/SD ratio {ratio:.2f} outside [0.70, 1.30]"
 
 
 class TestEndogeneityTestSize:
@@ -292,9 +284,7 @@ class TestEndogeneityTestPower:
         )
 
         power = np.mean(detected)
-        assert power >= 0.80, (
-            f"Power {power:.1%} < 80% for strong endogeneity"
-        )
+        assert power >= 0.80, f"Power {power:.1%} < 80% for strong endogeneity"
 
     @pytest.mark.slow
     def test_power_moderate_endogeneity(self):
@@ -310,9 +300,7 @@ class TestEndogeneityTestPower:
         )
 
         power = np.mean(detected)
-        assert power >= 0.50, (
-            f"Power {power:.1%} < 50% for moderate endogeneity"
-        )
+        assert power >= 0.50, f"Power {power:.1%} < 50% for moderate endogeneity"
 
     @pytest.mark.slow
     def test_power_increases_with_sample_size(self):

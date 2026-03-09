@@ -119,9 +119,7 @@ class Fuller:
         if alpha_param <= 0:
             raise ValueError(f"alpha_param must be positive, got {alpha_param}")
         if inference not in ["standard", "robust"]:
-            raise ValueError(
-                f"inference must be 'standard' or 'robust', got '{inference}'"
-            )
+            raise ValueError(f"inference must be 'standard' or 'robust', got '{inference}'")
         if not 0 < alpha < 1:
             raise ValueError(f"alpha must be in (0, 1), got {alpha}")
 
@@ -193,7 +191,7 @@ class Fuller:
 
         # Add number of exogenous variables (if any)
         if X is not None:
-            L += (X.shape[1] if X.ndim > 1 else 1)
+            L += X.shape[1] if X.ndim > 1 else 1
 
         # Add 1 for intercept (always present)
         L += 1
@@ -231,9 +229,7 @@ class Fuller:
             X_with_intercept = np.column_stack([np.ones(n), X])
 
         # k-class estimation with Fuller kappa
-        coef, residuals = self._liml._k_class_estimation(
-            Y, D, Z, X_with_intercept, self.kappa_
-        )
+        coef, residuals = self._liml._k_class_estimation(Y, D, Z, X_with_intercept, self.kappa_)
 
         # Standard errors (same formula as LIML)
         se = self._liml._compute_standard_errors(
@@ -293,8 +289,8 @@ class Fuller:
                 "Std. Error": self.se_,
                 "t-statistic": self.t_stats_,
                 "p-value": self.p_values_,
-                f"CI Lower ({(1-self.alpha)*100:.0f}%)": self.ci_[:, 0],
-                f"CI Upper ({(1-self.alpha)*100:.0f}%)": self.ci_[:, 1],
+                f"CI Lower ({(1 - self.alpha) * 100:.0f}%)": self.ci_[:, 0],
+                f"CI Upper ({(1 - self.alpha) * 100:.0f}%)": self.ci_[:, 1],
             }
         )
 

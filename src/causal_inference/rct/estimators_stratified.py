@@ -153,13 +153,9 @@ def stratified_ate(
     # ============================================================================
 
     # Create dataframe for grouping (easier than manual loops)
-    df = pd.DataFrame({
-        'outcome': outcomes,
-        'treatment': treatment,
-        'stratum': strata
-    })
+    df = pd.DataFrame({"outcome": outcomes, "treatment": treatment, "stratum": strata})
 
-    unique_strata = df['stratum'].unique()
+    unique_strata = df["stratum"].unique()
     n_strata = len(unique_strata)
 
     # First pass: compute pooled variances across all strata for fallback
@@ -167,9 +163,9 @@ def stratified_ate(
     all_y1 = []
     all_y0 = []
     for stratum_id in unique_strata:
-        stratum_data = df[df['stratum'] == stratum_id]
-        y_stratum = stratum_data['outcome'].values
-        t_stratum = stratum_data['treatment'].values
+        stratum_data = df[df["stratum"] == stratum_id]
+        y_stratum = stratum_data["outcome"].values
+        t_stratum = stratum_data["treatment"].values
         all_y1.extend(y_stratum[t_stratum == 1])
         all_y0.extend(y_stratum[t_stratum == 0])
 
@@ -183,9 +179,9 @@ def stratified_ate(
 
     for stratum_id in unique_strata:
         # Get data for this stratum
-        stratum_data = df[df['stratum'] == stratum_id]
-        y_stratum = stratum_data['outcome'].values
-        t_stratum = stratum_data['treatment'].values
+        stratum_data = df[df["stratum"] == stratum_id]
+        y_stratum = stratum_data["outcome"].values
+        t_stratum = stratum_data["treatment"].values
 
         n_stratum = len(y_stratum)
 
@@ -236,7 +232,7 @@ def stratified_ate(
     ate = np.sum(np.array(stratum_estimates) * np.array(stratum_weights))
 
     # Overall variance (sum of weighted variances)
-    var_ate = np.sum((np.array(stratum_weights)**2) * (np.array(stratum_ses)**2))
+    var_ate = np.sum((np.array(stratum_weights) ** 2) * (np.array(stratum_ses) ** 2))
     se = np.sqrt(var_ate)
 
     # Degrees of freedom (Satterthwaite approximation for stratified design)
@@ -244,8 +240,8 @@ def stratified_ate(
     # Conservative: use minimum df across strata
     stratum_dfs = []
     for stratum_id in unique_strata:
-        stratum_data = df[df['stratum'] == stratum_id]
-        t_stratum = stratum_data['treatment'].values
+        stratum_data = df[df["stratum"] == stratum_id]
+        t_stratum = stratum_data["treatment"].values
         n1 = int(np.sum(t_stratum == 1))
         n0 = int(np.sum(t_stratum == 0))
         df_stratum = n1 + n0 - 2  # df for difference-in-means within stratum

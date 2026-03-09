@@ -41,9 +41,9 @@ pytestmark = pytest.mark.skipif(
 
 def generate_mediation_data(
     n: int = 500,
-    alpha_1: float = 0.6,    # T -> M effect
-    beta_1: float = 0.5,     # Direct effect T -> Y
-    beta_2: float = 0.8,     # M -> Y effect
+    alpha_1: float = 0.6,  # T -> M effect
+    beta_1: float = 0.5,  # Direct effect T -> Y
+    beta_2: float = 0.8,  # M -> Y effect
     noise_m: float = 0.5,
     noise_y: float = 0.5,
     seed: int = 42,
@@ -98,16 +98,19 @@ class TestBaronKennyParity:
         jl_result = julia_baron_kenny(outcome, treatment, mediator)
 
         # alpha_1 should match
-        assert np.isclose(py_result["alpha_1"], jl_result["alpha_1"], rtol=0.01), \
+        assert np.isclose(py_result["alpha_1"], jl_result["alpha_1"], rtol=0.01), (
             f"alpha_1 mismatch: Python={py_result['alpha_1']:.6f}, Julia={jl_result['alpha_1']:.6f}"
+        )
 
         # beta_1 should match
-        assert np.isclose(py_result["beta_1"], jl_result["beta_1"], rtol=0.01), \
+        assert np.isclose(py_result["beta_1"], jl_result["beta_1"], rtol=0.01), (
             f"beta_1 mismatch: Python={py_result['beta_1']:.6f}, Julia={jl_result['beta_1']:.6f}"
+        )
 
         # beta_2 should match
-        assert np.isclose(py_result["beta_2"], jl_result["beta_2"], rtol=0.01), \
+        assert np.isclose(py_result["beta_2"], jl_result["beta_2"], rtol=0.01), (
             f"beta_2 mismatch: Python={py_result['beta_2']:.6f}, Julia={jl_result['beta_2']:.6f}"
+        )
 
     @pytest.mark.skipif(not PYTHON_MEDIATION_AVAILABLE, reason="Python mediation not available")
     def test_effects_match(self):
@@ -178,12 +181,16 @@ class TestMediationAnalysisParity:
         outcome, treatment, mediator, _ = generate_mediation_data(n=500, seed=42)
 
         py_result = mediation_analysis(
-            outcome, treatment, mediator,
+            outcome,
+            treatment,
+            mediator,
             n_bootstrap=200,
             random_state=42,
         )
         jl_result = julia_mediation_analysis(
-            outcome, treatment, mediator,
+            outcome,
+            treatment,
+            mediator,
             n_bootstrap=200,
             seed=42,
         )
@@ -198,7 +205,9 @@ class TestMediationAnalysisParity:
         outcome, treatment, mediator, _ = generate_mediation_data(n=500, seed=42)
 
         jl_result = julia_mediation_analysis(
-            outcome, treatment, mediator,
+            outcome,
+            treatment,
+            mediator,
             n_bootstrap=200,
             seed=42,
         )
@@ -215,7 +224,9 @@ class TestMediationAnalysisParity:
         )
 
         jl_result = julia_mediation_analysis(
-            outcome, treatment, mediator,
+            outcome,
+            treatment,
+            mediator,
             n_bootstrap=100,
             seed=42,
         )
@@ -232,7 +243,9 @@ class TestMediationAnalysisParity:
         outcome, treatment, mediator = generate_full_mediation_data(n=2000, seed=42)
 
         jl_result = julia_mediation_analysis(
-            outcome, treatment, mediator,
+            outcome,
+            treatment,
+            mediator,
             n_bootstrap=100,
             seed=42,
         )

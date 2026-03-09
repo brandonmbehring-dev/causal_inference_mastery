@@ -89,12 +89,20 @@ class TestMatchingWithReplacement:
 
         # Check matches
         assert len(result.matches) == 2, "Should have 2 match entries (one per treated)"
-        assert result.matches[0] == [2], f"Treated 0 should match control 2, got {result.matches[0]}"
-        assert result.matches[1] == [3], f"Treated 1 should match control 3, got {result.matches[1]}"
+        assert result.matches[0] == [2], (
+            f"Treated 0 should match control 2, got {result.matches[0]}"
+        )
+        assert result.matches[1] == [3], (
+            f"Treated 1 should match control 3, got {result.matches[1]}"
+        )
 
         # Check distances
-        assert np.isclose(result.distances[0][0], 0.05), f"Distance should be 0.05, got {result.distances[0][0]}"
-        assert np.isclose(result.distances[1][0], 0.05), f"Distance should be 0.05, got {result.distances[1][0]}"
+        assert np.isclose(result.distances[0][0], 0.05), (
+            f"Distance should be 0.05, got {result.distances[0][0]}"
+        )
+        assert np.isclose(result.distances[1][0], 0.05), (
+            f"Distance should be 0.05, got {result.distances[1][0]}"
+        )
 
         # Check summary statistics
         assert result.n_matched == 2, "Both treated units should be matched"
@@ -121,7 +129,9 @@ class TestMatchingWithReplacement:
 
         # Treated 0 should match controls 1 and 2 (both distance 0.1)
         assert len(result.matches[0]) == 2, f"Should have 2 matches, got {len(result.matches[0])}"
-        assert set(result.matches[0]) == {1, 2}, f"Should match controls 1 and 2, got {result.matches[0]}"
+        assert set(result.matches[0]) == {1, 2}, (
+            f"Should match controls 1 and 2, got {result.matches[0]}"
+        )
 
     def test_control_reuse_with_replacement(self):
         """

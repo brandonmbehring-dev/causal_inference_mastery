@@ -71,9 +71,7 @@ class TestPCKnownStructures:
         # V-structure should be detected (edges directed into X1)
         cpdag = result.cpdag
         # At least one directed edge pointing to node 1
-        has_directed_to_1 = (
-            cpdag.has_directed_edge(0, 1) or cpdag.has_directed_edge(2, 1)
-        )
+        has_directed_to_1 = cpdag.has_directed_edge(0, 1) or cpdag.has_directed_edge(2, 1)
         assert has_directed_to_1, "V-structure not detected in collider"
 
     def test_fork_no_v_structure(self, fork_dag):

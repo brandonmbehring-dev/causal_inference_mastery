@@ -51,8 +51,7 @@ pytestmark = pytest.mark.skipif(
 requires_shiftsharese = pytest.mark.skipif(
     not check_shiftsharese_installed(),
     reason=(
-        "R 'ShiftShareSE' package not installed. "
-        "Install with: install.packages('ShiftShareSE')"
+        "R 'ShiftShareSE' package not installed. Install with: install.packages('ShiftShareSE')"
     ),
 )
 
@@ -326,9 +325,7 @@ class TestShiftShareSEVsR:
             py_result["se"],
             r_result["se"],
             rtol=0.20,
-        ), (
-            f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
-        )
+        ), f"SE mismatch: Python={py_result['se']:.4f}, R={r_result['se']:.4f}"
 
     def test_se_order_of_magnitude(self, ss_basic):
         """SE should be same order of magnitude as R."""
@@ -660,9 +657,7 @@ class TestShiftShareMonteCarloTriangulation:
 
         # Correlation should be positive
         correlation = np.corrcoef(py_ses, r_ses)[0, 1]
-        assert correlation > 0.5, (
-            f"SE correlation {correlation:.2f} too low (expected > 0.5)"
-        )
+        assert correlation > 0.5, f"SE correlation {correlation:.2f} too low (expected > 0.5)"
 
 
 # =============================================================================

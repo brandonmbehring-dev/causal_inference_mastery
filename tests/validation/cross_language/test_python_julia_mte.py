@@ -24,14 +24,14 @@ try:
         julia_local_iv,
         julia_ate_from_mte,
     )
+
     JULIA_AVAILABLE = is_julia_available()
 except ImportError:
     JULIA_AVAILABLE = False
 
 
 pytestmark = pytest.mark.skipif(
-    not JULIA_AVAILABLE,
-    reason="Julia not available for cross-language tests"
+    not JULIA_AVAILABLE, reason="Julia not available for cross-language tests"
 )
 
 
@@ -92,6 +92,7 @@ def generate_heterogeneous_mte_data(
 
     # Propensity: P(D=1|Z) = Phi(Z)
     from scipy.stats import norm
+
     propensity = norm.cdf(Z)
 
     # Selection

@@ -70,9 +70,7 @@ def compute_scm_weights(
     n_control, n_pre_control = control_pre.shape
 
     if n_pre != n_pre_control:
-        raise ValueError(
-            f"Pre-period mismatch: treated has {n_pre}, control has {n_pre_control}"
-        )
+        raise ValueError(f"Pre-period mismatch: treated has {n_pre}, control has {n_pre_control}")
 
     # For multiple treated units, use average (standard approach)
     treated_avg = treated_pre.mean(axis=0) if n_treated > 1 else treated_pre.flatten()
@@ -232,7 +230,7 @@ def compute_pre_treatment_fit(
     synthetic = control_pre.T @ weights  # (n_pre,)
 
     residuals = treated_1d - synthetic
-    ss_res = np.sum(residuals ** 2)
+    ss_res = np.sum(residuals**2)
     ss_tot = np.sum((treated_1d - treated_1d.mean()) ** 2)
 
     rmse = np.sqrt(ss_res / len(treated_1d))

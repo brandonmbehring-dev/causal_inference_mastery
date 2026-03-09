@@ -119,9 +119,7 @@ class TestSAWeights:
 
     def test_sa_weights_sum_to_one(self):
         """Verify SA weights sum to 1.0."""
-        data = dgp_staggered_heterogeneous(
-            n_units=150, n_periods=10, random_state=42
-        )
+        data = dgp_staggered_heterogeneous(n_units=150, n_periods=10, random_state=42)
 
         staggered = create_staggered_data(
             outcomes=data.outcomes,
@@ -137,9 +135,7 @@ class TestSAWeights:
         weights_df = result["weights"]
         total_weight = weights_df["weight"].sum()
 
-        assert abs(total_weight - 1.0) < 1e-4, (
-            f"SA weights sum to {total_weight:.6f}, expected 1.0"
-        )
+        assert abs(total_weight - 1.0) < 1e-4, f"SA weights sum to {total_weight:.6f}, expected 1.0"
 
     @pytest.mark.slow
     def test_sa_att_equals_weighted_average(self):
@@ -183,7 +179,7 @@ class TestSAWeights:
         # Most should match (allowing for numerical precision)
         match_rate = match_count / n_runs
         assert match_rate > 0.90, (
-            f"Only {match_rate*100:.0f}% of ATT values match manual calculation"
+            f"Only {match_rate * 100:.0f}% of ATT values match manual calculation"
         )
 
 
@@ -228,9 +224,7 @@ class TestSACoverage:
         print(f"\n=== SA Cluster SE Coverage ===")
         print(f"Coverage: {coverage:.4f}")
 
-        assert 0.85 < coverage < 0.99, (
-            f"SA coverage {coverage:.4f} outside [0.85, 0.99]"
-        )
+        assert 0.85 < coverage < 0.99, f"SA coverage {coverage:.4f} outside [0.85, 0.99]"
 
 
 class TestSADiagnostics:

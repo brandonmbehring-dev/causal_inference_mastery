@@ -185,9 +185,7 @@ def large_rct_data():
 @pytest.fixture
 def heterogeneous_data():
     """RCT with heterogeneous treatment effects."""
-    return generate_heterogeneous_qte_dgp(
-        n=500, base_effect=1.0, heterogeneity=1.0, seed=42
-    )
+    return generate_heterogeneous_qte_dgp(n=500, base_effect=1.0, heterogeneity=1.0, seed=42)
 
 
 @pytest.fixture
@@ -233,9 +231,7 @@ def negative_effect_data():
 @pytest.fixture
 def imbalanced_treatment_data():
     """Data with imbalanced treatment (80% treated)."""
-    return generate_homogeneous_qte_dgp(
-        n=500, true_ate=2.0, treatment_prob=0.8, seed=42
-    )
+    return generate_homogeneous_qte_dgp(n=500, true_ate=2.0, treatment_prob=0.8, seed=42)
 
 
 @pytest.fixture

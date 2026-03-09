@@ -51,6 +51,7 @@ class RDDData:
     error_sd : float
         Standard deviation of errors
     """
+
     Y: np.ndarray
     X: np.ndarray
     D: np.ndarray
@@ -67,6 +68,7 @@ class RDDData:
 # =============================================================================
 # Sharp RDD DGPs
 # =============================================================================
+
 
 def dgp_rdd_linear(
     n: int = 500,
@@ -181,7 +183,7 @@ def dgp_rdd_quadratic(
     D = (X >= cutoff).astype(float)
 
     # Outcome: quadratic with jump (derivative = 0 at cutoff)
-    Y = true_tau * D + curvature * (X - cutoff)**2 + rng.normal(0, error_sd, n)
+    Y = true_tau * D + curvature * (X - cutoff) ** 2 + rng.normal(0, error_sd, n)
 
     return RDDData(
         Y=Y,
@@ -466,6 +468,7 @@ def dgp_rdd_different_slopes(
 # Diagnostic Test DGPs
 # =============================================================================
 
+
 def dgp_rdd_no_manipulation(
     n: int = 1000,
     true_tau: float = 2.0,
@@ -567,7 +570,9 @@ def dgp_rdd_manipulation(
 
     # Manipulation: units just below cutoff move to just above
     manipulate_candidates = (X >= cutoff - bunching_width) & (X < cutoff)
-    manipulate = manipulate_candidates & (rng.uniform(0, 1, n) < bunching_fraction / (bunching_width / 5))
+    manipulate = manipulate_candidates & (
+        rng.uniform(0, 1, n) < bunching_fraction / (bunching_width / 5)
+    )
 
     # Move manipulated units to just above cutoff
     X[manipulate] = cutoff + rng.uniform(0, bunching_width, manipulate.sum())
@@ -721,6 +726,7 @@ def dgp_rdd_sorting(
 # =============================================================================
 # Additional DGPs for specific tests
 # =============================================================================
+
 
 def dgp_rdd_small_sample(
     n: int = 100,

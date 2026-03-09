@@ -46,8 +46,7 @@ class TestEValueFormula:
                 expected_e = rr + np.sqrt(rr * (rr - 1))
 
             assert np.isclose(result["e_value"], expected_e, rtol=1e-10), (
-                f"E-value mismatch for RR={rr}: got {result['e_value']}, "
-                f"expected {expected_e}"
+                f"E-value mismatch for RR={rr}: got {result['e_value']}, expected {expected_e}"
             )
 
     @pytest.mark.monte_carlo
@@ -60,7 +59,7 @@ class TestEValueFormula:
         for i in range(1, len(e_values)):
             assert e_values[i] >= e_values[i - 1] - 1e-10, (
                 f"E-value not monotonic: E({rr_values[i]}) = {e_values[i]} < "
-                f"E({rr_values[i-1]}) = {e_values[i-1]}"
+                f"E({rr_values[i - 1]}) = {e_values[i - 1]}"
             )
 
     @pytest.mark.monte_carlo
@@ -89,9 +88,7 @@ class TestEValueConversions:
 
         for seed in range(n_runs):
             # Generate data with known SMD
-            outcomes, treatment, true_smd = dgp_evalue_smd(
-                n=200, true_smd=0.5, random_state=seed
-            )
+            outcomes, treatment, true_smd = dgp_evalue_smd(n=200, true_smd=0.5, random_state=seed)
 
             # Compute observed SMD
             treated_mean = outcomes[treatment == 1].mean()
@@ -193,15 +190,11 @@ class TestRosenbaumProperties:
                 n_pairs=30, true_effect=2.0, random_state=seed
             )
 
-            result = rosenbaum_bounds(
-                treated, control, gamma_range=(1.0, 3.0), n_gamma=20
-            )
+            result = rosenbaum_bounds(treated, control, gamma_range=(1.0, 3.0), n_gamma=20)
 
             # P_upper should be non-decreasing
             p_upper_diffs = np.diff(result["p_upper"])
-            assert all(p_upper_diffs >= -1e-10), (
-                f"P_upper not monotonic at seed {seed}"
-            )
+            assert all(p_upper_diffs >= -1e-10), f"P_upper not monotonic at seed {seed}"
 
             # P_lower should be non-increasing (or approximately so)
             # Note: numerical issues can cause small violations
@@ -219,9 +212,7 @@ class TestRosenbaumProperties:
                 n_pairs=30, true_effect=1.5, random_state=seed
             )
 
-            result = rosenbaum_bounds(
-                treated, control, gamma_range=(1.0, 3.0), n_gamma=20
-            )
+            result = rosenbaum_bounds(treated, control, gamma_range=(1.0, 3.0), n_gamma=20)
 
             for i, gamma in enumerate(result["gamma_values"]):
                 assert result["p_upper"][i] >= result["p_lower"][i] - 1e-10, (
@@ -236,9 +227,7 @@ class TestRosenbaumProperties:
                 n_pairs=30, true_effect=2.0, random_state=seed
             )
 
-            result = rosenbaum_bounds(
-                treated, control, gamma_range=(1.0, 5.0), n_gamma=20
-            )
+            result = rosenbaum_bounds(treated, control, gamma_range=(1.0, 5.0), n_gamma=20)
 
             assert all(0 <= p <= 1 for p in result["p_upper"]), "P_upper out of bounds"
             assert all(0 <= p <= 1 for p in result["p_lower"]), "P_lower out of bounds"
@@ -257,9 +246,7 @@ class TestRosenbaumEffectSize:
                 n_pairs=40, true_effect=5.0, random_state=seed
             )
 
-            result = rosenbaum_bounds(
-                treated, control, gamma_range=(1.0, 5.0), n_gamma=30
-            )
+            result = rosenbaum_bounds(treated, control, gamma_range=(1.0, 5.0), n_gamma=30)
 
             if result["gamma_critical"] is not None:
                 gamma_criticals.append(result["gamma_critical"])
@@ -284,9 +271,7 @@ class TestRosenbaumEffectSize:
                 n_pairs=40, true_effect=0.3, random_state=seed
             )
 
-            result = rosenbaum_bounds(
-                treated, control, gamma_range=(1.0, 3.0), n_gamma=20
-            )
+            result = rosenbaum_bounds(treated, control, gamma_range=(1.0, 3.0), n_gamma=20)
 
             if result["gamma_critical"] is not None:
                 gamma_criticals.append(result["gamma_critical"])
@@ -294,9 +279,7 @@ class TestRosenbaumEffectSize:
         # Weak effect: most should have low gamma_critical
         if len(gamma_criticals) > n_runs * 0.3:  # At least 30% have gamma_critical
             mean_gamma = np.mean(gamma_criticals)
-            assert mean_gamma < 2.0, (
-                f"Weak effect too robust: mean gamma_critical={mean_gamma:.2f}"
-            )
+            assert mean_gamma < 2.0, f"Weak effect too robust: mean gamma_critical={mean_gamma:.2f}"
 
     @pytest.mark.monte_carlo
     def test_null_effect_very_sensitive(self, n_runs: int = 300):
@@ -305,9 +288,7 @@ class TestRosenbaumEffectSize:
         not_significant_at_gamma1 = 0
 
         for seed in range(n_runs):
-            treated, control, _ = dgp_matched_pairs_null_effect(
-                n_pairs=40, random_state=seed
-            )
+            treated, control, _ = dgp_matched_pairs_null_effect(n_pairs=40, random_state=seed)
 
             result = rosenbaum_bounds(
                 treated, control, gamma_range=(1.0, 2.0), n_gamma=15, alpha=0.05
@@ -340,9 +321,7 @@ class TestRosenbaumSampleSize:
             treated_s, control_s, _ = dgp_matched_pairs_no_confounding(
                 n_pairs=15, true_effect=1.5, random_state=seed
             )
-            result_s = rosenbaum_bounds(
-                treated_s, control_s, gamma_range=(1.0, 3.0), n_gamma=20
-            )
+            result_s = rosenbaum_bounds(treated_s, control_s, gamma_range=(1.0, 3.0), n_gamma=20)
             if result_s["gamma_critical"] is not None:
                 small_gammas.append(result_s["gamma_critical"])
 
@@ -350,9 +329,7 @@ class TestRosenbaumSampleSize:
             treated_l, control_l, _ = dgp_matched_pairs_no_confounding(
                 n_pairs=60, true_effect=1.5, random_state=seed + 10000
             )
-            result_l = rosenbaum_bounds(
-                treated_l, control_l, gamma_range=(1.0, 3.0), n_gamma=20
-            )
+            result_l = rosenbaum_bounds(treated_l, control_l, gamma_range=(1.0, 3.0), n_gamma=20)
             if result_l["gamma_critical"] is not None:
                 large_gammas.append(result_l["gamma_critical"])
 
@@ -363,7 +340,10 @@ class TestRosenbaumSampleSize:
 
         # Either more robust results, or higher mean gamma_critical
         if len(small_gammas) > 10 and len(large_gammas) > 10:
-            assert large_robust >= small_robust - 20 or np.mean(large_gammas) >= np.mean(small_gammas) - 0.3, (
+            assert (
+                large_robust >= small_robust - 20
+                or np.mean(large_gammas) >= np.mean(small_gammas) - 0.3
+            ), (
                 f"Larger samples not more robust: "
                 f"small={np.mean(small_gammas):.2f} ({small_robust} robust), "
                 f"large={np.mean(large_gammas):.2f} ({large_robust} robust)"

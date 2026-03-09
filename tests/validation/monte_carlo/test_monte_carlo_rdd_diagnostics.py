@@ -64,9 +64,7 @@ class TestMcCraryTypeIError:
             data = dgp_rdd_no_manipulation(n=1000, random_state=seed)
 
             try:
-                theta, p_value, _ = mccrary_density_test(
-                    data.X, data.cutoff, bandwidth=None
-                )
+                theta, p_value, _ = mccrary_density_test(data.X, data.cutoff, bandwidth=None)
 
                 rejected = p_value < alpha
                 rejections.append(rejected)
@@ -101,9 +99,7 @@ class TestMcCraryTypeIError:
             data = dgp_rdd_linear(n=1000, random_state=seed)
 
             try:
-                theta, p_value, _ = mccrary_density_test(
-                    data.X, data.cutoff, bandwidth=None
-                )
+                theta, p_value, _ = mccrary_density_test(data.X, data.cutoff, bandwidth=None)
 
                 rejected = p_value < alpha
                 rejections.append(rejected)
@@ -143,9 +139,7 @@ class TestMcCraryPower:
             )
 
             try:
-                theta, p_value, _ = mccrary_density_test(
-                    data.X, data.cutoff, bandwidth=None
-                )
+                theta, p_value, _ = mccrary_density_test(data.X, data.cutoff, bandwidth=None)
 
                 rejected = p_value < alpha
                 rejections.append(rejected)
@@ -184,9 +178,7 @@ class TestMcCraryPower:
                 )
 
                 try:
-                    theta, p_value, _ = mccrary_density_test(
-                        data.X, data.cutoff, bandwidth=None
-                    )
+                    theta, p_value, _ = mccrary_density_test(data.X, data.cutoff, bandwidth=None)
                     rejected = p_value < alpha
                     rejections.append(rejected)
                 except Exception:
@@ -218,14 +210,10 @@ class TestCovariateBalanceTypeIError:
         rejections_by_covariate = [[], [], []]  # 3 covariates
 
         for seed in range(n_runs):
-            data = dgp_rdd_balanced_covariates(
-                n=500, n_covariates=3, random_state=seed
-            )
+            data = dgp_rdd_balanced_covariates(n=500, n_covariates=3, random_state=seed)
 
             try:
-                results = covariate_balance_test(
-                    data.X, data.W, data.cutoff, bandwidth="ik"
-                )
+                results = covariate_balance_test(data.X, data.W, data.cutoff, bandwidth="ik")
 
                 for i, row in enumerate(results.itertuples()):
                     rejected = row.p_value < alpha
@@ -261,14 +249,10 @@ class TestCovariateBalancePower:
         rejections = []
 
         for seed in range(n_runs):
-            data = dgp_rdd_sorting(
-                n=500, sorting_strength=0.5, random_state=seed
-            )
+            data = dgp_rdd_sorting(n=500, sorting_strength=0.5, random_state=seed)
 
             try:
-                results = covariate_balance_test(
-                    data.X, data.W, data.cutoff, bandwidth="ik"
-                )
+                results = covariate_balance_test(data.X, data.W, data.cutoff, bandwidth="ik")
 
                 # Should reject for the sorted covariate
                 rejected = results["p_value"].iloc[0] < alpha
@@ -300,14 +284,10 @@ class TestCovariateBalancePower:
             rejections = []
 
             for seed in range(n_runs):
-                data = dgp_rdd_sorting(
-                    n=500, sorting_strength=sorting_strength, random_state=seed
-                )
+                data = dgp_rdd_sorting(n=500, sorting_strength=sorting_strength, random_state=seed)
 
                 try:
-                    results = covariate_balance_test(
-                        data.X, data.W, data.cutoff, bandwidth="ik"
-                    )
+                    results = covariate_balance_test(data.X, data.W, data.cutoff, bandwidth="ik")
                     rejected = results["p_value"].iloc[0] < alpha
                     rejections.append(rejected)
                 except Exception:
@@ -349,9 +329,7 @@ class TestBandwidthSensitivityStability:
 
                 h_optimal = rdd.bandwidth_left_
 
-                results = bandwidth_sensitivity_analysis(
-                    data.Y, data.X, data.cutoff, h_optimal
-                )
+                results = bandwidth_sensitivity_analysis(data.Y, data.X, data.cutoff, h_optimal)
 
                 estimates = results["estimate"].values
                 cv = np.std(estimates) / np.abs(np.mean(estimates))
@@ -393,9 +371,7 @@ class TestDiagnosticIntegration:
 
             # McCrary test
             try:
-                _, p_value, _ = mccrary_density_test(
-                    data.X, data.cutoff, bandwidth=None
-                )
+                _, p_value, _ = mccrary_density_test(data.X, data.cutoff, bandwidth=None)
                 if p_value > 0.05:
                     mccrary_passes += 1
             except Exception:
@@ -403,9 +379,7 @@ class TestDiagnosticIntegration:
 
             # Balance test
             try:
-                results = covariate_balance_test(
-                    data.X, data.W, data.cutoff, bandwidth="ik"
-                )
+                results = covariate_balance_test(data.X, data.W, data.cutoff, bandwidth="ik")
                 # Pass if no covariate is significant
                 if all(results["p_value"] > 0.05):
                     balance_passes += 1
@@ -441,9 +415,7 @@ class TestDiagnosticIntegration:
             f"McCrary pass rate {mccrary_rate:.2%} too low for valid RDD "
             f"(Session 158 fix: Python ~5% Type I error, Julia ~4%)"
         )
-        assert balance_rate > 0.80, (
-            f"Balance pass rate {balance_rate:.2%} too low for valid RDD"
-        )
+        assert balance_rate > 0.80, f"Balance pass rate {balance_rate:.2%} too low for valid RDD"
         assert sensitivity_rate > 0.85, (
             f"Sensitivity pass rate {sensitivity_rate:.2%} too low for valid RDD"
         )
@@ -489,9 +461,7 @@ class TestDiagnosticIntegration:
 
             # Balance test
             try:
-                results = covariate_balance_test(
-                    manip_data.X, W, manip_data.cutoff, bandwidth="ik"
-                )
+                results = covariate_balance_test(manip_data.X, W, manip_data.cutoff, bandwidth="ik")
                 if any(results["p_value"] < 0.05):
                     flagged = True
             except Exception:

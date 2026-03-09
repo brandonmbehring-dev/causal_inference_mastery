@@ -101,16 +101,12 @@ def _cross_fit_neural_nuisance(
         T_train = treatment[train_idx]
 
         # Fit outcome model
-        outcome_model = _get_mlp_regressor(
-            hidden_layers, max_iter, random_state=42 + fold_idx
-        )
+        outcome_model = _get_mlp_regressor(hidden_layers, max_iter, random_state=42 + fold_idx)
         outcome_model.fit(X_train, Y_train)
         m_hat[test_idx] = outcome_model.predict(X_test)
 
         # Fit propensity model
-        prop_model = _get_mlp_classifier(
-            hidden_layers, max_iter, random_state=100 + fold_idx
-        )
+        prop_model = _get_mlp_classifier(hidden_layers, max_iter, random_state=100 + fold_idx)
         prop_model.fit(X_train, T_train.astype(int))
         e_hat[test_idx] = prop_model.predict_proba(X_test)[:, 1]
 

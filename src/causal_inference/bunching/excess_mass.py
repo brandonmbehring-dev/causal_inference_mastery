@@ -131,9 +131,7 @@ def compute_elasticity(
     if t2_rate < 0 or t2_rate >= 1:
         raise ValueError(f"t2_rate must be in [0, 1), got {t2_rate}")
     if t2_rate <= t1_rate:
-        raise ValueError(
-            f"t2_rate ({t2_rate}) must be greater than t1_rate ({t1_rate}) for a kink"
-        )
+        raise ValueError(f"t2_rate ({t2_rate}) must be greater than t1_rate ({t1_rate}) for a kink")
 
     # Log change in net-of-tax rate
     log_change = np.log((1 - t1_rate) / (1 - t2_rate))

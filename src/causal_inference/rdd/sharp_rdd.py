@@ -426,11 +426,7 @@ class SharpRDD:
         weights = self._kernel_weight(u, kernel)
 
         # Design matrix: [1, X_centered, X_centered²]
-        design = np.column_stack([
-            np.ones(len(X_side)),
-            X_centered,
-            X_centered ** 2
-        ])
+        design = np.column_stack([np.ones(len(X_side)), X_centered, X_centered**2])
 
         # Weighted least squares
         W = np.diag(weights)
@@ -483,12 +479,8 @@ class SharpRDD:
         )
 
         # Linear fits on each side using h_bias
-        alpha_left_lin, _, _, _ = self._local_linear_regression(
-            Y, X, "left", h_bias, self.kernel
-        )
-        alpha_right_lin, _, _, _ = self._local_linear_regression(
-            Y, X, "right", h_bias, self.kernel
-        )
+        alpha_left_lin, _, _, _ = self._local_linear_regression(Y, X, "left", h_bias, self.kernel)
+        alpha_right_lin, _, _, _ = self._local_linear_regression(Y, X, "right", h_bias, self.kernel)
 
         # Treatment effects
         tau_quad = alpha_right_quad - alpha_left_quad
@@ -499,9 +491,7 @@ class SharpRDD:
 
         return bias
 
-    def _robust_standard_error(
-        self, Y: np.ndarray, X: np.ndarray, se_main: float
-    ) -> float:
+    def _robust_standard_error(self, Y: np.ndarray, X: np.ndarray, se_main: float) -> float:
         """
         Compute CCT robust standard error accounting for bias estimation uncertainty.
 
@@ -530,17 +520,13 @@ class SharpRDD:
         h_bias = self.h_bias_
 
         # Estimate SE at h_bias for the bias variance component
-        _, _, var_left_bias, _ = self._local_linear_regression(
-            Y, X, "left", h_bias, self.kernel
-        )
-        _, _, var_right_bias, _ = self._local_linear_regression(
-            Y, X, "right", h_bias, self.kernel
-        )
+        _, _, var_left_bias, _ = self._local_linear_regression(Y, X, "left", h_bias, self.kernel)
+        _, _, var_right_bias, _ = self._local_linear_regression(Y, X, "right", h_bias, self.kernel)
 
         se_bias = np.sqrt(var_left_bias + var_right_bias)
 
         # CCT robust SE formula
-        se_robust = np.sqrt(se_main**2 + (0.5 * se_bias)**2)
+        se_robust = np.sqrt(se_main**2 + (0.5 * se_bias) ** 2)
 
         return se_robust
 
@@ -569,29 +555,33 @@ class SharpRDD:
 
         # Add CCT bias correction info if applicable
         if self.bias_corrected_:
-            lines.extend([
-                f"Bias Corrected:   Yes (CCT)",
-                f"h_bias:           {self.h_bias_:.4f}",
-                f"Bias Estimate:    {self.bias_estimate_:.4f}",
-            ])
+            lines.extend(
+                [
+                    f"Bias Corrected:   Yes (CCT)",
+                    f"h_bias:           {self.h_bias_:.4f}",
+                    f"Bias Estimate:    {self.bias_estimate_:.4f}",
+                ]
+            )
 
-        lines.extend([
-            "-" * 70,
-            f"Treatment Effect: {self.coef_:.4f}",
-            f"Std. Error:       {self.se_:.4f}" + (" (robust)" if self.bias_corrected_ else ""),
-            f"t-statistic:      {self.t_stat_:.4f}",
-            f"p-value:          {self.p_value_:.4f}",
-            f"95% CI:           [{self.ci_[0]:.4f}, {self.ci_[1]:.4f}]",
-            "-" * 70,
-            f"n (left):         {self.n_left_:,}",
-            f"n (right):        {self.n_right_:,}",
-            f"Total n:          {self.n_left_ + self.n_right_:,}",
-            "-" * 70,
-            f"alpha (left):     {self.alpha_left_:.4f}",
-            f"alpha (right):    {self.alpha_right_:.4f}",
-            f"beta (left):      {self.beta_left_:.4f}",
-            f"beta (right):     {self.beta_right_:.4f}",
-            "=" * 70,
-        ])
+        lines.extend(
+            [
+                "-" * 70,
+                f"Treatment Effect: {self.coef_:.4f}",
+                f"Std. Error:       {self.se_:.4f}" + (" (robust)" if self.bias_corrected_ else ""),
+                f"t-statistic:      {self.t_stat_:.4f}",
+                f"p-value:          {self.p_value_:.4f}",
+                f"95% CI:           [{self.ci_[0]:.4f}, {self.ci_[1]:.4f}]",
+                "-" * 70,
+                f"n (left):         {self.n_left_:,}",
+                f"n (right):        {self.n_right_:,}",
+                f"Total n:          {self.n_left_ + self.n_right_:,}",
+                "-" * 70,
+                f"alpha (left):     {self.alpha_left_:.4f}",
+                f"alpha (right):    {self.alpha_right_:.4f}",
+                f"beta (left):      {self.beta_left_:.4f}",
+                f"beta (right):     {self.beta_right_:.4f}",
+                "=" * 70,
+            ]
+        )
 
         return "\n".join(lines)

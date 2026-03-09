@@ -861,9 +861,7 @@ class TestRKDEdgeCases:
 
         # Effective sample sizes should be asymmetric
         # Left: ~80% of data, Right: ~20% of data
-        assert py_result.n_left > py_result.n_right, (
-            f"Expected n_left > n_right for cutoff at 3.0"
-        )
+        assert py_result.n_left > py_result.n_right, f"Expected n_left > n_right for cutoff at 3.0"
 
         # R comparison
         r_result = r_sharp_rkd(
@@ -914,7 +912,9 @@ class TestRKDConsistency:
         # Sharp RKD
         sharp_rkd = SharpRKD(cutoff=cutoff, bandwidth=2.0)
         sharp_result = sharp_rkd.fit(
-            y=y, x=x, d=d,
+            y=y,
+            x=x,
+            d=d,
             slope_d_left=slope_d_left,
             slope_d_right=slope_d_right,
         )
@@ -970,6 +970,4 @@ class TestRKDConsistency:
 
         # Coverage should be 90-98% (allowing some slack for RKD's
         # inherent difficulty with SE estimation)
-        assert 0.85 < coverage < 0.99, (
-            f"Coverage {coverage:.2%} outside acceptable range (85-99%)"
-        )
+        assert 0.85 < coverage < 0.99, f"Coverage {coverage:.2%} outside acceptable range (85-99%)"

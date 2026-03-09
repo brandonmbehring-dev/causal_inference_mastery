@@ -79,10 +79,21 @@ class TestSyntheticControlKnownAnswer:
 
         # Check required fields
         required_fields = [
-            "estimate", "se", "ci_lower", "ci_upper", "p_value",
-            "weights", "pre_rmse", "pre_r_squared",
-            "n_treated", "n_control", "n_pre_periods", "n_post_periods",
-            "synthetic_control", "treated_series", "gap",
+            "estimate",
+            "se",
+            "ci_lower",
+            "ci_upper",
+            "p_value",
+            "weights",
+            "pre_rmse",
+            "pre_r_squared",
+            "n_treated",
+            "n_control",
+            "n_pre_periods",
+            "n_post_periods",
+            "synthetic_control",
+            "treated_series",
+            "gap",
         ]
 
         for field in required_fields:
@@ -111,7 +122,7 @@ class TestSyntheticControlKnownAnswer:
             inference="none",
         )
 
-        pre_gap = result["gap"][:simple_panel["treatment_period"]]
+        pre_gap = result["gap"][: simple_panel["treatment_period"]]
         assert np.abs(pre_gap).mean() < 0.5
 
     def test_simplex_constraint(self, multi_control_panel):
@@ -326,9 +337,7 @@ class TestEdgeCases:
 
         treatment = np.array([1, 0, 0, 0])
 
-        result = synthetic_control(
-            outcomes, treatment, treatment_period, inference="none"
-        )
+        result = synthetic_control(outcomes, treatment, treatment_period, inference="none")
 
         assert result["estimate"] > 5.0
 
@@ -343,9 +352,7 @@ class TestEdgeCases:
 
         treatment = np.array([1, 0, 0, 0])
 
-        result = synthetic_control(
-            outcomes, treatment, treatment_period, inference="none"
-        )
+        result = synthetic_control(outcomes, treatment, treatment_period, inference="none")
 
         assert result["estimate"] < -2.0
 
@@ -362,9 +369,7 @@ class TestEdgeCases:
 
         treatment = np.array([1, 1, 0, 0, 0])
 
-        result = synthetic_control(
-            outcomes, treatment, treatment_period, inference="none"
-        )
+        result = synthetic_control(outcomes, treatment, treatment_period, inference="none")
 
         assert result["n_treated"] == 2
         assert result["n_control"] == 3
@@ -492,9 +497,7 @@ class TestMonteCarlo:
             treatment = np.zeros(n_units)
             treatment[0] = 1
 
-            result = synthetic_control(
-                outcomes, treatment, treatment_period, inference="none"
-            )
+            result = synthetic_control(outcomes, treatment, treatment_period, inference="none")
             estimates.append(result["estimate"])
 
         mean_estimate = np.mean(estimates)
@@ -523,8 +526,12 @@ class TestMonteCarlo:
             treatment[0] = 1
 
             result = synthetic_control(
-                outcomes, treatment, treatment_period,
-                inference="placebo", n_placebo=30, alpha=0.10,
+                outcomes,
+                treatment,
+                treatment_period,
+                inference="placebo",
+                n_placebo=30,
+                alpha=0.10,
             )
 
             if result["ci_lower"] < true_effect < result["ci_upper"]:

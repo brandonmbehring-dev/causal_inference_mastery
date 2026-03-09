@@ -153,9 +153,7 @@ def factor_analysis_cate(
     X_augmented = np.column_stack([covariates, latent])
 
     # Apply base learner
-    result = _apply_base_learner(
-        outcomes, treatment, X_augmented, base_learner, model, alpha
-    )
+    result = _apply_base_learner(outcomes, treatment, X_augmented, base_learner, model, alpha)
 
     # Return with updated method name
     return CATEResult(
@@ -251,9 +249,7 @@ def ppca_cate(
     X_augmented = np.column_stack([covariates, latent])
 
     # Apply base learner
-    result = _apply_base_learner(
-        outcomes, treatment, X_augmented, base_learner, model, alpha
-    )
+    result = _apply_base_learner(outcomes, treatment, X_augmented, base_learner, model, alpha)
 
     # Return with updated method name
     return CATEResult(

@@ -158,9 +158,7 @@ def dynamic_dml(
     PanelStratifiedSplit : Cross-fitting for panel data
     """
     # Validate inputs
-    outcomes, treatments, states = validate_dynamic_inputs(
-        outcomes, treatments, states, max_lag
-    )
+    outcomes, treatments, states = validate_dynamic_inputs(outcomes, treatments, states, max_lag)
 
     # Validate cross-fitting choice
     if cross_fitting == "panel" and unit_id is None:
@@ -243,9 +241,7 @@ def dynamic_dml(
 
     # Confidence intervals
     theta_1d = theta[:, 0] if theta.ndim > 1 else theta
-    ci_lower, ci_upper = confidence_interval(
-        theta_1d, theta_se, alpha=alpha, method="normal"
-    )
+    ci_lower, ci_upper = confidence_interval(theta_1d, theta_se, alpha=alpha, method="normal")
 
     # Cumulative effect
     cumulative, weights = compute_cumulative_effect(theta, discount_factor)
@@ -423,9 +419,7 @@ def simulate_dynamic_dgp(
     # Y_t = Σ_h θ_h D_{t-h} + β'X_t + ε_t
     covariate_effects = np.array([1.0, 0.5, 0.2])[:n_covariates]
     if len(covariate_effects) < n_covariates:
-        covariate_effects = np.pad(
-            covariate_effects, (0, n_covariates - len(covariate_effects))
-        )
+        covariate_effects = np.pad(covariate_effects, (0, n_covariates - len(covariate_effects)))
 
     Y = np.zeros(n_obs)
     for t in range(n_obs):

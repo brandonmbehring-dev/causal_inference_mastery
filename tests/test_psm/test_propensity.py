@@ -47,7 +47,9 @@ class TestTrimPropensity:
         result = trim_propensity(propensity, treatment, outcomes, covariates, trim_at=(0.01, 0.99))
 
         # With interpolation, 2 edge units trimmed
-        assert result["n_trimmed"] == 2, f"Expected 2 trimmed (edge values), got {result['n_trimmed']}"
+        assert result["n_trimmed"] == 2, (
+            f"Expected 2 trimmed (edge values), got {result['n_trimmed']}"
+        )
         assert result["n_kept"] == 5, "Expected 5 kept (middle values)"
         assert len(result["propensity"]) == 5
 
@@ -98,8 +100,9 @@ class TestTrimPropensity:
 
         # Check kept mask
         expected_keep_mask = np.array([False, True, True, True, False])
-        assert np.array_equal(result["keep_mask"], expected_keep_mask), \
+        assert np.array_equal(result["keep_mask"], expected_keep_mask), (
             f"Expected keep_mask {expected_keep_mask}, got {result['keep_mask']}"
+        )
 
         # Check trimmed arrays have correct values
         assert np.array_equal(result["treatment"], [1, 0, 1])
@@ -116,7 +119,9 @@ class TestTrimPropensity:
 
         # Should keep only middle unit (index 1)
         assert result["n_kept"] == 1
-        assert result["covariates"].shape == (1, 2), f"Expected (1, 2), got {result['covariates'].shape}"
+        assert result["covariates"].shape == (1, 2), (
+            f"Expected (1, 2), got {result['covariates'].shape}"
+        )
         assert np.array_equal(result["covariates"], [[3, 4]])
 
     def test_trim_invalid_threshold(self):
@@ -181,12 +186,15 @@ class TestStabilizeWeights:
         expected_sw1 = p_t / 0.8  # = 0.833
         expected_sw2 = (1 - p_t) / (1 - 0.5)  # = 0.667
 
-        assert np.isclose(sw[0], expected_sw0, rtol=1e-3), \
+        assert np.isclose(sw[0], expected_sw0, rtol=1e-3), (
             f"Expected SW[0] = {expected_sw0:.3f}, got {sw[0]:.3f}"
-        assert np.isclose(sw[1], expected_sw1, rtol=1e-3), \
+        )
+        assert np.isclose(sw[1], expected_sw1, rtol=1e-3), (
             f"Expected SW[1] = {expected_sw1:.3f}, got {sw[1]:.3f}"
-        assert np.isclose(sw[2], expected_sw2, rtol=1e-3), \
+        )
+        assert np.isclose(sw[2], expected_sw2, rtol=1e-3), (
             f"Expected SW[2] = {expected_sw2:.3f}, got {sw[2]:.3f}"
+        )
 
     def test_stabilized_weights_equal_propensity(self):
         """
@@ -225,8 +233,9 @@ class TestStabilizeWeights:
 
         mean_sw = np.mean(sw)
         # Wider tolerance due to random treatment assignment and finite sample
-        assert np.isclose(mean_sw, 1.0, rtol=0.5), \
+        assert np.isclose(mean_sw, 1.0, rtol=0.5), (
             f"Expected mean(SW) ≈ 1.0 (±50%), got {mean_sw:.3f}"
+        )
 
     def test_stabilize_weights_propensity_bounds(self):
         """
@@ -282,8 +291,9 @@ class TestStabilizeWeights:
         var_sw = np.var(sw)
         var_ipw = np.var(ipw)
 
-        assert var_sw < var_ipw, \
+        assert var_sw < var_ipw, (
             f"Stabilized weights should have lower variance: var(SW)={var_sw:.3f}, var(IPW)={var_ipw:.3f}"
+        )
 
 
 class TestPropensityEdgeCases:
@@ -300,7 +310,9 @@ class TestPropensityEdgeCases:
 
         # Should keep only middle unit
         assert result["n_kept"] == 1
-        assert result["covariates"].shape == (1,), f"Expected (1,), got {result['covariates'].shape}"
+        assert result["covariates"].shape == (1,), (
+            f"Expected (1,), got {result['covariates'].shape}"
+        )
         assert result["covariates"][0] == 20
 
     def test_stabilize_weights_conversion_to_array(self):

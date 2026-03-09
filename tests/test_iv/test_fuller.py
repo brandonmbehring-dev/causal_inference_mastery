@@ -43,8 +43,10 @@ class TestFullerBasicFunctionality:
 
         # Coefficients should be similar (Fuller correction is small with strong IV)
         np.testing.assert_allclose(
-            fuller.coef_[0], liml.coef_[0], rtol=0.1,
-            err_msg="Fuller and LIML should agree closely with strong instruments"
+            fuller.coef_[0],
+            liml.coef_[0],
+            rtol=0.1,
+            err_msg="Fuller and LIML should agree closely with strong instruments",
         )
 
     def test_fuller_kappa_adjustment(self, iv_strong_instrument):
@@ -68,14 +70,14 @@ class TestFullerBasicFunctionality:
 
         # Fuller kappa should match formula
         np.testing.assert_allclose(
-            fuller.kappa_, expected_kappa, rtol=1e-6,
-            err_msg=f"Fuller kappa should be LIML kappa - α/(n-L)"
+            fuller.kappa_,
+            expected_kappa,
+            rtol=1e-6,
+            err_msg=f"Fuller kappa should be LIML kappa - α/(n-L)",
         )
 
         # Also check that stored LIML kappa matches
-        np.testing.assert_allclose(
-            fuller.kappa_liml_, liml.kappa_, rtol=1e-6
-        )
+        np.testing.assert_allclose(fuller.kappa_liml_, liml.kappa_, rtol=1e-6)
 
     def test_fuller_standard_errors_positive(self, iv_strong_instrument):
         """Test that Fuller standard errors are positive and finite."""
@@ -293,9 +295,7 @@ class TestFullerInference:
         fuller_robust.fit(Y, D, Z, X)
 
         # Coefficients should be identical
-        np.testing.assert_allclose(
-            fuller_standard.coef_, fuller_robust.coef_, rtol=1e-6
-        )
+        np.testing.assert_allclose(fuller_standard.coef_, fuller_robust.coef_, rtol=1e-6)
 
         # Both should produce finite SEs
         assert np.all(np.isfinite(fuller_standard.se_))

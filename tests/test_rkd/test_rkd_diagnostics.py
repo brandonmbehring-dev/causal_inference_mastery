@@ -166,10 +166,12 @@ class TestDensitySmoothness:
     def test_insufficient_data_handling(self):
         """Should handle insufficient data gracefully."""
         np.random.seed(42)
-        X = np.concatenate([
-            np.random.uniform(-1, 0, 10),   # Few left
-            np.random.uniform(0, 1, 10),    # Few right
-        ])
+        X = np.concatenate(
+            [
+                np.random.uniform(-1, 0, 10),  # Few left
+                np.random.uniform(0, 1, 10),  # Few right
+            ]
+        )
 
         result = density_smoothness_test(X, cutoff=0.0)
 
@@ -248,9 +250,7 @@ class TestCovariateSmoothness:
         """Covariate with kink should fail the test."""
         X, cov = generate_kinked_covariate_data(n=2000, seed=42)
 
-        results = covariate_smoothness_test(
-            X, cov, cutoff=0.0, bandwidth=2.0
-        )
+        results = covariate_smoothness_test(X, cov, cutoff=0.0, bandwidth=2.0)
 
         result = results[0]
         # Kink should be detected (low p-value, is_smooth = False)
@@ -271,8 +271,7 @@ class TestCovariateSmoothness:
         covariates = np.column_stack([cov1, cov2, cov3])
 
         results = covariate_smoothness_test(
-            X, covariates, cutoff=0.0,
-            covariate_names=["Smooth", "Kinked", "Independent"]
+            X, covariates, cutoff=0.0, covariate_names=["Smooth", "Kinked", "Independent"]
         )
 
         assert len(results) == 3
@@ -291,10 +290,12 @@ class TestCovariateSmoothness:
     def test_insufficient_data_handling(self):
         """Should handle insufficient data gracefully."""
         np.random.seed(42)
-        X = np.concatenate([
-            np.random.uniform(-0.1, 0, 3),   # Very few left
-            np.random.uniform(0, 0.1, 3),    # Very few right
-        ])
+        X = np.concatenate(
+            [
+                np.random.uniform(-0.1, 0, 3),  # Very few left
+                np.random.uniform(0, 0.1, 3),  # Very few right
+            ]
+        )
         cov = np.random.normal(0, 1, 6)
 
         results = covariate_smoothness_test(X, cov, cutoff=0.0, bandwidth=0.1)
@@ -365,10 +366,12 @@ class TestFirstStage:
     def test_insufficient_data_handling(self):
         """Should handle insufficient data gracefully."""
         np.random.seed(42)
-        X = np.concatenate([
-            np.random.uniform(-0.1, 0, 3),
-            np.random.uniform(0, 0.1, 3),
-        ])
+        X = np.concatenate(
+            [
+                np.random.uniform(-0.1, 0, 3),
+                np.random.uniform(0, 0.1, 3),
+            ]
+        )
         D = X + np.random.normal(0, 0.1, 6)
 
         result = first_stage_test(D, X, cutoff=0.0, bandwidth=0.1)
@@ -406,7 +409,10 @@ class TestFirstStage:
         result_strong = first_stage_test(D_strong, X_strong, cutoff=0.0)
 
         if result_strong.f_stat >= 10:
-            assert "Strong" in result_strong.interpretation or "reliable" in result_strong.interpretation.lower()
+            assert (
+                "Strong" in result_strong.interpretation
+                or "reliable" in result_strong.interpretation.lower()
+            )
 
 
 # =============================================================================
@@ -441,15 +447,15 @@ class TestRKDDiagnosticsSummary:
         D = np.where(X < 0, 0.5 * X, 1.5 * X) + np.random.normal(0, 0.3, n)
         Y = 2.0 * D + np.random.normal(0, 0.5, n)
 
-        covariates = np.column_stack([
-            np.random.normal(0, 1, n),
-            X + np.random.normal(0, 0.5, n),
-        ])
+        covariates = np.column_stack(
+            [
+                np.random.normal(0, 1, n),
+                X + np.random.normal(0, 0.5, n),
+            ]
+        )
 
         result = rkd_diagnostics_summary(
-            Y, X, D, cutoff=0.0,
-            covariates=covariates,
-            covariate_names=["Age", "Income"]
+            Y, X, D, cutoff=0.0, covariates=covariates, covariate_names=["Age", "Income"]
         )
 
         assert len(result["covariate_tests"]) == 2
@@ -480,9 +486,9 @@ class TestRKDDiagnosticsSummary:
 
         summary = result["summary"]
         all_pass_computed = (
-            summary["density_smooth"] and
-            summary["first_stage_strong"] and
-            summary["covariates_smooth"]
+            summary["density_smooth"]
+            and summary["first_stage_strong"]
+            and summary["covariates_smooth"]
         )
 
         assert summary["all_pass"] == all_pass_computed

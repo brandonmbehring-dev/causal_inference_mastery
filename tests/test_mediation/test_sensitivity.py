@@ -276,9 +276,7 @@ class TestSensitivityCIs:
         # For non-NaN entries
         valid = ~np.isnan(result["nie_ci_lower"]) & ~np.isnan(result["nie_ci_upper"])
         if np.any(valid):
-            assert np.all(
-                result["nie_ci_lower"][valid] <= result["nie_ci_upper"][valid]
-            )
+            assert np.all(result["nie_ci_lower"][valid] <= result["nie_ci_upper"][valid])
 
 
 class TestSensitivityRandomState:

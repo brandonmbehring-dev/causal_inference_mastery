@@ -320,20 +320,26 @@ class TestManskiWorstCaseVsR:
             py_result["bounds_lower"],
             r_result["bounds_lower"],
             rtol=0.05,
-        ), f"Lower bound mismatch: Python={py_result['bounds_lower']:.4f}, R={r_result['bounds_lower']:.4f}"
+        ), (
+            f"Lower bound mismatch: Python={py_result['bounds_lower']:.4f}, R={r_result['bounds_lower']:.4f}"
+        )
 
         assert np.isclose(
             py_result["bounds_upper"],
             r_result["bounds_upper"],
             rtol=0.05,
-        ), f"Upper bound mismatch: Python={py_result['bounds_upper']:.4f}, R={r_result['bounds_upper']:.4f}"
+        ), (
+            f"Upper bound mismatch: Python={py_result['bounds_upper']:.4f}, R={r_result['bounds_upper']:.4f}"
+        )
 
         # Compare width (should match closely)
         assert np.isclose(
             py_result["bounds_width"],
             r_result["bounds_width"],
             rtol=0.02,
-        ), f"Width mismatch: Python={py_result['bounds_width']:.4f}, R={r_result['bounds_width']:.4f}"
+        ), (
+            f"Width mismatch: Python={py_result['bounds_width']:.4f}, R={r_result['bounds_width']:.4f}"
+        )
 
     def test_wide_support(self):
         """Wide outcome support: bounds should be very wide."""
@@ -506,13 +512,9 @@ class TestManskiMTSVsR:
         y1 = np.clip(y_latent + 1.0, 0, 10)
         outcome = treatment * y1 + (1 - treatment) * y0
 
-        py_result = manski_mts(
-            outcome=outcome, treatment=treatment, outcome_support=(0.0, 10.0)
-        )
+        py_result = manski_mts(outcome=outcome, treatment=treatment, outcome_support=(0.0, 10.0))
 
-        r_result = r_manski_mts(
-            outcome=outcome, treatment=treatment, outcome_support=(0.0, 10.0)
-        )
+        r_result = r_manski_mts(outcome=outcome, treatment=treatment, outcome_support=(0.0, 10.0))
 
         assert r_result is not None
 
@@ -691,13 +693,13 @@ class TestLeeBoundsVsR:
 
         assert r_result is not None
 
-        assert np.isclose(
-            py_result["bounds_lower"], r_result["bounds_lower"], rtol=0.05
-        ), f"Lower: Python={py_result['bounds_lower']:.4f}, R={r_result['bounds_lower']:.4f}"
+        assert np.isclose(py_result["bounds_lower"], r_result["bounds_lower"], rtol=0.05), (
+            f"Lower: Python={py_result['bounds_lower']:.4f}, R={r_result['bounds_lower']:.4f}"
+        )
 
-        assert np.isclose(
-            py_result["bounds_upper"], r_result["bounds_upper"], rtol=0.05
-        ), f"Upper: Python={py_result['bounds_upper']:.4f}, R={r_result['bounds_upper']:.4f}"
+        assert np.isclose(py_result["bounds_upper"], r_result["bounds_upper"], rtol=0.05), (
+            f"Upper: Python={py_result['bounds_upper']:.4f}, R={r_result['bounds_upper']:.4f}"
+        )
 
         # Trimming proportion should match closely
         if "trimming_proportion" in r_result and r_result["trimming_proportion"] is not None:
@@ -808,7 +810,9 @@ class TestBoundsConsistency:
 
         # Widths should decrease with more assumptions
         assert wc["bounds_width"] >= mtr["bounds_width"] - 0.1, "WC should be wider than MTR"
-        assert mtr["bounds_width"] >= combined["bounds_width"] - 0.1, "MTR should be wider than MTR+MTS"
+        assert mtr["bounds_width"] >= combined["bounds_width"] - 0.1, (
+            "MTR should be wider than MTR+MTS"
+        )
 
         # Lower bounds: more assumptions → higher lower bound (tighter)
         assert wc["bounds_lower"] <= mtr["bounds_lower"] + 0.1

@@ -122,9 +122,7 @@ def conditional_qte(
 
     # Basic validation
     if n == 0:
-        raise ValueError(
-            "CRITICAL ERROR: Empty input arrays.\n" "Function: conditional_qte"
-        )
+        raise ValueError("CRITICAL ERROR: Empty input arrays.\nFunction: conditional_qte")
 
     if len(treatment) != n or len(covariates) != n:
         raise ValueError(
@@ -134,26 +132,19 @@ def conditional_qte(
         )
 
     if np.any(np.isnan(outcome)) or np.any(np.isnan(treatment)) or np.any(np.isnan(covariates)):
-        raise ValueError(
-            "CRITICAL ERROR: NaN values detected.\n" "Function: conditional_qte"
-        )
+        raise ValueError("CRITICAL ERROR: NaN values detected.\nFunction: conditional_qte")
 
     if np.any(np.isinf(outcome)) or np.any(np.isinf(treatment)) or np.any(np.isinf(covariates)):
-        raise ValueError(
-            "CRITICAL ERROR: Infinite values detected.\n" "Function: conditional_qte"
-        )
+        raise ValueError("CRITICAL ERROR: Infinite values detected.\nFunction: conditional_qte")
 
     unique_treatment = np.unique(treatment)
     if not np.all(np.isin(unique_treatment, [0, 1])):
         raise ValueError(
-            f"CRITICAL ERROR: Treatment must be binary (0 or 1).\n"
-            f"Got: {unique_treatment}"
+            f"CRITICAL ERROR: Treatment must be binary (0 or 1).\nGot: {unique_treatment}"
         )
 
     if len(unique_treatment) < 2:
-        raise ValueError(
-            "CRITICAL ERROR: No treatment variation.\n" "Function: conditional_qte"
-        )
+        raise ValueError("CRITICAL ERROR: No treatment variation.\nFunction: conditional_qte")
 
     if quantile <= 0 or quantile >= 1:
         raise ValueError(
@@ -164,9 +155,7 @@ def conditional_qte(
 
     if alpha <= 0 or alpha >= 1:
         raise ValueError(
-            f"CRITICAL ERROR: Invalid alpha value.\n"
-            f"Expected: alpha in (0, 1)\n"
-            f"Got: alpha={alpha}"
+            f"CRITICAL ERROR: Invalid alpha value.\nExpected: alpha in (0, 1)\nGot: alpha={alpha}"
         )
 
     n_treated = int(np.sum(treatment == 1))
@@ -288,9 +277,7 @@ def conditional_qte_band(
 
     # Validate
     if np.any(quantiles_arr <= 0) or np.any(quantiles_arr >= 1):
-        raise ValueError(
-            f"CRITICAL ERROR: All quantiles must be in (0, 1).\n" f"Got: {quantiles}"
-        )
+        raise ValueError(f"CRITICAL ERROR: All quantiles must be in (0, 1).\nGot: {quantiles}")
 
     n_treated = int(np.sum(treatment == 1))
     n_control = int(np.sum(treatment == 0))

@@ -303,7 +303,11 @@ def mediation_analysis(
         boot_pm = boot_ie / boot_te
         boot_pm = boot_pm[np.isfinite(boot_pm)]
         pm_se = np.std(boot_pm, ddof=1) if len(boot_pm) > 0 else np.nan
-        pm_ci = (np.percentile(boot_pm, q_low), np.percentile(boot_pm, q_high)) if len(boot_pm) > 0 else (np.nan, np.nan)
+        pm_ci = (
+            (np.percentile(boot_pm, q_low), np.percentile(boot_pm, q_high))
+            if len(boot_pm) > 0
+            else (np.nan, np.nan)
+        )
 
         # P-values (two-sided)
         de_pval = bk_result["beta_1_pvalue"]
@@ -374,8 +378,17 @@ def _simulation_mediation(
 
     # Single run of simulation for point estimates
     nde, nie = _simulate_effects_once(
-        treatment, covariates, m_model, y_model, m_sigma, y_sigma,
-        n_simulations, treat_value, control_value, mediator_model, outcome_model
+        treatment,
+        covariates,
+        m_model,
+        y_model,
+        m_sigma,
+        y_sigma,
+        n_simulations,
+        treat_value,
+        control_value,
+        mediator_model,
+        outcome_model,
     )
 
     te = nde + nie
@@ -391,13 +404,20 @@ def _simulation_mediation(
 
         try:
             m_model_b, y_model_b, m_sigma_b, y_sigma_b = _fit_models(
-                outcome[idx], treatment[idx], mediator[idx], cov_boot,
-                mediator_model, outcome_model
+                outcome[idx], treatment[idx], mediator[idx], cov_boot, mediator_model, outcome_model
             )
             nde_b, nie_b = _simulate_effects_once(
-                treatment[idx], cov_boot, m_model_b, y_model_b, m_sigma_b, y_sigma_b,
+                treatment[idx],
+                cov_boot,
+                m_model_b,
+                y_model_b,
+                m_sigma_b,
+                y_sigma_b,
                 n_simulations // 2,  # Fewer sims in bootstrap for speed
-                treat_value, control_value, mediator_model, outcome_model
+                treat_value,
+                control_value,
+                mediator_model,
+                outcome_model,
             )
             boot_nde.append(nde_b)
             boot_nie.append(nie_b)
@@ -423,7 +443,11 @@ def _simulation_mediation(
     boot_pm = boot_nie / boot_te
     boot_pm = boot_pm[np.isfinite(boot_pm)]
     pm_se = np.std(boot_pm, ddof=1) if len(boot_pm) > 0 else np.nan
-    pm_ci = (np.percentile(boot_pm, q_low), np.percentile(boot_pm, q_high)) if len(boot_pm) > 0 else (np.nan, np.nan)
+    pm_ci = (
+        (np.percentile(boot_pm, q_low), np.percentile(boot_pm, q_high))
+        if len(boot_pm) > 0
+        else (np.nan, np.nan)
+    )
 
     # P-values (proportion of bootstrap samples crossing zero)
     de_pval = 2 * min(np.mean(boot_nde <= 0), np.mean(boot_nde >= 0))

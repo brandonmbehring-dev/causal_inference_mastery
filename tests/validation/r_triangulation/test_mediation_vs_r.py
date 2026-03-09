@@ -64,8 +64,7 @@ requires_mediation_python = pytest.mark.skipif(
 
 requires_mediation_r = pytest.mark.skipif(
     not check_mediation_available(),
-    reason="R mediation package not installed. "
-    "Install in R with: install.packages('mediation')",
+    reason="R mediation package not installed. Install in R with: install.packages('mediation')",
 )
 
 
@@ -172,9 +171,7 @@ def generate_full_mediation_data(
     dict
         Dictionary with outcome, treatment, mediator, and true parameters.
     """
-    return generate_mediation_data(
-        n=n, alpha_1=alpha_1, beta_1=0.0, beta_2=beta_2, seed=seed
-    )
+    return generate_mediation_data(n=n, alpha_1=alpha_1, beta_1=0.0, beta_2=beta_2, seed=seed)
 
 
 def generate_no_mediation_data(
@@ -203,9 +200,7 @@ def generate_no_mediation_data(
     dict
         Dictionary with outcome, treatment, mediator, and true parameters.
     """
-    return generate_mediation_data(
-        n=n, alpha_1=0.0, beta_1=beta_1, beta_2=0.5, seed=seed
-    )
+    return generate_mediation_data(n=n, alpha_1=0.0, beta_1=beta_1, beta_2=0.5, seed=seed)
 
 
 def generate_mediation_with_covariates(
@@ -304,19 +299,19 @@ class TestBaronKennyVsR:
         assert r_result is not None, "R implementation returned None"
 
         # Alpha_1 (T → M)
-        assert np.isclose(
-            py_result["alpha_1"], r_result["alpha_1"], rtol=0.02
-        ), f"α₁ mismatch: Python={py_result['alpha_1']:.4f}, R={r_result['alpha_1']:.4f}"
+        assert np.isclose(py_result["alpha_1"], r_result["alpha_1"], rtol=0.02), (
+            f"α₁ mismatch: Python={py_result['alpha_1']:.4f}, R={r_result['alpha_1']:.4f}"
+        )
 
         # Beta_1 (direct effect)
-        assert np.isclose(
-            py_result["beta_1"], r_result["beta_1"], rtol=0.02
-        ), f"β₁ mismatch: Python={py_result['beta_1']:.4f}, R={r_result['beta_1']:.4f}"
+        assert np.isclose(py_result["beta_1"], r_result["beta_1"], rtol=0.02), (
+            f"β₁ mismatch: Python={py_result['beta_1']:.4f}, R={r_result['beta_1']:.4f}"
+        )
 
         # Beta_2 (M → Y)
-        assert np.isclose(
-            py_result["beta_2"], r_result["beta_2"], rtol=0.02
-        ), f"β₂ mismatch: Python={py_result['beta_2']:.4f}, R={r_result['beta_2']:.4f}"
+        assert np.isclose(py_result["beta_2"], r_result["beta_2"], rtol=0.02), (
+            f"β₂ mismatch: Python={py_result['beta_2']:.4f}, R={r_result['beta_2']:.4f}"
+        )
 
     def test_sobel_test(self):
         """Sobel test statistic and p-value should match."""
@@ -337,14 +332,14 @@ class TestBaronKennyVsR:
         assert r_result is not None
 
         # Sobel Z statistic
-        assert np.isclose(
-            py_result["sobel_z"], r_result["sobel_z"], rtol=0.05
-        ), f"Sobel Z mismatch: Python={py_result['sobel_z']:.4f}, R={r_result['sobel_z']:.4f}"
+        assert np.isclose(py_result["sobel_z"], r_result["sobel_z"], rtol=0.05), (
+            f"Sobel Z mismatch: Python={py_result['sobel_z']:.4f}, R={r_result['sobel_z']:.4f}"
+        )
 
         # Sobel p-value
-        assert np.isclose(
-            py_result["sobel_pvalue"], r_result["sobel_pvalue"], rtol=0.05
-        ), f"Sobel p mismatch: Python={py_result['sobel_pvalue']:.4f}, R={r_result['sobel_pvalue']:.4f}"
+        assert np.isclose(py_result["sobel_pvalue"], r_result["sobel_pvalue"], rtol=0.05), (
+            f"Sobel p mismatch: Python={py_result['sobel_pvalue']:.4f}, R={r_result['sobel_pvalue']:.4f}"
+        )
 
     def test_effect_decomposition(self):
         """Direct, indirect, and total effects should match."""
@@ -365,19 +360,13 @@ class TestBaronKennyVsR:
         assert r_result is not None
 
         # Indirect effect = α₁ × β₂
-        assert np.isclose(
-            py_result["indirect_effect"], r_result["indirect_effect"], rtol=0.02
-        )
+        assert np.isclose(py_result["indirect_effect"], r_result["indirect_effect"], rtol=0.02)
 
         # Direct effect = β₁
-        assert np.isclose(
-            py_result["direct_effect"], r_result["direct_effect"], rtol=0.02
-        )
+        assert np.isclose(py_result["direct_effect"], r_result["direct_effect"], rtol=0.02)
 
         # Total effect = β₁ + α₁×β₂
-        assert np.isclose(
-            py_result["total_effect"], r_result["total_effect"], rtol=0.02
-        )
+        assert np.isclose(py_result["total_effect"], r_result["total_effect"], rtol=0.02)
 
         # Verify decomposition: total = direct + indirect
         assert np.isclose(
@@ -446,19 +435,17 @@ class TestMediationAnalysisVsR:
         assert r_result is not None
 
         # NDE (Natural Direct Effect)
-        assert np.isclose(
-            py_result["direct_effect"], r_result["nde"], rtol=0.05
-        ), f"NDE mismatch: Python={py_result['direct_effect']:.4f}, R={r_result['nde']:.4f}"
+        assert np.isclose(py_result["direct_effect"], r_result["nde"], rtol=0.05), (
+            f"NDE mismatch: Python={py_result['direct_effect']:.4f}, R={r_result['nde']:.4f}"
+        )
 
         # NIE (Natural Indirect Effect)
-        assert np.isclose(
-            py_result["indirect_effect"], r_result["nie"], rtol=0.05
-        ), f"NIE mismatch: Python={py_result['indirect_effect']:.4f}, R={r_result['nie']:.4f}"
+        assert np.isclose(py_result["indirect_effect"], r_result["nie"], rtol=0.05), (
+            f"NIE mismatch: Python={py_result['indirect_effect']:.4f}, R={r_result['nie']:.4f}"
+        )
 
         # Total effect
-        assert np.isclose(
-            py_result["total_effect"], r_result["total_effect"], rtol=0.05
-        )
+        assert np.isclose(py_result["total_effect"], r_result["total_effect"], rtol=0.05)
 
     def test_proportion_mediated(self):
         """Proportion mediated (NIE/Total) should match."""
@@ -488,7 +475,9 @@ class TestMediationAnalysisVsR:
             py_result["proportion_mediated"],
             r_result["proportion_mediated"],
             rtol=0.10,
-        ), f"PM mismatch: Python={py_result['proportion_mediated']:.4f}, R={r_result['proportion_mediated']:.4f}"
+        ), (
+            f"PM mismatch: Python={py_result['proportion_mediated']:.4f}, R={r_result['proportion_mediated']:.4f}"
+        )
 
     def test_full_mediation(self):
         """When direct effect ≈ 0, proportion mediated ≈ 1."""
@@ -546,9 +535,7 @@ class TestMediationAnalysisVsR:
         assert abs(py_result["indirect_effect"]) < 0.3, "Expected small indirect effect"
 
         # Both should agree on small indirect
-        assert np.isclose(
-            py_result["indirect_effect"], r_result["nie"], atol=0.2
-        )
+        assert np.isclose(py_result["indirect_effect"], r_result["nie"], atol=0.2)
 
 
 # =============================================================================
@@ -585,14 +572,14 @@ class TestMediationSensitivityVsR:
         assert r_result is not None
 
         # Original NDE at ρ=0
-        assert np.isclose(
-            py_result["original_nde"], r_result["original_nde"], rtol=0.05
-        ), f"NDE at ρ=0 mismatch: Python={py_result['original_nde']:.4f}, R={r_result['original_nde']:.4f}"
+        assert np.isclose(py_result["original_nde"], r_result["original_nde"], rtol=0.05), (
+            f"NDE at ρ=0 mismatch: Python={py_result['original_nde']:.4f}, R={r_result['original_nde']:.4f}"
+        )
 
         # Original NIE at ρ=0
-        assert np.isclose(
-            py_result["original_nie"], r_result["original_nie"], rtol=0.05
-        ), f"NIE at ρ=0 mismatch: Python={py_result['original_nie']:.4f}, R={r_result['original_nie']:.4f}"
+        assert np.isclose(py_result["original_nie"], r_result["original_nie"], rtol=0.05), (
+            f"NIE at ρ=0 mismatch: Python={py_result['original_nie']:.4f}, R={r_result['original_nie']:.4f}"
+        )
 
     def test_rho_grid(self):
         """Effects at various ρ values should be consistent."""
@@ -635,9 +622,7 @@ class TestMediationSensitivityVsR:
     def test_zero_crossing(self):
         """Rho at which effect crosses zero should be similar."""
         # Generate data where effects will cross zero at some ρ
-        data = generate_mediation_data(
-            n=500, alpha_1=0.6, beta_1=0.3, beta_2=0.8, seed=456
-        )
+        data = generate_mediation_data(n=500, alpha_1=0.6, beta_1=0.3, beta_2=0.8, seed=456)
 
         py_result = mediation_sensitivity(
             outcome=data["outcome"],
@@ -747,14 +732,10 @@ class TestMediationEdgeCases:
         assert r_result is not None
 
         # R² for mediator model
-        assert np.isclose(
-            py_result["r2_mediator_model"], r_result["r2_mediator"], rtol=0.02
-        )
+        assert np.isclose(py_result["r2_mediator_model"], r_result["r2_mediator"], rtol=0.02)
 
         # R² for outcome model
-        assert np.isclose(
-            py_result["r2_outcome_model"], r_result["r2_outcome"], rtol=0.02
-        )
+        assert np.isclose(py_result["r2_outcome_model"], r_result["r2_outcome"], rtol=0.02)
 
 
 # =============================================================================

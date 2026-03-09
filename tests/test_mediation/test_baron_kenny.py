@@ -173,9 +173,7 @@ class TestBaronKennyWithCovariates:
         data = mediation_with_covariates
 
         # Without covariates
-        result_no_cov = baron_kenny(
-            data["outcome"], data["treatment"], data["mediator"]
-        )
+        result_no_cov = baron_kenny(data["outcome"], data["treatment"], data["mediator"])
 
         # With covariates
         result_cov = baron_kenny(

@@ -119,12 +119,7 @@ def generate_observational_data(
     treatment = (np.random.rand(n) < true_propensity).astype(int)
 
     # Outcome: Y = true_ate * T + X₁ + 0.5*X₂ + noise
-    outcome = (
-        true_ate * treatment
-        + covariates[:, 0]
-        + 0.5 * covariates[:, 1]
-        + np.random.randn(n)
-    )
+    outcome = true_ate * treatment + covariates[:, 0] + 0.5 * covariates[:, 1] + np.random.randn(n)
 
     return {
         "outcome": outcome,
@@ -196,10 +191,7 @@ def generate_limited_overlap_data(
     # Outcome
     true_ate = 2.0
     outcome = (
-        true_ate * treatment
-        + 1.5 * covariates[:, 0]
-        + 0.5 * covariates[:, 1]
-        + np.random.randn(n)
+        true_ate * treatment + 1.5 * covariates[:, 0] + 0.5 * covariates[:, 1] + np.random.randn(n)
     )
 
     return {

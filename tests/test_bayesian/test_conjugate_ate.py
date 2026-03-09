@@ -67,9 +67,7 @@ class TestBayesianATEBasic:
         )
         assert result["posterior_sd"] > 0
 
-    def test_credible_interval_contains_posterior_mean(
-        self, simple_bayesian_data: dict
-    ) -> None:
+    def test_credible_interval_contains_posterior_mean(self, simple_bayesian_data: dict) -> None:
         """CI always contains the posterior mean."""
         result = bayesian_ate(
             simple_bayesian_data["outcomes"],
@@ -115,9 +113,9 @@ class TestBayesianATEKnownAnswer:
         )
 
         # Posterior mean should be very close to OLS estimate
-        assert np.isclose(
-            result["posterior_mean"], result["ols_estimate"], rtol=1e-3
-        ), f"Posterior {result['posterior_mean']:.4f} != OLS {result['ols_estimate']:.4f}"
+        assert np.isclose(result["posterior_mean"], result["ols_estimate"], rtol=1e-3), (
+            f"Posterior {result['posterior_mean']:.4f} != OLS {result['ols_estimate']:.4f}"
+        )
 
     def test_recovers_true_ate(self, simple_bayesian_data: dict) -> None:
         """Posterior mean is close to true ATE."""
@@ -132,9 +130,7 @@ class TestBayesianATEKnownAnswer:
             f"Posterior {result['posterior_mean']:.4f} too far from true {true_ate}"
         )
 
-    def test_credible_interval_covers_true_value(
-        self, simple_bayesian_data: dict
-    ) -> None:
+    def test_credible_interval_covers_true_value(self, simple_bayesian_data: dict) -> None:
         """95% credible interval contains true ATE."""
         result = bayesian_ate(
             simple_bayesian_data["outcomes"],
@@ -193,11 +189,12 @@ class TestBayesianATEPriorSensitivity:
         )
 
         # Wider prior should have less shrinkage
-        assert result_wide["prior_to_posterior_shrinkage"] < result_narrow["prior_to_posterior_shrinkage"]
+        assert (
+            result_wide["prior_to_posterior_shrinkage"]
+            < result_narrow["prior_to_posterior_shrinkage"]
+        )
 
-    def test_strong_prior_dominates_small_sample(
-        self, small_sample_data: dict
-    ) -> None:
+    def test_strong_prior_dominates_small_sample(self, small_sample_data: dict) -> None:
         """Strong prior + few observations yields posterior near prior."""
         prior_mean = 5.0
         prior_sd = 0.5  # Strong prior
@@ -227,9 +224,7 @@ class TestBayesianATEPriorSensitivity:
         )
 
         # Posterior should be near OLS despite wrong prior
-        assert np.isclose(
-            result["posterior_mean"], result["ols_estimate"], rtol=0.05
-        )
+        assert np.isclose(result["posterior_mean"], result["ols_estimate"], rtol=0.05)
         # Shrinkage should be minimal
         assert result["prior_to_posterior_shrinkage"] < 0.1
 
@@ -254,9 +249,7 @@ class TestBayesianATECovariates:
         # Should recover true ATE
         assert abs(result["posterior_mean"] - true_ate) < 0.6
 
-    def test_covariates_estimation_valid(
-        self, bayesian_data_with_covariates: dict
-    ) -> None:
+    def test_covariates_estimation_valid(self, bayesian_data_with_covariates: dict) -> None:
         """Covariate adjustment produces valid estimates."""
         result_with_cov = bayesian_ate(
             bayesian_data_with_covariates["outcomes"],
@@ -318,9 +311,7 @@ class TestBayesianATEMonteCarlo:
             treatment = np.random.binomial(1, 0.5, n_per_sim)
             outcomes = true_ate * treatment + np.random.normal(0, 1, n_per_sim)
 
-            result = bayesian_ate(
-                outcomes, treatment, prior_mean=0.0, prior_sd=10.0
-            )
+            result = bayesian_ate(outcomes, treatment, prior_mean=0.0, prior_sd=10.0)
             posterior_means.append(result["posterior_mean"])
 
         mean_of_means = np.mean(posterior_means)
@@ -330,9 +321,7 @@ class TestBayesianATEMonteCarlo:
         assert abs(bias) < 0.1, f"Bias {bias:.4f} exceeds threshold"
 
     @pytest.mark.monte_carlo
-    def test_posterior_samples_match_distribution(
-        self, simple_bayesian_data: dict
-    ) -> None:
+    def test_posterior_samples_match_distribution(self, simple_bayesian_data: dict) -> None:
         """Posterior samples match the claimed normal distribution."""
         result = bayesian_ate(
             simple_bayesian_data["outcomes"],
@@ -426,9 +415,7 @@ class TestBayesianATEEdgeCases:
 class TestBayesianVsFrequentist:
     """Compare Bayesian and frequentist estimates."""
 
-    def test_weak_prior_matches_frequentist(
-        self, simple_bayesian_data: dict
-    ) -> None:
+    def test_weak_prior_matches_frequentist(self, simple_bayesian_data: dict) -> None:
         """With weak prior, Bayesian CI similar to frequentist CI."""
         result = bayesian_ate(
             simple_bayesian_data["outcomes"],
@@ -445,9 +432,7 @@ class TestBayesianVsFrequentist:
         assert np.isclose(result["ci_lower"], ols_ci_lower, rtol=0.05)
         assert np.isclose(result["ci_upper"], ols_ci_upper, rtol=0.05)
 
-    def test_effective_sample_size_reasonable(
-        self, simple_bayesian_data: dict
-    ) -> None:
+    def test_effective_sample_size_reasonable(self, simple_bayesian_data: dict) -> None:
         """Effective sample size is reasonable."""
         result = bayesian_ate(
             simple_bayesian_data["outcomes"],

@@ -201,9 +201,7 @@ def psm_ate(
     # Step 3: Nearest Neighbor Matching
     # ====================================================================
 
-    matcher = NearestNeighborMatcher(
-        M=M, with_replacement=with_replacement, caliper=caliper
-    )
+    matcher = NearestNeighborMatcher(M=M, with_replacement=with_replacement, caliper=caliper)
     matching_result = matcher.match(propensity, treatment)
 
     if matching_result.n_matched == 0:
@@ -230,9 +228,7 @@ def psm_ate(
     # ====================================================================
 
     if variance_method == "abadie_imbens":
-        variance, se = abadie_imbens_variance(
-            outcomes, treatment, matching_result.matches, M=M
-        )
+        variance, se = abadie_imbens_variance(outcomes, treatment, matching_result.matches, M=M)
     elif variance_method == "paired":
         # Only valid for 1:1 matching without replacement
         if M != 1:
@@ -253,9 +249,7 @@ def psm_ate(
             )
         from .variance import compute_matched_pairs_variance
 
-        variance, se = compute_matched_pairs_variance(
-            outcomes, treatment, matching_result.matches
-        )
+        variance, se = compute_matched_pairs_variance(outcomes, treatment, matching_result.matches)
     else:
         raise ValueError(f"Unknown variance_method: {variance_method}")
 

@@ -57,9 +57,7 @@ class TestSLearnerKnownAnswer:
 
         # Correlation between estimated and true CATE should be positive
         correlation = np.corrcoef(result["cate"], true_cate)[0, 1]
-        assert correlation > 0.2, (
-            f"CATE correlation {correlation:.3f} too low (expected > 0.2)"
-        )
+        assert correlation > 0.2, f"CATE correlation {correlation:.3f} too low (expected > 0.2)"
 
     def test_confidence_interval_valid(self, constant_effect_data):
         """CI should be valid (lower < upper, reasonable width)."""
@@ -114,9 +112,7 @@ class TestTLearnerKnownAnswer:
 
         # T-learner should capture heterogeneity better than S-learner
         correlation = np.corrcoef(result["cate"], true_cate)[0, 1]
-        assert correlation > 0.3, (
-            f"CATE correlation {correlation:.3f} too low (expected > 0.3)"
-        )
+        assert correlation > 0.3, f"CATE correlation {correlation:.3f} too low (expected > 0.3)"
 
     def test_confidence_interval_valid(self, constant_effect_data):
         """CI should be valid (lower < upper, reasonable width)."""
@@ -460,9 +456,7 @@ class TestXLearnerKnownAnswer:
 
         # X-learner should capture heterogeneity
         correlation = np.corrcoef(result["cate"], true_cate)[0, 1]
-        assert correlation > 0.2, (
-            f"CATE correlation {correlation:.3f} too low (expected > 0.2)"
-        )
+        assert correlation > 0.2, f"CATE correlation {correlation:.3f} too low (expected > 0.2)"
 
     def test_imbalanced_treatment_groups(self):
         """X-learner handles imbalanced treatment well."""
@@ -606,8 +600,7 @@ class TestMetaLearnerComparison:
         r_result = r_learner(Y, T, X)
 
         # All should be reasonably close to true ATE
-        for name, result in [("S", s_result), ("T", t_result),
-                              ("X", x_result), ("R", r_result)]:
+        for name, result in [("S", s_result), ("T", t_result), ("X", x_result), ("R", r_result)]:
             assert abs(result["ate"] - true_ate) < 0.6, (
                 f"{name}-learner ATE {result['ate']:.3f} too far from {true_ate:.3f}"
             )
@@ -616,8 +609,12 @@ class TestMetaLearnerComparison:
         """All learners return valid confidence intervals."""
         Y, T, X, _ = constant_effect_data
 
-        for learner, name in [(s_learner, "S"), (t_learner, "T"),
-                               (x_learner, "X"), (r_learner, "R")]:
+        for learner, name in [
+            (s_learner, "S"),
+            (t_learner, "T"),
+            (x_learner, "X"),
+            (r_learner, "R"),
+        ]:
             result = learner(Y, T, X)
             assert result["ci_lower"] < result["ci_upper"], (
                 f"{name}-learner CI invalid: [{result['ci_lower']}, {result['ci_upper']}]"
@@ -660,9 +657,7 @@ class TestXRLearnerMonteCarlo:
         t_mse = np.mean((np.array(t_ates) - true_ate) ** 2)
 
         # X-learner should not be significantly worse
-        assert x_mse < t_mse * 2, (
-            f"X-learner MSE {x_mse:.4f} much worse than T-learner {t_mse:.4f}"
-        )
+        assert x_mse < t_mse * 2, f"X-learner MSE {x_mse:.4f} much worse than T-learner {t_mse:.4f}"
 
     @pytest.mark.slow
     def test_r_learner_ate_unbiased(self):

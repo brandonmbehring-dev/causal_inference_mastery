@@ -362,9 +362,7 @@ def difference_series(
         raise ValueError(f"order must be >= 1, got {order}")
 
     if order >= len(series):
-        raise ValueError(
-            f"order ({order}) must be less than series length ({len(series)})"
-        )
+        raise ValueError(f"order ({order}) must be less than series length ({len(series)})")
 
     result = series.copy()
     for _ in range(order):
@@ -417,7 +415,7 @@ def check_stationarity(
     n_obs, n_vars = data.shape
 
     if var_names is None:
-        var_names = [f"var_{i+1}" for i in range(n_vars)]
+        var_names = [f"var_{i + 1}" for i in range(n_vars)]
 
     results = {}
     for i, name in enumerate(var_names):
@@ -767,9 +765,8 @@ def phillips_perron_test(
     lambda_hat = np.sqrt(lambda_sq)
 
     # PP Z_t statistic (correct formula from arch)
-    z_t = (
-        np.sqrt(gamma_0 / lambda_sq) * t_rho
-        - 0.5 * ((lambda_sq - gamma_0) / lambda_hat) * (T * se_rho / s)
+    z_t = np.sqrt(gamma_0 / lambda_sq) * t_rho - 0.5 * ((lambda_sq - gamma_0) / lambda_hat) * (
+        T * se_rho / s
     )
 
     # PP Z_rho statistic (alternative form)

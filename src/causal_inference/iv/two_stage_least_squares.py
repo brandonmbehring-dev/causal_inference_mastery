@@ -138,9 +138,7 @@ class TwoStageLeastSquares:
 
         # Validate cluster_var if clustered
         if inference == "clustered" and cluster_var is None:
-            raise ValueError(
-                "cluster_var must be provided when inference='clustered'"
-            )
+            raise ValueError("cluster_var must be provided when inference='clustered'")
 
         # Validate alpha
         if not 0 < alpha < 1:
@@ -369,7 +367,7 @@ class TwoStageLeastSquares:
 
         # Store residuals for SE calculation
         self._second_stage_residuals = result.resid
-        self._residual_variance = np.sum(result.resid ** 2) / result.df_resid
+        self._residual_variance = np.sum(result.resid**2) / result.df_resid
 
         return result
 
@@ -486,21 +484,24 @@ class TwoStageLeastSquares:
 
         # Create variable names
         p = self.n_endogenous_
-        var_names = [f"D{i+1}" if p > 1 else "D" for i in range(p)]
+        var_names = [f"D{i + 1}" if p > 1 else "D" for i in range(p)]
 
         # Add control variable names if present
         n_controls = len(self.coef_) - p
         if n_controls > 0:
-            var_names.extend([f"X{i+1}" for i in range(n_controls)])
+            var_names.extend([f"X{i + 1}" for i in range(n_controls)])
 
-        summary_df = pd.DataFrame({
-            "coef": self.coef_,
-            "se": self.se_,
-            "t_stat": self.t_stats_,
-            "p_value": self.p_values_,
-            "ci_lower": self.ci_[:, 0],
-            "ci_upper": self.ci_[:, 1],
-        }, index=var_names)
+        summary_df = pd.DataFrame(
+            {
+                "coef": self.coef_,
+                "se": self.se_,
+                "t_stat": self.t_stats_,
+                "p_value": self.p_values_,
+                "ci_lower": self.ci_[:, 0],
+                "ci_upper": self.ci_[:, 1],
+            },
+            index=var_names,
+        )
 
         return summary_df
 

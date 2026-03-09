@@ -86,9 +86,7 @@ def cholesky_svar(
     # Handle ordering
     if ordering is not None:
         if len(ordering) != n_vars:
-            raise ValueError(
-                f"ordering has {len(ordering)} elements, expected {n_vars}"
-            )
+            raise ValueError(f"ordering has {len(ordering)} elements, expected {n_vars}")
         for name in ordering:
             if name not in var_result.var_names:
                 raise ValueError(f"Variable '{name}' not in VAR model")
@@ -241,9 +239,7 @@ def short_run_svar(
         B0_inv = L
     else:
         # Need numerical optimization for general case
-        B0_inv = _optimize_svar_ab(
-            sigma, A, B, A_fixed, B_fixed, max_iter, tol
-        )
+        B0_inv = _optimize_svar_ab(sigma, A, B, A_fixed, B_fixed, max_iter, tol)
 
     B0 = linalg.inv(B0_inv)
 
@@ -401,9 +397,7 @@ def long_run_svar(
     # Handle ordering (same pattern as cholesky_svar)
     if ordering is not None:
         if len(ordering) != n_vars:
-            raise ValueError(
-                f"ordering has {len(ordering)} elements, expected {n_vars}"
-            )
+            raise ValueError(f"ordering has {len(ordering)} elements, expected {n_vars}")
         for name in ordering:
             if name not in var_result.var_names:
                 raise ValueError(f"Variable '{name}' not in VAR model")

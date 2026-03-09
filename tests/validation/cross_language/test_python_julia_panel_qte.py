@@ -71,9 +71,7 @@ class TestPanelRIFQTEParity:
         Y, D, X, unit_id, time = generate_panel_data(seed=123)
 
         # Python
-        panel_py = PanelData(
-            outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
-        )
+        panel_py = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
         result_py = panel_rif_qte(panel_py, quantile=0.5)
 
         # Julia
@@ -106,9 +104,7 @@ class TestPanelRIFQTEParity:
         """Test 25th percentile QTE parity."""
         Y, D, X, unit_id, time = generate_panel_data(seed=456)
 
-        panel_py = PanelData(
-            outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
-        )
+        panel_py = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
         result_py = panel_rif_qte(panel_py, quantile=0.25)
         result_jl = julia_panel_rif_qte(
             outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time, tau=0.25
@@ -122,9 +118,7 @@ class TestPanelRIFQTEParity:
         """Test 75th percentile QTE parity."""
         Y, D, X, unit_id, time = generate_panel_data(seed=789)
 
-        panel_py = PanelData(
-            outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
-        )
+        panel_py = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
         result_py = panel_rif_qte(panel_py, quantile=0.75)
         result_jl = julia_panel_rif_qte(
             outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time, tau=0.75
@@ -138,9 +132,7 @@ class TestPanelRIFQTEParity:
         """Test that diagnostic quantities match."""
         Y, D, X, unit_id, time = generate_panel_data(seed=111)
 
-        panel_py = PanelData(
-            outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
-        )
+        panel_py = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
         result_py = panel_rif_qte(panel_py, quantile=0.5)
         result_jl = julia_panel_rif_qte(
             outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time, tau=0.5
@@ -173,9 +165,7 @@ class TestPanelQTEBandParity:
         """Test that default band estimates match."""
         Y, D, X, unit_id, time = generate_panel_data(seed=222)
 
-        panel_py = PanelData(
-            outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
-        )
+        panel_py = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
         result_py = panel_rif_qte_band(panel_py)
         result_jl = julia_panel_rif_qte_band(
             outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
@@ -201,9 +191,7 @@ class TestPanelQTEBandParity:
         Y, D, X, unit_id, time = generate_panel_data(seed=333)
         custom_quantiles = np.array([0.1, 0.5, 0.9])
 
-        panel_py = PanelData(
-            outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
-        )
+        panel_py = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
         result_py = panel_rif_qte_band(panel_py, quantiles=custom_quantiles)
         result_jl = julia_panel_rif_qte_band(
             outcomes=Y,
@@ -226,9 +214,7 @@ class TestPanelUnconditionalQTEParity:
         """Test unconditional QTE parity with fixed seed."""
         Y, D, X, unit_id, time = generate_panel_data(seed=444)
 
-        panel_py = PanelData(
-            outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
-        )
+        panel_py = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
         result_py = panel_unconditional_qte(
             panel_py, quantile=0.5, n_bootstrap=200, random_state=42
         )
@@ -255,9 +241,7 @@ class TestPanelUnconditionalQTEParity:
         """Test that cluster bootstrap is implemented consistently."""
         Y, D, X, unit_id, time = generate_panel_data(n_units=30, n_periods=20, seed=555)
 
-        panel_py = PanelData(
-            outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time
-        )
+        panel_py = PanelData(outcomes=Y, treatment=D, covariates=X, unit_id=unit_id, time=time)
 
         # Cluster bootstrap
         result_cluster_py = panel_unconditional_qte(

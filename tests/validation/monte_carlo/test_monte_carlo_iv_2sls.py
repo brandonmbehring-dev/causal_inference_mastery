@@ -171,9 +171,7 @@ class Test2SLSUnbiasedness:
         ols_true_bias = abs(mean_ols - true_beta)
 
         # Document that very weak IV provides little benefit
-        assert iv_true_bias > 0.15, (
-            f"Very weak IV bias {iv_true_bias:.4f} should be substantial"
-        )
+        assert iv_true_bias > 0.15, f"Very weak IV bias {iv_true_bias:.4f} should be substantial"
 
 
 class Test2SLSCoverage:
@@ -344,9 +342,7 @@ class Test2SLSSEAccuracy:
         ci_uppers_standard = []
 
         for seed in range(n_runs):
-            data = dgp_iv_heteroskedastic(
-                n=500, true_beta=true_beta, random_state=seed
-            )
+            data = dgp_iv_heteroskedastic(n=500, true_beta=true_beta, random_state=seed)
 
             # Robust inference
             iv_robust = TwoStageLeastSquares(inference="robust")
@@ -421,8 +417,7 @@ class Test2SLSDiagnostics:
 
         # Strong IV should have F >> 10
         assert mean_f > 50, (
-            f"Mean F-statistic {mean_f:.1f} too low for strong IV DGP. "
-            f"Expected F >> 10."
+            f"Mean F-statistic {mean_f:.1f} too low for strong IV DGP. Expected F >> 10."
         )
 
     @pytest.mark.slow
@@ -445,12 +440,8 @@ class Test2SLSDiagnostics:
 
         # Weak IV should have F < 10
         assert mean_f < 15, (
-            f"Mean F-statistic {mean_f:.1f} too high for weak IV DGP. "
-            f"Expected F ≈ 8."
+            f"Mean F-statistic {mean_f:.1f} too high for weak IV DGP. Expected F ≈ 8."
         )
 
         # Should be above 5 (not very weak)
-        assert mean_f > 5, (
-            f"Mean F-statistic {mean_f:.1f} too low. "
-            f"Expected F ≈ 8 for weak IV DGP."
-        )
+        assert mean_f > 5, f"Mean F-statistic {mean_f:.1f} too low. Expected F ≈ 8 for weak IV DGP."

@@ -284,27 +284,19 @@ def _validate_ps_inputs(
 
     n = len(Y)
     if len(D) != n:
-        raise ValueError(
-            f"treatment length ({len(D)}) must match outcome length ({n})"
-        )
+        raise ValueError(f"treatment length ({len(D)}) must match outcome length ({n})")
     if len(Z) != n:
-        raise ValueError(
-            f"instrument length ({len(Z)}) must match outcome length ({n})"
-        )
+        raise ValueError(f"instrument length ({len(Z)}) must match outcome length ({n})")
 
     # Check binary treatment
     unique_D = np.unique(D[~np.isnan(D)])
     if not np.all(np.isin(unique_D, [0, 1])):
-        raise ValueError(
-            f"treatment must be binary (0 or 1). Got unique values: {unique_D}"
-        )
+        raise ValueError(f"treatment must be binary (0 or 1). Got unique values: {unique_D}")
 
     # Check binary instrument
     unique_Z = np.unique(Z[~np.isnan(Z)])
     if not np.all(np.isin(unique_Z, [0, 1])):
-        raise ValueError(
-            f"instrument must be binary (0 or 1). Got unique values: {unique_Z}"
-        )
+        raise ValueError(f"instrument must be binary (0 or 1). Got unique values: {unique_Z}")
 
     # Check for variation in instrument
     if len(unique_Z) < 2:
@@ -320,9 +312,7 @@ def _validate_ps_inputs(
         if X.ndim == 1:
             X = X.reshape(-1, 1)
         if X.shape[0] != n:
-            raise ValueError(
-                f"covariates rows ({X.shape[0]}) must match outcome length ({n})"
-            )
+            raise ValueError(f"covariates rows ({X.shape[0]}) must match outcome length ({n})")
 
     # Check for compliers (first-stage coefficient > 0)
     D_z1 = D[Z == 1]
@@ -620,9 +610,7 @@ def cace_em(
     # ==========================================================================
     for iteration in range(max_iter):
         # E-Step: Compute posterior strata probabilities
-        strata_probs, ll = _e_step_ps(
-            Y, D, Z, pi_c, pi_a, pi_n, mu_0, mu_1, mu_a, mu_n, sigma2
-        )
+        strata_probs, ll = _e_step_ps(Y, D, Z, pi_c, pi_a, pi_n, mu_0, mu_1, mu_a, mu_n, sigma2)
         ll_history.append(ll)
 
         # Check convergence
@@ -634,9 +622,7 @@ def cace_em(
                 break
 
         # M-Step: Update parameters
-        pi_c, pi_a, pi_n, mu_0, mu_1, mu_a, mu_n, sigma2 = _m_step_ps(
-            Y, D, Z, strata_probs
-        )
+        pi_c, pi_a, pi_n, mu_0, mu_1, mu_a, mu_n, sigma2 = _m_step_ps(Y, D, Z, strata_probs)
 
         # Compute CACE from updated parameters
         cace = mu_1 - mu_0
@@ -675,9 +661,7 @@ def cace_em(
 
     # Reduced form = CACE * π_c
     reduced_form = cace * pi_c
-    reduced_form_se = np.sqrt(
-        (pi_c**2) * (cace_se**2) + (cace**2) * (first_stage_se**2)
-    )
+    reduced_form_se = np.sqrt((pi_c**2) * (cace_se**2) + (cace**2) * (first_stage_se**2))
 
     # Strata proportions
     strata_props = StrataProportions(
@@ -882,7 +866,7 @@ def _m_step_ps(
 
     # μ_0: Mean for compliers with D=0
     # These are observations where Z=0 and they're compliers
-    mask_c_d0 = (D == 0)
+    mask_c_d0 = D == 0
     weights_c_d0 = w_c[mask_c_d0]
     if np.sum(weights_c_d0) > 1e-10:
         mu_0 = np.average(Y[mask_c_d0], weights=weights_c_d0)
@@ -890,7 +874,7 @@ def _m_step_ps(
         mu_0 = np.mean(Y[D == 0])
 
     # μ_1: Mean for compliers with D=1
-    mask_c_d1 = (D == 1)
+    mask_c_d1 = D == 1
     weights_c_d1 = w_c[mask_c_d1]
     if np.sum(weights_c_d1) > 1e-10:
         mu_1 = np.average(Y[mask_c_d1], weights=weights_c_d1)
@@ -898,7 +882,7 @@ def _m_step_ps(
         mu_1 = np.mean(Y[D == 1])
 
     # μ_a: Mean for always-takers (all have D=1)
-    mask_a = (D == 1)
+    mask_a = D == 1
     weights_a = w_a[mask_a]
     if np.sum(weights_a) > 1e-10:
         mu_a = np.average(Y[mask_a], weights=weights_a)
@@ -906,7 +890,7 @@ def _m_step_ps(
         mu_a = np.mean(Y[D == 1])
 
     # μ_n: Mean for never-takers (all have D=0)
-    mask_n = (D == 0)
+    mask_n = D == 0
     weights_n = w_n[mask_n]
     if np.sum(weights_n) > 1e-10:
         mu_n = np.average(Y[mask_n], weights=weights_n)

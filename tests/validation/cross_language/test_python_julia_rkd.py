@@ -22,8 +22,7 @@ from tests.validation.cross_language.julia_interface import (
 
 # Skip all tests if Julia not available
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-validation"
+    not is_julia_available(), reason="Julia not available for cross-validation"
 )
 
 
@@ -80,14 +79,12 @@ class TestSharpRKDParity:
 
         # Julia
         jl_result = julia_sharp_rkd(
-            Y, X, D, cutoff=0.0, bandwidth=bandwidth,
-            polynomial_order=1, kernel="triangular"
+            Y, X, D, cutoff=0.0, bandwidth=bandwidth, polynomial_order=1, kernel="triangular"
         )
 
         # Compare estimates (allow some tolerance due to implementation differences)
         assert np.isclose(py_result.estimate, jl_result["estimate"], rtol=0.15), (
-            f"Estimate mismatch: Python={py_result.estimate:.4f}, "
-            f"Julia={jl_result['estimate']:.4f}"
+            f"Estimate mismatch: Python={py_result.estimate:.4f}, Julia={jl_result['estimate']:.4f}"
         )
 
         # Compare treatment kink detection (Python uses delta_slope_d, Julia uses treatment_kink)
@@ -177,9 +174,7 @@ class TestSharpRKDParity:
         py_rkd = SharpRKD(cutoff=0.0, bandwidth=bandwidth, polynomial_order=2)
         py_result = py_rkd.fit(Y, X, D)
 
-        jl_result = julia_sharp_rkd(
-            Y, X, D, cutoff=0.0, bandwidth=bandwidth, polynomial_order=2
-        )
+        jl_result = julia_sharp_rkd(Y, X, D, cutoff=0.0, bandwidth=bandwidth, polynomial_order=2)
 
         assert np.isclose(py_result.estimate, jl_result["estimate"], rtol=0.20)
 
@@ -266,16 +261,8 @@ class TestSlopeParity:
         jl_result = julia_sharp_rkd(Y, X, D, cutoff=0.0, bandwidth=bandwidth)
 
         # Treatment slopes (Python uses slope_d_*, Julia uses treatment_slope_*)
-        assert np.isclose(
-            py_result.slope_d_left,
-            jl_result["treatment_slope_left"],
-            rtol=0.20
-        )
-        assert np.isclose(
-            py_result.slope_d_right,
-            jl_result["treatment_slope_right"],
-            rtol=0.20
-        )
+        assert np.isclose(py_result.slope_d_left, jl_result["treatment_slope_left"], rtol=0.20)
+        assert np.isclose(py_result.slope_d_right, jl_result["treatment_slope_right"], rtol=0.20)
 
     def test_outcome_slopes_parity(self):
         """Outcome slope estimates should match."""
@@ -293,13 +280,5 @@ class TestSlopeParity:
         jl_result = julia_sharp_rkd(Y, X, D, cutoff=0.0, bandwidth=bandwidth)
 
         # Outcome slopes (Python uses slope_y_*, Julia uses outcome_slope_*)
-        assert np.isclose(
-            py_result.slope_y_left,
-            jl_result["outcome_slope_left"],
-            rtol=0.20
-        )
-        assert np.isclose(
-            py_result.slope_y_right,
-            jl_result["outcome_slope_right"],
-            rtol=0.20
-        )
+        assert np.isclose(py_result.slope_y_left, jl_result["outcome_slope_left"], rtol=0.20)
+        assert np.isclose(py_result.slope_y_right, jl_result["outcome_slope_right"], rtol=0.20)

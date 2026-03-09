@@ -30,9 +30,11 @@ def __getattr__(name: str):
     """Lazy import for modules with optional dependencies."""
     if name == "bayesian_dr_ate":
         from .bayesian_dr import bayesian_dr_ate
+
         return bayesian_dr_ate
     if name == "hierarchical_bayesian_ate":
         from .hierarchical_ate import hierarchical_bayesian_ate
+
         return hierarchical_bayesian_ate
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 

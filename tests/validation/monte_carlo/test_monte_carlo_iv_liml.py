@@ -286,12 +286,10 @@ class TestLIMLCoverage:
             tsls_ci_uppers.append(tsls.ci_[0, 1])
 
         liml_coverage = np.mean(
-            (np.array(liml_ci_lowers) <= true_beta)
-            & (true_beta <= np.array(liml_ci_uppers))
+            (np.array(liml_ci_lowers) <= true_beta) & (true_beta <= np.array(liml_ci_uppers))
         )
         tsls_coverage = np.mean(
-            (np.array(tsls_ci_lowers) <= true_beta)
-            & (true_beta <= np.array(tsls_ci_uppers))
+            (np.array(tsls_ci_lowers) <= true_beta) & (true_beta <= np.array(tsls_ci_uppers))
         )
 
         # LIML should have better (or equal) coverage

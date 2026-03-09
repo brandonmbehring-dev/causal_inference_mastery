@@ -72,7 +72,10 @@ class TestTWFEBias:
 
         assert "warning" in result
         assert "BIASED" in result["warning"]
-        assert "callaway_santanna" in result["warning"].lower() or "sun_abraham" in result["warning"].lower()
+        assert (
+            "callaway_santanna" in result["warning"].lower()
+            or "sun_abraham" in result["warning"].lower()
+        )
 
 
 # ============================================================================
@@ -145,7 +148,9 @@ class TestCallawaySantanna:
             treatment_time=staggered_dynamic_data["treatment_time"],
         )
 
-        result = callaway_santanna_ate(data, aggregation="dynamic", n_bootstrap=100, random_state=42)
+        result = callaway_santanna_ate(
+            data, aggregation="dynamic", n_bootstrap=100, random_state=42
+        )
 
         assert "aggregated" in result
         assert isinstance(result["aggregated"], dict)
@@ -338,9 +343,7 @@ class TestSunAbraham:
         result = sun_abraham_ate(data)
 
         # Manually compute weighted average
-        merged = result["cohort_effects"].merge(
-            result["weights"], on=["cohort", "event_time"]
-        )
+        merged = result["cohort_effects"].merge(result["weights"], on=["cohort", "event_time"])
         manual_att = (merged["coef"] * merged["weight"]).sum()
 
         # Should match reported ATT
@@ -527,7 +530,9 @@ class TestInputValidation:
                 treatment=np.array([0, 1, 0, 1]),
                 time=np.array([0, 1, 0, 1]),
                 unit_id=np.array([0, 0, 1, 1]),
-                treatment_time=np.array([1, 1]),  # Both treated at t=1 (within valid range), no never-treated
+                treatment_time=np.array(
+                    [1, 1]
+                ),  # Both treated at t=1 (within valid range), no never-treated
             )
 
     def test_twfe_staggered_requires_treated_units(self):

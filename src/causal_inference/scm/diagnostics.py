@@ -54,10 +54,10 @@ def check_pre_treatment_fit(
     n = len(gap)
 
     # RMSE
-    rmse = np.sqrt(np.mean(gap ** 2))
+    rmse = np.sqrt(np.mean(gap**2))
 
     # R-squared
-    ss_res = np.sum(gap ** 2)
+    ss_res = np.sum(gap**2)
     ss_tot = np.sum((treated_1d - np.mean(treated_1d)) ** 2)
     r_squared = 1.0 - (ss_res / ss_tot) if ss_tot > 1e-10 else 0.0
 
@@ -186,7 +186,7 @@ def check_weight_properties(
 
     # Concentration metrics
     max_weight = np.max(weights)
-    hhi = np.sum(weights ** 2)  # Herfindahl-Hirschman Index
+    hhi = np.sum(weights**2)  # Herfindahl-Hirschman Index
     effective_n = 1.0 / hhi if hhi > 1e-10 else n_control
 
     # Top donors
@@ -240,9 +240,7 @@ def diagnose_scm_quality(
             f"Poor pre-treatment fit (R² = {pre_fit['r_squared']:.2f}). "
             "Causal interpretation may be unreliable."
         )
-        recommendations.append(
-            "Consider using Augmented SCM or adding covariates to improve fit."
-        )
+        recommendations.append("Consider using Augmented SCM or adding covariates to improve fit.")
 
     # Check weight concentration
     if weight_properties["max_weight"] > 0.9:
@@ -252,9 +250,7 @@ def diagnose_scm_quality(
         )
 
     if weight_properties["effective_n"] < 2:
-        recommendations.append(
-            "Consider if a DiD or matched comparison might be more appropriate."
-        )
+        recommendations.append("Consider if a DiD or matched comparison might be more appropriate.")
 
     # Check pre-treatment periods
     if n_pre_periods < 5:
@@ -319,8 +315,8 @@ def compute_rmspe_ratio(
     pre_gap = gap[:treatment_period]
     post_gap = gap[treatment_period:]
 
-    pre_rmspe = np.sqrt(np.mean(pre_gap ** 2))
-    post_rmspe = np.sqrt(np.mean(post_gap ** 2))
+    pre_rmspe = np.sqrt(np.mean(pre_gap**2))
+    post_rmspe = np.sqrt(np.mean(post_gap**2))
 
     if pre_rmspe > 1e-10:
         ratio = post_rmspe / pre_rmspe

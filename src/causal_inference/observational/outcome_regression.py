@@ -107,8 +107,7 @@ def fit_outcome_models(
 
     if np.any(np.isinf(outcomes)) or np.any(np.isinf(treatment)) or np.any(np.isinf(covariates)):
         raise ValueError(
-            f"CRITICAL ERROR: Infinite values detected in input.\\n"
-            f"Function: fit_outcome_models"
+            f"CRITICAL ERROR: Infinite values detected in input.\\nFunction: fit_outcome_models"
         )
 
     # Check treatment is binary

@@ -275,9 +275,7 @@ class TestSharpRDDVsR:
         r_se = r_result["se"]
 
         # SE comparison with looser tolerance due to different estimation methods
-        assert np.isclose(py_se, r_se, rtol=0.30), (
-            f"SE mismatch: Python={py_se:.4f}, R={r_se:.4f}"
-        )
+        assert np.isclose(py_se, r_se, rtol=0.30), f"SE mismatch: Python={py_se:.4f}, R={r_se:.4f}"
 
     def test_bandwidth_comparison(self):
         """Python bandwidth should be in same ballpark as R bandwidth."""
@@ -327,9 +325,7 @@ class TestSharpRDDVsR:
         )
 
         # Both should match their R counterparts
-        assert np.isclose(rdd_tri.coef_, r_result_tri["tau"], rtol=0.10), (
-            f"Triangular mismatch"
-        )
+        assert np.isclose(rdd_tri.coef_, r_result_tri["tau"], rtol=0.10), f"Triangular mismatch"
         # Note: rectangular/uniform kernel naming may differ
         # Just check that estimates are in reasonable range
         assert abs(rdd_uni.coef_ - data["true_effect"]) < 1.0, (
@@ -344,9 +340,7 @@ class TestSharpRDDVsR:
         r_covers = 0
 
         for sim in range(n_sims):
-            data = generate_sharp_rdd_dgp(
-                n=400, true_effect=true_effect, seed=1000 + sim
-            )
+            data = generate_sharp_rdd_dgp(n=400, true_effect=true_effect, seed=1000 + sim)
 
             rdd = SharpRDD(cutoff=data["cutoff"])
             rdd.fit(data["X"], data["Y"])
@@ -418,9 +412,7 @@ class TestMcCraryVsR:
 
     def test_manipulation_detection(self):
         """Both should detect manipulation when present."""
-        data = generate_mccrary_dgp(
-            n=1000, manipulation=True, manipulation_strength=0.5, seed=123
-        )
+        data = generate_mccrary_dgp(n=1000, manipulation=True, manipulation_strength=0.5, seed=123)
 
         py_result = mccrary_test(data["X"], cutoff=data["cutoff"])
         py_pvalue = py_result["p_value"]
@@ -500,9 +492,7 @@ class TestRDDMonteCarlo:
         r_estimates = []
 
         for sim in range(n_sims):
-            data = generate_sharp_rdd_dgp(
-                n=400, true_effect=true_effect, seed=2000 + sim
-            )
+            data = generate_sharp_rdd_dgp(n=400, true_effect=true_effect, seed=2000 + sim)
 
             try:
                 rdd = SharpRDD(cutoff=data["cutoff"])

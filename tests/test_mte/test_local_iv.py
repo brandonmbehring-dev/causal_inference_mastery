@@ -235,7 +235,7 @@ class TestPolynomialMTE:
         )
 
         # Linear vs cubic should differ
-        mse_diff = np.nanmean((result_linear["mte_grid"] - result_cubic["mte_grid"])**2)
+        mse_diff = np.nanmean((result_linear["mte_grid"] - result_cubic["mte_grid"]) ** 2)
         # They might be similar if true MTE is linear, but computation should work
         assert not np.isnan(mse_diff)
 
@@ -413,14 +413,10 @@ class TestLocalIVvsPolynomial:
 
         if local_valid.sum() > 3 and poly_valid.sum() > 3:
             slope_local = np.polyfit(
-                result_local["u_grid"][local_valid],
-                result_local["mte_grid"][local_valid],
-                1
+                result_local["u_grid"][local_valid], result_local["mte_grid"][local_valid], 1
             )[0]
             slope_poly = np.polyfit(
-                result_poly["u_grid"][poly_valid],
-                result_poly["mte_grid"][poly_valid],
-                1
+                result_poly["u_grid"][poly_valid], result_poly["mte_grid"][poly_valid], 1
             )[0]
 
             # Both slopes should be negative

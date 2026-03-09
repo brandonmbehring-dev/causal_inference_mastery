@@ -31,8 +31,7 @@ from tests.validation.cross_language.julia_interface import (
 
 
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-validation"
+    not is_julia_available(), reason="Julia not available for cross-validation"
 )
 
 
@@ -50,10 +49,7 @@ def generate_uniform_data(n: int, x_range: tuple = (-5, 5), seed: int = 42):
 
 
 def generate_bunched_data(
-    n: int,
-    bunching_fraction: float = 0.15,
-    x_range: tuple = (-5, 5),
-    seed: int = 42
+    n: int, bunching_fraction: float = 0.15, x_range: tuple = (-5, 5), seed: int = 42
 ):
     """
     Generate data with bunching just above cutoff (manipulation).
@@ -107,7 +103,7 @@ class TestMcCraryThetaParity:
         jl_result = julia_mccrary_test(X, cutoff=cutoff, alpha=0.05)
 
         # Julia (properly calibrated) should have small theta
-        assert abs(jl_result['theta']) < 0.5, f"Julia theta too large: {jl_result['theta']}"
+        assert abs(jl_result["theta"]) < 0.5, f"Julia theta too large: {jl_result['theta']}"
 
         # Python may have larger theta due to polynomial fitting issues
         # Just verify it's finite and not extreme
@@ -115,10 +111,11 @@ class TestMcCraryThetaParity:
         assert abs(py_theta) < 2.0, f"Python theta extreme: {py_theta}"
 
         # If both are small, check sign agreement
-        if abs(py_theta) < 0.3 and abs(jl_result['theta']) < 0.3:
-            if abs(py_theta) > 0.05 and abs(jl_result['theta']) > 0.05:
-                assert np.sign(py_theta) == np.sign(jl_result['theta']), \
+        if abs(py_theta) < 0.3 and abs(jl_result["theta"]) < 0.3:
+            if abs(py_theta) > 0.05 and abs(jl_result["theta"]) > 0.05:
+                assert np.sign(py_theta) == np.sign(jl_result["theta"]), (
                     f"Sign mismatch: Python={py_theta:.4f}, Julia={jl_result['theta']:.4f}"
+                )
 
     def test_bunched_theta_agreement(self):
         """Theta should agree for bunched data (both positive and significant)."""
@@ -132,12 +129,13 @@ class TestMcCraryThetaParity:
 
         # Both should detect positive theta (more mass on right)
         assert py_theta > 0, f"Python should detect bunching: theta={py_theta}"
-        assert jl_result['theta'] > 0, f"Julia should detect bunching: theta={jl_result['theta']}"
+        assert jl_result["theta"] > 0, f"Julia should detect bunching: theta={jl_result['theta']}"
 
         # Thetas should be in similar range
-        rel_diff = abs(py_theta - jl_result['theta']) / max(abs(py_theta), 0.1)
-        assert rel_diff < 0.30, \
+        rel_diff = abs(py_theta - jl_result["theta"]) / max(abs(py_theta), 0.1)
+        assert rel_diff < 0.30, (
             f"Theta mismatch: Python={py_theta:.4f}, Julia={jl_result['theta']:.4f}, rel_diff={rel_diff:.2f}"
+        )
 
     def test_normal_theta_agreement(self):
         """Theta should agree for normal data (both near 0, symmetric)."""
@@ -151,7 +149,7 @@ class TestMcCraryThetaParity:
 
         # Both should have small theta (symmetric normal)
         assert abs(py_theta) < 0.5, f"Python theta too large: {py_theta}"
-        assert abs(jl_result['theta']) < 0.5, f"Julia theta too large: {jl_result['theta']}"
+        assert abs(jl_result["theta"]) < 0.5, f"Julia theta too large: {jl_result['theta']}"
 
     def test_large_sample_theta_convergence(self):
         """With more data, thetas should converge closer."""
@@ -165,7 +163,7 @@ class TestMcCraryThetaParity:
 
         # Large sample: both should be very close to 0
         assert abs(py_theta) < 0.3, f"Python theta with n=2000: {py_theta}"
-        assert abs(jl_result['theta']) < 0.3, f"Julia theta with n=2000: {jl_result['theta']}"
+        assert abs(jl_result["theta"]) < 0.3, f"Julia theta with n=2000: {jl_result['theta']}"
 
 
 class TestMcCraryDetectionParity:
@@ -184,7 +182,9 @@ class TestMcCraryDetectionParity:
         # Both should reject at alpha=0.10 (allow some margin)
         # Note: Python has higher Type I error, so lower bar
         assert py_pval < 0.20, f"Python should detect 25% bunching: p={py_pval}"
-        assert jl_result['p_value'] < 0.10, f"Julia should detect 25% bunching: p={jl_result['p_value']}"
+        assert jl_result["p_value"] < 0.10, (
+            f"Julia should detect 25% bunching: p={jl_result['p_value']}"
+        )
 
     def test_mild_bunching_detected_by_julia(self):
         """15% bunching with n=1000 - Julia should detect, Python may not."""
@@ -198,12 +198,14 @@ class TestMcCraryDetectionParity:
 
         # Julia should detect with good power
         # Python may or may not (elevated Type I error affects power calculation)
-        assert jl_result['p_value'] < 0.20, f"Julia should detect 15% bunching: p={jl_result['p_value']}"
+        assert jl_result["p_value"] < 0.20, (
+            f"Julia should detect 15% bunching: p={jl_result['p_value']}"
+        )
 
         # Both should have positive theta (more mass on right)
         py_theta, _, _ = mccrary_density_test(X, cutoff=cutoff)
         assert py_theta > 0, "Python should see positive theta"
-        assert jl_result['theta'] > 0, "Julia should see positive theta"
+        assert jl_result["theta"] > 0, "Julia should see positive theta"
 
     def test_no_manipulation_passes_uniform(self):
         """Uniform data should pass (no manipulation) in Julia; Python may fail more often."""
@@ -220,7 +222,7 @@ class TestMcCraryDetectionParity:
 
             if py_pval > 0.05:
                 py_passes += 1
-            if jl_result['passes']:
+            if jl_result["passes"]:
                 jl_passes += 1
 
         # Julia (4% Type I error) should pass most
@@ -243,7 +245,7 @@ class TestMcCrarySEComparison:
         # Julia
         jl_result = julia_mccrary_test(X, cutoff=cutoff, alpha=0.05)
 
-        assert jl_result['se'] > 0, "Julia SE should be positive"
+        assert jl_result["se"] > 0, "Julia SE should be positive"
         # Julia SE is properly calibrated; Python's is embedded in the test
 
     def test_se_decreases_with_sample_size(self):
@@ -256,8 +258,9 @@ class TestMcCrarySEComparison:
         X_large, _ = generate_uniform_data(n=1500, seed=42)
         jl_large = julia_mccrary_test(X_large, cutoff=cutoff, alpha=0.05)
 
-        assert jl_small['se'] > jl_large['se'], \
+        assert jl_small["se"] > jl_large["se"], (
             f"SE should decrease with n: SE(n=300)={jl_small['se']:.4f}, SE(n=1500)={jl_large['se']:.4f}"
+        )
 
 
 class TestMcCraryDiagnostics:
@@ -270,7 +273,7 @@ class TestMcCraryDiagnostics:
         jl_result = julia_mccrary_test(X, cutoff=cutoff, alpha=0.05)
 
         # Julia reports n_left and n_right
-        total_n = jl_result['n_left'] + jl_result['n_right']
+        total_n = jl_result["n_left"] + jl_result["n_right"]
         assert total_n == len(X), f"Sample size mismatch: {total_n} != {len(X)}"
 
     def test_bandwidth_reasonable(self):
@@ -280,7 +283,7 @@ class TestMcCraryDiagnostics:
         jl_result = julia_mccrary_test(X, cutoff=cutoff, alpha=0.05)
 
         # Bandwidth should be positive and reasonable (not too small or large)
-        h = jl_result['bandwidth']
+        h = jl_result["bandwidth"]
         x_range = X.max() - X.min()
 
         assert h > 0, "Bandwidth should be positive"
@@ -299,8 +302,8 @@ class TestMcCraryDiagnostics:
         assert len(py_interp) > 10  # Non-trivial string
 
         # Julia interpretation
-        assert isinstance(jl_result['interpretation'], str)
-        assert len(jl_result['interpretation']) > 10
+        assert isinstance(jl_result["interpretation"], str)
+        assert len(jl_result["interpretation"]) > 10
 
 
 class TestMcCraryEdgeCases:
@@ -317,7 +320,7 @@ class TestMcCraryEdgeCases:
 
         # Both should handle asymmetric cutoff
         assert np.isfinite(py_theta)
-        assert np.isfinite(jl_result['theta'])
+        assert np.isfinite(jl_result["theta"])
 
     def test_explicit_bandwidth(self):
         """Explicit bandwidth should be respected."""
@@ -327,8 +330,9 @@ class TestMcCraryEdgeCases:
         jl_result = julia_mccrary_test(X, cutoff=cutoff, bandwidth=h_explicit, alpha=0.05)
 
         # Bandwidth should match (or be very close to) explicit value
-        assert abs(jl_result['bandwidth'] - h_explicit) < 0.01, \
+        assert abs(jl_result["bandwidth"] - h_explicit) < 0.01, (
             f"Bandwidth should be {h_explicit}, got {jl_result['bandwidth']}"
+        )
 
     def test_small_bandwidth_increases_variance(self):
         """Smaller bandwidth should increase SE (more local, fewer obs)."""
@@ -338,8 +342,9 @@ class TestMcCraryEdgeCases:
         jl_large_h = julia_mccrary_test(X, cutoff=cutoff, bandwidth=2.0, alpha=0.05)
 
         # Smaller h → fewer effective obs → larger SE
-        assert jl_small_h['se'] > jl_large_h['se'], \
+        assert jl_small_h["se"] > jl_large_h["se"], (
             f"Smaller h should give larger SE: SE(h=0.5)={jl_small_h['se']:.4f}, SE(h=2.0)={jl_large_h['se']:.4f}"
+        )
 
 
 class TestMcCraryDensityEstimates:
@@ -351,8 +356,8 @@ class TestMcCraryDensityEstimates:
 
         jl_result = julia_mccrary_test(X, cutoff=cutoff, alpha=0.05)
 
-        assert jl_result['f_left'] > 0, "Left density should be positive"
-        assert jl_result['f_right'] > 0, "Right density should be positive"
+        assert jl_result["f_left"] > 0, "Left density should be positive"
+        assert jl_result["f_right"] > 0, "Right density should be positive"
 
     def test_uniform_densities_similar(self):
         """For uniform data, left and right densities should be similar.
@@ -365,11 +370,11 @@ class TestMcCraryDensityEstimates:
         jl_result = julia_mccrary_test(X, cutoff=cutoff, alpha=0.05)
 
         # Densities should be within factor of 3 for uniform (relaxed due to estimation noise)
-        ratio = jl_result['f_right'] / jl_result['f_left']
+        ratio = jl_result["f_right"] / jl_result["f_left"]
         assert 0.33 < ratio < 3.0, f"Density ratio for uniform: {ratio:.4f}"
 
         # Also verify theta is small (more direct test of no manipulation)
-        assert abs(jl_result['theta']) < 0.5, f"Theta should be small: {jl_result['theta']}"
+        assert abs(jl_result["theta"]) < 0.5, f"Theta should be small: {jl_result['theta']}"
 
     def test_bunched_density_higher_on_right(self):
         """For bunched data, right density should be higher."""
@@ -378,8 +383,9 @@ class TestMcCraryDensityEstimates:
         jl_result = julia_mccrary_test(X, cutoff=cutoff, alpha=0.05)
 
         # Right density should be higher (bunching above cutoff)
-        assert jl_result['f_right'] > jl_result['f_left'], \
+        assert jl_result["f_right"] > jl_result["f_left"], (
             f"Right density should exceed left: f_R={jl_result['f_right']:.4f}, f_L={jl_result['f_left']:.4f}"
+        )
 
         # Theta = log(f_R / f_L) should be positive
-        assert jl_result['theta'] > 0, f"Theta should be positive: {jl_result['theta']}"
+        assert jl_result["theta"] > 0, f"Theta should be positive: {jl_result['theta']}"

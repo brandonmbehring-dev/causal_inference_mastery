@@ -135,8 +135,10 @@ def fci_algorithm(
     latent_confounders = []
     for i in range(pag.n_nodes):
         for j in range(i + 1, pag.n_nodes):
-            if (pag.endpoints[i, j, 0] == PAG.MARK_ARROW and
-                    pag.endpoints[i, j, 1] == PAG.MARK_ARROW):
+            if (
+                pag.endpoints[i, j, 0] == PAG.MARK_ARROW
+                and pag.endpoints[i, j, 1] == PAG.MARK_ARROW
+            ):
                 latent_confounders.append((i, j))
 
     elapsed_ms = (time.perf_counter() - start_time) * 1000
@@ -230,7 +232,7 @@ def _fci_rule_0(
         neighbors = list(skeleton.neighbors(z))
 
         for idx_x, x in enumerate(neighbors):
-            for y in neighbors[idx_x + 1:]:
+            for y in neighbors[idx_x + 1 :]:
                 # Check if X and Y are not adjacent
                 if skeleton.has_edge(x, y):
                     continue
@@ -359,14 +361,18 @@ def _fci_rule_2(pag: PAG, verbose: bool = False) -> bool:
                     continue
 
                 # Pattern 1: X -> Y *-> Z
-                x_to_y = (pag.get_endpoint(x, y) == EdgeMark.TAIL and
-                          pag.get_endpoint(y, x) == EdgeMark.ARROW)
+                x_to_y = (
+                    pag.get_endpoint(x, y) == EdgeMark.TAIL
+                    and pag.get_endpoint(y, x) == EdgeMark.ARROW
+                )
                 y_to_z = pag.get_endpoint(z, y) == EdgeMark.ARROW
 
                 # Pattern 2: X *-> Y -> Z
                 x_into_y = pag.get_endpoint(y, x) == EdgeMark.ARROW
-                y_to_z_directed = (pag.get_endpoint(y, z) == EdgeMark.TAIL and
-                                   pag.get_endpoint(z, y) == EdgeMark.ARROW)
+                y_to_z_directed = (
+                    pag.get_endpoint(y, z) == EdgeMark.TAIL
+                    and pag.get_endpoint(z, y) == EdgeMark.ARROW
+                )
 
                 if (x_to_y and y_to_z) or (x_into_y and y_to_z_directed):
                     # Orient X *-> Z (set arrow at Z)
@@ -477,10 +483,14 @@ def _fci_rule_4(pag: PAG, verbose: bool = False) -> bool:
                     continue
 
                 # W -> X or W <-> X
-                w_to_x = (pag.get_endpoint(w, x) == EdgeMark.TAIL and
-                          pag.get_endpoint(x, w) == EdgeMark.ARROW)
-                w_bidi_x = (pag.get_endpoint(w, x) == EdgeMark.ARROW and
-                            pag.get_endpoint(x, w) == EdgeMark.ARROW)
+                w_to_x = (
+                    pag.get_endpoint(w, x) == EdgeMark.TAIL
+                    and pag.get_endpoint(x, w) == EdgeMark.ARROW
+                )
+                w_bidi_x = (
+                    pag.get_endpoint(w, x) == EdgeMark.ARROW
+                    and pag.get_endpoint(x, w) == EdgeMark.ARROW
+                )
 
                 if not (w_to_x or w_bidi_x):
                     continue
@@ -503,8 +513,10 @@ def _fci_rule_4(pag: PAG, verbose: bool = False) -> bool:
                         continue
 
                     # V -> W
-                    v_to_w = (pag.get_endpoint(v, w) == EdgeMark.TAIL and
-                              pag.get_endpoint(w, v) == EdgeMark.ARROW)
+                    v_to_w = (
+                        pag.get_endpoint(v, w) == EdgeMark.TAIL
+                        and pag.get_endpoint(w, v) == EdgeMark.ARROW
+                    )
 
                     if v_to_w:
                         # This is a discriminating path
@@ -553,16 +565,22 @@ def _fci_rule_8(pag: PAG, verbose: bool = False) -> bool:
                     continue
 
                 # X -> Y (tail at X, arrow at Y)
-                x_to_y = (pag.get_endpoint(x, y) == EdgeMark.TAIL and
-                          pag.get_endpoint(y, x) == EdgeMark.ARROW)
+                x_to_y = (
+                    pag.get_endpoint(x, y) == EdgeMark.TAIL
+                    and pag.get_endpoint(y, x) == EdgeMark.ARROW
+                )
 
                 # X -o Y (tail at X, circle at Y)
-                x_tail_circle_y = (pag.get_endpoint(x, y) == EdgeMark.TAIL and
-                                   pag.get_endpoint(y, x) == EdgeMark.CIRCLE)
+                x_tail_circle_y = (
+                    pag.get_endpoint(x, y) == EdgeMark.TAIL
+                    and pag.get_endpoint(y, x) == EdgeMark.CIRCLE
+                )
 
                 # Y -> Z (tail at Y, arrow at Z)
-                y_to_z = (pag.get_endpoint(y, z) == EdgeMark.TAIL and
-                          pag.get_endpoint(z, y) == EdgeMark.ARROW)
+                y_to_z = (
+                    pag.get_endpoint(y, z) == EdgeMark.TAIL
+                    and pag.get_endpoint(z, y) == EdgeMark.ARROW
+                )
 
                 if (x_to_y or x_tail_circle_y) and y_to_z:
                     # Orient X -> Z (set tail at X)

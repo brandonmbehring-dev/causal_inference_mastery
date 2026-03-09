@@ -215,10 +215,12 @@ class TestCATEConstantValues:
         n = 100
         Y = np.random.randn(n)
         T = np.random.randint(0, 2, n)
-        X = np.column_stack([
-            np.ones(n),  # Constant covariate
-            np.random.randn(n),  # Varying covariate
-        ])
+        X = np.column_stack(
+            [
+                np.ones(n),  # Constant covariate
+                np.random.randn(n),  # Varying covariate
+            ]
+        )
 
         result = s_learner(Y, T, X)
         assert np.isfinite(result["ate"])
@@ -434,10 +436,12 @@ class TestCATENumericalStability:
         n = 100
         Y = np.random.randn(n)
         T = np.random.randint(0, 2, n)
-        X = np.column_stack([
-            np.random.randn(n) * 1e6,   # Large scale
-            np.random.randn(n) * 1e-6,  # Small scale
-        ])
+        X = np.column_stack(
+            [
+                np.random.randn(n) * 1e6,  # Large scale
+                np.random.randn(n) * 1e-6,  # Small scale
+            ]
+        )
 
         result = s_learner(Y, T, X)
         assert np.isfinite(result["ate"])
@@ -470,9 +474,7 @@ class TestTLearnerEdgeCases:
         T = np.concatenate([np.ones(50), np.zeros(50)])
         # Treated: X > 0, Control: X < 0
         X_raw = np.random.randn(n, 2)
-        X = np.where(T[:, np.newaxis] == 1,
-                    np.abs(X_raw),
-                    -np.abs(X_raw))
+        X = np.where(T[:, np.newaxis] == 1, np.abs(X_raw), -np.abs(X_raw))
         Y = np.random.randn(n)
 
         # T-learner extrapolates, may have high variance

@@ -212,7 +212,7 @@ def regression_adjusted_ate(
 
     # R-squared
     ss_total = np.sum((outcomes - np.mean(outcomes)) ** 2)
-    ss_residual = np.sum(residuals ** 2)
+    ss_residual = np.sum(residuals**2)
     r_squared = 1 - (ss_residual / ss_total) if ss_total > 0 else 0.0
 
     # ============================================================================
@@ -227,7 +227,7 @@ def regression_adjusted_ate(
     H_diag = np.sum((X_design @ XtX_inv) * X_design, axis=1)  # Diagonal of H = X(X'X)^-1X'
 
     # HC3 adjustment
-    hc3_weights = residuals ** 2 / (1 - H_diag) ** 2
+    hc3_weights = residuals**2 / (1 - H_diag) ** 2
 
     # Variance-covariance matrix
     Sigma = XtX_inv @ (X_design.T @ np.diag(hc3_weights) @ X_design) @ XtX_inv

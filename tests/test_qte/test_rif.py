@@ -25,9 +25,7 @@ class TestRIFQTEKnownAnswers:
         """
         outcome, treatment = simple_rct_data
 
-        result_rif = rif_qte(
-            outcome, treatment, quantile=0.5, n_bootstrap=500, random_state=42
-        )
+        result_rif = rif_qte(outcome, treatment, quantile=0.5, n_bootstrap=500, random_state=42)
 
         # True effect is 2.0 - RIF should be within 1.0 (wider tolerance due to
         # density estimation variability)
@@ -56,9 +54,7 @@ class TestRIFQTEProperties:
         """Standard error should be positive."""
         outcome, treatment = simple_rct_data
 
-        result = rif_qte(
-            outcome, treatment, quantile=0.5, n_bootstrap=200, random_state=42
-        )
+        result = rif_qte(outcome, treatment, quantile=0.5, n_bootstrap=200, random_state=42)
 
         assert result["se"] > 0
 
@@ -66,9 +62,7 @@ class TestRIFQTEProperties:
         """CI should contain point estimate."""
         outcome, treatment = simple_rct_data
 
-        result = rif_qte(
-            outcome, treatment, quantile=0.5, n_bootstrap=500, random_state=42
-        )
+        result = rif_qte(outcome, treatment, quantile=0.5, n_bootstrap=500, random_state=42)
 
         assert result["ci_lower"] < result["tau_q"] < result["ci_upper"]
 
@@ -76,12 +70,8 @@ class TestRIFQTEProperties:
         """Same seed should give identical results."""
         outcome, treatment = simple_rct_data
 
-        result1 = rif_qte(
-            outcome, treatment, quantile=0.5, n_bootstrap=200, random_state=123
-        )
-        result2 = rif_qte(
-            outcome, treatment, quantile=0.5, n_bootstrap=200, random_state=123
-        )
+        result1 = rif_qte(outcome, treatment, quantile=0.5, n_bootstrap=200, random_state=123)
+        result2 = rif_qte(outcome, treatment, quantile=0.5, n_bootstrap=200, random_state=123)
 
         assert result1["tau_q"] == result2["tau_q"]
         assert result1["se"] == result2["se"]
@@ -107,9 +97,7 @@ class TestRIFQTEBand:
         """Joint CI should be computed when requested."""
         outcome, treatment = simple_rct_data
 
-        result = rif_qte_band(
-            outcome, treatment, n_bootstrap=300, joint=True, random_state=42
-        )
+        result = rif_qte_band(outcome, treatment, n_bootstrap=300, joint=True, random_state=42)
 
         assert result["joint_ci_lower"] is not None
         assert result["joint_ci_upper"] is not None
@@ -119,8 +107,12 @@ class TestRIFQTEBand:
         outcome, treatment, covariates = data_with_covariates
 
         result = rif_qte_band(
-            outcome, treatment, covariates, quantiles=[0.25, 0.5, 0.75],
-            n_bootstrap=200, random_state=42
+            outcome,
+            treatment,
+            covariates,
+            quantiles=[0.25, 0.5, 0.75],
+            n_bootstrap=200,
+            random_state=42,
         )
 
         assert len(result["qte_estimates"]) == 3
@@ -136,8 +128,12 @@ class TestRIFQTEBandwidthMethods:
         outcome, treatment = simple_rct_data
 
         result = rif_qte(
-            outcome, treatment, quantile=0.5, bandwidth="silverman",
-            n_bootstrap=100, random_state=42
+            outcome,
+            treatment,
+            quantile=0.5,
+            bandwidth="silverman",
+            n_bootstrap=100,
+            random_state=42,
         )
 
         assert np.isfinite(result["tau_q"])
@@ -147,8 +143,7 @@ class TestRIFQTEBandwidthMethods:
         outcome, treatment = simple_rct_data
 
         result = rif_qte(
-            outcome, treatment, quantile=0.5, bandwidth="scott",
-            n_bootstrap=100, random_state=42
+            outcome, treatment, quantile=0.5, bandwidth="scott", n_bootstrap=100, random_state=42
         )
 
         assert np.isfinite(result["tau_q"])
@@ -158,8 +153,7 @@ class TestRIFQTEBandwidthMethods:
         outcome, treatment = simple_rct_data
 
         result = rif_qte(
-            outcome, treatment, quantile=0.5, bandwidth="auto",
-            n_bootstrap=100, random_state=42
+            outcome, treatment, quantile=0.5, bandwidth="auto", n_bootstrap=100, random_state=42
         )
 
         assert np.isfinite(result["tau_q"])

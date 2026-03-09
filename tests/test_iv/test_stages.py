@@ -49,7 +49,9 @@ class TestFirstStage:
         first = FirstStage()
         first.fit(D, Z, X)
 
-        assert 0 < first.partial_r2_ < 1, f"Partial R² must be in (0, 1), got {first.partial_r2_:.4f}"
+        assert 0 < first.partial_r2_ < 1, (
+            f"Partial R² must be in (0, 1), got {first.partial_r2_:.4f}"
+        )
 
     def test_first_stage_fitted_values_length(self, iv_just_identified):
         """Test that fitted values have correct length."""
@@ -58,7 +60,9 @@ class TestFirstStage:
         first = FirstStage()
         first.fit(D, Z, X)
 
-        assert len(first.fitted_values_) == len(D), f"Expected {len(D)} fitted values, got {len(first.fitted_values_)}"
+        assert len(first.fitted_values_) == len(D), (
+            f"Expected {len(D)} fitted values, got {len(first.fitted_values_)}"
+        )
 
     def test_first_stage_predict(self, iv_just_identified):
         """Test first-stage prediction on new data."""
@@ -70,7 +74,9 @@ class TestFirstStage:
         # Predict on same data (should match fitted values)
         D_hat = first.predict(Z, X)
 
-        assert np.allclose(D_hat, first.fitted_values_), "Predictions should match fitted values on training data"
+        assert np.allclose(D_hat, first.fitted_values_), (
+            "Predictions should match fitted values on training data"
+        )
 
 
 class TestReducedForm:
@@ -105,7 +111,9 @@ class TestReducedForm:
 
         # Should have coefficients for Z and X
         # Z: 1 instrument, X: 2 controls → 3 coefficients total
-        assert len(reduced.coef_) == 3, f"Expected 3 coefficients [Z, X1, X2], got {len(reduced.coef_)}"
+        assert len(reduced.coef_) == 3, (
+            f"Expected 3 coefficients [Z, X1, X2], got {len(reduced.coef_)}"
+        )
 
 
 class TestSecondStage:
@@ -141,7 +149,9 @@ class TestSecondStage:
 
         # Attribute should be se_naive_ (not se_)
         assert hasattr(second, "se_naive_"), "Second stage should have se_naive_ attribute"
-        assert not hasattr(second, "se_"), "Second stage should NOT have se_ attribute (to prevent confusion)"
+        assert not hasattr(second, "se_"), (
+            "Second stage should NOT have se_ attribute (to prevent confusion)"
+        )
 
 
 class TestWaldEstimatorIdentity:
@@ -157,14 +167,14 @@ class TestWaldEstimatorIdentity:
         second = SecondStage().fit(Y, first.fitted_values_, X)
 
         # Extract coefficients (first coefficient is for instrument Z)
-        pi = first.coef_[0]       # Effect of Z on D
+        pi = first.coef_[0]  # Effect of Z on D
         gamma = reduced.coef_[0]  # Effect of Z on Y (reduced form)
-        beta = second.coef_[0]    # Effect of D on Y (structural)
+        beta = second.coef_[0]  # Effect of D on Y (structural)
 
         # Wald identity: γ = π × β
-        assert np.isclose(
-            gamma, pi * beta, rtol=0.01
-        ), f"Wald identity failed: γ={gamma:.4f}, π×β={pi * beta:.4f}"
+        assert np.isclose(gamma, pi * beta, rtol=0.01), (
+            f"Wald identity failed: γ={gamma:.4f}, π×β={pi * beta:.4f}"
+        )
 
     def test_wald_identity_strong_instrument(self, iv_strong_instrument):
         """Test Wald identity with strong instrument."""
@@ -179,9 +189,9 @@ class TestWaldEstimatorIdentity:
         beta = second.coef_[0]
 
         # Should hold tightly with strong instrument
-        assert np.isclose(
-            gamma, pi * beta, rtol=0.005
-        ), f"Wald identity failed: γ={gamma:.4f}, π×β={pi * beta:.4f}"
+        assert np.isclose(gamma, pi * beta, rtol=0.005), (
+            f"Wald identity failed: γ={gamma:.4f}, π×β={pi * beta:.4f}"
+        )
 
 
 class TestStageSeparation:
@@ -203,9 +213,9 @@ class TestStageSeparation:
         beta_auto = iv.coef_[0]
 
         # Coefficients should match (SEs won't, because second stage uses naive SEs)
-        assert np.isclose(
-            beta_manual, beta_auto, rtol=0.001
-        ), f"Manual 3-stage ({beta_manual:.4f}) != automatic 2SLS ({beta_auto:.4f})"
+        assert np.isclose(beta_manual, beta_auto, rtol=0.001), (
+            f"Manual 3-stage ({beta_manual:.4f}) != automatic 2SLS ({beta_auto:.4f})"
+        )
 
     def test_manual_equals_automatic_over_identified(self, iv_over_identified):
         """Test manual 3-stage = automatic 2SLS (over-identified)."""
@@ -223,9 +233,9 @@ class TestStageSeparation:
         beta_auto = iv.coef_[0]
 
         # Should match even with 2 instruments
-        assert np.isclose(
-            beta_manual, beta_auto, rtol=0.001
-        ), f"Manual 3-stage ({beta_manual:.4f}) != automatic 2SLS ({beta_auto:.4f})"
+        assert np.isclose(beta_manual, beta_auto, rtol=0.001), (
+            f"Manual 3-stage ({beta_manual:.4f}) != automatic 2SLS ({beta_auto:.4f})"
+        )
 
     def test_manual_equals_automatic_with_controls(self, iv_with_controls):
         """Test manual 3-stage = automatic 2SLS (with controls)."""
@@ -243,9 +253,9 @@ class TestStageSeparation:
         beta_auto = iv.coef_[0]
 
         # Should match with controls
-        assert np.isclose(
-            beta_manual, beta_auto, rtol=0.001
-        ), f"Manual 3-stage ({beta_manual:.4f}) != automatic 2SLS ({beta_auto:.4f})"
+        assert np.isclose(beta_manual, beta_auto, rtol=0.001), (
+            f"Manual 3-stage ({beta_manual:.4f}) != automatic 2SLS ({beta_auto:.4f})"
+        )
 
 
 class TestSummaryMethods:

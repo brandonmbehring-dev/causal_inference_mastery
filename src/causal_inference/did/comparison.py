@@ -275,9 +275,7 @@ def demonstrate_twfe_bias(
         mean_est = np.mean(estimates)
         bias = mean_est - true_value
         rmse = np.sqrt(np.mean((estimates - true_value) ** 2))
-        coverage = np.mean(
-            [(ci[0] <= true_value <= ci[1]) for ci in cis]
-        )
+        coverage = np.mean([(ci[0] <= true_value <= ci[1]) for ci in cis])
         mean_se = np.mean(ses)
 
         return {

@@ -140,9 +140,7 @@ def s_learner(
     t_learner : Two-model approach that avoids regularization bias.
     """
     # Validate inputs
-    outcomes, treatment, covariates = validate_cate_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = validate_cate_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 
@@ -178,7 +176,7 @@ def s_learner(
     n1 = np.sum(treatment == 1)
     n0 = np.sum(treatment == 0)
     residual_var = np.var(residuals, ddof=1)
-    ate_se = np.sqrt(residual_var * (1/n1 + 1/n0))
+    ate_se = np.sqrt(residual_var * (1 / n1 + 1 / n0))
 
     # Confidence interval using normal approximation
     z_crit = stats.norm.ppf(1 - alpha / 2)
@@ -271,9 +269,7 @@ def t_learner(
     s_learner : Single-model approach.
     """
     # Validate inputs
-    outcomes, treatment, covariates = validate_cate_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = validate_cate_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 
@@ -315,7 +311,7 @@ def t_learner(
     # Pooled variance approach for T-learner
     var_1 = np.var(residuals_1, ddof=1)
     var_0 = np.var(residuals_0, ddof=1)
-    ate_se = np.sqrt(var_1/n1 + var_0/n0)
+    ate_se = np.sqrt(var_1 / n1 + var_0 / n0)
 
     # Confidence interval using normal approximation
     z_crit = stats.norm.ppf(1 - alpha / 2)
@@ -415,9 +411,7 @@ def x_learner(
     r_learner : Doubly robust Robinson transformation approach.
     """
     # Validate inputs
-    outcomes, treatment, covariates = validate_cate_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = validate_cate_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 
@@ -497,7 +491,7 @@ def x_learner(
     var_D0 = np.var(D_0, ddof=1)
 
     # Approximate SE using weighted variance
-    ate_se = np.sqrt(var_D1/n1 + var_D0/n0)
+    ate_se = np.sqrt(var_D1 / n1 + var_D0 / n0)
 
     # Confidence interval
     z_crit = stats.norm.ppf(1 - alpha / 2)
@@ -604,9 +598,7 @@ def r_learner(
     t_learner : Simple two-model approach.
     """
     # Validate inputs
-    outcomes, treatment, covariates = validate_cate_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = validate_cate_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 
@@ -677,7 +669,7 @@ def r_learner(
 
     # SE of ATE (approximation)
     # Use weighted variance accounting for T̃
-    weights = T_tilde ** 2
+    weights = T_tilde**2
     weights = weights / np.sum(weights)  # Normalize
 
     # Standard approach: variance of pseudo-outcomes divided by effective n

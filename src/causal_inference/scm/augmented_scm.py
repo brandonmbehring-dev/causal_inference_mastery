@@ -167,13 +167,21 @@ def augmented_synthetic_control(
     # Inference
     if inference == "jackknife":
         se = _jackknife_se(
-            control_pre, control_post, treated_pre.mean(axis=0),
-            treated_post.mean(axis=0), weights, lambda_ridge
+            control_pre,
+            control_post,
+            treated_pre.mean(axis=0),
+            treated_post.mean(axis=0),
+            weights,
+            lambda_ridge,
         )
     elif inference == "bootstrap":
         se = _bootstrap_se(
-            control_pre, control_post, treated_pre.mean(axis=0),
-            treated_post.mean(axis=0), lambda_ridge, n_bootstrap=200
+            control_pre,
+            control_post,
+            treated_pre.mean(axis=0),
+            treated_post.mean(axis=0),
+            lambda_ridge,
+            n_bootstrap=200,
         )
     elif inference == "none":
         se = np.nan
@@ -406,10 +414,9 @@ def _jackknife_se(
 
             # Predictions
             m_treated = _predict_ridge(treated_pre, coef)
-            m_control = np.array([
-                _predict_ridge(loo_control_pre[j, :], coef)
-                for j in range(n_control - 1)
-            ])
+            m_control = np.array(
+                [_predict_ridge(loo_control_pre[j, :], coef) for j in range(n_control - 1)]
+            )
             m_synthetic = m_control.T @ loo_weights
 
             # SCM part
@@ -486,10 +493,9 @@ def _bootstrap_se(
 
             # Predictions
             m_treated = _predict_ridge(treated_pre, coef)
-            m_control = np.array([
-                _predict_ridge(boot_control_pre[j, :], coef)
-                for j in range(n_control)
-            ])
+            m_control = np.array(
+                [_predict_ridge(boot_control_pre[j, :], coef) for j in range(n_control)]
+            )
             m_synthetic = m_control.T @ weights
 
             # SCM part

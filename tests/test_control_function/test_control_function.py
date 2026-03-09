@@ -224,9 +224,7 @@ class TestStandardErrors:
 
         # Naive SE is typically smaller (biased downward)
         # They should differ, though by how much depends on rho
-        assert result["se_naive"] != result["se"], (
-            "Naive and corrected SE should differ"
-        )
+        assert result["se_naive"] != result["se"], "Naive and corrected SE should differ"
 
     def test_larger_sample_smaller_se(self, cf_endogenous, cf_large_sample):
         """Larger samples have smaller standard errors."""
@@ -264,12 +262,8 @@ class TestConfidenceIntervals:
         """Wider CI with smaller alpha (higher confidence)."""
         Y, D, Z, X, true_beta, rho = cf_endogenous
 
-        cf_90 = ControlFunction(
-            inference="bootstrap", n_bootstrap=300, alpha=0.10, random_state=42
-        )
-        cf_95 = ControlFunction(
-            inference="bootstrap", n_bootstrap=300, alpha=0.05, random_state=42
-        )
+        cf_90 = ControlFunction(inference="bootstrap", n_bootstrap=300, alpha=0.10, random_state=42)
+        cf_95 = ControlFunction(inference="bootstrap", n_bootstrap=300, alpha=0.05, random_state=42)
 
         result_90 = cf_90.fit(Y, D, Z.ravel(), X)
         result_95 = cf_95.fit(Y, D, Z.ravel(), X)

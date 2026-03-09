@@ -312,9 +312,7 @@ class TestInputShapeHandling:
 
     def test_multiple_instruments(self):
         """Handles multiple instruments."""
-        Y, D, Z, X, _, _ = generate_cf_data(
-            n=100, n_instruments=3, random_state=62
-        )
+        Y, D, Z, X, _, _ = generate_cf_data(n=100, n_instruments=3, random_state=62)
 
         cf = ControlFunction(inference="analytical")
         result = cf.fit(Y, D, Z, X)
@@ -418,10 +416,12 @@ class TestNumericalStability:
     def test_mixed_scales(self):
         """Handles mixed scales in covariates."""
         Y, D, Z, _, _, _ = generate_cf_data(n=200, random_state=82)
-        X = np.column_stack([
-            np.random.RandomState(82).normal(0, 1e-5, len(Y)),
-            np.random.RandomState(83).normal(0, 1e5, len(Y)),
-        ])
+        X = np.column_stack(
+            [
+                np.random.RandomState(82).normal(0, 1e-5, len(Y)),
+                np.random.RandomState(83).normal(0, 1e5, len(Y)),
+            ]
+        )
 
         cf = ControlFunction(inference="analytical")
         result = cf.fit(Y, D, Z.ravel(), X)

@@ -70,6 +70,7 @@ class GESResult:
     score_type : str
         Score function used
     """
+
     cpdag: CPDAG
     score: float
     n_forward_steps: int
@@ -90,6 +91,7 @@ class GESResult:
         SHD counts: missing edges + extra edges + wrongly oriented edges.
         """
         from .utils import compute_shd
+
         return compute_shd(self.cpdag, true_dag)
 
     def skeleton_f1(self, true_dag: DAG) -> float:
@@ -152,12 +154,7 @@ def _is_clique(adjacency: np.ndarray, nodes: Set[int]) -> bool:
     return True
 
 
-def _valid_insert(
-    adjacency: np.ndarray,
-    x: int,
-    y: int,
-    T: Set[int]
-) -> bool:
+def _valid_insert(adjacency: np.ndarray, x: int, y: int, T: Set[int]) -> bool:
     """Check if insert(x, y, T) is valid.
 
     Insert adds edge x -> y and orients all edges from T to y.
@@ -205,12 +202,7 @@ def _valid_insert(
     return True
 
 
-def _valid_delete(
-    adjacency: np.ndarray,
-    x: int,
-    y: int,
-    H: Set[int]
-) -> bool:
+def _valid_delete(adjacency: np.ndarray, x: int, y: int, H: Set[int]) -> bool:
     """Check if delete(x, y, H) is valid.
 
     Delete removes edge x - y and orients edges from Na(y) \\ H to y.
@@ -238,12 +230,7 @@ def _valid_delete(
     return True
 
 
-def _apply_insert(
-    adjacency: np.ndarray,
-    x: int,
-    y: int,
-    T: Set[int]
-) -> np.ndarray:
+def _apply_insert(adjacency: np.ndarray, x: int, y: int, T: Set[int]) -> np.ndarray:
     """Apply insert(x, y, T) operation.
 
     1. Add edge x -> y
@@ -260,12 +247,7 @@ def _apply_insert(
     return adj
 
 
-def _apply_delete(
-    adjacency: np.ndarray,
-    x: int,
-    y: int,
-    H: Set[int]
-) -> np.ndarray:
+def _apply_delete(adjacency: np.ndarray, x: int, y: int, H: Set[int]) -> np.ndarray:
     """Apply delete(x, y, H) operation.
 
     1. Remove edge x - y
@@ -289,7 +271,7 @@ def _score_insert(
     y: int,
     T: Set[int],
     score_type: ScoreType,
-    cache: Dict
+    cache: Dict,
 ) -> float:
     """Compute score change from insert(x, y, T)."""
     # Current parents of y
@@ -312,7 +294,7 @@ def _score_delete(
     y: int,
     H: Set[int],
     score_type: ScoreType,
-    cache: Dict
+    cache: Dict,
 ) -> float:
     """Compute score change from delete(x, y, H)."""
     # Current parents of y
@@ -343,7 +325,7 @@ def ges_forward(
     adjacency: np.ndarray,
     score_type: ScoreType = ScoreType.BIC,
     cache: Optional[Dict] = None,
-    max_parents: int = 10
+    max_parents: int = 10,
 ) -> Tuple[np.ndarray, int, List[float]]:
     """GES forward phase: greedily add edges.
 
@@ -400,7 +382,7 @@ def ges_forward(
                             delta = _score_insert(data, adj, x, y, T, score_type, cache)
                             if delta > best_delta:
                                 best_delta = delta
-                                best_op = ('insert', x, y, T)
+                                best_op = ("insert", x, y, T)
 
         if best_op is None:
             break
@@ -418,7 +400,7 @@ def ges_backward(
     data: np.ndarray,
     adjacency: np.ndarray,
     score_type: ScoreType = ScoreType.BIC,
-    cache: Optional[Dict] = None
+    cache: Optional[Dict] = None,
 ) -> Tuple[np.ndarray, int, List[float]]:
     """GES backward phase: greedily remove edges.
 
@@ -469,7 +451,7 @@ def ges_backward(
                             delta = _score_delete(data, adj, x, y, H, score_type, cache)
                             if delta > best_delta:
                                 best_delta = delta
-                                best_op = ('delete', x, y, H)
+                                best_op = ("delete", x, y, H)
 
         if best_op is None:
             break
@@ -486,6 +468,7 @@ def ges_backward(
 def _subsets_of_size(s: Set[int], k: int):
     """Generate all subsets of size k from set s."""
     from itertools import combinations
+
     return combinations(s, k)
 
 
@@ -518,7 +501,7 @@ def ges_algorithm(
     score_type: str = "bic",
     var_names: Optional[List[str]] = None,
     max_parents: int = 10,
-    verbose: bool = False
+    verbose: bool = False,
 ) -> GESResult:
     """Greedy Equivalence Search for causal discovery.
 
@@ -583,9 +566,7 @@ def ges_algorithm(
     # Forward phase
     if verbose:
         print("GES Forward Phase...")
-    adj_fwd, n_fwd, scores_fwd = ges_forward(
-        data, adjacency, st, cache, max_parents
-    )
+    adj_fwd, n_fwd, scores_fwd = ges_forward(data, adjacency, st, cache, max_parents)
 
     if verbose:
         print(f"  Added {n_fwd} edges")
@@ -593,9 +574,7 @@ def ges_algorithm(
     # Backward phase
     if verbose:
         print("GES Backward Phase...")
-    adj_final, n_bwd, scores_bwd = ges_backward(
-        data, adj_fwd, st, cache
-    )
+    adj_final, n_bwd, scores_bwd = ges_backward(data, adj_fwd, st, cache)
 
     if verbose:
         print(f"  Removed {n_bwd} edges")
@@ -615,5 +594,5 @@ def ges_algorithm(
         backward_scores=scores_bwd,
         n_vars=n_vars,
         n_samples=n_samples,
-        score_type=score_type
+        score_type=score_type,
     )

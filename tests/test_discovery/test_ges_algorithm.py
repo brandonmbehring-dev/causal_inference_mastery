@@ -201,12 +201,12 @@ class TestGESResult:
         data = np.random.randn(100, 3)
         result = ges_algorithm(data)
 
-        assert hasattr(result, 'cpdag')
-        assert hasattr(result, 'score')
-        assert hasattr(result, 'n_forward_steps')
-        assert hasattr(result, 'n_backward_steps')
-        assert hasattr(result, 'forward_scores')
-        assert hasattr(result, 'backward_scores')
+        assert hasattr(result, "cpdag")
+        assert hasattr(result, "score")
+        assert hasattr(result, "n_forward_steps")
+        assert hasattr(result, "n_backward_steps")
+        assert hasattr(result, "forward_scores")
+        assert hasattr(result, "backward_scores")
         assert result.n_vars == 3
         assert result.n_samples == 100
 
@@ -405,8 +405,7 @@ class TestGESvsPC:
 
         # Both should find edges
         ges_edges = ges_result.n_edges()
-        pc_edges = (pc_result.cpdag.n_directed_edges() +
-                    pc_result.cpdag.n_undirected_edges())
+        pc_edges = pc_result.cpdag.n_directed_edges() + pc_result.cpdag.n_undirected_edges()
 
         assert ges_edges >= 1
         assert pc_edges >= 1
@@ -428,7 +427,6 @@ class TestGESvsPC:
 
         # Both should find ~2 edges
         ges_edges = ges_result.n_edges()
-        pc_edges = (pc_result.cpdag.n_directed_edges() +
-                    pc_result.cpdag.n_undirected_edges())
+        pc_edges = pc_result.cpdag.n_directed_edges() + pc_result.cpdag.n_undirected_edges()
 
         assert abs(ges_edges - pc_edges) <= 1

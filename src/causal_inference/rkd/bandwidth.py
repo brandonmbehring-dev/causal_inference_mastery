@@ -169,7 +169,7 @@ def rkd_ik_bandwidth(
     # because we're estimating derivatives
 
     if f_c > 0 and curv > 0:
-        h_opt = C_K * sigma * (n ** (-1/9)) * ((f_c / (curv ** 2)) ** (1/9))
+        h_opt = C_K * sigma * (n ** (-1 / 9)) * ((f_c / (curv**2)) ** (1 / 9))
     else:
         h_opt = h_pilot * 1.5
 
@@ -241,7 +241,7 @@ def rkd_bandwidth(
 
         # Adjust for RKD (derivative estimation needs larger bandwidth)
         # Ratio of rates: n^(-1/9) / n^(-1/5) = n^(4/45)
-        adjustment = n ** (4/45)
+        adjustment = n ** (4 / 45)
         h_rkd = h_silverman * adjustment
 
         # Bound

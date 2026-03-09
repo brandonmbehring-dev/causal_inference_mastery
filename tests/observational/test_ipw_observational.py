@@ -306,9 +306,7 @@ class TestIPWStabilization:
         Y = 2.0 * T + 0.5 * X + np.random.normal(0, 1, n)
 
         # Stabilization with trimming
-        result = ipw_ate_observational(
-            Y, T, X, stabilize=True, trim_at=(0.05, 0.95)
-        )
+        result = ipw_ate_observational(Y, T, X, stabilize=True, trim_at=(0.05, 0.95))
 
         # Should return valid results
         assert np.isfinite(result["estimate"])

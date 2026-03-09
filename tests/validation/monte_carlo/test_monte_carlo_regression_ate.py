@@ -40,9 +40,12 @@ class TestRegressionATEMonteCarlo:
         )
 
         assert validation["bias_ok"], f"Bias {validation['bias']:.4f} exceeds threshold"
-        assert validation["coverage_ok"], f"Coverage {validation['coverage']:.4f} outside [0.93, 0.97]"
-        assert validation["se_accuracy_ok"], f"SE accuracy {validation['se_accuracy']:.4f} exceeds 10%"
-
+        assert validation["coverage_ok"], (
+            f"Coverage {validation['coverage']:.4f} outside [0.93, 0.97]"
+        )
+        assert validation["se_accuracy_ok"], (
+            f"SE accuracy {validation['se_accuracy']:.4f} exceeds 10%"
+        )
 
     def test_regression_variance_reduction(self):
         """Verify regression adjustment reduces variance vs simple estimator."""
@@ -71,9 +74,9 @@ class TestRegressionATEMonteCarlo:
         mean_regression_se = np.mean(regression_ses)
         mean_simple_se = np.mean(simple_ses)
 
-        assert mean_regression_se < mean_simple_se, \
+        assert mean_regression_se < mean_simple_se, (
             f"Regression SE ({mean_regression_se:.4f}) not smaller than simple SE ({mean_simple_se:.4f})"
-
+        )
 
     def test_r_squared_diagnostic(self):
         """Verify R² is high when covariate strongly predicts outcome."""

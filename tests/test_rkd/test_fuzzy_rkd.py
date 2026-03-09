@@ -148,9 +148,7 @@ class TestFuzzyRKDKnownAnswer:
         result = rkd.fit(Y, X, D)
 
         # Should recover approximately 2.0
-        assert abs(result.estimate - 2.0) < 0.5, (
-            f"Expected ~2.0, got {result.estimate}"
-        )
+        assert abs(result.estimate - 2.0) < 0.5, f"Expected ~2.0, got {result.estimate}"
         assert result.retcode in ["success", "warning"]
 
     def test_first_stage_kink_detection(self):
@@ -288,9 +286,7 @@ class TestFuzzyRKDStatistical:
         coverage_rate = coverage_count / n_simulations
         # Allow wider range due to finite sample approximations and delta method SE
         # Fuzzy RKD CIs can be conservative, so we accept up to 100%
-        assert 0.85 <= coverage_rate, (
-            f"Coverage rate {coverage_rate:.2%} below 85% minimum"
-        )
+        assert 0.85 <= coverage_rate, f"Coverage rate {coverage_rate:.2%} below 85% minimum"
 
     @pytest.mark.monte_carlo
     def test_bias_bounded(self):
@@ -347,9 +343,7 @@ class TestFuzzyRKDStatistical:
 
         # Reported SE should be within 50% of empirical SE
         ratio = mean_reported_se / empirical_se
-        assert 0.5 < ratio < 2.0, (
-            f"SE ratio {ratio:.2f} outside acceptable range"
-        )
+        assert 0.5 < ratio < 2.0, f"SE ratio {ratio:.2f} outside acceptable range"
 
 
 # =============================================================================
@@ -387,10 +381,12 @@ class TestFuzzyRKDEdgeCases:
     def test_small_sample_left(self):
         """Insufficient data on left should handle gracefully."""
         np.random.seed(42)
-        X = np.concatenate([
-            np.random.uniform(-0.1, 0, 3),  # Only 3 points left
-            np.random.uniform(0, 5, 200),    # Many points right
-        ])
+        X = np.concatenate(
+            [
+                np.random.uniform(-0.1, 0, 3),  # Only 3 points left
+                np.random.uniform(0, 5, 200),  # Many points right
+            ]
+        )
         D = X + np.random.normal(0, 0.1, len(X))
         Y = 2 * D + np.random.normal(0, 0.1, len(X))
 
@@ -404,10 +400,12 @@ class TestFuzzyRKDEdgeCases:
     def test_small_sample_right(self):
         """Insufficient data on right should handle gracefully."""
         np.random.seed(42)
-        X = np.concatenate([
-            np.random.uniform(-5, 0, 200),   # Many points left
-            np.random.uniform(0, 0.1, 3),    # Only 3 points right
-        ])
+        X = np.concatenate(
+            [
+                np.random.uniform(-5, 0, 200),  # Many points left
+                np.random.uniform(0, 0.1, 3),  # Only 3 points right
+            ]
+        )
         D = X + np.random.normal(0, 0.1, len(X))
         Y = 2 * D + np.random.normal(0, 0.1, len(X))
 
@@ -570,11 +568,25 @@ class TestFuzzyRKDResult:
         result = rkd.fit(Y, X, D)
 
         required_fields = [
-            "estimate", "se", "t_stat", "p_value", "ci_lower", "ci_upper",
-            "bandwidth", "n_left", "n_right", "first_stage_slope_left",
-            "first_stage_slope_right", "first_stage_kink", "reduced_form_slope_left",
-            "reduced_form_slope_right", "reduced_form_kink", "first_stage_f_stat",
-            "alpha", "retcode", "message",
+            "estimate",
+            "se",
+            "t_stat",
+            "p_value",
+            "ci_lower",
+            "ci_upper",
+            "bandwidth",
+            "n_left",
+            "n_right",
+            "first_stage_slope_left",
+            "first_stage_slope_right",
+            "first_stage_kink",
+            "reduced_form_slope_left",
+            "reduced_form_slope_right",
+            "reduced_form_kink",
+            "first_stage_f_stat",
+            "alpha",
+            "retcode",
+            "message",
         ]
 
         for field in required_fields:

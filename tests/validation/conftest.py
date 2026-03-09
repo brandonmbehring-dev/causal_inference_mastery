@@ -21,9 +21,11 @@ def basic_rct_data():
     np.random.seed(42)
     n = 100
     treatment = np.array([1] * 50 + [0] * 50)
-    outcomes = np.where(treatment == 1,
-                       np.random.normal(2.0, 1.0, n),  # Treated: mean=2
-                       np.random.normal(0.0, 1.0, n))  # Control: mean=0
+    outcomes = np.where(
+        treatment == 1,
+        np.random.normal(2.0, 1.0, n),  # Treated: mean=2
+        np.random.normal(0.0, 1.0, n),
+    )  # Control: mean=0
     return outcomes, treatment
 
 
@@ -43,9 +45,11 @@ def stratified_rct_data():
     for stratum_id, baseline in enumerate([0, 5, 10]):  # 3 strata
         n_stratum = 40
         t = np.array([1] * 20 + [0] * 20)
-        y = np.where(t == 1,
-                    np.random.normal(baseline + 2.0, 1.0, n_stratum),  # ATE=2
-                    np.random.normal(baseline, 1.0, n_stratum))
+        y = np.where(
+            t == 1,
+            np.random.normal(baseline + 2.0, 1.0, n_stratum),  # ATE=2
+            np.random.normal(baseline, 1.0, n_stratum),
+        )
         outcomes.extend(y)
         treatment.extend(t)
         strata.extend([stratum_id] * n_stratum)
@@ -81,9 +85,9 @@ def small_sample_rct_data():
     np.random.seed(42)
     n = 20
     treatment = np.array([1] * 10 + [0] * 10)
-    outcomes = np.where(treatment == 1,
-                       np.random.normal(2.0, 1.0, n),
-                       np.random.normal(0.0, 1.0, n))
+    outcomes = np.where(
+        treatment == 1, np.random.normal(2.0, 1.0, n), np.random.normal(0.0, 1.0, n)
+    )
     return outcomes, treatment
 
 
@@ -118,8 +122,8 @@ def validation_tolerance():
     """
     return {
         "rtol_cross_language": 1e-10,  # Python vs Julia: near machine precision
-        "bias_monte_carlo": 0.05,       # Monte Carlo bias threshold
-        "coverage_lower": 0.93,         # Coverage lower bound (93% - accounts for MC variation)
-        "coverage_upper": 0.97,         # Coverage upper bound (97% - accounts for MC variation)
-        "se_accuracy": 0.10,            # SE accuracy (within 10%)
+        "bias_monte_carlo": 0.05,  # Monte Carlo bias threshold
+        "coverage_lower": 0.93,  # Coverage lower bound (93% - accounts for MC variation)
+        "coverage_upper": 0.97,  # Coverage upper bound (97% - accounts for MC variation)
+        "se_accuracy": 0.10,  # SE accuracy (within 10%)
     }

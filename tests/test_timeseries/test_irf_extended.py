@@ -290,9 +290,7 @@ class TestMBBIRFAdversarial:
         svar_result = cholesky_svar(var_result)
 
         with pytest.raises(ValueError, match="n_bootstrap"):
-            moving_block_bootstrap_irf(
-                data, svar_result, horizons=10, n_bootstrap=1, seed=seed
-            )
+            moving_block_bootstrap_irf(data, svar_result, horizons=10, n_bootstrap=1, seed=seed)
 
     def test_mbb_invalid_alpha(self, seed):
         """MBB should reject invalid alpha."""

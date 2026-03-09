@@ -44,6 +44,7 @@ try:
         r_unconditional_qte,
         r_qte_process,
     )
+
     R_AVAILABLE = True
 except ImportError:
     R_AVAILABLE = False
@@ -61,8 +62,7 @@ def check_r_available():
 
 # Skip if R/quantreg not available
 pytestmark = pytest.mark.skipif(
-    not check_r_available(),
-    reason="R or quantreg package not available"
+    not check_r_available(), reason="R or quantreg package not available"
 )
 
 
@@ -326,14 +326,14 @@ class TestConditionalQTEVsR:
 
         # For scale effects: QTE(0.75) > QTE(0.50) > QTE(0.25)
         py_order = (
-            py_result["quantile_effects"][0.25] <
-            py_result["quantile_effects"][0.50] <
-            py_result["quantile_effects"][0.75]
+            py_result["quantile_effects"][0.25]
+            < py_result["quantile_effects"][0.50]
+            < py_result["quantile_effects"][0.75]
         )
         r_order = (
-            r_result["quantile_effects"][0.25] <
-            r_result["quantile_effects"][0.50] <
-            r_result["quantile_effects"][0.75]
+            r_result["quantile_effects"][0.25]
+            < r_result["quantile_effects"][0.50]
+            < r_result["quantile_effects"][0.75]
         )
 
         # Both should detect the ordering
@@ -470,9 +470,7 @@ class TestQTEEdgeCases:
 
     def test_heavy_tailed_distribution(self):
         """Test QTE with heavy-tailed errors (t-distribution)."""
-        data = generate_qte_dgp(
-            n=3000, seed=42, effect_type="homogeneous", error_dist="heavy_tail"
-        )
+        data = generate_qte_dgp(n=3000, seed=42, effect_type="homogeneous", error_dist="heavy_tail")
         quantiles = np.array([0.25, 0.50, 0.75])
 
         # Python
@@ -501,9 +499,7 @@ class TestQTEEdgeCases:
 
     def test_skewed_distribution(self):
         """Test QTE with skewed error distribution."""
-        data = generate_qte_dgp(
-            n=3000, seed=42, effect_type="homogeneous", error_dist="skewed"
-        )
+        data = generate_qte_dgp(n=3000, seed=42, effect_type="homogeneous", error_dist="skewed")
         quantiles = np.array([0.25, 0.50, 0.75])
 
         # Python
@@ -514,10 +510,9 @@ class TestQTEEdgeCases:
         )
 
         # Verify estimation didn't fail
-        assert all(
-            not np.isnan(py_result["quantile_effects"][tau])
-            for tau in quantiles
-        ), "Python QTE returned NaN for skewed distribution"
+        assert all(not np.isnan(py_result["quantile_effects"][tau]) for tau in quantiles), (
+            "Python QTE returned NaN for skewed distribution"
+        )
 
     def test_qte_process_full_grid(self):
         """Test QTE process estimation across full quantile grid."""
@@ -599,10 +594,9 @@ class TestQTEStandardErrors:
             r_se = r_result["quantile_se"][tau]
 
             # SE estimation can vary, allow 50% difference
-            ratio = py_se / r_se if r_se > 0 else float('inf')
+            ratio = py_se / r_se if r_se > 0 else float("inf")
             assert 0.5 < ratio < 2.0, (
-                f"SE({tau}) ratio {ratio:.2f} out of range: "
-                f"Python={py_se:.4f}, R={r_se:.4f}"
+                f"SE({tau}) ratio {ratio:.2f} out of range: Python={py_se:.4f}, R={r_se:.4f}"
             )
 
 
@@ -699,9 +693,7 @@ class TestQTEMonteCarloTriangulation:
         # Check bias at each quantile
         for tau in quantiles:
             py_bias = np.mean(py_results[tau]) - 2.0
-            assert abs(py_bias) < 0.25, (
-                f"Python QTE({tau}) bias {py_bias:.3f} too large"
-            )
+            assert abs(py_bias) < 0.25, f"Python QTE({tau}) bias {py_bias:.3f} too large"
 
     @pytest.mark.slow
     def test_monte_carlo_heterogeneous_detection(self):
@@ -727,10 +719,7 @@ class TestQTEMonteCarloTriangulation:
             )
 
             # Detect if QTE(0.75) > QTE(0.25)
-            py_diff = (
-                py_result["quantile_effects"][0.75] -
-                py_result["quantile_effects"][0.25]
-            )
+            py_diff = py_result["quantile_effects"][0.75] - py_result["quantile_effects"][0.25]
             if py_diff > 0.1:  # Meaningful difference
                 detected_py += 1
 
@@ -740,10 +729,7 @@ class TestQTEMonteCarloTriangulation:
                 quantiles=quantiles,
             )
             if r_result is not None:
-                r_diff = (
-                    r_result["quantile_effects"][0.75] -
-                    r_result["quantile_effects"][0.25]
-                )
+                r_diff = r_result["quantile_effects"][0.75] - r_result["quantile_effects"][0.25]
                 if r_diff > 0.1:
                     detected_r += 1
 
@@ -751,9 +737,7 @@ class TestQTEMonteCarloTriangulation:
         assert detected_py >= 6, (
             f"Python only detected heterogeneity in {detected_py}/{n_runs} runs"
         )
-        assert detected_r >= 6, (
-            f"R only detected heterogeneity in {detected_r}/{n_runs} runs"
-        )
+        assert detected_r >= 6, f"R only detected heterogeneity in {detected_r}/{n_runs} runs"
 
 
 # =============================================================================

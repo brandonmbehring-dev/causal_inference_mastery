@@ -193,9 +193,7 @@ class TestUnconditionalQTEBand:
         """Default quantiles should be [0.1, 0.25, 0.5, 0.75, 0.9]."""
         outcome, treatment = simple_rct_data
 
-        result = unconditional_qte_band(
-            outcome, treatment, n_bootstrap=200, random_state=42
-        )
+        result = unconditional_qte_band(outcome, treatment, n_bootstrap=200, random_state=42)
 
         expected = np.array([0.1, 0.25, 0.5, 0.75, 0.9])
         np.testing.assert_array_almost_equal(result["quantiles"], expected)
@@ -222,9 +220,7 @@ class TestUnconditionalQTEBand:
         """Joint CI should not be computed by default."""
         outcome, treatment = simple_rct_data
 
-        result = unconditional_qte_band(
-            outcome, treatment, n_bootstrap=200, random_state=42
-        )
+        result = unconditional_qte_band(outcome, treatment, n_bootstrap=200, random_state=42)
 
         assert result["joint_ci_lower"] is None
         assert result["joint_ci_upper"] is None
@@ -309,9 +305,7 @@ class TestUnconditionalQTEInputValidation:
     def test_empty_arrays(self, empty_arrays):
         """Empty arrays should raise ValueError."""
         with pytest.raises(ValueError, match="CRITICAL ERROR.*Empty"):
-            unconditional_qte(
-                empty_arrays["outcome"], empty_arrays["treatment"], quantile=0.5
-            )
+            unconditional_qte(empty_arrays["outcome"], empty_arrays["treatment"], quantile=0.5)
 
     def test_nan_in_outcome(self, nan_in_outcome):
         """NaN values should raise ValueError."""

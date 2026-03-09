@@ -262,15 +262,12 @@ class TestDMLCRE:
         result = dml_cre(panel, n_folds=5)
 
         assert result.ci_lower < true_ate < result.ci_upper, (
-            f"CI [{result.ci_lower:.3f}, {result.ci_upper:.3f}] "
-            f"does not cover true={true_ate}"
+            f"CI [{result.ci_lower:.3f}, {result.ci_upper:.3f}] does not cover true={true_ate}"
         )
 
     def test_zero_effect(self):
         """Detects zero effect correctly."""
-        panel, _ = generate_panel_dgp(
-            n_units=100, n_periods=10, true_ate=0.0, random_state=789
-        )
+        panel, _ = generate_panel_dgp(n_units=100, n_periods=10, true_ate=0.0, random_state=789)
         result = dml_cre(panel, n_folds=5)
 
         # ATE should be near 0, and 0 should be in CI
@@ -332,9 +329,7 @@ class TestDMLCRE:
 
     def test_r_squared_diagnostics(self):
         """R-squared diagnostics are reasonable."""
-        panel, _ = generate_panel_dgp(
-            n_units=50, n_periods=10, random_state=42
-        )
+        panel, _ = generate_panel_dgp(n_units=50, n_periods=10, random_state=42)
         result = dml_cre(panel, n_folds=5)
 
         # R² should be between 0 and 1
@@ -429,9 +424,7 @@ class TestDMLCREContinuous:
         )
 
         for model in ["linear", "ridge"]:
-            result = dml_cre_continuous(
-                panel, n_folds=3, treatment_model=model
-            )
+            result = dml_cre_continuous(panel, n_folds=3, treatment_model=model)
             assert not np.isnan(result.ate)
             assert result.ate_se > 0
 
@@ -458,9 +451,7 @@ class TestDMLCREAdversarial:
 
     def test_small_panel(self):
         """Works with small panel (minimum viable)."""
-        panel, _ = generate_panel_dgp(
-            n_units=5, n_periods=4, random_state=42
-        )
+        panel, _ = generate_panel_dgp(n_units=5, n_periods=4, random_state=42)
         result = dml_cre(panel, n_folds=2)
 
         assert not np.isnan(result.ate)

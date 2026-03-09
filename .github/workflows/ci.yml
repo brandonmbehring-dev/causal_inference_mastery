@@ -56,7 +56,7 @@ jobs:
             --ignore=tests/validation/monte_carlo/test_monte_carlo_cate.py \
             --ignore=tests/test_cate \
             2>&1 | tee collection.log
-          if grep -q "error" collection.log; then
+          if grep -Eiq "(ERROR|ImportError|ModuleNotFoundError|SyntaxError)" collection.log; then
             echo "::error::Test collection failed - check for import/syntax errors"
             exit 1
           fi

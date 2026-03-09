@@ -193,7 +193,7 @@ def dag_to_cpdag(dag: DAG) -> CPDAG:
     for z in range(n_nodes):
         parents_z = list(dag.parents(z))
         for i, x in enumerate(parents_z):
-            for y in parents_z[i + 1:]:
+            for y in parents_z[i + 1 :]:
                 # Check if x and y are not adjacent
                 if not dag.has_edge(x, y) and not dag.has_edge(y, x):
                     v_structures.add((x, z))
@@ -268,7 +268,7 @@ def _meek_rule_3(cpdag: CPDAG) -> bool:
                         candidates.append(k)
 
                 for idx1, k1 in enumerate(candidates):
-                    for k2 in candidates[idx1 + 1:]:
+                    for k2 in candidates[idx1 + 1 :]:
                         if not cpdag.has_any_edge(k1, k2):
                             cpdag.add_directed_edge(i, j)
                             changed = True
@@ -336,8 +336,16 @@ def skeleton_f1(
     false_positives = len(est_edges - true_edges)
     false_negatives = len(true_edges - est_edges)
 
-    precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0.0
-    recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0.0
+    precision = (
+        true_positives / (true_positives + false_positives)
+        if (true_positives + false_positives) > 0
+        else 0.0
+    )
+    recall = (
+        true_positives / (true_positives + false_negatives)
+        if (true_positives + false_negatives) > 0
+        else 0.0
+    )
     f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
 
     return precision, recall, f1
@@ -482,7 +490,7 @@ def is_markov_equivalent(dag1: DAG, dag2: DAG) -> bool:
         for z in range(n):
             parents = list(dag.parents(z))
             for i, x in enumerate(parents):
-                for y in parents[i + 1:]:
+                for y in parents[i + 1 :]:
                     if not dag.has_edge(x, y) and not dag.has_edge(y, x):
                         # Canonicalize: smaller index first
                         v_structs.add((min(x, y), z, max(x, y)))

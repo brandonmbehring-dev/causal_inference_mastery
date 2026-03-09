@@ -58,7 +58,7 @@ def check_pstrata_installed() -> bool:
     try:
         import rpy2.robjects as ro
 
-        ro.r('suppressPackageStartupMessages(library(PStrata))')
+        ro.r("suppressPackageStartupMessages(library(PStrata))")
         return True
     except Exception:
         return False
@@ -77,7 +77,7 @@ def check_dtrreg_installed() -> bool:
     try:
         import rpy2.robjects as ro
 
-        ro.r('suppressPackageStartupMessages(library(DTRreg))')
+        ro.r("suppressPackageStartupMessages(library(DTRreg))")
         return True
     except Exception:
         return False
@@ -268,8 +268,7 @@ def r_cace_pstrata(
 
     if not check_pstrata_installed():
         warnings.warn(
-            "PStrata R package not installed. Install in R with: "
-            "install.packages('PStrata')",
+            "PStrata R package not installed. Install in R with: install.packages('PStrata')",
             UserWarning,
         )
         return None
@@ -747,8 +746,7 @@ def r_did_callaway_santanna(
 
     if not check_did_installed():
         raise RuntimeError(
-            "R 'did' package not installed. Install in R with: "
-            "install.packages('did')"
+            "R 'did' package not installed. Install in R with: install.packages('did')"
         )
 
     import rpy2.robjects as ro
@@ -768,8 +766,8 @@ def r_did_callaway_santanna(
         if covariates is not None:
             n, p = covariates.shape
             for j in range(p):
-                ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
-            cov_formula = " + ".join([f"X{j+1}" for j in range(p)])
+                ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
+            cov_formula = " + ".join([f"X{j + 1}" for j in range(p)])
             ro.globalenv["cov_formula"] = cov_formula
             has_covs = True
         else:
@@ -799,7 +797,7 @@ def r_did_callaway_santanna(
                     gname = "G",
                     data = data,
                     control_group = control_group_str,
-                    {'xformla = ~ ' + cov_formula + ',' if has_covs else ''}
+                    {"xformla = ~ " + cov_formula + "," if has_covs else ""}
                     allow_unbalanced_panel = TRUE
                 )
             }}, error = function(e) {{
@@ -963,8 +961,7 @@ def r_rdd_rdrobust(
 
     if not check_rdrobust_installed():
         raise RuntimeError(
-            "R 'rdrobust' package not installed. Install in R with: "
-            "install.packages('rdrobust')"
+            "R 'rdrobust' package not installed. Install in R with: install.packages('rdrobust')"
         )
 
     import rpy2.robjects as ro
@@ -985,7 +982,7 @@ def r_rdd_rdrobust(
         if has_covs:
             n, p = covariates.shape
             for j in range(p):
-                ro.globalenv[f"Z{j+1}"] = ro.FloatVector(covariates[:, j])
+                ro.globalenv[f"Z{j + 1}"] = ro.FloatVector(covariates[:, j])
             ro.globalenv["n_covs"] = p
 
         if has_fuzzy:
@@ -996,7 +993,7 @@ def r_rdd_rdrobust(
             suppressPackageStartupMessages(library(rdrobust))
 
             # Build covariate matrix if needed
-            {"Z_mat <- cbind(" + ", ".join([f"Z{j+1}" for j in range(p)]) + ")" if has_covs else "Z_mat <- NULL"}
+            {"Z_mat <- cbind(" + ", ".join([f"Z{j + 1}" for j in range(p)]) + ")" if has_covs else "Z_mat <- NULL"}
 
             # Fit rdrobust
             rd_result <- tryCatch({{
@@ -1112,8 +1109,7 @@ def r_rdd_mccrary(
 
     if not check_rddensity_installed():
         raise RuntimeError(
-            "R 'rddensity' package not installed. Install in R with: "
-            "install.packages('rddensity')"
+            "R 'rddensity' package not installed. Install in R with: install.packages('rddensity')"
         )
 
     import rpy2.robjects as ro
@@ -1258,8 +1254,7 @@ def r_2sls_aer(
 
     if not check_aer_installed():
         raise RuntimeError(
-            "R 'AER' package not installed. Install in R with: "
-            "install.packages('AER')"
+            "R 'AER' package not installed. Install in R with: install.packages('AER')"
         )
 
     import rpy2.robjects as ro
@@ -1283,11 +1278,11 @@ def r_2sls_aer(
 
         # Create endogenous variable names
         for j in range(n_endog):
-            ro.globalenv[f"D{j+1}"] = ro.FloatVector(endogenous[:, j])
+            ro.globalenv[f"D{j + 1}"] = ro.FloatVector(endogenous[:, j])
 
         # Create instrument names
         for j in range(n_instr):
-            ro.globalenv[f"Z{j+1}"] = ro.FloatVector(instruments[:, j])
+            ro.globalenv[f"Z{j + 1}"] = ro.FloatVector(instruments[:, j])
 
         # Create control names if provided
         has_controls = controls is not None
@@ -1296,7 +1291,7 @@ def r_2sls_aer(
                 controls = controls.reshape(-1, 1)
             n_controls = controls.shape[1]
             for j in range(n_controls):
-                ro.globalenv[f"X{j+1}"] = ro.FloatVector(controls[:, j])
+                ro.globalenv[f"X{j + 1}"] = ro.FloatVector(controls[:, j])
         else:
             n_controls = 0
 
@@ -1305,10 +1300,10 @@ def r_2sls_aer(
         ro.globalenv["n_controls"] = n_controls
 
         # Build formula strings
-        endog_names = " + ".join([f"D{j+1}" for j in range(n_endog)])
-        instr_names = " + ".join([f"Z{j+1}" for j in range(n_instr)])
+        endog_names = " + ".join([f"D{j + 1}" for j in range(n_endog)])
+        instr_names = " + ".join([f"Z{j + 1}" for j in range(n_instr)])
         if has_controls:
-            control_names = " + ".join([f"X{j+1}" for j in range(n_controls)])
+            control_names = " + ".join([f"X{j + 1}" for j in range(n_controls)])
             formula_left = f"Y ~ {endog_names} + {control_names}"
             formula_right = f"{control_names} + {instr_names}"
         else:
@@ -1454,8 +1449,7 @@ def r_liml_aer(
 
     if not check_aer_installed():
         raise RuntimeError(
-            "R 'AER' package not installed. Install in R with: "
-            "install.packages('AER')"
+            "R 'AER' package not installed. Install in R with: install.packages('AER')"
         )
 
     import rpy2.robjects as ro
@@ -1478,10 +1472,10 @@ def r_liml_aer(
         ro.globalenv["Y"] = ro.FloatVector(outcome)
 
         for j in range(n_endog):
-            ro.globalenv[f"D{j+1}"] = ro.FloatVector(endogenous[:, j])
+            ro.globalenv[f"D{j + 1}"] = ro.FloatVector(endogenous[:, j])
 
         for j in range(n_instr):
-            ro.globalenv[f"Z{j+1}"] = ro.FloatVector(instruments[:, j])
+            ro.globalenv[f"Z{j + 1}"] = ro.FloatVector(instruments[:, j])
 
         has_controls = controls is not None
         if has_controls:
@@ -1489,7 +1483,7 @@ def r_liml_aer(
                 controls = controls.reshape(-1, 1)
             n_controls = controls.shape[1]
             for j in range(n_controls):
-                ro.globalenv[f"X{j+1}"] = ro.FloatVector(controls[:, j])
+                ro.globalenv[f"X{j + 1}"] = ro.FloatVector(controls[:, j])
         else:
             n_controls = 0
 
@@ -1498,10 +1492,10 @@ def r_liml_aer(
         ro.globalenv["n_controls"] = n_controls
 
         # Build formula strings
-        endog_names = " + ".join([f"D{j+1}" for j in range(n_endog)])
-        instr_names = " + ".join([f"Z{j+1}" for j in range(n_instr)])
+        endog_names = " + ".join([f"D{j + 1}" for j in range(n_endog)])
+        instr_names = " + ".join([f"Z{j + 1}" for j in range(n_instr)])
         if has_controls:
-            control_names = " + ".join([f"X{j+1}" for j in range(n_controls)])
+            control_names = " + ".join([f"X{j + 1}" for j in range(n_controls)])
             formula_left = f"Y ~ {endog_names} + {control_names}"
             formula_right = f"{control_names} + {instr_names}"
         else:
@@ -1679,7 +1673,7 @@ def r_control_function_manual(
         ro.globalenv["D"] = ro.FloatVector(endogenous)
 
         for j in range(n_instr):
-            ro.globalenv[f"Z{j+1}"] = ro.FloatVector(instruments[:, j])
+            ro.globalenv[f"Z{j + 1}"] = ro.FloatVector(instruments[:, j])
 
         has_controls = controls is not None
         if has_controls:
@@ -1688,13 +1682,13 @@ def r_control_function_manual(
                 controls = controls.reshape(-1, 1)
             n_controls = controls.shape[1]
             for j in range(n_controls):
-                ro.globalenv[f"X{j+1}"] = ro.FloatVector(controls[:, j])
+                ro.globalenv[f"X{j + 1}"] = ro.FloatVector(controls[:, j])
         else:
             n_controls = 0
 
         # Build formula strings
-        instr_terms = " + ".join([f"Z{j+1}" for j in range(n_instr)])
-        control_terms = " + ".join([f"X{j+1}" for j in range(n_controls)]) if has_controls else ""
+        instr_terms = " + ".join([f"Z{j + 1}" for j in range(n_instr)])
+        control_terms = " + ".join([f"X{j + 1}" for j in range(n_controls)]) if has_controls else ""
 
         # First stage formula: D ~ Z1 + Z2 + ... + X1 + X2 + ...
         if has_controls:
@@ -1854,8 +1848,7 @@ def r_hac_se(
 
     if not check_sandwich_installed():
         raise RuntimeError(
-            "R 'sandwich' package not installed. Install in R with: "
-            "install.packages('sandwich')"
+            "R 'sandwich' package not installed. Install in R with: install.packages('sandwich')"
         )
 
     import rpy2.robjects as ro
@@ -1996,14 +1989,12 @@ def r_dynamic_dml_manual(
 
     if not check_grf_installed():
         raise RuntimeError(
-            "R 'grf' package not installed. Install in R with: "
-            "install.packages('grf')"
+            "R 'grf' package not installed. Install in R with: install.packages('grf')"
         )
 
     if not check_sandwich_installed():
         raise RuntimeError(
-            "R 'sandwich' package not installed. Install in R with: "
-            "install.packages('sandwich')"
+            "R 'sandwich' package not installed. Install in R with: install.packages('sandwich')"
         )
 
     import rpy2.robjects as ro
@@ -2247,8 +2238,7 @@ def r_scm_synth(
 
     if not check_synth_installed():
         raise RuntimeError(
-            "R 'Synth' package not installed. Install in R with: "
-            "install.packages('Synth')"
+            "R 'Synth' package not installed. Install in R with: install.packages('Synth')"
         )
 
     import rpy2.robjects as ro
@@ -2488,8 +2478,7 @@ def r_causal_forest_grf(
 
     if not check_grf_installed():
         raise RuntimeError(
-            "R 'grf' package not installed. Install in R with: "
-            "install.packages('grf')"
+            "R 'grf' package not installed. Install in R with: install.packages('grf')"
         )
 
     import rpy2.robjects as ro
@@ -2633,8 +2622,7 @@ def r_q_learning_dtrreg(
 
     if not check_dtrreg_installed():
         raise RuntimeError(
-            "R 'DTRreg' package not installed. Install in R with: "
-            "install.packages('DTRreg')"
+            "R 'DTRreg' package not installed. Install in R with: install.packages('DTRreg')"
         )
 
     import rpy2.robjects as ro
@@ -2656,7 +2644,7 @@ def r_q_learning_dtrreg(
 
         # Create covariate columns
         for j in range(p):
-            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+            ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
 
         result = ro.r(
             f"""
@@ -2677,7 +2665,7 @@ def r_q_learning_dtrreg(
             # Single-stage Q-learning
             q_result <- tryCatch({{
                 qLearn(
-                    moPropen = A ~ 1 + {' + '.join([f'X{j+1}' for j in range(p)])},
+                    moPropen = A ~ 1 + {" + ".join([f"X{j + 1}" for j in range(p)])},
                     moMain = tf_formula,
                     moCont = blip_formula,
                     data = data,
@@ -2785,8 +2773,7 @@ def r_a_learning_dtrreg(
 
     if not check_dtrreg_installed():
         raise RuntimeError(
-            "R 'DTRreg' package not installed. Install in R with: "
-            "install.packages('DTRreg')"
+            "R 'DTRreg' package not installed. Install in R with: install.packages('DTRreg')"
         )
 
     import rpy2.robjects as ro
@@ -2807,7 +2794,7 @@ def r_a_learning_dtrreg(
         ro.globalenv["n_covs"] = p
 
         for j in range(p):
-            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+            ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
 
         result = ro.r(
             f"""
@@ -2961,8 +2948,8 @@ def check_rct_r_packages_installed() -> bool:
     try:
         import rpy2.robjects as ro
 
-        ro.r('suppressPackageStartupMessages(library(sandwich))')
-        ro.r('suppressPackageStartupMessages(library(coin))')
+        ro.r("suppressPackageStartupMessages(library(sandwich))")
+        ro.r("suppressPackageStartupMessages(library(coin))")
         return True
     except Exception:
         return False
@@ -3148,8 +3135,7 @@ def r_regression_ate(
 
     if not check_rct_r_packages_installed():
         warnings.warn(
-            "R 'sandwich' package required for HC3 SE. "
-            "Install in R: install.packages('sandwich')",
+            "R 'sandwich' package required for HC3 SE. Install in R: install.packages('sandwich')",
             UserWarning,
         )
         return None
@@ -3247,13 +3233,9 @@ def r_permutation_test(
 
         if seed is not None:
             ro.globalenv["random_seed"] = seed
-            result = ro.r(
-                "permutation_test_r(outcomes, treatment, n_permutations, random_seed)"
-            )
+            result = ro.r("permutation_test_r(outcomes, treatment, n_permutations, random_seed)")
         else:
-            result = ro.r(
-                "permutation_test_r(outcomes, treatment, n_permutations, NULL)"
-            )
+            result = ro.r("permutation_test_r(outcomes, treatment, n_permutations, NULL)")
 
         return {
             "observed_statistic": float(result.rx2("observed_statistic")[0]),
@@ -3415,10 +3397,10 @@ def r_psm_propensity(
 
         # Create covariate columns
         for j in range(p):
-            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+            ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
 
         # Build formula dynamically
-        cov_names = " + ".join([f"X{j+1}" for j in range(p)])
+        cov_names = " + ".join([f"X{j + 1}" for j in range(p)])
 
         result = ro.r(
             f"""
@@ -3505,8 +3487,7 @@ def r_psm_matchit_nearest(
 
     if not check_matchit_installed():
         warnings.warn(
-            "R 'MatchIt' package not installed. Install in R with: "
-            "install.packages('MatchIt')",
+            "R 'MatchIt' package not installed. Install in R with: install.packages('MatchIt')",
             UserWarning,
         )
         return None
@@ -3534,9 +3515,9 @@ def r_psm_matchit_nearest(
 
         # Create covariate columns
         for j in range(p):
-            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+            ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
 
-        cov_names = " + ".join([f"X{j+1}" for j in range(p)])
+        cov_names = " + ".join([f"X{j + 1}" for j in range(p)])
 
         result = ro.r(
             f"""
@@ -3684,7 +3665,7 @@ def r_psm_balance_metrics(
         ro.globalenv["matched_c"] = ro.IntVector((matched_control + 1).astype(int))
 
         for j in range(p):
-            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+            ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
 
         result = ro.r(
             f"""
@@ -3840,8 +3821,7 @@ def r_e_value(
 
     if not check_evalue_installed():
         warnings.warn(
-            "EValue R package not installed. Install in R with: "
-            "install.packages('EValue')",
+            "EValue R package not installed. Install in R with: install.packages('EValue')",
             UserWarning,
         )
         return None
@@ -4168,7 +4148,7 @@ def r_propensity_glm(
         ro.globalenv["treatment"] = ro.IntVector(treatment.astype(int))
 
         for j in range(p):
-            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+            ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
 
         result = ro.r(
             f"""
@@ -4267,8 +4247,7 @@ def r_ipw_observational(
 
     if not check_weightit_installed():
         warnings.warn(
-            "WeightIt R package not installed. Install in R with: "
-            "install.packages('WeightIt')",
+            "WeightIt R package not installed. Install in R with: install.packages('WeightIt')",
             UserWarning,
         )
         return None
@@ -4287,7 +4266,7 @@ def r_ipw_observational(
         ro.globalenv["stabilize"] = stabilize
 
         for j in range(p):
-            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+            ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
 
         # Handle trimming
         if trim_percentile is not None:
@@ -4429,7 +4408,7 @@ def r_dr_ate(
         ro.globalenv["treatment"] = ro.IntVector(treatment.astype(int))
 
         for j in range(p):
-            ro.globalenv[f"X{j+1}"] = ro.FloatVector(covariates[:, j])
+            ro.globalenv[f"X{j + 1}"] = ro.FloatVector(covariates[:, j])
 
         result = ro.r(
             f"""
@@ -4671,7 +4650,7 @@ def r_sharp_rkd(
             # Center and fit derivative
             if (sum(left_idx) > 20) {{
                 rd_y_left <- rdrobust(y_left, x_left, c = cutoff, deriv = 1,
-                                       p = 1, q = 2, kernel = kernel_type{', ' + h_code if h_code else ''})
+                                       p = 1, q = 2, kernel = kernel_type{", " + h_code if h_code else ""})
                 slope_y_left <- rd_y_left$coef[1]
                 bw_y_left <- rd_y_left$bws[1, 1]
             }} else {{
@@ -4683,7 +4662,7 @@ def r_sharp_rkd(
             x_right <- x[right_idx]
             if (sum(right_idx) > 20) {{
                 rd_y_right <- rdrobust(y_right, x_right, c = cutoff, deriv = 1,
-                                        p = 1, q = 2, kernel = kernel_type{', ' + h_code if h_code else ''})
+                                        p = 1, q = 2, kernel = kernel_type{", " + h_code if h_code else ""})
                 slope_y_right <- rd_y_right$coef[1]
                 bw_y_right <- rd_y_right$bws[1, 1]
             }} else {{
@@ -4697,7 +4676,7 @@ def r_sharp_rkd(
 
             if (sum(left_idx) > 20) {{
                 rd_d_left <- rdrobust(d_left, x_left, c = cutoff, deriv = 1,
-                                       p = 1, q = 2, kernel = kernel_type{', ' + h_code if h_code else ''})
+                                       p = 1, q = 2, kernel = kernel_type{", " + h_code if h_code else ""})
                 slope_d_left <- rd_d_left$coef[1]
                 bw_d_left <- rd_d_left$bws[1, 1]
             }} else {{
@@ -4707,7 +4686,7 @@ def r_sharp_rkd(
 
             if (sum(right_idx) > 20) {{
                 rd_d_right <- rdrobust(d_right, x_right, c = cutoff, deriv = 1,
-                                        p = 1, q = 2, kernel = kernel_type{', ' + h_code if h_code else ''})
+                                        p = 1, q = 2, kernel = kernel_type{", " + h_code if h_code else ""})
                 slope_d_right <- rd_d_right$coef[1]
                 bw_d_right <- rd_d_right$bws[1, 1]
             }} else {{
@@ -4770,18 +4749,40 @@ def r_sharp_rkd(
         )
 
         return {
-            "estimate": float(result.rx2("estimate")[0]) if not np.isnan(result.rx2("estimate")[0]) else None,
+            "estimate": float(result.rx2("estimate")[0])
+            if not np.isnan(result.rx2("estimate")[0])
+            else None,
             "se": float(result.rx2("se")[0]) if not np.isnan(result.rx2("se")[0]) else None,
-            "ci_lower": float(result.rx2("ci_lower")[0]) if not np.isnan(result.rx2("ci_lower")[0]) else None,
-            "ci_upper": float(result.rx2("ci_upper")[0]) if not np.isnan(result.rx2("ci_upper")[0]) else None,
-            "slope_y_left": float(result.rx2("slope_y_left")[0]) if not np.isnan(result.rx2("slope_y_left")[0]) else None,
-            "slope_y_right": float(result.rx2("slope_y_right")[0]) if not np.isnan(result.rx2("slope_y_right")[0]) else None,
-            "slope_d_left": float(result.rx2("slope_d_left")[0]) if not np.isnan(result.rx2("slope_d_left")[0]) else None,
-            "slope_d_right": float(result.rx2("slope_d_right")[0]) if not np.isnan(result.rx2("slope_d_right")[0]) else None,
-            "delta_slope_y": float(result.rx2("delta_slope_y")[0]) if not np.isnan(result.rx2("delta_slope_y")[0]) else None,
-            "delta_slope_d": float(result.rx2("delta_slope_d")[0]) if not np.isnan(result.rx2("delta_slope_d")[0]) else None,
-            "bandwidth_y": float(result.rx2("bandwidth_y")[0]) if not np.isnan(result.rx2("bandwidth_y")[0]) else None,
-            "bandwidth_d": float(result.rx2("bandwidth_d")[0]) if not np.isnan(result.rx2("bandwidth_d")[0]) else None,
+            "ci_lower": float(result.rx2("ci_lower")[0])
+            if not np.isnan(result.rx2("ci_lower")[0])
+            else None,
+            "ci_upper": float(result.rx2("ci_upper")[0])
+            if not np.isnan(result.rx2("ci_upper")[0])
+            else None,
+            "slope_y_left": float(result.rx2("slope_y_left")[0])
+            if not np.isnan(result.rx2("slope_y_left")[0])
+            else None,
+            "slope_y_right": float(result.rx2("slope_y_right")[0])
+            if not np.isnan(result.rx2("slope_y_right")[0])
+            else None,
+            "slope_d_left": float(result.rx2("slope_d_left")[0])
+            if not np.isnan(result.rx2("slope_d_left")[0])
+            else None,
+            "slope_d_right": float(result.rx2("slope_d_right")[0])
+            if not np.isnan(result.rx2("slope_d_right")[0])
+            else None,
+            "delta_slope_y": float(result.rx2("delta_slope_y")[0])
+            if not np.isnan(result.rx2("delta_slope_y")[0])
+            else None,
+            "delta_slope_d": float(result.rx2("delta_slope_d")[0])
+            if not np.isnan(result.rx2("delta_slope_d")[0])
+            else None,
+            "bandwidth_y": float(result.rx2("bandwidth_y")[0])
+            if not np.isnan(result.rx2("bandwidth_y")[0])
+            else None,
+            "bandwidth_d": float(result.rx2("bandwidth_d")[0])
+            if not np.isnan(result.rx2("bandwidth_d")[0])
+            else None,
         }
     except Exception as e:
         warnings.warn(f"R Sharp RKD estimation failed: {e}", UserWarning)
@@ -4904,7 +4905,7 @@ def r_fuzzy_rkd(
             # Fit rdrobust with deriv=1 on each side
             if (sum(left_idx) > 20) {{
                 rd_d_left <- rdrobust(d_left, x_left, c = cutoff, deriv = 1,
-                                       p = 1, q = 2, kernel = kernel_type{', ' + h_code if h_code else ''})
+                                       p = 1, q = 2, kernel = kernel_type{", " + h_code if h_code else ""})
                 fs_slope_left <- rd_d_left$coef[1]
                 fs_se_left <- rd_d_left$se[1]
             }} else {{
@@ -4914,7 +4915,7 @@ def r_fuzzy_rkd(
 
             if (sum(right_idx) > 20) {{
                 rd_d_right <- rdrobust(d_right, x_right, c = cutoff, deriv = 1,
-                                        p = 1, q = 2, kernel = kernel_type{', ' + h_code if h_code else ''})
+                                        p = 1, q = 2, kernel = kernel_type{", " + h_code if h_code else ""})
                 fs_slope_right <- rd_d_right$coef[1]
                 fs_se_right <- rd_d_right$se[1]
             }} else {{
@@ -4941,7 +4942,7 @@ def r_fuzzy_rkd(
 
             if (sum(left_idx) > 20) {{
                 rd_y_left <- rdrobust(y_left, x_left, c = cutoff, deriv = 1,
-                                       p = 1, q = 2, kernel = kernel_type{', ' + h_code if h_code else ''})
+                                       p = 1, q = 2, kernel = kernel_type{", " + h_code if h_code else ""})
                 rf_slope_left <- rd_y_left$coef[1]
                 rf_se_left <- rd_y_left$se[1]
                 bw_left <- rd_y_left$bws[1, 1]
@@ -4953,7 +4954,7 @@ def r_fuzzy_rkd(
 
             if (sum(right_idx) > 20) {{
                 rd_y_right <- rdrobust(y_right, x_right, c = cutoff, deriv = 1,
-                                        p = 1, q = 2, kernel = kernel_type{', ' + h_code if h_code else ''})
+                                        p = 1, q = 2, kernel = kernel_type{", " + h_code if h_code else ""})
                 rf_slope_right <- rd_y_right$coef[1]
                 rf_se_right <- rd_y_right$se[1]
                 bw_right <- rd_y_right$bws[1, 1]
@@ -6532,7 +6533,7 @@ def check_bunchr_installed() -> bool:
     try:
         import rpy2.robjects as ro
 
-        ro.r('suppressPackageStartupMessages(library(bunchr))')
+        ro.r("suppressPackageStartupMessages(library(bunchr))")
         return True
     except Exception:
         return False
@@ -6590,14 +6591,12 @@ def r_bunching_estimate(
     """
     if not check_r_available():
         raise ImportError(
-            "rpy2 is required for R triangulation. "
-            "Install with: pip install rpy2>=3.5"
+            "rpy2 is required for R triangulation. Install with: pip install rpy2>=3.5"
         )
 
     if not check_bunchr_installed():
         warnings.warn(
-            "bunchr R package not available. Install with: "
-            "install.packages('bunchr') in R",
+            "bunchr R package not available. Install with: install.packages('bunchr') in R",
             UserWarning,
         )
         return None
@@ -6826,7 +6825,7 @@ def check_shiftsharese_installed() -> bool:
     try:
         import rpy2.robjects as ro
 
-        ro.r('suppressPackageStartupMessages(library(ShiftShareSE))')
+        ro.r("suppressPackageStartupMessages(library(ShiftShareSE))")
         return True
     except Exception:
         return False
@@ -6886,8 +6885,7 @@ def r_shift_share_ivreg_ss(
     """
     if not check_r_available():
         raise ImportError(
-            "rpy2 is required for R triangulation. "
-            "Install with: pip install rpy2>=3.5"
+            "rpy2 is required for R triangulation. Install with: pip install rpy2>=3.5"
         )
 
     if not check_shiftsharese_installed():
@@ -6911,7 +6909,7 @@ def r_shift_share_ivreg_ss(
         ro.globalenv["Y"] = ro.FloatVector(Y)
         ro.globalenv["D"] = ro.FloatVector(D)
         ro.globalenv["shares_mat"] = ro.r.matrix(
-            ro.FloatVector(shares.flatten('F')),
+            ro.FloatVector(shares.flatten("F")),
             nrow=n,
             ncol=n_sectors,
         )
@@ -6924,7 +6922,7 @@ def r_shift_share_ivreg_ss(
                 X = X.reshape(-1, 1)
             n_controls = X.shape[1]
             ro.globalenv["X_mat"] = ro.r.matrix(
-                ro.FloatVector(X.flatten('F')),
+                ro.FloatVector(X.flatten("F")),
                 nrow=n,
                 ncol=n_controls,
             )
@@ -7067,7 +7065,7 @@ def check_localiv_installed() -> bool:
         True if localIV is installed and importable.
     """
     try:
-        ro.r('library(localIV)')
+        ro.r("library(localIV)")
         return True
     except Exception:
         return False
@@ -7150,10 +7148,7 @@ def r_mte_estimate(
             if covariates.ndim == 1:
                 covariates = covariates.reshape(-1, 1)
             x_r = ro.r.matrix(
-                ro.FloatVector(covariates.flatten()),
-                nrow=n,
-                ncol=covariates.shape[1],
-                byrow=False
+                ro.FloatVector(covariates.flatten()), nrow=n, ncol=covariates.shape[1], byrow=False
             )
             has_covariates = True
         else:
@@ -7165,13 +7160,13 @@ def r_mte_estimate(
         u_r = ro.FloatVector(u_grid.astype(float))
 
         # Assign to R environment
-        ro.globalenv['y_vec'] = y_r
-        ro.globalenv['d_vec'] = d_r
-        ro.globalenv['z_vec'] = z_r
-        ro.globalenv['u_grid'] = u_r
-        ro.globalenv['has_covariates'] = has_covariates
+        ro.globalenv["y_vec"] = y_r
+        ro.globalenv["d_vec"] = d_r
+        ro.globalenv["z_vec"] = z_r
+        ro.globalenv["u_grid"] = u_r
+        ro.globalenv["has_covariates"] = has_covariates
         if has_covariates:
-            ro.globalenv['x_mat'] = x_r
+            ro.globalenv["x_mat"] = x_r
 
         # Execute R code for MTE estimation
         result = ro.r(
@@ -7362,8 +7357,7 @@ def r_mte_policy_effect(
     try:
         # First get MTE estimate
         mte_result = r_mte_estimate(
-            outcome, treatment, instrument, covariates,
-            n_grid=len(policy_weights)
+            outcome, treatment, instrument, covariates, n_grid=len(policy_weights)
         )
 
         if mte_result is None:
@@ -7404,7 +7398,7 @@ def check_qte_installed() -> bool:
         True if qte package is installed and importable.
     """
     try:
-        ro.r('library(qte)')
+        ro.r("library(qte)")
         return True
     except Exception:
         return False
@@ -7419,7 +7413,7 @@ def check_quantreg_installed() -> bool:
         True if quantreg package is installed and importable.
     """
     try:
-        ro.r('library(quantreg)')
+        ro.r("library(quantreg)")
         return True
     except Exception:
         return False
@@ -7473,22 +7467,19 @@ def r_conditional_qte(
             if covariates.ndim == 1:
                 covariates = covariates.reshape(-1, 1)
             x_r = ro.r.matrix(
-                ro.FloatVector(covariates.flatten()),
-                nrow=n,
-                ncol=covariates.shape[1],
-                byrow=False
+                ro.FloatVector(covariates.flatten()), nrow=n, ncol=covariates.shape[1], byrow=False
             )
             has_covariates = True
         else:
             has_covariates = False
 
         # Assign to R environment
-        ro.globalenv['y_vec'] = y_r
-        ro.globalenv['d_vec'] = d_r
-        ro.globalenv['tau_vec'] = tau_r
-        ro.globalenv['has_covariates'] = has_covariates
+        ro.globalenv["y_vec"] = y_r
+        ro.globalenv["d_vec"] = d_r
+        ro.globalenv["tau_vec"] = tau_r
+        ro.globalenv["has_covariates"] = has_covariates
         if has_covariates:
-            ro.globalenv['x_mat'] = x_r
+            ro.globalenv["x_mat"] = x_r
 
         # Execute R code
         result = ro.r(
@@ -7619,9 +7610,9 @@ def r_unconditional_qte(
         d_r = ro.FloatVector(treatment.astype(float))
         tau_r = ro.FloatVector(quantiles.astype(float))
 
-        ro.globalenv['y_vec'] = y_r
-        ro.globalenv['d_vec'] = d_r
-        ro.globalenv['tau_vec'] = tau_r
+        ro.globalenv["y_vec"] = y_r
+        ro.globalenv["d_vec"] = d_r
+        ro.globalenv["tau_vec"] = tau_r
 
         result = ro.r(
             """
@@ -7732,9 +7723,9 @@ def r_qte_process(
         d_r = ro.FloatVector(treatment.astype(float))
         tau_r = ro.FloatVector(quantile_grid.astype(float))
 
-        ro.globalenv['y_vec'] = y_r
-        ro.globalenv['d_vec'] = d_r
-        ro.globalenv['tau_vec'] = tau_r
+        ro.globalenv["y_vec"] = y_r
+        ro.globalenv["d_vec"] = d_r
+        ro.globalenv["tau_vec"] = tau_r
 
         result = ro.r(
             """
@@ -7817,7 +7808,7 @@ def check_vars_installed() -> bool:
         True if vars package is installed and importable.
     """
     try:
-        ro.r('library(vars)')
+        ro.r("library(vars)")
         return True
     except Exception:
         return False
@@ -7868,12 +7859,12 @@ def r_var_estimate(
             ro.FloatVector(data.T.flatten()),  # Column-major
             nrow=T,
             ncol=k,
-            byrow=False
+            byrow=False,
         )
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['p_val'] = p
-        ro.globalenv['var_type'] = var_type
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["p_val"] = p
+        ro.globalenv["var_type"] = var_type
 
         result = ro.r(
             """
@@ -8001,19 +7992,14 @@ def r_var_irf(
 
         T, k = data.shape
 
-        data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=T,
-            ncol=k,
-            byrow=False
-        )
+        data_r = ro.r.matrix(ro.FloatVector(data.T.flatten()), nrow=T, ncol=k, byrow=False)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['p_val'] = p
-        ro.globalenv['n_ahead'] = n_ahead
-        ro.globalenv['ortho'] = ortho
-        ro.globalenv['do_boot'] = boot
-        ro.globalenv['n_boot'] = n_boot
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["p_val"] = p
+        ro.globalenv["n_ahead"] = n_ahead
+        ro.globalenv["ortho"] = ortho
+        ro.globalenv["do_boot"] = boot
+        ro.globalenv["n_boot"] = n_boot
 
         result = ro.r(
             """
@@ -8127,17 +8113,12 @@ def r_granger_causality(
 
         T, k = data.shape
 
-        data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=T,
-            ncol=k,
-            byrow=False
-        )
+        data_r = ro.r.matrix(ro.FloatVector(data.T.flatten()), nrow=T, ncol=k, byrow=False)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['p_val'] = p
-        ro.globalenv['cause_idx'] = cause_var + 1  # R is 1-indexed
-        ro.globalenv['effect_idx'] = effect_var + 1
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["p_val"] = p
+        ro.globalenv["cause_idx"] = cause_var + 1  # R is 1-indexed
+        ro.globalenv["effect_idx"] = effect_var + 1
 
         result = ro.r(
             """
@@ -8226,16 +8207,11 @@ def r_var_forecast(
 
         T, k = data.shape
 
-        data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=T,
-            ncol=k,
-            byrow=False
-        )
+        data_r = ro.r.matrix(ro.FloatVector(data.T.flatten()), nrow=T, ncol=k, byrow=False)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['p_val'] = p
-        ro.globalenv['n_ahead'] = n_ahead
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["p_val"] = p
+        ro.globalenv["n_ahead"] = n_ahead
 
         result = ro.r(
             """
@@ -8312,7 +8288,7 @@ def check_urca_installed() -> bool:
         True if urca is installed and importable.
     """
     try:
-        ro.r('library(urca)')
+        ro.r("library(urca)")
         return True
     except Exception:
         return False
@@ -8367,17 +8343,12 @@ def r_johansen_test(
             warnings.warn(f"Too few observations ({T}) for Johansen test", UserWarning)
 
         # Convert data to R matrix
-        data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=T,
-            ncol=n,
-            byrow=False
-        )
+        data_r = ro.r.matrix(ro.FloatVector(data.T.flatten()), nrow=T, ncol=n, byrow=False)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['k_val'] = k
-        ro.globalenv['spec_type'] = spec
-        ro.globalenv['test_type'] = test_type
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["k_val"] = k
+        ro.globalenv["spec_type"] = spec
+        ro.globalenv["test_type"] = test_type
 
         result = ro.r(
             """
@@ -8513,17 +8484,12 @@ def r_vecm_estimate(
 
         T, n = data.shape
 
-        data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=T,
-            ncol=n,
-            byrow=False
-        )
+        data_r = ro.r.matrix(ro.FloatVector(data.T.flatten()), nrow=T, ncol=n, byrow=False)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['r_val'] = r
-        ro.globalenv['k_val'] = k
-        ro.globalenv['spec_type'] = spec
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["r_val"] = r
+        ro.globalenv["k_val"] = k
+        ro.globalenv["spec_type"] = spec
 
         result = ro.r(
             """
@@ -8652,18 +8618,13 @@ def r_vecm_irf(
 
         T, n = data.shape
 
-        data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=T,
-            ncol=n,
-            byrow=False
-        )
+        data_r = ro.r.matrix(ro.FloatVector(data.T.flatten()), nrow=T, ncol=n, byrow=False)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['r_val'] = r
-        ro.globalenv['k_val'] = k
-        ro.globalenv['n_ahead'] = n_ahead
-        ro.globalenv['ortho'] = ortho
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["r_val"] = r
+        ro.globalenv["k_val"] = k
+        ro.globalenv["n_ahead"] = n_ahead
+        ro.globalenv["ortho"] = ortho
 
         result = ro.r(
             """
@@ -8748,7 +8709,7 @@ def check_pcalg_installed() -> bool:
     try:
         import rpy2.robjects as ro
 
-        ro.r('suppressPackageStartupMessages(library(pcalg))')
+        ro.r("suppressPackageStartupMessages(library(pcalg))")
         return True
     except Exception:
         return False
@@ -8811,21 +8772,18 @@ def r_pc_algorithm(
 
         # Convert data to R matrix
         data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=n_samples,
-            ncol=n_vars,
-            byrow=False
+            ro.FloatVector(data.T.flatten()), nrow=n_samples, ncol=n_vars, byrow=False
         )
 
         # Set up variable labels
         labels = [f"V{i}" for i in range(n_vars)]
         labels_r = ro.StrVector(labels)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['alpha_val'] = alpha
-        ro.globalenv['labels_vec'] = labels_r
-        ro.globalenv['n_samples'] = n_samples
-        ro.globalenv['use_stable'] = stable
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["alpha_val"] = alpha
+        ro.globalenv["labels_vec"] = labels_r
+        ro.globalenv["n_samples"] = n_samples
+        ro.globalenv["use_stable"] = stable
 
         # Choose independence test
         test_mapping = {
@@ -8833,7 +8791,7 @@ def r_pc_algorithm(
             "disCItest": "disCItest",
             "binCItest": "binCItest",
         }
-        ro.globalenv['indep_test_name'] = test_mapping.get(indep_test, "gaussCItest")
+        ro.globalenv["indep_test_name"] = test_mapping.get(indep_test, "gaussCItest")
 
         result = ro.r(
             """
@@ -9003,20 +8961,17 @@ def r_skeleton(
         n_samples, n_vars = data.shape
 
         data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=n_samples,
-            ncol=n_vars,
-            byrow=False
+            ro.FloatVector(data.T.flatten()), nrow=n_samples, ncol=n_vars, byrow=False
         )
 
         labels = [f"V{i}" for i in range(n_vars)]
         labels_r = ro.StrVector(labels)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['alpha_val'] = alpha
-        ro.globalenv['labels_vec'] = labels_r
-        ro.globalenv['n_samples'] = n_samples
-        ro.globalenv['use_stable'] = stable
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["alpha_val"] = alpha
+        ro.globalenv["labels_vec"] = labels_r
+        ro.globalenv["n_samples"] = n_samples
+        ro.globalenv["use_stable"] = stable
 
         result = ro.r(
             """
@@ -9174,21 +9129,18 @@ def r_fci_algorithm(
 
         # Convert data to R matrix
         data_r = ro.r.matrix(
-            ro.FloatVector(data.T.flatten()),
-            nrow=n_samples,
-            ncol=n_vars,
-            byrow=False
+            ro.FloatVector(data.T.flatten()), nrow=n_samples, ncol=n_vars, byrow=False
         )
 
         # Set up variable labels
         labels = [f"V{i}" for i in range(n_vars)]
         labels_r = ro.StrVector(labels)
 
-        ro.globalenv['data_mat'] = data_r
-        ro.globalenv['alpha_val'] = alpha
-        ro.globalenv['labels_vec'] = labels_r
-        ro.globalenv['n_samples'] = n_samples
-        ro.globalenv['use_stable'] = stable
+        ro.globalenv["data_mat"] = data_r
+        ro.globalenv["alpha_val"] = alpha
+        ro.globalenv["labels_vec"] = labels_r
+        ro.globalenv["n_samples"] = n_samples
+        ro.globalenv["use_stable"] = stable
 
         # Choose independence test
         test_mapping = {
@@ -9196,7 +9148,7 @@ def r_fci_algorithm(
             "disCItest": "disCItest",
             "binCItest": "binCItest",
         }
-        ro.globalenv['indep_test_name'] = test_mapping.get(indep_test, "gaussCItest")
+        ro.globalenv["indep_test_name"] = test_mapping.get(indep_test, "gaussCItest")
 
         result = ro.r(
             """

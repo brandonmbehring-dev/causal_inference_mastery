@@ -148,8 +148,7 @@ def mte_sensitivity_to_trimming(
     for trim in trim_fractions:
         try:
             mte_result = local_iv(
-                outcome, treatment, instrument, covariates,
-                trim_fraction=trim, n_bootstrap=100
+                outcome, treatment, instrument, covariates, trim_fraction=trim, n_bootstrap=100
             )
             ate_result = ate_from_mte(mte_result)
 
@@ -263,8 +262,7 @@ def monotonicity_test(
     n_low = (Z == z_low).sum()
     n_high = (Z == z_high).sum()
     se_first_stage = np.sqrt(
-        d_rate_z_low * (1 - d_rate_z_low) / n_low +
-        d_rate_z_high * (1 - d_rate_z_high) / n_high
+        d_rate_z_low * (1 - d_rate_z_low) / n_low + d_rate_z_high * (1 - d_rate_z_high) / n_high
     )
 
     # Test statistic
@@ -356,9 +354,7 @@ def propensity_variation_test(
             "MTE identified but may have large SE."
         )
     else:
-        recommendation = (
-            f"ADEQUATE VARIATION: Support [{p_min:.2f}, {p_max:.2f}], CV = {cv:.2f}."
-        )
+        recommendation = f"ADEQUATE VARIATION: Support [{p_min:.2f}, {p_max:.2f}], CV = {cv:.2f}."
 
     return {
         "sufficient_variation": sufficient,
@@ -423,7 +419,8 @@ def mte_shape_test(
             "p_value": p_constant,
             "reject_constant": p_constant < alpha,
             "interpretation": (
-                "MTE varies significantly with u" if p_constant < alpha
+                "MTE varies significantly with u"
+                if p_constant < alpha
                 else "Cannot reject constant MTE"
             ),
         }
@@ -442,8 +439,10 @@ def mte_shape_test(
     results["monotonicity_test"] = {
         "strictly_monotone": monotone_increasing or monotone_decreasing,
         "direction": (
-            "increasing" if monotone_increasing
-            else "decreasing" if monotone_decreasing
+            "increasing"
+            if monotone_increasing
+            else "decreasing"
+            if monotone_decreasing
             else "non-monotone"
         ),
         "frac_increasing": frac_increasing,
@@ -482,8 +481,7 @@ def mte_shape_test(
         "reject_linear": p_linear < alpha,
         "linear_slope": beta[1],
         "interpretation": (
-            "MTE is significantly nonlinear" if p_linear < alpha
-            else "Cannot reject linear MTE"
+            "MTE is significantly nonlinear" if p_linear < alpha else "Cannot reject linear MTE"
         ),
     }
 

@@ -177,7 +177,7 @@ def simple_ate(
 
     # Degrees of freedom (Satterthwaite approximation for Welch's t-test)
     # df = (s1²/n1 + s0²/n0)² / [(s1²/n1)²/(n1-1) + (s0²/n0)²/(n0-1)]
-    df = (var_ate ** 2) / ((var1 / n1) ** 2 / (n1 - 1) + (var0 / n0) ** 2 / (n0 - 1))
+    df = (var_ate**2) / ((var1 / n1) ** 2 / (n1 - 1) + (var0 / n0) ** 2 / (n0 - 1))
 
     # Confidence interval (t-distribution for small samples)
     t_critical = stats.t.ppf(1 - alpha / 2, df=df)

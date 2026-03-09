@@ -186,8 +186,10 @@ class TestDoublyRobustAdversarialHighDimensional:
         T = np.random.binomial(1, e_X)
 
         # Outcome depends on first 3 covariates
-        Y = 3.0 * T + (2 + 0.4 * X[:, 0] + 0.3 * X[:, 1] + 0.2 * X[:, 2]) + np.random.normal(
-            0, 0.5, n
+        Y = (
+            3.0 * T
+            + (2 + 0.4 * X[:, 0] + 0.3 * X[:, 1] + 0.2 * X[:, 2])
+            + np.random.normal(0, 0.5, n)
         )
 
         result = dr_ate(Y, T, X)

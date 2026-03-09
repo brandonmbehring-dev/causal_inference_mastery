@@ -481,9 +481,7 @@ def manski_mtr_mts(
         )
 
     if mtr_direction not in ("positive", "negative"):
-        raise ValueError(
-            f"mtr_direction must be 'positive' or 'negative', got '{mtr_direction}'"
-        )
+        raise ValueError(f"mtr_direction must be 'positive' or 'negative', got '{mtr_direction}'")
 
     if not np.isin(treatment, [0, 1]).all():
         raise ValueError("Treatment must be binary (0 or 1)")

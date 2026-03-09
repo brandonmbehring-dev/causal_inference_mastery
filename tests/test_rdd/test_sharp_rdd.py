@@ -37,9 +37,9 @@ class TestSharpRDDKnownAnswers:
         rdd.fit(Y, X)
 
         # Check point estimate within 20% of truth
-        assert np.isclose(
-            rdd.coef_, true_tau, rtol=0.20
-        ), f"Expected τ ≈ {true_tau}, got {rdd.coef_:.4f}"
+        assert np.isclose(rdd.coef_, true_tau, rtol=0.20), (
+            f"Expected τ ≈ {true_tau}, got {rdd.coef_:.4f}"
+        )
 
     def test_quadratic_dgp_recovers_true_effect(self, sharp_rdd_quadratic_dgp):
         """Test Sharp RDD with quadratic DGP (local linear should handle curvature)."""
@@ -49,9 +49,9 @@ class TestSharpRDDKnownAnswers:
         rdd.fit(Y, X)
 
         # Quadratic DGP: looser tolerance (25%) due to curvature
-        assert np.isclose(
-            rdd.coef_, true_tau, rtol=0.25
-        ), f"Expected τ ≈ {true_tau}, got {rdd.coef_:.4f}"
+        assert np.isclose(rdd.coef_, true_tau, rtol=0.25), (
+            f"Expected τ ≈ {true_tau}, got {rdd.coef_:.4f}"
+        )
 
     def test_zero_effect_not_significant(self, sharp_rdd_zero_effect_dgp):
         """Test that zero effect is not statistically significant."""
@@ -64,9 +64,7 @@ class TestSharpRDDKnownAnswers:
         assert np.abs(rdd.coef_) < 0.5, f"Expected |τ| < 0.5, got {rdd.coef_:.4f}"
 
         # Should not be significant (p-value > 0.05)
-        assert (
-            rdd.p_value_ > 0.05
-        ), f"Expected p-value > 0.05, got {rdd.p_value_:.4f}"
+        assert rdd.p_value_ > 0.05, f"Expected p-value > 0.05, got {rdd.p_value_:.4f}"
 
     def test_large_effect_highly_significant(self, sharp_rdd_large_effect_dgp):
         """Test that large effect (τ=10.0) is highly significant."""
@@ -76,14 +74,12 @@ class TestSharpRDDKnownAnswers:
         rdd.fit(Y, X)
 
         # Effect should be close to 10.0 (±20%)
-        assert np.isclose(
-            rdd.coef_, true_tau, rtol=0.20
-        ), f"Expected τ ≈ {true_tau}, got {rdd.coef_:.4f}"
+        assert np.isclose(rdd.coef_, true_tau, rtol=0.20), (
+            f"Expected τ ≈ {true_tau}, got {rdd.coef_:.4f}"
+        )
 
         # Should be highly significant (p-value < 0.001)
-        assert (
-            rdd.p_value_ < 0.001
-        ), f"Expected p-value < 0.001, got {rdd.p_value_:.4f}"
+        assert rdd.p_value_ < 0.001, f"Expected p-value < 0.001, got {rdd.p_value_:.4f}"
 
     def test_triangular_vs_rectangular_kernel(self, sharp_rdd_linear_dgp):
         """Test that triangular and rectangular kernels both recover true effect."""
@@ -98,13 +94,13 @@ class TestSharpRDDKnownAnswers:
         rdd_rect.fit(Y, X)
 
         # Both should recover true effect (±30% tolerance, kernels differ)
-        assert np.isclose(
-            rdd_tri.coef_, true_tau, rtol=0.30
-        ), f"Triangular: expected τ ≈ {true_tau}, got {rdd_tri.coef_:.4f}"
+        assert np.isclose(rdd_tri.coef_, true_tau, rtol=0.30), (
+            f"Triangular: expected τ ≈ {true_tau}, got {rdd_tri.coef_:.4f}"
+        )
 
-        assert np.isclose(
-            rdd_rect.coef_, true_tau, rtol=0.30
-        ), f"Rectangular: expected τ ≈ {true_tau}, got {rdd_rect.coef_:.4f}"
+        assert np.isclose(rdd_rect.coef_, true_tau, rtol=0.30), (
+            f"Rectangular: expected τ ≈ {true_tau}, got {rdd_rect.coef_:.4f}"
+        )
 
     def test_confidence_intervals_coverage(self, sharp_rdd_linear_dgp):
         """Test that 95% confidence intervals contain true value."""
@@ -116,9 +112,9 @@ class TestSharpRDDKnownAnswers:
         ci_lower, ci_upper = rdd.ci_
 
         # True value should be in confidence interval
-        assert (
-            ci_lower <= true_tau <= ci_upper
-        ), f"CI [{ci_lower:.3f}, {ci_upper:.3f}] does not contain true τ={true_tau}"
+        assert ci_lower <= true_tau <= ci_upper, (
+            f"CI [{ci_lower:.3f}, {ci_upper:.3f}] does not contain true τ={true_tau}"
+        )
 
 
 class TestBandwidthSelection:
@@ -157,9 +153,7 @@ class TestBandwidthSelection:
         h_main, h_bias = cct_bandwidth(Y, X, cutoff, kernel="triangular", bias_correction=True)
 
         # Bias bandwidth should be larger (CCT recommendation: h_bias ≈ 1.5 * h_main)
-        assert (
-            h_bias >= h_main
-        ), f"Bias bandwidth ({h_bias:.4f}) should be >= main ({h_main:.4f})"
+        assert h_bias >= h_main, f"Bias bandwidth ({h_bias:.4f}) should be >= main ({h_main:.4f})"
 
     def test_bandwidth_sensitivity(self, sharp_rdd_linear_dgp):
         """Test that different fixed bandwidths all recover effect (sensitivity test)."""
@@ -177,9 +171,9 @@ class TestBandwidthSelection:
         # All estimates should be within 40% of truth
         # (wider tolerance because fixed bandwidths may be suboptimal)
         for h, est in zip(bandwidths, estimates):
-            assert np.isclose(
-                est, true_tau, rtol=0.40
-            ), f"Bandwidth {h}: expected τ ≈ {true_tau}, got {est:.4f}"
+            assert np.isclose(est, true_tau, rtol=0.40), (
+                f"Bandwidth {h}: expected τ ≈ {true_tau}, got {est:.4f}"
+            )
 
 
 class TestStandardErrors:
@@ -211,15 +205,15 @@ class TestStandardErrors:
         rdd_robust.fit(Y, X)
 
         # Coefficients should be the same
-        assert np.isclose(
-            rdd_std.coef_, rdd_robust.coef_
-        ), "Coefficients should be identical regardless of SE type"
+        assert np.isclose(rdd_std.coef_, rdd_robust.coef_), (
+            "Coefficients should be identical regardless of SE type"
+        )
 
         # Robust SEs should be larger (or at least not much smaller) with heteroskedasticity
         # Allow 90% ratio (robust can sometimes be slightly smaller)
-        assert (
-            rdd_robust.se_ >= rdd_std.se_ * 0.9
-        ), f"Robust SE ({rdd_robust.se_:.4f}) should be >= 90% of standard SE ({rdd_std.se_:.4f})"
+        assert rdd_robust.se_ >= rdd_std.se_ * 0.9, (
+            f"Robust SE ({rdd_robust.se_:.4f}) should be >= 90% of standard SE ({rdd_std.se_:.4f})"
+        )
 
     def test_small_sample_warning(self, sharp_rdd_sparse_data_dgp):
         """Test that sparse data near cutoff triggers small sample size warning."""
@@ -239,8 +233,7 @@ class TestStandardErrors:
             )
 
             assert has_small_sample_warning, (
-                f"Expected warning about small effective sample size. "
-                f"Warnings: {warning_messages}"
+                f"Expected warning about small effective sample size. Warnings: {warning_messages}"
             )
 
 
@@ -258,9 +251,9 @@ class TestInference:
         expected_t = rdd.coef_ / rdd.se_
 
         # Check that stored t-statistic matches
-        assert np.isclose(
-            rdd.t_stat_, expected_t
-        ), f"Expected t = {expected_t:.4f}, got {rdd.t_stat_:.4f}"
+        assert np.isclose(rdd.t_stat_, expected_t), (
+            f"Expected t = {expected_t:.4f}, got {rdd.t_stat_:.4f}"
+        )
 
     def test_p_value_two_sided(self, sharp_rdd_linear_dgp):
         """Test that p-value is in [0, 1] (two-sided test)."""
@@ -270,9 +263,7 @@ class TestInference:
         rdd.fit(Y, X)
 
         # P-value should be between 0 and 1
-        assert (
-            0 <= rdd.p_value_ <= 1
-        ), f"P-value must be in [0, 1], got {rdd.p_value_}"
+        assert 0 <= rdd.p_value_ <= 1, f"P-value must be in [0, 1], got {rdd.p_value_}"
 
     def test_confidence_interval_width(self, sharp_rdd_linear_dgp):
         """Test that confidence interval has positive width."""
@@ -284,14 +275,12 @@ class TestInference:
         ci_lower, ci_upper = rdd.ci_
 
         # Upper bound should be greater than lower bound
-        assert (
-            ci_upper > ci_lower
-        ), f"CI upper ({ci_upper:.4f}) must be > CI lower ({ci_lower:.4f})"
+        assert ci_upper > ci_lower, f"CI upper ({ci_upper:.4f}) must be > CI lower ({ci_lower:.4f})"
 
         # Point estimate should be in CI
-        assert (
-            ci_lower <= rdd.coef_ <= ci_upper
-        ), f"Point estimate {rdd.coef_:.4f} not in CI [{ci_lower:.4f}, {ci_upper:.4f}]"
+        assert ci_lower <= rdd.coef_ <= ci_upper, (
+            f"Point estimate {rdd.coef_:.4f} not in CI [{ci_lower:.4f}, {ci_upper:.4f}]"
+        )
 
 
 class TestAdversarial:

@@ -40,10 +40,13 @@ class TestIPWATEMonteCarlo:
         )
 
         assert validation["bias_ok"], f"Bias {validation['bias']:.4f} exceeds threshold"
-        assert validation["coverage_ok"], f"Coverage {validation['coverage']:.4f} outside [0.93, 0.97]"
+        assert validation["coverage_ok"], (
+            f"Coverage {validation['coverage']:.4f} outside [0.93, 0.97]"
+        )
         # IPW can have higher SE variability
-        assert validation["se_accuracy"] < 0.20, f"SE accuracy {validation['se_accuracy']:.4f} exceeds 20%"
-
+        assert validation["se_accuracy"] < 0.20, (
+            f"SE accuracy {validation['se_accuracy']:.4f} exceeds 20%"
+        )
 
     def test_ipw_constant_propensity(self):
         """When propensity is constant, IPW should match simple ATE."""
@@ -75,7 +78,6 @@ class TestIPWATEMonteCarlo:
         mean_diff = np.mean(differences)
         assert mean_diff < 0.05, f"IPW differs from simple ATE by {mean_diff:.4f}"
 
-
     def test_ipw_propensity_variation(self):
         """Verify IPW handles propensity variation correctly."""
         n_runs = 500
@@ -92,5 +94,6 @@ class TestIPWATEMonteCarlo:
 
         # Despite varying propensities, estimates should center around true ATE
         mean_estimate = np.mean(estimates)
-        assert abs(mean_estimate - true_ate) < 0.1, \
+        assert abs(mean_estimate - true_ate) < 0.1, (
             f"Mean IPW estimate ({mean_estimate:.4f}) far from true ATE ({true_ate})"
+        )

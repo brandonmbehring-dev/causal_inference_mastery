@@ -306,9 +306,7 @@ class TestTypeIError:
         rejection_rate = rejections / n_simulations
 
         # Type I error should be below 15% (bunching tests can be liberal)
-        assert rejection_rate < 0.20, (
-            f"Type I error rate {rejection_rate:.1%} exceeds 20%"
-        )
+        assert rejection_rate < 0.20, f"Type I error rate {rejection_rate:.1%} exceeds 20%"
 
     @pytest.mark.monte_carlo
     def test_null_excess_mass_near_zero(self):
@@ -391,8 +389,7 @@ class TestElasticityEstimation:
             implied_elasticity = result["excess_mass"] / log_rate_change
 
             assert result["elasticity"] == pytest.approx(implied_elasticity, rel=0.01), (
-                f"Elasticity {result['elasticity']:.4f} != "
-                f"implied {implied_elasticity:.4f}"
+                f"Elasticity {result['elasticity']:.4f} != implied {implied_elasticity:.4f}"
             )
 
 
@@ -414,9 +411,7 @@ class TestRobustness:
         )
 
         # Should still detect positive excess mass
-        assert mc_result["mean_estimate"] > 0, (
-            "Should detect bunching even with offset"
-        )
+        assert mc_result["mean_estimate"] > 0, "Should detect bunching even with offset"
 
     @pytest.mark.monte_carlo
     def test_diffuse_bunching_detection(self):
@@ -428,9 +423,7 @@ class TestRobustness:
         )
 
         # Should detect positive excess mass (though possibly attenuated)
-        assert mc_result["mean_estimate"] > 0, (
-            "Should detect diffuse bunching"
-        )
+        assert mc_result["mean_estimate"] > 0, "Should detect diffuse bunching"
 
     @pytest.mark.monte_carlo
     def test_small_sample_still_works(self):
@@ -461,9 +454,7 @@ class TestPolynomialOrder:
         """Estimates stable across polynomial orders."""
         estimates_by_order = {}
 
-        data, true_b, kink, bw = dgp_bunching_simple(
-            n=2000, true_excess_mass=2.0, random_state=42
-        )
+        data, true_b, kink, bw = dgp_bunching_simple(n=2000, true_excess_mass=2.0, random_state=42)
 
         for order in [5, 7, 9]:
             result = bunching_estimator(
@@ -483,9 +474,7 @@ class TestPolynomialOrder:
             cv = np.std(values) / np.mean(values) if np.mean(values) > 0 else 0
 
             # Coefficient of variation should be low (stable across orders)
-            assert cv < 0.5, (
-                f"Estimates too variable across polynomial orders: CV={cv:.2f}"
-            )
+            assert cv < 0.5, f"Estimates too variable across polynomial orders: CV={cv:.2f}"
 
 
 # =============================================================================
@@ -501,9 +490,7 @@ class TestBinWidthSensitivity:
         """Estimates stable across bin counts."""
         estimates_by_bins = {}
 
-        data, true_b, kink, bw = dgp_bunching_simple(
-            n=2000, true_excess_mass=2.0, random_state=42
-        )
+        data, true_b, kink, bw = dgp_bunching_simple(n=2000, true_excess_mass=2.0, random_state=42)
 
         for n_bins in [40, 60, 80]:
             result = bunching_estimator(
@@ -522,9 +509,7 @@ class TestBinWidthSensitivity:
             cv = np.std(values) / np.mean(values) if np.mean(values) > 0 else 0
 
             # Should be relatively stable
-            assert cv < 0.5, (
-                f"Estimates too variable across bin counts: CV={cv:.2f}"
-            )
+            assert cv < 0.5, f"Estimates too variable across bin counts: CV={cv:.2f}"
 
 
 if __name__ == "__main__":

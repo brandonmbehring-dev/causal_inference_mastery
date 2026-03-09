@@ -39,8 +39,7 @@ from tests.validation.cross_language.julia_interface import (
 
 
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-validation"
+    not is_julia_available(), reason="Julia not available for cross-validation"
 )
 
 
@@ -71,9 +70,7 @@ def generate_classic_did_data(
     # Create panel structure
     unit_ids = np.repeat(np.arange(n_units), n_periods)
     times = np.tile(np.arange(n_periods), n_units)
-    treatment = np.repeat(
-        np.array([True] * n_treated + [False] * n_control), n_periods
-    )
+    treatment = np.repeat(np.array([True] * n_treated + [False] * n_control), n_periods)
     post = times == (n_periods - 1)  # Last period is post
 
     # DGP
@@ -183,15 +180,18 @@ class TestClassicDiDParity:
         )
 
         # Both should recover true effect reasonably
-        assert abs(py_result["estimate"] - true_effect) < 1.0, \
+        assert abs(py_result["estimate"] - true_effect) < 1.0, (
             f"Python estimate {py_result['estimate']} far from true {true_effect}"
-        assert abs(jl_result["estimate"] - true_effect) < 1.0, \
+        )
+        assert abs(jl_result["estimate"] - true_effect) < 1.0, (
             f"Julia estimate {jl_result['estimate']} far from true {true_effect}"
+        )
 
         # Estimates should be close (same DGP)
         rel_diff = abs(py_result["estimate"] - jl_result["estimate"]) / abs(py_result["estimate"])
-        assert rel_diff < 0.1, \
+        assert rel_diff < 0.1, (
             f"Estimate mismatch: Python={py_result['estimate']:.4f}, Julia={jl_result['estimate']:.4f}"
+        )
 
     def test_large_sample_n100(self):
         """Large sample should give tighter estimates."""
@@ -310,10 +310,12 @@ class TestClassicDiDParity:
         )
 
         # CIs should cover true effect
-        assert py_result["ci_lower"] < true_effect < py_result["ci_upper"], \
+        assert py_result["ci_lower"] < true_effect < py_result["ci_upper"], (
             f"Python CI [{py_result['ci_lower']:.3f}, {py_result['ci_upper']:.3f}] doesn't cover {true_effect}"
-        assert jl_result["ci_lower"] < true_effect < jl_result["ci_upper"], \
+        )
+        assert jl_result["ci_lower"] < true_effect < jl_result["ci_upper"], (
             f"Julia CI [{jl_result['ci_lower']:.3f}, {jl_result['ci_upper']:.3f}] doesn't cover {true_effect}"
+        )
 
 
 # =============================================================================
@@ -362,15 +364,18 @@ class TestCallawaySantAnnaParity:
         )
 
         # Both should recover true effect
-        assert abs(py_result["att"] - true_effect) < 0.8, \
+        assert abs(py_result["att"] - true_effect) < 0.8, (
             f"Python ATT {py_result['att']:.4f} far from true {true_effect}"
-        assert abs(jl_result["att"] - true_effect) < 0.8, \
+        )
+        assert abs(jl_result["att"] - true_effect) < 0.8, (
             f"Julia ATT {jl_result['att']:.4f} far from true {true_effect}"
+        )
 
         # ATT should be reasonably close (bootstrap variance accepted)
         rel_diff = abs(py_result["att"] - jl_result["att"]) / abs(py_result["att"])
-        assert rel_diff < 0.3, \
+        assert rel_diff < 0.3, (
             f"CS ATT mismatch: Python={py_result['att']:.4f}, Julia={jl_result['att']:.4f}"
+        )
 
     def test_cs_notyettreated_control(self):
         """Callaway-Sant'Anna with not-yet-treated control group."""
@@ -489,15 +494,18 @@ class TestSunAbrahamParity:
         )
 
         # Both should recover true effect
-        assert abs(py_result["att"] - true_effect) < 0.8, \
+        assert abs(py_result["att"] - true_effect) < 0.8, (
             f"Python ATT {py_result['att']:.4f} far from true {true_effect}"
-        assert abs(jl_result["att"] - true_effect) < 0.8, \
+        )
+        assert abs(jl_result["att"] - true_effect) < 0.8, (
             f"Julia ATT {jl_result['att']:.4f} far from true {true_effect}"
+        )
 
         # ATT should be reasonably close
         rel_diff = abs(py_result["att"] - jl_result["att"]) / abs(py_result["att"])
-        assert rel_diff < 0.3, \
+        assert rel_diff < 0.3, (
             f"SA ATT mismatch: Python={py_result['att']:.4f}, Julia={jl_result['att']:.4f}"
+        )
 
     def test_sa_large_sample(self):
         """Sun-Abraham with larger sample."""
@@ -557,8 +565,9 @@ class TestSunAbrahamParity:
         # Same number of cohort effects
         n_py_effects = len(py_result["cohort_effects"])
         n_jl_effects = len(jl_result["cohort_effects"])
-        assert n_py_effects == n_jl_effects, \
+        assert n_py_effects == n_jl_effects, (
             f"Cohort effects count mismatch: Python={n_py_effects}, Julia={n_jl_effects}"
+        )
 
     def test_sa_n_cohorts(self):
         """Both should count same number of cohorts."""
@@ -624,14 +633,12 @@ def generate_event_study_data(
     # Create panel structure
     unit_ids = np.repeat(np.arange(n_units), n_periods)
     times = np.tile(np.arange(n_periods), n_units)
-    treatment = np.repeat(
-        np.array([True] * n_treated + [False] * n_control), n_periods
-    )
+    treatment = np.repeat(np.array([True] * n_treated + [False] * n_control), n_periods)
     post = times >= treatment_time
 
     # DGP: unit FE + time FE + treatment effect + noise
-    unit_fe = (unit_ids * 0.5)  # Unit FE
-    time_fe = (times * 0.3)     # Time FE
+    unit_fe = unit_ids * 0.5  # Unit FE
+    time_fe = times * 0.3  # Time FE
     y_effect = true_effect * (treatment & post).astype(float)
     eps = np.random.normal(0, 1.0, len(unit_ids))
 
@@ -690,15 +697,18 @@ class TestEventStudyParity:
         py_aggregate = np.mean(py_lag_estimates) if py_lag_estimates else 0.0
 
         # Both should recover true effect
-        assert abs(py_aggregate - true_effect) < 1.5, \
+        assert abs(py_aggregate - true_effect) < 1.5, (
             f"Python aggregate {py_aggregate:.4f} far from true {true_effect}"
-        assert abs(jl_result["estimate"] - true_effect) < 1.5, \
+        )
+        assert abs(jl_result["estimate"] - true_effect) < 1.5, (
             f"Julia estimate {jl_result['estimate']:.4f} far from true {true_effect}"
+        )
 
         # Aggregate estimates should be reasonably close
         rel_diff = abs(py_aggregate - jl_result["estimate"]) / max(abs(py_aggregate), 0.1)
-        assert rel_diff < 0.3, \
+        assert rel_diff < 0.3, (
             f"Event study aggregate mismatch: Python={py_aggregate:.4f}, Julia={jl_result['estimate']:.4f}"
+        )
 
     def test_event_study_with_zero_effect(self):
         """Event study with zero effect - estimates near zero."""
@@ -731,7 +741,9 @@ class TestEventStudyParity:
 
         # Both should be near zero
         assert abs(py_aggregate) < 1.0, f"Python aggregate {py_aggregate:.4f} not near zero"
-        assert abs(jl_result["estimate"]) < 1.0, f"Julia estimate {jl_result['estimate']:.4f} not near zero"
+        assert abs(jl_result["estimate"]) < 1.0, (
+            f"Julia estimate {jl_result['estimate']:.4f} not near zero"
+        )
 
     def test_event_study_negative_effect(self):
         """Event study with negative treatment effect."""
@@ -795,12 +807,15 @@ class TestEventStudyParity:
         )
 
         # Sample sizes must match
-        assert py_result["n_obs"] == jl_result["n_obs"], \
+        assert py_result["n_obs"] == jl_result["n_obs"], (
             f"n_obs mismatch: Python={py_result['n_obs']}, Julia={jl_result['n_obs']}"
-        assert py_result["n_treated"] == jl_result["n_treated"], \
+        )
+        assert py_result["n_treated"] == jl_result["n_treated"], (
             f"n_treated mismatch: Python={py_result['n_treated']}, Julia={jl_result['n_treated']}"
-        assert py_result["n_control"] == jl_result["n_control"], \
+        )
+        assert py_result["n_control"] == jl_result["n_control"], (
             f"n_control mismatch: Python={py_result['n_control']}, Julia={jl_result['n_control']}"
+        )
 
 
 # =============================================================================
@@ -850,8 +865,9 @@ class TestStaggeredTWFEParity:
 
         # Estimates should be reasonably close (loose tolerance for TWFE bias)
         rel_diff = abs(py_result["att"] - jl_result["estimate"]) / max(abs(py_result["att"]), 0.1)
-        assert rel_diff < 0.5, \
+        assert rel_diff < 0.5, (
             f"TWFE estimate mismatch: Python={py_result['att']:.4f}, Julia={jl_result['estimate']:.4f}"
+        )
 
     def test_twfe_cluster_se(self):
         """Cluster standard errors should be similar."""
@@ -883,8 +899,9 @@ class TestStaggeredTWFEParity:
         assert np.isfinite(jl_result["se"]) and jl_result["se"] > 0
 
         rel_diff = abs(py_result["se"] - jl_result["se"]) / max(py_result["se"], 0.01)
-        assert rel_diff < 1.0, \
+        assert rel_diff < 1.0, (
             f"TWFE SE mismatch: Python={py_result['se']:.4f}, Julia={jl_result['se']:.4f}"
+        )
 
     def test_twfe_sample_sizes(self):
         """Sample sizes should match exactly."""
@@ -912,5 +929,6 @@ class TestStaggeredTWFEParity:
         )
 
         # Sample sizes must match
-        assert py_result["n_obs"] == jl_result["n_obs"], \
+        assert py_result["n_obs"] == jl_result["n_obs"], (
             f"n_obs mismatch: Python={py_result['n_obs']}, Julia={jl_result['n_obs']}"
+        )

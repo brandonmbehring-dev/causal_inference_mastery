@@ -292,9 +292,7 @@ class TestHeterogeneousQTEMonteCarlo:
             )
 
             estimates.append(result["tau_q"])
-            covers_true.append(
-                result["ci_lower"] <= true_qte_median <= result["ci_upper"]
-            )
+            covers_true.append(result["ci_lower"] <= true_qte_median <= result["ci_upper"])
 
         estimates = np.array(estimates)
         bias = np.mean(estimates) - true_qte_median

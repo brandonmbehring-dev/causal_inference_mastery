@@ -355,10 +355,7 @@ class TestBunchingElasticityVsR:
             py_elasticity,
             r_result["elasticity"],
             rtol=0.20,
-        ), (
-            f"Elasticity mismatch: Python={py_elasticity:.4f}, "
-            f"R={r_result['elasticity']:.4f}"
-        )
+        ), f"Elasticity mismatch: Python={py_elasticity:.4f}, R={r_result['elasticity']:.4f}"
 
     def test_elasticity_both_recover_true_value(self, bunching_with_rates):
         """Both Python and R should recover true elasticity approximately."""
@@ -581,9 +578,7 @@ class TestBunchingMonteCarloTriangulation:
                 agreements += 1
 
         agreement_rate = agreements / n_runs
-        assert agreement_rate >= 0.80, (
-            f"Monte Carlo agreement rate {agreement_rate:.0%} < 80%"
-        )
+        assert agreement_rate >= 0.80, f"Monte Carlo agreement rate {agreement_rate:.0%} < 80%"
 
     def test_monte_carlo_null_effect_type_i(self):
         """Monte Carlo: Both should have similar false positive rates under null."""
@@ -660,9 +655,7 @@ class TestCounterfactualParity:
         )
 
         # Should have reasonable R-squared
-        assert result["r_squared"] > 0.80, (
-            f"Counterfactual R² = {result['r_squared']:.4f} too low"
-        )
+        assert result["r_squared"] > 0.80, f"Counterfactual R² = {result['r_squared']:.4f} too low"
 
         # Counterfactual should be positive
         assert np.all(np.array(result["counterfactual_counts"]) >= 0), (

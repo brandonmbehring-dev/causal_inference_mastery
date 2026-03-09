@@ -16,15 +16,13 @@ from .conftest import generate_cate_dgp
 def _torch_available():
     try:
         import torch
+
         return True
     except ImportError:
         return False
 
 
-pytestmark = pytest.mark.skipif(
-    not _torch_available(),
-    reason="PyTorch required for GANITE tests"
-)
+pytestmark = pytest.mark.skipif(not _torch_available(), reason="PyTorch required for GANITE tests")
 
 
 # Import conditionally
@@ -102,7 +100,9 @@ class TestGANITEKnownAnswer:
         """Should accept custom architecture parameters."""
         Y, T, X, _ = constant_effect_data
         result = ganite(
-            Y, T, X,
+            Y,
+            T,
+            X,
             hidden_dim=32,
             noise_dim=16,
             epochs=20,
@@ -200,7 +200,9 @@ class TestGANITEAdversarial:
         """Should accept various hyperparameters."""
         Y, T, X, _ = constant_effect_data
         result = ganite(
-            Y, T, X,
+            Y,
+            T,
+            X,
             hidden_dim=64,
             noise_dim=16,
             alpha=0.5,

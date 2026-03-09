@@ -49,10 +49,23 @@ class TestAugmentedSCMBasic:
         )
 
         required_fields = [
-            "estimate", "se", "ci_lower", "ci_upper", "p_value",
-            "weights", "ridge_coef", "pre_rmse", "pre_r_squared",
-            "n_treated", "n_control", "n_pre_periods", "n_post_periods",
-            "synthetic_control", "augmented_control", "treated_series", "gap",
+            "estimate",
+            "se",
+            "ci_lower",
+            "ci_upper",
+            "p_value",
+            "weights",
+            "ridge_coef",
+            "pre_rmse",
+            "pre_r_squared",
+            "n_treated",
+            "n_control",
+            "n_pre_periods",
+            "n_post_periods",
+            "synthetic_control",
+            "augmented_control",
+            "treated_series",
+            "gap",
             "lambda_ridge",
         ]
 
@@ -160,9 +173,7 @@ class TestAugmentedSCMBiasReduction:
         # Compare SCM and ASCM
         from causal_inference.scm import synthetic_control
 
-        scm_result = synthetic_control(
-            outcomes, treatment, treatment_period, inference="none"
-        )
+        scm_result = synthetic_control(outcomes, treatment, treatment_period, inference="none")
 
         ascm_result = augmented_synthetic_control(
             outcomes, treatment, treatment_period, inference="none"

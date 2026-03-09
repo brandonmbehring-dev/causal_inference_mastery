@@ -79,6 +79,7 @@ from .cace import cace_2sls, wald_estimator, cace_em
 from .bounds import ps_bounds_monotonicity, ps_bounds_no_assumption, ps_bounds_balke_pearl
 from .sace import sace_bounds, sace_sensitivity
 
+
 # Lazy import for cace_bayesian (requires optional PyMC dependency)
 def cace_bayesian(*args, **kwargs):
     """Bayesian CACE estimation (lazy import).

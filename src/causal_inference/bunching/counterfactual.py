@@ -315,8 +315,7 @@ def iterative_counterfactual(
             result["bin_centers"] <= result["bunching_region"][1]
         )
         excess = np.sum(
-            result["actual_counts"][bunching_mask]
-            - result["counterfactual_counts"][bunching_mask]
+            result["actual_counts"][bunching_mask] - result["counterfactual_counts"][bunching_mask]
         )
 
         # Compute counterfactual height at kink

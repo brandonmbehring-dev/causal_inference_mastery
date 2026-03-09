@@ -152,9 +152,7 @@ def causal_forest(
     x_learner : Cross-learner for imbalanced groups.
     """
     # Validate inputs
-    outcomes, treatment, covariates = validate_cate_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = validate_cate_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 
@@ -164,13 +162,13 @@ def causal_forest(
         from sklearn.linear_model import LogisticRegression, Ridge
     except ImportError:
         raise ImportError(
-            "econml is required for causal_forest(). "
-            "Install with: pip install econml"
+            "econml is required for causal_forest(). Install with: pip install econml"
         )
 
     # Warn if not using honest splitting
     if not honest:
         import warnings
+
         warnings.warn(
             "CONCERN-28 WARNING: honest=False disables honest splitting. "
             "This may lead to invalid confidence intervals (undercoverage). "
@@ -186,6 +184,7 @@ def causal_forest(
     if n_estimators % subforest_size != 0:
         adjusted = ((n_estimators // subforest_size) + 1) * subforest_size
         import warnings
+
         warnings.warn(
             f"n_estimators={n_estimators} not divisible by subforest_size={subforest_size}. "
             f"Adjusting to {adjusted}.",

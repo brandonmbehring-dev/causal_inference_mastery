@@ -38,6 +38,7 @@ class MTEResult(TypedDict):
     method : str
         Estimation method: "local_iv" | "polynomial"
     """
+
     mte_grid: np.ndarray
     u_grid: np.ndarray
     se_grid: np.ndarray
@@ -83,6 +84,7 @@ class LATEResult(TypedDict):
     method : str
         Estimation method: "wald" | "2sls"
     """
+
     late: float
     se: float
     ci_lower: float
@@ -120,6 +122,7 @@ class PolicyResult(TypedDict):
     n_obs : int
         Sample size
     """
+
     estimate: float
     se: float
     ci_lower: float
@@ -150,6 +153,7 @@ class ComplierResult(TypedDict):
     method : str
         Estimation method: "kappa_weights" | "bounds"
     """
+
     complier_mean_outcome_treated: float
     complier_mean_outcome_control: float
     complier_share: float
@@ -177,6 +181,7 @@ class CommonSupportResult(TypedDict):
     recommendation : str
         Trimming/reweighting recommendation
     """
+
     has_support: bool
     support_region: Tuple[float, float]
     n_outside_support: int

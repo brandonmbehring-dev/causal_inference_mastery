@@ -59,7 +59,7 @@ def generate_dr_misspecified_dgp(
     else:
         # Complex nonlinear: propensity depends on X^2 and interactions
         # A simple linear model will be misspecified
-        logit_p = 0.0 + 0.5 * X[:, 0]**2 - 0.3 * X[:, 1] * X[:, 2]
+        logit_p = 0.0 + 0.5 * X[:, 0] ** 2 - 0.3 * X[:, 1] * X[:, 2]
         propensity = 1 / (1 + np.exp(-logit_p))
 
     A = np.random.binomial(1, propensity).astype(float)
@@ -71,7 +71,7 @@ def generate_dr_misspecified_dgp(
     else:
         # Complex nonlinear baseline
         # A simple OLS on (1, X) will be misspecified
-        baseline = X[:, 0]**2 + np.sin(X[:, 1]) + 0.5 * X[:, 2]**3
+        baseline = X[:, 0] ** 2 + np.sin(X[:, 1]) + 0.5 * X[:, 2] ** 3
 
     Y = baseline + true_blip * A + np.random.randn(n)
 
@@ -103,8 +103,7 @@ class TestALearningKnownAnswer:
         # Blip intercept should be close to true_blip (2.0)
         blip_intercept = result.blip_coefficients[0][0]
         assert abs(blip_intercept - true_params["true_blip"]) < 0.5, (
-            f"Blip intercept {blip_intercept:.3f} not close to "
-            f"true blip {true_params['true_blip']}"
+            f"Blip intercept {blip_intercept:.3f} not close to true blip {true_params['true_blip']}"
         )
 
     def test_single_stage_zero_effect(self, single_stage_zero_effect_data):
@@ -114,9 +113,7 @@ class TestALearningKnownAnswer:
 
         # Blip intercept should be close to 0
         blip_intercept = result.blip_coefficients[0][0]
-        assert abs(blip_intercept) < 0.5, (
-            f"Blip intercept {blip_intercept:.3f} should be near 0"
-        )
+        assert abs(blip_intercept) < 0.5, f"Blip intercept {blip_intercept:.3f} should be near 0"
 
     def test_matches_q_learning_correct_model(self, single_stage_constant_data):
         """A-learning ≈ Q-learning when models correctly specified."""
@@ -419,9 +416,7 @@ class TestALearningMethods:
 
         # SE should be in same ballpark (within factor of 2)
         se_ratio = result_sandwich.blip_se[0][0] / result_bootstrap.blip_se[0][0]
-        assert 0.5 < se_ratio < 2.0, (
-            f"SE ratio {se_ratio:.2f} outside [0.5, 2.0]"
-        )
+        assert 0.5 < se_ratio < 2.0, f"SE ratio {se_ratio:.2f} outside [0.5, 2.0]"
 
 
 class TestALearningConvenience:
@@ -461,9 +456,7 @@ class TestALearningMonteCarlo:
         blip_estimates = []
 
         for i in range(n_simulations):
-            data, _ = generate_dtr_dgp(
-                n=300, n_stages=1, true_blip=true_blip, seed=None
-            )
+            data, _ = generate_dtr_dgp(n=300, n_stages=1, true_blip=true_blip, seed=None)
             result = a_learning(data)
             blip_estimates.append(result.blip_coefficients[0][0])
 
@@ -482,9 +475,7 @@ class TestALearningMonteCarlo:
         covered = []
 
         for i in range(n_simulations):
-            data, _ = generate_dtr_dgp(
-                n=300, n_stages=1, true_blip=true_blip, seed=None
-            )
+            data, _ = generate_dtr_dgp(n=300, n_stages=1, true_blip=true_blip, seed=None)
             result = a_learning(data)
 
             # Check if true blip is within CI for intercept
@@ -511,9 +502,7 @@ class TestALearningMonteCarlo:
         se_estimates = []
 
         for i in range(n_simulations):
-            data, _ = generate_dtr_dgp(
-                n=300, n_stages=1, true_blip=true_blip, seed=None
-            )
+            data, _ = generate_dtr_dgp(n=300, n_stages=1, true_blip=true_blip, seed=None)
             result = a_learning(data)
             blip_estimates.append(result.blip_coefficients[0][0])
             se_estimates.append(result.blip_se[0][0])
@@ -587,9 +576,7 @@ class TestALearningMonteCarlo:
         stage2_blips = []
 
         for i in range(n_simulations):
-            data, _ = generate_dtr_dgp(
-                n=300, n_stages=2, true_blip=true_blip, seed=None
-            )
+            data, _ = generate_dtr_dgp(n=300, n_stages=2, true_blip=true_blip, seed=None)
             result = a_learning(data)
             stage2_blips.append(result.blip_coefficients[1][0])
 

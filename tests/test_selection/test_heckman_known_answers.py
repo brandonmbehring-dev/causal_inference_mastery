@@ -150,8 +150,7 @@ class TestCoefficientRecovery:
 
         relative_error = abs(estimated - true_beta) / abs(true_beta)
         assert relative_error < 0.35, (
-            f"Strong selection β_x recovery failed: true={true_beta:.3f}, "
-            f"estimated={estimated:.3f}"
+            f"Strong selection β_x recovery failed: true={true_beta:.3f}, estimated={estimated:.3f}"
         )
 
     def test_rho_sign_correct(self, simple_heckman_data):
@@ -196,9 +195,7 @@ class TestCoefficientRecovery:
         )
 
         # ρ should be near zero (within 0.3 absolute)
-        assert abs(result["rho"]) < 0.4, (
-            f"Expected ρ ≈ 0, got {result['rho']:.3f}"
-        )
+        assert abs(result["rho"]) < 0.4, f"Expected ρ ≈ 0, got {result['rho']:.3f}"
 
 
 class TestIMRComputation:

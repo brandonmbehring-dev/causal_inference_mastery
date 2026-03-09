@@ -368,7 +368,9 @@ class TestIVEstimatorEdgeCases:
         for alpha_param in [1.0, 4.0]:
             fuller = Fuller(alpha_param=alpha_param)
             fuller.fit(Y, D, Z)
-            assert np.isfinite(fuller.coef_[0]), f"Fuller(alpha_param={alpha_param}) should give finite estimate"
+            assert np.isfinite(fuller.coef_[0]), (
+                f"Fuller(alpha_param={alpha_param}) should give finite estimate"
+            )
 
     def test_gmm_two_step(self):
         """GMM with two-step (optimal) estimation should work."""
@@ -484,9 +486,7 @@ class TestAndersonRubinEdgeCases:
         iv.fit(Y, D, Z.reshape(-1, 1))
 
         # AR test returns (statistic, p_value, ci)
-        ar_stat, ar_pval, ar_ci = anderson_rubin_test(
-            Y, D, Z.reshape(-1, 1)
-        )
+        ar_stat, ar_pval, ar_ci = anderson_rubin_test(Y, D, Z.reshape(-1, 1))
         assert np.isfinite(ar_stat), "AR statistic should be finite"
         assert 0 <= ar_pval <= 1, "AR p-value should be in [0, 1]"
 
@@ -503,9 +503,7 @@ class TestAndersonRubinEdgeCases:
         iv.fit(Y, D, Z.reshape(-1, 1))
 
         # AR test returns (statistic, p_value, ci)
-        ar_stat, ar_pval, ar_ci = anderson_rubin_test(
-            Y, D, Z.reshape(-1, 1)
-        )
+        ar_stat, ar_pval, ar_ci = anderson_rubin_test(Y, D, Z.reshape(-1, 1))
         # Just check it runs and gives valid output
         assert 0 <= ar_pval <= 1, "AR p-value should be in [0, 1]"
 

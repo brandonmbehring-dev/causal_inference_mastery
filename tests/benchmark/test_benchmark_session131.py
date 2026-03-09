@@ -104,9 +104,7 @@ class TestCATEBenchmarks:
         """causal_forest benchmark runs (slower due to tree fitting)."""
         from benchmarks.methods.cate import benchmark_causal_forest
 
-        result = benchmark_causal_forest(
-            n=100, seed=42, n_repetitions=2, n_trees=10
-        )
+        result = benchmark_causal_forest(n=100, seed=42, n_repetitions=2, n_trees=10)
         assert result.median_time_ms > 0
 
 
@@ -149,9 +147,7 @@ class TestPanelBenchmarks:
         """dml_cre benchmark runs without error."""
         from benchmarks.methods.panel import benchmark_dml_cre
 
-        result = benchmark_dml_cre(
-            n_units=20, n_periods=4, seed=42, n_repetitions=2, n_folds=2
-        )
+        result = benchmark_dml_cre(n_units=20, n_periods=4, seed=42, n_repetitions=2, n_folds=2)
         assert result.median_time_ms > 0
         assert result.family == "panel"
 
@@ -170,9 +166,7 @@ class TestPanelBenchmarks:
         """panel_rif_qte benchmark runs without error."""
         from benchmarks.methods.panel import benchmark_panel_rif_qte
 
-        result = benchmark_panel_rif_qte(
-            n_units=20, n_periods=4, seed=42, n_repetitions=2
-        )
+        result = benchmark_panel_rif_qte(n_units=20, n_periods=4, seed=42, n_repetitions=2)
         assert result.median_time_ms > 0
 
 
@@ -407,9 +401,7 @@ class TestMediationBenchmarks:
         """mediation_analysis benchmark runs (slower due to bootstrap)."""
         from benchmarks.methods.mediation import benchmark_mediation_analysis
 
-        result = benchmark_mediation_analysis(
-            n=100, seed=42, n_repetitions=2, n_bootstrap=20
-        )
+        result = benchmark_mediation_analysis(n=100, seed=42, n_repetitions=2, n_bootstrap=20)
         assert result.median_time_ms > 0
 
 

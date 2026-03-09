@@ -31,8 +31,7 @@ from tests.validation.cross_language.julia_interface import (
 
 
 pytestmark = pytest.mark.skipif(
-    not is_julia_available(),
-    reason="Julia not available for cross-validation"
+    not is_julia_available(), reason="Julia not available for cross-validation"
 )
 
 
@@ -58,17 +57,18 @@ class TestSharpRDDParity:
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=2.0, seed=42)
 
         # Python Sharp RDD with IK bandwidth
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X)
 
         # Julia Sharp RDD with IK bandwidth
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Point estimates should match very closely
         # Note: Different implementations may have slight differences in bandwidth computation
         # which propagates to estimates. Use relaxed tolerance initially.
-        assert np.isclose(py_model.coef_, jl_result["estimate"], rtol=0.1), \
+        assert np.isclose(py_model.coef_, jl_result["estimate"], rtol=0.1), (
             f"Estimate mismatch: Python={py_model.coef_}, Julia={jl_result['estimate']}"
+        )
 
         # Check that both get reasonable estimates (within 20% of true tau=2.0)
         assert abs(py_model.coef_ - 2.0) < 0.4
@@ -78,10 +78,10 @@ class TestSharpRDDParity:
         """Large sample should give more precise estimates."""
         Y, X = generate_sharp_rdd_data(n=2000, cutoff=0.0, tau=2.0, seed=123)
 
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # With more data, estimates should be closer to true value
         assert abs(py_model.coef_ - 2.0) < 0.2
@@ -95,10 +95,10 @@ class TestSharpRDDParity:
         """Small sample test."""
         Y, X = generate_sharp_rdd_data(n=200, cutoff=0.0, tau=2.0, seed=456)
 
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Both should produce valid estimates (wider tolerance for small samples)
         assert abs(py_model.coef_ - 2.0) < 0.6
@@ -108,10 +108,10 @@ class TestSharpRDDParity:
         """Triangular kernel (default in both implementations)."""
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=1.5, seed=789)
 
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Julia stores kernel type name as Symbol (e.g., "TriangularKernel")
         assert "triangular" in jl_result["kernel"].lower()
@@ -125,11 +125,11 @@ class TestSharpRDDParity:
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=1.5, seed=101)
 
         # Python uses 'rectangular', Julia uses 'uniform' - same kernel
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik', kernel='rectangular')
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik", kernel="rectangular")
         py_model.fit(Y, X)
 
         # Julia wrapper maps 'rectangular' -> 'uniform'
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', kernel='rectangular')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", kernel="rectangular")
 
         # Julia stores kernel type name as Symbol (e.g., "UniformKernel")
         assert "uniform" in jl_result["kernel"].lower()
@@ -142,10 +142,10 @@ class TestSharpRDDParity:
         """Test with negative treatment effect."""
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=-1.5, seed=202)
 
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Both should detect negative effect
         assert py_model.coef_ < 0
@@ -167,10 +167,10 @@ class TestSharpRDDParity:
         eps = np.random.normal(0, 0.5, n)
         Y = 0.5 * X + tau * treatment + eps
 
-        py_model = SharpRDD(cutoff=cutoff, bandwidth='ik', kernel='triangular')
+        py_model = SharpRDD(cutoff=cutoff, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=cutoff, bandwidth='ik', kernel='triangular')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=cutoff, bandwidth="ik", kernel="triangular")
 
         # Both should get reasonable estimates
         assert abs(py_model.coef_ - tau) < 0.5
@@ -185,16 +185,17 @@ class TestRDDBandwidthParity:
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=2.0, seed=42)
 
         # Python IK bandwidth
-        py_h = imbens_kalyanaraman_bandwidth(Y, X, cutoff=0.0, kernel='triangular')
+        py_h = imbens_kalyanaraman_bandwidth(Y, X, cutoff=0.0, kernel="triangular")
 
         # Julia IK bandwidth
-        jl_h = julia_rdd_bandwidth_ik(Y, X, cutoff=0.0, kernel='triangular')
+        jl_h = julia_rdd_bandwidth_ik(Y, X, cutoff=0.0, kernel="triangular")
 
         # Bandwidth formulas may have slightly different constants
         # Use relative tolerance of 20%
         rel_diff = abs(py_h - jl_h) / py_h
-        assert rel_diff < 0.2, \
+        assert rel_diff < 0.2, (
             f"IK bandwidth mismatch: Python={py_h:.4f}, Julia={jl_h:.4f}, rel_diff={rel_diff:.4f}"
+        )
 
         # Both should be positive and reasonable (not too small or large)
         assert 0.1 < py_h < 5.0
@@ -205,24 +206,26 @@ class TestRDDBandwidthParity:
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=2.0, seed=123)
 
         # Python CCT bandwidth
-        py_h_main, py_h_bias = cct_bandwidth(Y, X, cutoff=0.0, kernel='triangular')
+        py_h_main, py_h_bias = cct_bandwidth(Y, X, cutoff=0.0, kernel="triangular")
 
         # Julia CCT bandwidth
-        jl_h_main, jl_h_bias = julia_rdd_bandwidth_cct(Y, X, cutoff=0.0, kernel='triangular')
+        jl_h_main, jl_h_bias = julia_rdd_bandwidth_cct(Y, X, cutoff=0.0, kernel="triangular")
 
         # Main bandwidth comparison
         # Note: Python uses IK approximation for CCT, Julia has full implementation
         # Allow 40% tolerance due to different numerical approaches
         rel_diff_main = abs(py_h_main - jl_h_main) / py_h_main
-        assert rel_diff_main < 0.4, \
+        assert rel_diff_main < 0.4, (
             f"CCT main bandwidth mismatch: Python={py_h_main:.4f}, Julia={jl_h_main:.4f}"
+        )
 
         # Bias bandwidth comparison
         # Python CCT uses IK × 1.5 as approximation, Julia has more sophisticated method
         # Allow 100% tolerance - these are fundamentally different approaches
         rel_diff_bias = abs(py_h_bias - jl_h_bias) / py_h_bias
-        assert rel_diff_bias < 1.0, \
+        assert rel_diff_bias < 1.0, (
             f"CCT bias bandwidth mismatch: Python={py_h_bias:.4f}, Julia={jl_h_bias:.4f}"
+        )
 
     def test_cct_returns_two_bandwidths(self):
         """CCT should return two bandwidths (main and bias)."""
@@ -257,8 +260,9 @@ class TestRDDBandwidthParity:
         # Bandwidth formulas have different constants between implementations
         # Even with more data, there's a ~20-25% systematic difference
         rel_diff = abs(py_h - jl_h) / py_h
-        assert rel_diff < 0.3, \
+        assert rel_diff < 0.3, (
             f"Bandwidth mismatch: Python={py_h:.4f}, Julia={jl_h:.4f}, rel_diff={rel_diff:.4f}"
+        )
 
 
 class TestRDDCIAndPValue:
@@ -268,10 +272,10 @@ class TestRDDCIAndPValue:
         """95% CI comparison (default alpha=0.05)."""
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=2.0, seed=42)
 
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik', alpha=0.05)
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik", alpha=0.05)
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', alpha=0.05)
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", alpha=0.05)
 
         # Both should produce valid CIs
         py_ci_lower, py_ci_upper = py_model.ci_
@@ -292,10 +296,10 @@ class TestRDDCIAndPValue:
         """90% CI comparison (alpha=0.10)."""
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=2.0, seed=123)
 
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik', alpha=0.10)
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik", alpha=0.10)
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', alpha=0.10)
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", alpha=0.10)
 
         py_ci_lower, py_ci_upper = py_model.ci_
         jl_ci_lower, jl_ci_upper = jl_result["ci_lower"], jl_result["ci_upper"]
@@ -308,10 +312,10 @@ class TestRDDCIAndPValue:
         """P-values should be consistent between implementations."""
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=2.0, seed=456)
 
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik')
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik")
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik")
 
         # Both should give significant p-values for tau=2.0 (strong effect)
         assert py_model.p_value_ < 0.05
@@ -330,10 +334,10 @@ class TestRDDEffectiveSampleSize:
         """Both implementations should report effective sample sizes."""
         Y, X = generate_sharp_rdd_data(n=500, cutoff=0.0, tau=2.0, seed=42)
 
-        py_model = SharpRDD(cutoff=0.0, bandwidth='ik')
+        py_model = SharpRDD(cutoff=0.0, bandwidth="ik")
         py_model.fit(Y, X)
 
-        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik')
+        jl_result = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik")
 
         # Python reports n_left_, n_right_
         assert py_model.n_left_ is not None
@@ -359,8 +363,12 @@ class TestRDDEffectiveSampleSize:
 
 
 def generate_fuzzy_rdd_data(
-    n: int, cutoff: float, tau: float, p_comply_above: float = 0.8,
-    p_comply_below: float = 0.2, seed: int = 42
+    n: int,
+    cutoff: float,
+    tau: float,
+    p_comply_above: float = 0.8,
+    p_comply_below: float = 0.2,
+    seed: int = 42,
 ):
     """
     Generate Fuzzy RDD data.
@@ -370,7 +378,7 @@ def generate_fuzzy_rdd_data(
     """
     np.random.seed(seed)
     X = np.random.uniform(cutoff - 2, cutoff + 2, n)
-    Z = (X >= cutoff)
+    Z = X >= cutoff
 
     # Treatment with imperfect compliance
     D = np.zeros(n)
@@ -394,16 +402,15 @@ class TestFuzzyRDDParity:
         from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
 
         Y, X, D = generate_fuzzy_rdd_data(
-            n=500, cutoff=0.0, tau=2.0,
-            p_comply_above=0.9, p_comply_below=0.1, seed=42
+            n=500, cutoff=0.0, tau=2.0, p_comply_above=0.9, p_comply_below=0.1, seed=42
         )
 
         # Python
-        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X, D)
 
         # Julia
-        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Both should recover LATE
         assert abs(py_model.coef_ - 2.0) < 0.6, f"Python: {py_model.coef_}"
@@ -419,16 +426,15 @@ class TestFuzzyRDDParity:
         from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
 
         Y, X, D = generate_fuzzy_rdd_data(
-            n=500, cutoff=0.0, tau=1.5,
-            p_comply_above=0.75, p_comply_below=0.25, seed=123
+            n=500, cutoff=0.0, tau=1.5, p_comply_above=0.75, p_comply_below=0.25, seed=123
         )
 
         # Python
-        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X, D)
 
         # Julia
-        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Both should recover LATE (relaxed tolerance)
         assert abs(py_model.coef_ - 1.5) < 0.8, f"Python: {py_model.coef_}"
@@ -440,16 +446,15 @@ class TestFuzzyRDDParity:
         from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
 
         Y, X, D = generate_fuzzy_rdd_data(
-            n=500, cutoff=0.0, tau=2.0,
-            p_comply_above=0.9, p_comply_below=0.1, seed=456
+            n=500, cutoff=0.0, tau=2.0, p_comply_above=0.9, p_comply_below=0.1, seed=456
         )
 
         # Python
-        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X, D)
 
         # Julia
-        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Both should have strong first stage (F > 20)
         assert py_model.first_stage_f_stat_ > 20, f"Python F: {py_model.first_stage_f_stat_}"
@@ -457,7 +462,9 @@ class TestFuzzyRDDParity:
 
         # Both should have high compliance rate (> 0.6)
         assert py_model.compliance_rate_ > 0.6, f"Python compliance: {py_model.compliance_rate_}"
-        assert jl_result["compliance_rate"] > 0.6, f"Julia compliance: {jl_result['compliance_rate']}"
+        assert jl_result["compliance_rate"] > 0.6, (
+            f"Julia compliance: {jl_result['compliance_rate']}"
+        )
 
         # Neither should warn about weak instrument
         assert not py_model.weak_instrument_warning_
@@ -469,17 +476,16 @@ class TestFuzzyRDDParity:
         from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
 
         Y, X, D = generate_fuzzy_rdd_data(
-            n=500, cutoff=0.0, tau=2.0,
-            p_comply_above=0.85, p_comply_below=0.15, seed=789
+            n=500, cutoff=0.0, tau=2.0, p_comply_above=0.85, p_comply_below=0.15, seed=789
         )
         expected_compliance = 0.85 - 0.15  # 0.7
 
         # Python
-        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X, D)
 
         # Julia
-        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Both should be close to expected compliance
         assert abs(py_model.compliance_rate_ - expected_compliance) < 0.2
@@ -495,29 +501,30 @@ class TestFuzzyRDDParity:
         from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd, julia_sharp_rdd
 
         Y, X, D = generate_fuzzy_rdd_data(
-            n=500, cutoff=0.0, tau=2.0,
-            p_comply_above=1.0, p_comply_below=0.0, seed=101
+            n=500, cutoff=0.0, tau=2.0, p_comply_above=1.0, p_comply_below=0.0, seed=101
         )
 
         # Python Fuzzy
-        py_fuzzy = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_fuzzy = FuzzyRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_fuzzy.fit(Y, X, D)
 
         # Python Sharp
-        py_sharp = SharpRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_sharp = SharpRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_sharp.fit(Y, X)
 
         # Julia Fuzzy
-        jl_fuzzy = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_fuzzy = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Julia Sharp
-        jl_sharp = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_sharp = julia_sharp_rdd(Y, X, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # With perfect compliance, Fuzzy should match Sharp closely
-        assert abs(py_fuzzy.coef_ - py_sharp.coef_) < 0.1, \
+        assert abs(py_fuzzy.coef_ - py_sharp.coef_) < 0.1, (
             f"Python: Fuzzy={py_fuzzy.coef_}, Sharp={py_sharp.coef_}"
-        assert abs(jl_fuzzy["estimate"] - jl_sharp["estimate"]) < 0.1, \
+        )
+        assert abs(jl_fuzzy["estimate"] - jl_sharp["estimate"]) < 0.1, (
             f"Julia: Fuzzy={jl_fuzzy['estimate']}, Sharp={jl_sharp['estimate']}"
+        )
 
         # Compliance should be ~1.0
         assert py_fuzzy.compliance_rate_ > 0.95
@@ -529,16 +536,15 @@ class TestFuzzyRDDParity:
         from tests.validation.cross_language.julia_interface import julia_fuzzy_rdd
 
         Y, X, D = generate_fuzzy_rdd_data(
-            n=500, cutoff=0.0, tau=-1.5,
-            p_comply_above=0.85, p_comply_below=0.15, seed=202
+            n=500, cutoff=0.0, tau=-1.5, p_comply_above=0.85, p_comply_below=0.15, seed=202
         )
 
         # Python
-        py_model = FuzzyRDD(cutoff=0.0, bandwidth='ik', kernel='triangular')
+        py_model = FuzzyRDD(cutoff=0.0, bandwidth="ik", kernel="triangular")
         py_model.fit(Y, X, D)
 
         # Julia
-        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth='ik', kernel='triangular')
+        jl_result = julia_fuzzy_rdd(Y, X, D, cutoff=0.0, bandwidth="ik", kernel="triangular")
 
         # Both should detect negative effect
         assert py_model.coef_ < 0

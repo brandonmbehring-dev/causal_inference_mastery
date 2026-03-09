@@ -112,8 +112,7 @@ class TestPolynomialOrderSensitivity:
         # p=0 estimate should be close to manual difference in means
         # (not exactly equal due to kernel weighting)
         assert np.isclose(est_p0, manual_est, rtol=0.3), (
-            f"p=0 estimate ({est_p0:.3f}) should approximate "
-            f"difference in means ({manual_est:.3f})"
+            f"p=0 estimate ({est_p0:.3f}) should approximate difference in means ({manual_est:.3f})"
         )
 
     def test_local_linear_matches_sharprdd(self, linear_dgp):
@@ -199,6 +198,4 @@ class TestPolynomialSensitivityStatisticalProperties:
 
         bias = np.mean(estimates) - tau
         # p=0 should show bias due to slope
-        assert abs(bias) > 0.05, (
-            f"p=0 should be biased with slope, but bias={bias:.4f}"
-        )
+        assert abs(bias) > 0.05, f"p=0 should be biased with slope, but bias={bias:.4f}"

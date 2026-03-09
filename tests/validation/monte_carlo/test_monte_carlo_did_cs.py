@@ -57,9 +57,7 @@ class TestCSUnbiasedness:
                 treatment_time=data.treatment_time,
             )
 
-            result = callaway_santanna_ate(
-                staggered, n_bootstrap=50, random_state=seed
-            )
+            result = callaway_santanna_ate(staggered, n_bootstrap=50, random_state=seed)
             estimates.append(result["att"])
 
         bias = abs(np.mean(estimates) - true_att)
@@ -100,9 +98,7 @@ class TestCSUnbiasedness:
                 treatment_time=data.treatment_time,
             )
 
-            result = callaway_santanna_ate(
-                staggered, n_bootstrap=50, random_state=seed
-            )
+            result = callaway_santanna_ate(staggered, n_bootstrap=50, random_state=seed)
             estimates.append(result["att"])
 
         bias = abs(np.mean(estimates) - true_att)
@@ -150,9 +146,7 @@ class TestCSCoverage:
                 treatment_time=data.treatment_time,
             )
 
-            result = callaway_santanna_ate(
-                staggered, n_bootstrap=100, random_state=seed
-            )
+            result = callaway_santanna_ate(staggered, n_bootstrap=100, random_state=seed)
 
             covers = result["ci_lower"] <= true_att <= result["ci_upper"]
             ci_contains_true.append(covers)

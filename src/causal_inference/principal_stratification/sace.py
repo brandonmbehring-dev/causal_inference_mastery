@@ -80,29 +80,21 @@ def _validate_sace_inputs(
     # Check binary treatment
     D_vals = np.unique(D[~np.isnan(D)])
     if not np.all(np.isin(D_vals, [0, 1])):
-        raise ValueError(
-            f"Treatment must be binary (0 or 1), got unique values: {D_vals}"
-        )
+        raise ValueError(f"Treatment must be binary (0 or 1), got unique values: {D_vals}")
 
     # Check binary survival
     S_vals = np.unique(S[~np.isnan(S)])
     if not np.all(np.isin(S_vals, [0, 1])):
-        raise ValueError(
-            f"Survival must be binary (0 or 1), got unique values: {S_vals}"
-        )
+        raise ValueError(f"Survival must be binary (0 or 1), got unique values: {S_vals}")
 
     Z = None
     if instrument is not None:
         Z = np.asarray(instrument, dtype=float)
         if len(Z) != n:
-            raise ValueError(
-                f"Instrument length ({len(Z)}) must match outcome length ({n})."
-            )
+            raise ValueError(f"Instrument length ({len(Z)}) must match outcome length ({n}).")
         Z_vals = np.unique(Z[~np.isnan(Z)])
         if not np.all(np.isin(Z_vals, [0, 1])):
-            raise ValueError(
-                f"Instrument must be binary (0 or 1), got unique values: {Z_vals}"
-            )
+            raise ValueError(f"Instrument must be binary (0 or 1), got unique values: {Z_vals}")
 
     return Y, D, S, Z
 

@@ -189,7 +189,7 @@ def _influence_function_se(
     n = len(Y_tilde)
 
     # Denominator: E[T̃²]
-    T_tilde_sq_mean = np.mean(T_tilde ** 2)
+    T_tilde_sq_mean = np.mean(T_tilde**2)
 
     if T_tilde_sq_mean < 1e-10:
         # Fallback for degenerate case
@@ -297,9 +297,7 @@ def double_ml(
     r_learner : In-sample Robinson transformation (faster, some bias).
     """
     # Validate inputs
-    outcomes, treatment, covariates = validate_cate_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = validate_cate_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 
@@ -315,6 +313,7 @@ def double_ml(
     if n_folds > n // 10:
         # Warn if folds are too small
         import warnings
+
         warnings.warn(
             f"n_folds={n_folds} results in small fold sizes ({n // n_folds}). "
             f"Consider using fewer folds for n={n} observations.",
@@ -346,7 +345,7 @@ def double_ml(
     # Step 4: Estimate ATE
     # =========================================================================
     # For the partially linear model: θ̂ = Σ(Ỹ·T̃) / Σ(T̃²)
-    T_tilde_sq_sum = np.sum(T_tilde ** 2)
+    T_tilde_sq_sum = np.sum(T_tilde**2)
 
     if T_tilde_sq_sum < 1e-10:
         raise ValueError(

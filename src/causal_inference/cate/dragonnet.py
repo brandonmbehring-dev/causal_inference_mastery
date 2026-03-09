@@ -330,9 +330,7 @@ class DragonNetTorch:
         self.model_ = None
         self.is_fitted_ = False
 
-    def fit(
-        self, X: np.ndarray, T: np.ndarray, Y: np.ndarray
-    ) -> "DragonNetTorch":
+    def fit(self, X: np.ndarray, T: np.ndarray, Y: np.ndarray) -> "DragonNetTorch":
         """Fit the DragonNet model with true shared layers.
 
         Note: Full PyTorch implementation is deferred.
@@ -485,9 +483,7 @@ def dragonnet(
     t_learner : Two-model meta-learner approach.
     """
     # Validate inputs
-    outcomes, treatment, covariates = validate_cate_inputs(
-        outcomes, treatment, covariates
-    )
+    outcomes, treatment, covariates = validate_cate_inputs(outcomes, treatment, covariates)
 
     n = len(outcomes)
 

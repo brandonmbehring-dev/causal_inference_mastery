@@ -70,9 +70,7 @@ class TestLocalProjectionBasic:
         """Variable names are correctly assigned."""
         data, _ = sample_var1_data
 
-        result = local_projection_irf(
-            data, horizons=10, lags=2, var_names=["output", "inflation"]
-        )
+        result = local_projection_irf(data, horizons=10, lags=2, var_names=["output", "inflation"])
 
         assert result.var_names == ["output", "inflation"]
 
@@ -80,9 +78,7 @@ class TestLocalProjectionBasic:
         """get_response returns correct values."""
         data, _ = sample_var1_data
 
-        result = local_projection_irf(
-            data, horizons=10, lags=2, var_names=["y", "x"]
-        )
+        result = local_projection_irf(data, horizons=10, lags=2, var_names=["y", "x"])
 
         # By index
         response = result.get_response(0, 1, horizon=5)
@@ -547,9 +543,7 @@ class TestHACKernels:
         """Quadratic spectral kernel estimation works."""
         data, _ = sample_var1_data
 
-        result = local_projection_irf(
-            data, horizons=5, lags=2, hac_kernel="quadratic_spectral"
-        )
+        result = local_projection_irf(data, horizons=5, lags=2, hac_kernel="quadratic_spectral")
 
         assert result.hac_kernel == "quadratic_spectral"
         assert np.all(result.se > 0)

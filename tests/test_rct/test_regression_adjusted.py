@@ -51,8 +51,9 @@ class TestRegressionAdjustedKnownAnswers:
 
         # KEY TEST: Adjusted should have smaller SE (variance reduction from controlling X)
         # This is the main point - regression adjustment removes X variation
-        assert adjusted_result["se"] < simple_result["se"], \
+        assert adjusted_result["se"] < simple_result["se"], (
             f"Adjusted SE ({adjusted_result['se']}) should be < simple SE ({simple_result['se']})"
+        )
 
     def test_regression_adjusted_known_answer(self):
         """
@@ -73,8 +74,9 @@ class TestRegressionAdjustedKnownAnswers:
         result = regression_adjusted_ate(outcomes, treatment, X)
 
         # Should recover exact ATE = 5 (no noise)
-        assert np.isclose(result["estimate"], 5.0, atol=1e-10), \
+        assert np.isclose(result["estimate"], 5.0, atol=1e-10), (
             f"Expected ATE=5.0, got {result['estimate']}"
+        )
 
         # Should have coefficient for X
         assert "covariate_coef" in result
@@ -138,8 +140,9 @@ class TestRegressionAdjustedKnownAnswers:
         result = regression_adjusted_ate(outcomes, treatment, X)
 
         # Should recover exact ATE = 0
-        assert np.isclose(result["estimate"], 0.0, atol=1e-10), \
+        assert np.isclose(result["estimate"], 0.0, atol=1e-10), (
             f"Expected ATE=0.0, got {result['estimate']}"
+        )
 
         # Should have coefficient for X
         assert "covariate_coef" in result
@@ -287,9 +290,10 @@ class TestRegressionAdjustedProperties:
         se_reduction_weak = (simple_weak["se"] - adjusted_weak["se"]) / simple_weak["se"]
 
         # Strong predictor should give larger relative SE reduction
-        assert se_reduction_strong > se_reduction_weak, \
-            f"Strong predictor reduction ({se_reduction_strong:.2%}) should be > " \
+        assert se_reduction_strong > se_reduction_weak, (
+            f"Strong predictor reduction ({se_reduction_strong:.2%}) should be > "
             f"weak predictor reduction ({se_reduction_weak:.2%})"
+        )
 
     def test_unbiased_under_randomization(self):
         """

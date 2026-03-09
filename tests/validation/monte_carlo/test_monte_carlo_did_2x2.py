@@ -107,9 +107,7 @@ class TestDiD2x2MonteCarloUnbiasedness:
                 true_att=true_att,
                 random_state=seed,
             )
-            result = did_2x2(
-                data.outcomes, data.treatment, data.post, data.unit_id
-            )
+            result = did_2x2(data.outcomes, data.treatment, data.post, data.unit_id)
             estimates.append(result["estimate"])
 
         bias = abs(np.mean(estimates) - true_att)
@@ -143,7 +141,10 @@ class TestDiD2x2MonteCarloCoverage:
             )
 
             result = did_2x2(
-                data.outcomes, data.treatment, data.post, data.unit_id,
+                data.outcomes,
+                data.treatment,
+                data.post,
+                data.unit_id,
                 cluster_se=True,
             )
 
@@ -153,8 +154,13 @@ class TestDiD2x2MonteCarloCoverage:
             ci_uppers.append(result["ci_upper"])
 
         validation = validate_monte_carlo_results(
-            estimates, standard_errors, ci_lowers, ci_uppers, true_att,
-            coverage_lower=0.93, coverage_upper=0.97,
+            estimates,
+            standard_errors,
+            ci_lowers,
+            ci_uppers,
+            true_att,
+            coverage_lower=0.93,
+            coverage_upper=0.97,
         )
 
         assert validation["coverage_ok"], (
@@ -185,7 +191,10 @@ class TestDiD2x2MonteCarloCoverage:
             )
 
             result = did_2x2(
-                data.outcomes, data.treatment, data.post, data.unit_id,
+                data.outcomes,
+                data.treatment,
+                data.post,
+                data.unit_id,
                 cluster_se=True,
             )
 
@@ -230,7 +239,10 @@ class TestDiD2x2MonteCarloHeteroskedasticity:
             )
 
             result = did_2x2(
-                data.outcomes, data.treatment, data.post, data.unit_id,
+                data.outcomes,
+                data.treatment,
+                data.post,
+                data.unit_id,
                 cluster_se=True,
             )
 
@@ -242,12 +254,8 @@ class TestDiD2x2MonteCarloHeteroskedasticity:
         assert bias < 0.10, f"Bias {bias:.4f} with heteroskedastic errors"
 
         # Coverage may be slightly lower with heteroskedasticity
-        coverage = np.mean(
-            (np.array(ci_lowers) <= true_att) & (true_att <= np.array(ci_uppers))
-        )
-        assert coverage > 0.90, (
-            f"Coverage {coverage:.4f} too low with heteroskedastic errors"
-        )
+        coverage = np.mean((np.array(ci_lowers) <= true_att) & (true_att <= np.array(ci_uppers)))
+        assert coverage > 0.90, f"Coverage {coverage:.4f} too low with heteroskedastic errors"
 
 
 class TestDiD2x2MonteCarloSerialCorrelation:
@@ -281,7 +289,10 @@ class TestDiD2x2MonteCarloSerialCorrelation:
             )
 
             result = did_2x2(
-                data.outcomes, data.treatment, data.post, data.unit_id,
+                data.outcomes,
+                data.treatment,
+                data.post,
+                data.unit_id,
                 cluster_se=True,
             )
 
@@ -293,8 +304,7 @@ class TestDiD2x2MonteCarloSerialCorrelation:
         assert bias < 0.15, f"Bias {bias:.4f} with serial correlation"
 
         coverage = np.mean(
-            (np.array(ci_lowers_cluster) <= true_att) &
-            (true_att <= np.array(ci_uppers_cluster))
+            (np.array(ci_lowers_cluster) <= true_att) & (true_att <= np.array(ci_uppers_cluster))
         )
         # With serial correlation, cluster SE is critical
         # Coverage should still be in valid range
@@ -329,16 +339,20 @@ class TestDiD2x2MonteCarloSerialCorrelation:
 
             # Naive SEs (incorrect)
             result_naive = did_2x2(
-                data.outcomes, data.treatment, data.post, data.unit_id,
+                data.outcomes,
+                data.treatment,
+                data.post,
+                data.unit_id,
                 se_method="naive",
             )
-            ci_covers_naive.append(
-                result_naive["ci_lower"] <= true_att <= result_naive["ci_upper"]
-            )
+            ci_covers_naive.append(result_naive["ci_lower"] <= true_att <= result_naive["ci_upper"])
 
             # Cluster SEs (correct)
             result_cluster = did_2x2(
-                data.outcomes, data.treatment, data.post, data.unit_id,
+                data.outcomes,
+                data.treatment,
+                data.post,
+                data.unit_id,
                 se_method="cluster",
             )
             ci_covers_cluster.append(
@@ -385,9 +399,7 @@ class TestDiD2x2MonteCarloDiagnostics:
 
         # Check treatment/control split
         unique_units = np.unique(data.unit_id)
-        n_treated_units = sum(
-            data.treatment[data.unit_id == u][0] == 1 for u in unique_units
-        )
+        n_treated_units = sum(data.treatment[data.unit_id == u][0] == 1 for u in unique_units)
         assert n_treated_units == 50
 
         # Check pre/post split
@@ -404,9 +416,7 @@ class TestDiD2x2MonteCarloDiagnostics:
             data = dgp_did_2x2_simple(
                 n_treated=100, n_control=100, true_att=true_att, random_state=seed
             )
-            result = did_2x2(
-                data.outcomes, data.treatment, data.post, data.unit_id
-            )
+            result = did_2x2(data.outcomes, data.treatment, data.post, data.unit_id)
             estimates.append(result["estimate"])
 
         mean_est = np.mean(estimates)

@@ -177,9 +177,7 @@ class TestQLearningSingleStageVsDTRReg:
         )
 
         # Python result
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = q_learning(dtr_data)
 
         # R result
@@ -210,9 +208,7 @@ class TestQLearningSingleStageVsDTRReg:
             seed=123,
         )
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = q_learning(dtr_data)
 
         r_result = r_q_learning_dtrreg(
@@ -241,9 +237,7 @@ class TestQLearningSingleStageVsDTRReg:
             seed=456,
         )
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = q_learning(dtr_data)
 
         r_result = r_q_learning_dtrreg(
@@ -269,9 +263,7 @@ class TestQLearningSingleStageVsDTRReg:
         """Standard errors should be similar order of magnitude."""
         data = generate_single_stage_dtr_dgp(n=500, p=3, seed=789)
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = q_learning(dtr_data, se_method="sandwich")
 
         r_result = r_q_learning_dtrreg(
@@ -299,9 +291,7 @@ class TestQLearningSingleStageVsDTRReg:
             seed=101,
         )
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = q_learning(dtr_data)
 
         r_result = r_q_learning_dtrreg(
@@ -337,9 +327,7 @@ class TestALearningSingleStageVsDTRReg:
             seed=200,
         )
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = a_learning(dtr_data)
 
         r_result = r_a_learning_dtrreg(
@@ -368,9 +356,7 @@ class TestALearningSingleStageVsDTRReg:
             seed=300,
         )
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = a_learning(dtr_data)
 
         r_result = r_a_learning_dtrreg(
@@ -401,9 +387,7 @@ class TestALearningSingleStageVsDTRReg:
             seed=400,
         )
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = a_learning(dtr_data)
 
         r_result = r_a_learning_dtrreg(
@@ -430,9 +414,7 @@ class TestALearningSingleStageVsDTRReg:
             seed=500,
         )
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
 
         q_result = q_learning(dtr_data)
         a_result = a_learning(dtr_data)
@@ -449,12 +431,8 @@ class TestALearningSingleStageVsDTRReg:
         )
 
         # Regimes should agree
-        agreement = np.mean(
-            q_result.optimal_regimes[0] == a_result.optimal_regimes[0]
-        )
-        assert agreement > 0.85, (
-            f"Q-learning and A-learning regime agreement: {agreement:.1%}"
-        )
+        agreement = np.mean(q_result.optimal_regimes[0] == a_result.optimal_regimes[0])
+        assert agreement > 0.85, f"Q-learning and A-learning regime agreement: {agreement:.1%}"
 
 
 @requires_dtr_python
@@ -505,9 +483,7 @@ class TestDTREdgeCases:
             seed=700,
         )
 
-        dtr_data = create_dtr_data(
-            data["outcome"], data["treatment"], data["covariates"]
-        )
+        dtr_data = create_dtr_data(data["outcome"], data["treatment"], data["covariates"])
         py_result = q_learning(dtr_data)
 
         r_result = r_q_learning_dtrreg(

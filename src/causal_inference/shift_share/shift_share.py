@@ -121,9 +121,7 @@ class ShiftShareIV:
             If inputs are invalid or dimensions don't match.
         """
         # Validate and preprocess
-        Y, D, shares, shocks, X, clusters = self._validate_inputs(
-            Y, D, shares, shocks, X, clusters
-        )
+        Y, D, shares, shocks, X, clusters = self._validate_inputs(Y, D, shares, shocks, X, clusters)
         n = len(Y)
         n_sectors = len(shocks)
 
@@ -194,13 +192,9 @@ class ShiftShareIV:
         if shares.ndim != 2:
             raise ValueError(f"shares must be 2D, got {shares.ndim}D")
         if shares.shape[0] != n:
-            raise ValueError(
-                f"shares rows ({shares.shape[0]}) != observations ({n})"
-            )
+            raise ValueError(f"shares rows ({shares.shape[0]}) != observations ({n})")
         if shares.shape[1] != len(shocks):
-            raise ValueError(
-                f"shares columns ({shares.shape[1]}) != shocks ({len(shocks)})"
-            )
+            raise ValueError(f"shares columns ({shares.shape[1]}) != shocks ({len(shocks)})")
 
         # Check for NaN/Inf
         if np.any(np.isnan(Y)) or np.any(np.isinf(Y)):
@@ -234,9 +228,7 @@ class ShiftShareIV:
         if clusters is not None:
             clusters = np.asarray(clusters)
             if len(clusters) != n:
-                raise ValueError(
-                    f"Length mismatch: Y ({n}) != clusters ({len(clusters)})"
-                )
+                raise ValueError(f"Length mismatch: Y ({n}) != clusters ({len(clusters)})")
 
         # Warn if shares don't sum to ~1
         share_sums = shares.sum(axis=1)
@@ -398,13 +390,13 @@ class ShiftShareIV:
             from linearmodels.iv import IV2SLS
 
             if X is not None:
-                iv_result = IV2SLS(
-                    Y, exog_second, D.reshape(-1, 1), Z.reshape(-1, 1)
-                ).fit(cov_type="clustered", clusters=clusters)
+                iv_result = IV2SLS(Y, exog_second, D.reshape(-1, 1), Z.reshape(-1, 1)).fit(
+                    cov_type="clustered", clusters=clusters
+                )
             else:
-                iv_result = IV2SLS(
-                    Y, np.ones((n, 1)), D.reshape(-1, 1), Z.reshape(-1, 1)
-                ).fit(cov_type="clustered", clusters=clusters)
+                iv_result = IV2SLS(Y, np.ones((n, 1)), D.reshape(-1, 1), Z.reshape(-1, 1)).fit(
+                    cov_type="clustered", clusters=clusters
+                )
 
             estimate = float(iv_result.params.iloc[0])
             se = float(iv_result.std_errors.iloc[0])
@@ -455,9 +447,7 @@ class ShiftShareIV:
         parts = []
 
         if first_stage["weak_iv_warning"]:
-            parts.append(
-                f"WARNING: Weak instrument (F={first_stage['f_statistic']:.1f} < 10)"
-            )
+            parts.append(f"WARNING: Weak instrument (F={first_stage['f_statistic']:.1f} < 10)")
 
         if rotemberg["negative_weight_share"] > 0.1:
             parts.append(
@@ -465,9 +455,7 @@ class ShiftShareIV:
             )
 
         if abs(share_sum_mean - 1.0) > 0.1:
-            parts.append(
-                f"NOTE: Share sums average {share_sum_mean:.2f} (expected ~1.0)"
-            )
+            parts.append(f"NOTE: Share sums average {share_sum_mean:.2f} (expected ~1.0)")
 
         if not parts:
             parts.append("No diagnostic warnings")

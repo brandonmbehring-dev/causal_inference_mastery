@@ -56,8 +56,9 @@ class TestStratifiedATEKnownAnswers:
 
         # KEY TEST: Stratified should have smaller SE (variance reduction)
         # This is the main point - stratification removes between-stratum variation
-        assert stratified_result["se"] < simple_result["se"], \
+        assert stratified_result["se"] < simple_result["se"], (
             f"Stratified SE ({stratified_result['se']}) should be < simple SE ({simple_result['se']})"
+        )
 
     def test_stratified_known_answer(self):
         """
@@ -78,8 +79,7 @@ class TestStratifiedATEKnownAnswers:
         result = stratified_ate(outcomes, treatment, strata)
 
         # Both strata have ATE = 6.0, so weighted average = 6.0
-        assert np.isclose(result["estimate"], 6.0), \
-            f"Expected ATE=6.0, got {result['estimate']}"
+        assert np.isclose(result["estimate"], 6.0), f"Expected ATE=6.0, got {result['estimate']}"
 
         # Check stratum-specific estimates
         assert "stratum_estimates" in result
@@ -125,8 +125,9 @@ class TestStratifiedATEKnownAnswers:
 
         # Weighted average: (4*10 + 4*20) / 8 = 15.0
         expected_ate = 15.0
-        assert np.isclose(result["estimate"], expected_ate), \
+        assert np.isclose(result["estimate"], expected_ate), (
             f"Expected ATE={expected_ate}, got {result['estimate']}"
+        )
 
         # Check stratum-specific estimates
         assert "stratum_estimates" in result
@@ -147,14 +148,19 @@ class TestStratifiedATEKnownAnswers:
 
         # Each stratum has different baseline but same treatment effect = 5
         baselines = np.array([10, 20, 30, 40, 50])
-        outcomes = np.repeat(baselines, n_per_stratum) + treatment * 5 + np.random.normal(0, 0.1, len(strata))
+        outcomes = (
+            np.repeat(baselines, n_per_stratum)
+            + treatment * 5
+            + np.random.normal(0, 0.1, len(strata))
+        )
 
         result = stratified_ate(outcomes, treatment, strata)
 
         # Should recover ATE ≈ 5 (constant across strata)
         expected_ate = 5.0
-        assert np.isclose(result["estimate"], expected_ate, atol=0.5), \
+        assert np.isclose(result["estimate"], expected_ate, atol=0.5), (
             f"Expected ATE={expected_ate}, got {result['estimate']}"
+        )
 
         # Should have 5 stratum-specific estimates
         assert "stratum_estimates" in result
@@ -191,8 +197,7 @@ class TestStratifiedATEErrorHandling:
         error_msg = str(exc_info.value)
         assert "CRITICAL ERROR" in error_msg
         assert "stratum" in error_msg.lower()
-        assert ("no treated" in error_msg.lower() or
-                "no variation" in error_msg.lower())
+        assert "no treated" in error_msg.lower() or "no variation" in error_msg.lower()
 
     def test_stratum_with_no_control(self):
         """Test that stratum with no control units raises ValueError."""
@@ -207,8 +212,7 @@ class TestStratifiedATEErrorHandling:
         error_msg = str(exc_info.value)
         assert "CRITICAL ERROR" in error_msg
         assert "stratum" in error_msg.lower()
-        assert ("no control" in error_msg.lower() or
-                "no variation" in error_msg.lower())
+        assert "no control" in error_msg.lower() or "no variation" in error_msg.lower()
 
 
 class TestStratifiedATEProperties:
@@ -218,7 +222,7 @@ class TestStratifiedATEProperties:
         """Test that stratum weights are proportional to stratum sizes."""
         # Unequal stratum sizes
         np.random.seed(42)
-        strata = np.array([1]*30 + [2]*70)  # 30 in stratum 1, 70 in stratum 2
+        strata = np.array([1] * 30 + [2] * 70)  # 30 in stratum 1, 70 in stratum 2
         treatment = np.random.binomial(1, 0.5, 100)
         outcomes = np.random.normal(5, 2, 100)
 
@@ -233,8 +237,8 @@ class TestStratifiedATEProperties:
     def test_balanced_strata(self):
         """Test with perfectly balanced treatment within strata."""
         # Each stratum has exactly 50/50 treatment split
-        strata = np.array([1,1,1,1, 2,2,2,2])
-        treatment = np.array([1,1,0,0, 1,1,0,0])
+        strata = np.array([1, 1, 1, 1, 2, 2, 2, 2])
+        treatment = np.array([1, 1, 0, 0, 1, 1, 0, 0])
         outcomes = np.array([7.0, 5.0, 3.0, 1.0, 20.0, 18.0, 14.0, 12.0])
 
         result = stratified_ate(outcomes, treatment, strata)

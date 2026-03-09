@@ -285,16 +285,12 @@ class QLearningResult:
 
         for k in range(self.n_stages):
             lines.append(f"  Stage {k + 1}:")
-            for j, (coef, se) in enumerate(
-                zip(self.blip_coefficients[k], self.blip_se[k])
-            ):
+            for j, (coef, se) in enumerate(zip(self.blip_coefficients[k], self.blip_se[k])):
                 lines.append(f"    psi[{j}]: {coef:.4f} (SE: {se:.4f})")
 
         return "\n".join(lines)
 
-    def predict_optimal_treatment(
-        self, history: np.ndarray, stage: int = 1
-    ) -> np.ndarray:
+    def predict_optimal_treatment(self, history: np.ndarray, stage: int = 1) -> np.ndarray:
         """Predict optimal treatment for given history.
 
         Parameters
@@ -407,16 +403,12 @@ class ALearningResult:
 
         for k in range(self.n_stages):
             lines.append(f"  Stage {k + 1}:")
-            for j, (coef, se) in enumerate(
-                zip(self.blip_coefficients[k], self.blip_se[k])
-            ):
+            for j, (coef, se) in enumerate(zip(self.blip_coefficients[k], self.blip_se[k])):
                 lines.append(f"    psi[{j}]: {coef:.4f} (SE: {se:.4f})")
 
         return "\n".join(lines)
 
-    def predict_optimal_treatment(
-        self, history: np.ndarray, stage: int = 1
-    ) -> np.ndarray:
+    def predict_optimal_treatment(self, history: np.ndarray, stage: int = 1) -> np.ndarray:
         """Predict optimal treatment for given history.
 
         Parameters

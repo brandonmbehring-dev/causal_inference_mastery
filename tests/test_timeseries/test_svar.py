@@ -83,11 +83,7 @@ def sample_3var_data():
     k = 3
 
     # Stable VAR(1) coefficients
-    A1 = np.array([
-        [0.4, 0.1, 0.0],
-        [0.0, 0.5, 0.1],
-        [0.0, 0.0, 0.3]
-    ])
+    A1 = np.array([[0.4, 0.1, 0.0], [0.0, 0.5, 0.1], [0.0, 0.0, 0.3]])
 
     data = np.zeros((n, k))
     for t in range(1, n):
@@ -219,9 +215,7 @@ class TestSVARKnownStructure:
         var_result = var_estimate(data, lags=1)
         svar_result = cholesky_svar(var_result)
 
-        is_valid, max_error = verify_identification(
-            var_result.sigma, svar_result.B0_inv
-        )
+        is_valid, max_error = verify_identification(var_result.sigma, svar_result.B0_inv)
 
         assert is_valid
         assert max_error < 1e-8
@@ -385,9 +379,7 @@ class TestSVARMonteCarlo:
         # Monte Carlo
         irf_estimates = []
         for sim in range(n_sims):
-            data, _, _ = generate_svar_data(
-                n=n_obs, B0_inv=B0_inv_true, A1=A1_true, seed=sim
-            )
+            data, _, _ = generate_svar_data(n=n_obs, B0_inv=B0_inv_true, A1=A1_true, seed=sim)
             var_result = var_estimate(data, lags=1)
             svar_result = cholesky_svar(var_result)
             irf = compute_irf(svar_result, horizons=horizons)
@@ -411,9 +403,7 @@ class TestSVARMonteCarlo:
 
         fevd_estimates = []
         for sim in range(n_sims):
-            data, _, _ = generate_svar_data(
-                n=n_obs, B0_inv=B0_inv_true, A1=A1_true, seed=sim
-            )
+            data, _, _ = generate_svar_data(n=n_obs, B0_inv=B0_inv_true, A1=A1_true, seed=sim)
             var_result = var_estimate(data, lags=1)
             svar_result = cholesky_svar(var_result)
             fevd = compute_fevd(svar_result, horizons=20)
@@ -460,15 +450,12 @@ class TestSVARMonteCarlo:
         coverage_count = 0
 
         for sim in range(n_sims):
-            data, _, _ = generate_svar_data(
-                n=200, B0_inv=B0_inv_true, A1=A1_true, seed=sim
-            )
+            data, _, _ = generate_svar_data(n=200, B0_inv=B0_inv_true, A1=A1_true, seed=sim)
             var_result = var_estimate(data, lags=1)
             svar_result = cholesky_svar(var_result)
 
             irf_ci = bootstrap_irf(
-                data, svar_result, horizons=5, n_bootstrap=n_bootstrap,
-                alpha=alpha, seed=sim + 1000
+                data, svar_result, horizons=5, n_bootstrap=n_bootstrap, alpha=alpha, seed=sim + 1000
             )
 
             # Check if true IRF at horizon 1 is within CI
@@ -497,9 +484,7 @@ class TestSVARMonteCarlo:
 
         errors = []
         for sim in range(n_sims):
-            data, _, _ = generate_svar_data(
-                n=300, B0_inv=B0_inv_true, A1=A1_true, seed=sim
-            )
+            data, _, _ = generate_svar_data(n=300, B0_inv=B0_inv_true, A1=A1_true, seed=sim)
             var_result = var_estimate(data, lags=1)
             svar_result = cholesky_svar(var_result)
             irf = compute_irf(svar_result, horizons=5)

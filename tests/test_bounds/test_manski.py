@@ -363,10 +363,17 @@ class TestReturnTypes:
         result = manski_worst_case(outcome, treatment)
 
         required_keys = [
-            "bounds_lower", "bounds_upper", "bounds_width",
-            "point_identified", "assumptions", "naive_ate",
-            "ate_in_bounds", "n_treated", "n_control",
-            "outcome_support", "interpretation"
+            "bounds_lower",
+            "bounds_upper",
+            "bounds_width",
+            "point_identified",
+            "assumptions",
+            "naive_ate",
+            "ate_in_bounds",
+            "n_treated",
+            "n_control",
+            "outcome_support",
+            "interpretation",
         ]
         for key in required_keys:
             assert key in result, f"Missing key: {key}"

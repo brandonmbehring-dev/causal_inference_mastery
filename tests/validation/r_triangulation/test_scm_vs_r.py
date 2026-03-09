@@ -614,9 +614,7 @@ class TestSCMWeightsParity:
 
         # At least 1-2 should overlap (not strict requirement due to optimization)
         overlap = len(set(py_top3) & set(r_top3))
-        assert overlap >= 1, (
-            f"No overlap in top 3 weighted controls: Python={py_top3}, R={r_top3}"
-        )
+        assert overlap >= 1, f"No overlap in top 3 weighted controls: Python={py_top3}, R={r_top3}"
 
 
 @requires_scm_python

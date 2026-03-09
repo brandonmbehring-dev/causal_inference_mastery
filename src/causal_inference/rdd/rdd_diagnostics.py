@@ -115,7 +115,7 @@ def covariate_balance_test(
 
     # Covariate names
     if covariate_names is None:
-        covariate_names = [f"W{i+1}" for i in range(p)]
+        covariate_names = [f"W{i + 1}" for i in range(p)]
 
     # Run RDD for each covariate
     results = []

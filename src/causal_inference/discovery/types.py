@@ -247,9 +247,7 @@ class DAG:
         )
 
     @classmethod
-    def from_adjacency(
-        cls, adjacency: np.ndarray, node_names: Optional[List[str]] = None
-    ) -> "DAG":
+    def from_adjacency(cls, adjacency: np.ndarray, node_names: Optional[List[str]] = None) -> "DAG":
         """Create DAG from adjacency matrix."""
         n_nodes = adjacency.shape[0]
         names = node_names or [f"X{i}" for i in range(n_nodes)]
@@ -316,11 +314,7 @@ class CPDAG:
 
     def has_any_edge(self, i: int, j: int) -> bool:
         """Check if any edge exists between i and j."""
-        return bool(
-            self.directed[i, j]
-            or self.directed[j, i]
-            or self.undirected[i, j]
-        )
+        return bool(self.directed[i, j] or self.directed[j, i] or self.undirected[i, j])
 
     def adjacent(self, i: int) -> Set[int]:
         """Get all nodes adjacent to i (any edge type)."""
@@ -339,11 +333,7 @@ class CPDAG:
 
     def to_skeleton(self) -> Graph:
         """Convert to undirected skeleton."""
-        adj = (
-            self.undirected
-            | self.directed
-            | self.directed.T
-        ).astype(np.int8)
+        adj = (self.undirected | self.directed | self.directed.T).astype(np.int8)
         return Graph(
             n_nodes=self.n_nodes,
             node_names=self.node_names.copy(),
@@ -475,8 +465,16 @@ class PCResult:
         false_positives = len(est_edges - true_edges)
         false_negatives = len(true_edges - est_edges)
 
-        precision = true_positives / (true_positives + false_positives) if (true_positives + false_positives) > 0 else 0.0
-        recall = true_positives / (true_positives + false_negatives) if (true_positives + false_negatives) > 0 else 0.0
+        precision = (
+            true_positives / (true_positives + false_positives)
+            if (true_positives + false_positives) > 0
+            else 0.0
+        )
+        recall = (
+            true_positives / (true_positives + false_negatives)
+            if (true_positives + false_negatives) > 0
+            else 0.0
+        )
         f1 = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
 
         return precision, recall, f1
@@ -753,13 +751,21 @@ class PAG:
 
     def _mark_to_code(self, mark: EdgeMark) -> int:
         """Convert EdgeMark to internal code."""
-        return {EdgeMark.TAIL: self.MARK_TAIL, EdgeMark.ARROW: self.MARK_ARROW, EdgeMark.CIRCLE: self.MARK_CIRCLE}[mark]
+        return {
+            EdgeMark.TAIL: self.MARK_TAIL,
+            EdgeMark.ARROW: self.MARK_ARROW,
+            EdgeMark.CIRCLE: self.MARK_CIRCLE,
+        }[mark]
 
     def _code_to_mark(self, code: int) -> Optional[EdgeMark]:
         """Convert internal code to EdgeMark."""
         if code == self.NO_EDGE:
             return None
-        return {self.MARK_TAIL: EdgeMark.TAIL, self.MARK_ARROW: EdgeMark.ARROW, self.MARK_CIRCLE: EdgeMark.CIRCLE}[code]
+        return {
+            self.MARK_TAIL: EdgeMark.TAIL,
+            self.MARK_ARROW: EdgeMark.ARROW,
+            self.MARK_CIRCLE: EdgeMark.CIRCLE,
+        }[code]
 
     def add_edge(self, i: int, j: int, mark_i: EdgeMark, mark_j: EdgeMark) -> None:
         """Add edge between i and j with specified marks."""
@@ -796,8 +802,9 @@ class PAG:
 
     def is_definitely_directed(self, i: int, j: int) -> bool:
         """Check if edge is definitely i -> j."""
-        return (self.endpoints[i, j, 0] == self.MARK_TAIL and
-                self.endpoints[i, j, 1] == self.MARK_ARROW)
+        return (
+            self.endpoints[i, j, 0] == self.MARK_TAIL and self.endpoints[i, j, 1] == self.MARK_ARROW
+        )
 
     def is_definitely_ancestor(self, i: int, j: int) -> bool:
         """Check if i is definitely an ancestor of j.
@@ -875,8 +882,10 @@ class PAG:
         count = 0
         for i in range(self.n_nodes):
             for j in range(i + 1, self.n_nodes):
-                if (self.endpoints[i, j, 0] == self.MARK_ARROW and
-                        self.endpoints[i, j, 1] == self.MARK_ARROW):
+                if (
+                    self.endpoints[i, j, 0] == self.MARK_ARROW
+                    and self.endpoints[i, j, 1] == self.MARK_ARROW
+                ):
                     count += 1
         return count
 
@@ -886,8 +895,10 @@ class PAG:
         for i in range(self.n_nodes):
             for j in range(i + 1, self.n_nodes):
                 if self.has_edge(i, j):
-                    if (self.endpoints[i, j, 0] == self.MARK_CIRCLE or
-                            self.endpoints[i, j, 1] == self.MARK_CIRCLE):
+                    if (
+                        self.endpoints[i, j, 0] == self.MARK_CIRCLE
+                        or self.endpoints[i, j, 1] == self.MARK_CIRCLE
+                    ):
                         count += 1
         return count
 
@@ -963,4 +974,7 @@ class FCIResult:
 
     def has_latent_confounder(self, i: int, j: int) -> bool:
         """Check if there's a bidirected edge between i and j."""
-        return (i, j) in self.possible_latent_confounders or (j, i) in self.possible_latent_confounders
+        return (i, j) in self.possible_latent_confounders or (
+            j,
+            i,
+        ) in self.possible_latent_confounders

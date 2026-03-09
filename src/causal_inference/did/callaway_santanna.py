@@ -144,14 +144,10 @@ def callaway_santanna_ate(
         )
 
     if aggregation not in ["simple", "dynamic", "group"]:
-        raise ValueError(
-            f'aggregation must be "simple", "dynamic", or "group". Got: {aggregation}'
-        )
+        raise ValueError(f'aggregation must be "simple", "dynamic", or "group". Got: {aggregation}')
 
     if n_bootstrap < 50:
-        raise ValueError(
-            f"n_bootstrap must be >= 50 for reliable inference. Got: {n_bootstrap}"
-        )
+        raise ValueError(f"n_bootstrap must be >= 50 for reliable inference. Got: {n_bootstrap}")
 
     # Set random seed for reproducibility
     rng = np.random.RandomState(random_state)
@@ -213,9 +209,7 @@ def callaway_santanna_ate(
     }
 
 
-def _compute_att_gt(
-    data: StaggeredData, control_group: str
-) -> pd.DataFrame:
+def _compute_att_gt(data: StaggeredData, control_group: str) -> pd.DataFrame:
     """
     Compute ATT(g,t) for each cohort g and time t.
 
@@ -310,9 +304,7 @@ def _compute_att_gt(
     return pd.DataFrame(att_gt_list)
 
 
-def _get_outcome_for_units(
-    data: StaggeredData, units: np.ndarray, time_period: int
-) -> np.ndarray:
+def _get_outcome_for_units(data: StaggeredData, units: np.ndarray, time_period: int) -> np.ndarray:
     """
     Get outcomes for specific units at a specific time period.
 

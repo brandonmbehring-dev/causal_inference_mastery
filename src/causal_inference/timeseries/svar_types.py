@@ -283,11 +283,8 @@ class IRFResult:
 
     def __repr__(self) -> str:
         cum_str = ", cumulative" if self.cumulative else ""
-        ci_str = f", CI={100*(1-self.alpha):.0f}%" if self.has_confidence_bands else ""
-        return (
-            f"IRFResult(n_vars={self.n_vars}, horizons={self.horizons}"
-            f"{cum_str}{ci_str})"
-        )
+        ci_str = f", CI={100 * (1 - self.alpha):.0f}%" if self.has_confidence_bands else ""
+        return f"IRFResult(n_vars={self.n_vars}, horizons={self.horizons}{cum_str}{ci_str})"
 
 
 @dataclass
@@ -597,5 +594,5 @@ class FEVDBootstrapResult:
     def __repr__(self) -> str:
         return (
             f"FEVDBootstrapResult(n_vars={self.n_vars}, horizons={self.horizons}, "
-            f"CI={100*(1-self.alpha):.0f}%, n_bootstrap={self.n_bootstrap})"
+            f"CI={100 * (1 - self.alpha):.0f}%, n_bootstrap={self.n_bootstrap})"
         )

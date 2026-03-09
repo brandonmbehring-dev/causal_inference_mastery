@@ -53,11 +53,7 @@ def sample_var_data() -> Tuple[np.ndarray, np.ndarray]:
     n = 200
     k = 3
 
-    A1 = np.array([
-        [0.4, 0.1, 0.05],
-        [0.15, 0.35, 0.1],
-        [0.05, 0.1, 0.3]
-    ])
+    A1 = np.array([[0.4, 0.1, 0.05], [0.15, 0.35, 0.1], [0.05, 0.1, 0.3]])
 
     data = np.zeros((n, k))
     for t in range(1, n):
@@ -163,8 +159,9 @@ class TestSignRestrictionBasic:
         # Check every accepted B0_inv
         for B0_inv in result.B0_inv_set:
             irf = _compute_irf_from_impact(Phi, B0_inv, result.horizons)
-            assert _check_sign_constraints(irf, basic_constraints), \
+            assert _check_sign_constraints(irf, basic_constraints), (
                 "Accepted draw should satisfy all constraints"
+            )
 
     def test_cholesky_within_set(self, var_result, cholesky_consistent_constraints):
         """When constraints match Cholesky ordering, Cholesky is in the set."""
@@ -184,8 +181,9 @@ class TestSignRestrictionBasic:
             )
 
             # Acceptance rate should be high since Cholesky is valid
-            assert result.acceptance_rate > 0.05, \
+            assert result.acceptance_rate > 0.05, (
                 "Cholesky-consistent constraints should have reasonable acceptance"
+            )
 
     def test_set_bounds_bracket_median(self, var_result, basic_constraints):
         """Lower bound <= median <= upper bound everywhere."""
@@ -197,10 +195,12 @@ class TestSignRestrictionBasic:
             seed=42,
         )
 
-        assert np.all(result.irf_lower <= result.irf_median + 1e-10), \
+        assert np.all(result.irf_lower <= result.irf_median + 1e-10), (
             "Lower bound should be <= median"
-        assert np.all(result.irf_median <= result.irf_upper + 1e-10), \
+        )
+        assert np.all(result.irf_median <= result.irf_upper + 1e-10), (
             "Median should be <= upper bound"
+        )
 
     def test_acceptance_rate_positive(self, var_result, basic_constraints):
         """At least some rotations are accepted."""
@@ -222,9 +222,7 @@ class TestSignRestrictionConstraint:
 
     def test_valid_constraint(self):
         """Valid constraint creation."""
-        c = SignRestrictionConstraint(
-            shock_idx=0, response_idx=1, horizon=5, sign=1
-        )
+        c = SignRestrictionConstraint(shock_idx=0, response_idx=1, horizon=5, sign=1)
         assert c.shock_idx == 0
         assert c.response_idx == 1
         assert c.horizon == 5
@@ -232,30 +230,22 @@ class TestSignRestrictionConstraint:
 
     def test_negative_sign(self):
         """Negative sign constraint."""
-        c = SignRestrictionConstraint(
-            shock_idx=0, response_idx=1, horizon=0, sign=-1
-        )
+        c = SignRestrictionConstraint(shock_idx=0, response_idx=1, horizon=0, sign=-1)
         assert c.sign == -1
 
     def test_invalid_sign(self):
         """Invalid sign raises error."""
         with pytest.raises(ValueError, match="sign must be 1 or -1"):
-            SignRestrictionConstraint(
-                shock_idx=0, response_idx=1, horizon=0, sign=0
-            )
+            SignRestrictionConstraint(shock_idx=0, response_idx=1, horizon=0, sign=0)
 
     def test_negative_horizon(self):
         """Negative horizon raises error."""
         with pytest.raises(ValueError, match="horizon must be >= 0"):
-            SignRestrictionConstraint(
-                shock_idx=0, response_idx=1, horizon=-1, sign=1
-            )
+            SignRestrictionConstraint(shock_idx=0, response_idx=1, horizon=-1, sign=1)
 
     def test_repr(self):
         """String representation is informative."""
-        c = SignRestrictionConstraint(
-            shock_idx=0, response_idx=1, horizon=5, sign=1
-        )
+        c = SignRestrictionConstraint(shock_idx=0, response_idx=1, horizon=5, sign=1)
         repr_str = repr(c)
         assert "shock=0" in repr_str
         assert "response=1" in repr_str
@@ -300,12 +290,15 @@ class TestRotationMatrices:
     def test_rotation_methods_both_work(self, var_result, basic_constraints):
         """Both rotation methods produce valid results."""
         result_givens = sign_restriction_svar(
-            var_result, basic_constraints,
-            horizons=10, n_draws=200, rotation_method="givens", seed=42
+            var_result,
+            basic_constraints,
+            horizons=10,
+            n_draws=200,
+            rotation_method="givens",
+            seed=42,
         )
         result_qr = sign_restriction_svar(
-            var_result, basic_constraints,
-            horizons=10, n_draws=200, rotation_method="qr", seed=42
+            var_result, basic_constraints, horizons=10, n_draws=200, rotation_method="qr", seed=42
         )
 
         assert result_givens.n_accepted > 0
@@ -369,8 +362,9 @@ class TestSignRestrictionAdversarial:
                 )
                 # Check for warning
                 if result.acceptance_rate < 0.01:
-                    assert any("low acceptance rate" in str(warning.message).lower()
-                              for warning in w), "Should warn about low acceptance"
+                    assert any(
+                        "low acceptance rate" in str(warning.message).lower() for warning in w
+                    ), "Should warn about low acceptance"
         except ValueError:
             # Also acceptable - no rotations satisfied
             pass
@@ -379,7 +373,10 @@ class TestSignRestrictionAdversarial:
         """Horizon exceeding max raises error."""
         constraints = [
             SignRestrictionConstraint(
-                shock_idx=0, response_idx=0, horizon=100, sign=1  # Beyond horizons
+                shock_idx=0,
+                response_idx=0,
+                horizon=100,
+                sign=1,  # Beyond horizons
             ),
         ]
 
@@ -396,7 +393,10 @@ class TestSignRestrictionAdversarial:
         """Out of bounds shock index raises error."""
         constraints = [
             SignRestrictionConstraint(
-                shock_idx=10, response_idx=0, horizon=0, sign=1  # n_vars=3
+                shock_idx=10,
+                response_idx=0,
+                horizon=0,
+                sign=1,  # n_vars=3
             ),
         ]
 
@@ -413,7 +413,10 @@ class TestSignRestrictionAdversarial:
         """Out of bounds response index raises error."""
         constraints = [
             SignRestrictionConstraint(
-                shock_idx=0, response_idx=10, horizon=0, sign=1  # n_vars=3
+                shock_idx=0,
+                response_idx=10,
+                horizon=0,
+                sign=1,  # n_vars=3
             ),
         ]
 
@@ -482,12 +485,10 @@ class TestSignRestrictionMonteCarlo:
         ]
 
         result_few = sign_restriction_svar(
-            var_result, few_constraints,
-            horizons=10, n_draws=2000, seed=42
+            var_result, few_constraints, horizons=10, n_draws=2000, seed=42
         )
         result_more = sign_restriction_svar(
-            var_result, more_constraints,
-            horizons=10, n_draws=2000, seed=42
+            var_result, more_constraints, horizons=10, n_draws=2000, seed=42
         )
 
         # Set width = upper - lower
@@ -496,8 +497,9 @@ class TestSignRestrictionMonteCarlo:
 
         # More constraints should give equal or narrower set
         # Allow some tolerance for sampling variation
-        assert width_more <= width_few * 1.1, \
+        assert width_more <= width_few * 1.1, (
             f"More constraints should narrow set: {width_more:.4f} vs {width_few:.4f}"
+        )
 
     @pytest.mark.slow
     def test_true_dgp_in_set(self):
@@ -530,10 +532,7 @@ class TestSignRestrictionMonteCarlo:
         ]
 
         # Run sign restrictions
-        result = sign_restriction_svar(
-            var_result, constraints,
-            horizons=10, n_draws=3000, seed=42
-        )
+        result = sign_restriction_svar(var_result, constraints, horizons=10, n_draws=3000, seed=42)
 
         # True IRF at impact
         true_irf_impact = B0_inv_true
@@ -546,15 +545,15 @@ class TestSignRestrictionMonteCarlo:
                 true_val = true_irf_impact[i, j]
 
                 # Allow some slack for finite sample bias
-                assert lower - 0.5 <= true_val <= upper + 0.5, \
+                assert lower - 0.5 <= true_val <= upper + 0.5, (
                     f"True IRF[{i},{j}]={true_val:.3f} outside [{lower:.3f}, {upper:.3f}]"
+                )
 
     @pytest.mark.slow
     def test_sign_correctness_across_set(self, var_result, basic_constraints):
         """All accepted IRFs have correct signs at constrained points."""
         result = sign_restriction_svar(
-            var_result, basic_constraints,
-            horizons=10, n_draws=2000, seed=42
+            var_result, basic_constraints, horizons=10, n_draws=2000, seed=42
         )
 
         Phi = vma_coefficients(var_result, result.horizons)
@@ -617,8 +616,7 @@ class TestSignRestrictionResult:
     def test_get_irf_bounds(self, var_result, basic_constraints):
         """get_irf_bounds returns correct dictionary."""
         result = sign_restriction_svar(
-            var_result, basic_constraints,
-            horizons=10, n_draws=500, seed=42
+            var_result, basic_constraints, horizons=10, n_draws=500, seed=42
         )
 
         bounds = result.get_irf_bounds(0, 0)
@@ -634,8 +632,7 @@ class TestSignRestrictionResult:
     def test_to_irf_result(self, var_result, basic_constraints):
         """Conversion to standard IRFResult works."""
         result = sign_restriction_svar(
-            var_result, basic_constraints,
-            horizons=10, n_draws=500, seed=42
+            var_result, basic_constraints, horizons=10, n_draws=500, seed=42
         )
 
         irf_result = result.to_irf_result()

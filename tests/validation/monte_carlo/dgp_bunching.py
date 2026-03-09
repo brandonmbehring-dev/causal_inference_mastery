@@ -145,8 +145,10 @@ def dgp_bunching_uniform_counterfactual(
     # h0 ≈ n_background / n_bins for uniform
     # B ≈ n_bunchers in bunching region
     bunching_width = 3 * bunching_std
-    true_excess_mass = buncher_fraction / (1 - buncher_fraction) * (
-        (data_range[1] - data_range[0]) / (2 * bunching_width)
+    true_excess_mass = (
+        buncher_fraction
+        / (1 - buncher_fraction)
+        * ((data_range[1] - data_range[0]) / (2 * bunching_width))
     )
 
     return data, true_excess_mass, kink_point, bunching_width

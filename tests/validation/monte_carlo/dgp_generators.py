@@ -8,7 +8,9 @@ import numpy as np
 from typing import Tuple
 
 
-def dgp_simple_rct(n: int = 100, true_ate: float = 2.0, random_state: int = None) -> Tuple[np.ndarray, np.ndarray]:
+def dgp_simple_rct(
+    n: int = 100, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Simple RCT with homoskedastic errors.
 
@@ -35,7 +37,9 @@ def dgp_simple_rct(n: int = 100, true_ate: float = 2.0, random_state: int = None
     return outcomes, treatment
 
 
-def dgp_heteroskedastic_rct(n: int = 200, true_ate: float = 2.0, random_state: int = None) -> Tuple[np.ndarray, np.ndarray]:
+def dgp_heteroskedastic_rct(
+    n: int = 200, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     RCT with heteroskedastic errors (different variances by group).
 
@@ -55,14 +59,16 @@ def dgp_heteroskedastic_rct(n: int = 200, true_ate: float = 2.0, random_state: i
     rng.shuffle(treatment)
 
     y1 = rng.normal(true_ate, 2.0, n)  # σ=2
-    y0 = rng.normal(0.0, 1.0, n)       # σ=1
+    y0 = rng.normal(0.0, 1.0, n)  # σ=1
 
     outcomes = treatment * y1 + (1 - treatment) * y0
 
     return outcomes, treatment
 
 
-def dgp_small_sample_rct(n: int = 20, true_ate: float = 2.0, random_state: int = None) -> Tuple[np.ndarray, np.ndarray]:
+def dgp_small_sample_rct(
+    n: int = 20, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     Small sample RCT to test t-distribution inference.
 
@@ -78,8 +84,9 @@ def dgp_small_sample_rct(n: int = 20, true_ate: float = 2.0, random_state: int =
     return dgp_simple_rct(n=n, true_ate=true_ate, random_state=random_state)
 
 
-def dgp_stratified_rct(n_per_stratum: int = 40, n_strata: int = 3, true_ate: float = 2.0,
-                       random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def dgp_stratified_rct(
+    n_per_stratum: int = 40, n_strata: int = 3, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Stratified RCT with different baseline levels.
 
@@ -107,9 +114,11 @@ def dgp_stratified_rct(n_per_stratum: int = 40, n_strata: int = 3, true_ate: flo
         t = np.array([1] * n1 + [0] * n0)
         rng.shuffle(t)
 
-        y = np.where(t == 1,
-                    rng.normal(baseline + true_ate, 1.0, n_per_stratum),
-                    rng.normal(baseline, 1.0, n_per_stratum))
+        y = np.where(
+            t == 1,
+            rng.normal(baseline + true_ate, 1.0, n_per_stratum),
+            rng.normal(baseline, 1.0, n_per_stratum),
+        )
 
         outcomes.extend(y)
         treatment.extend(t)
@@ -118,8 +127,9 @@ def dgp_stratified_rct(n_per_stratum: int = 40, n_strata: int = 3, true_ate: flo
     return np.array(outcomes), np.array(treatment), np.array(strata)
 
 
-def dgp_regression_rct(n: int = 100, true_ate: float = 2.0, covariate_effect: float = 3.0,
-                      random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def dgp_regression_rct(
+    n: int = 100, true_ate: float = 2.0, covariate_effect: float = 3.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     RCT with covariate for regression adjustment.
 
@@ -145,7 +155,9 @@ def dgp_regression_rct(n: int = 100, true_ate: float = 2.0, covariate_effect: fl
     return outcomes, treatment, X
 
 
-def dgp_ipw_rct(n: int = 100, true_ate: float = 2.0, random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def dgp_ipw_rct(
+    n: int = 100, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     RCT with non-constant propensity scores.
 
@@ -177,7 +189,10 @@ def dgp_ipw_rct(n: int = 100, true_ate: float = 2.0, random_state: int = None) -
 # PSM DGPs (Observational Studies with Confounding)
 # ============================================================================
 
-def dgp_psm_linear(n: int = 200, true_ate: float = 2.0, random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+
+def dgp_psm_linear(
+    n: int = 200, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Linear PSM DGP with moderate confounding.
 
@@ -209,7 +224,9 @@ def dgp_psm_linear(n: int = 200, true_ate: float = 2.0, random_state: int = None
     return outcomes, treatment, X
 
 
-def dgp_psm_mild_confounding(n: int = 200, true_ate: float = 2.0, random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def dgp_psm_mild_confounding(
+    n: int = 200, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     PSM DGP with mild confounding (easy matching).
 
@@ -240,7 +257,9 @@ def dgp_psm_mild_confounding(n: int = 200, true_ate: float = 2.0, random_state: 
     return outcomes, treatment, X
 
 
-def dgp_psm_strong_confounding(n: int = 200, true_ate: float = 2.0, random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def dgp_psm_strong_confounding(
+    n: int = 200, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     PSM DGP with strong confounding (harder matching).
 
@@ -273,7 +292,9 @@ def dgp_psm_strong_confounding(n: int = 200, true_ate: float = 2.0, random_state
     return outcomes, treatment, X
 
 
-def dgp_psm_limited_overlap(n: int = 200, true_ate: float = 2.0, random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+def dgp_psm_limited_overlap(
+    n: int = 200, true_ate: float = 2.0, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     PSM DGP with limited common support.
 
@@ -312,7 +333,9 @@ def dgp_psm_limited_overlap(n: int = 200, true_ate: float = 2.0, random_state: i
     return outcomes, treatment, X
 
 
-def dgp_psm_heterogeneous_te(n: int = 200, random_state: int = None) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
+def dgp_psm_heterogeneous_te(
+    n: int = 200, random_state: int = None
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray, float]:
     """
     PSM DGP with heterogeneous treatment effects.
 
@@ -354,10 +377,9 @@ def dgp_psm_heterogeneous_te(n: int = 200, random_state: int = None) -> Tuple[np
 # Fuzzy RDD DGPs (Imperfect Compliance at Cutoff)
 # ============================================================================
 
+
 def dgp_fuzzy_rdd_perfect_compliance(
-    n: int = 500,
-    true_late: float = 2.0,
-    random_state: int = None
+    n: int = 500, true_late: float = 2.0, random_state: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Fuzzy RDD DGP with perfect compliance (compliance = 1.0).
@@ -394,9 +416,7 @@ def dgp_fuzzy_rdd_perfect_compliance(
 
 
 def dgp_fuzzy_rdd_high_compliance(
-    n: int = 500,
-    true_late: float = 2.0,
-    random_state: int = None
+    n: int = 500, true_late: float = 2.0, random_state: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Fuzzy RDD DGP with high compliance (compliance ≈ 0.8).
@@ -424,10 +444,8 @@ def dgp_fuzzy_rdd_high_compliance(
 
     # Actual treatment (HIGH compliance)
     baseline_treatment = 0.1  # 10% always-takers
-    compliance_boost = 0.8    # 80% compliers
-    p_treat = np.where(Z == 1,
-                       baseline_treatment + compliance_boost,
-                       baseline_treatment)
+    compliance_boost = 0.8  # 80% compliers
+    p_treat = np.where(Z == 1, baseline_treatment + compliance_boost, baseline_treatment)
     D = (rng.uniform(0, 1, n) < p_treat).astype(float)
 
     # Outcome (local linear structure)
@@ -437,9 +455,7 @@ def dgp_fuzzy_rdd_high_compliance(
 
 
 def dgp_fuzzy_rdd_moderate_compliance(
-    n: int = 500,
-    true_late: float = 2.0,
-    random_state: int = None
+    n: int = 500, true_late: float = 2.0, random_state: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Fuzzy RDD DGP with moderate compliance (compliance ≈ 0.5).
@@ -467,10 +483,8 @@ def dgp_fuzzy_rdd_moderate_compliance(
 
     # Actual treatment (MODERATE compliance)
     baseline_treatment = 0.25  # 25% always-takers
-    compliance_boost = 0.5     # 50% compliers
-    p_treat = np.where(Z == 1,
-                       baseline_treatment + compliance_boost,
-                       baseline_treatment)
+    compliance_boost = 0.5  # 50% compliers
+    p_treat = np.where(Z == 1, baseline_treatment + compliance_boost, baseline_treatment)
     D = (rng.uniform(0, 1, n) < p_treat).astype(float)
 
     # Outcome (local linear structure)
@@ -480,9 +494,7 @@ def dgp_fuzzy_rdd_moderate_compliance(
 
 
 def dgp_fuzzy_rdd_low_compliance(
-    n: int = 500,
-    true_late: float = 2.0,
-    random_state: int = None
+    n: int = 500, true_late: float = 2.0, random_state: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Fuzzy RDD DGP with low compliance (compliance ≈ 0.3).
@@ -511,10 +523,8 @@ def dgp_fuzzy_rdd_low_compliance(
 
     # Actual treatment (LOW compliance)
     baseline_treatment = 0.35  # 35% always-takers
-    compliance_boost = 0.3     # 30% compliers
-    p_treat = np.where(Z == 1,
-                       baseline_treatment + compliance_boost,
-                       baseline_treatment)
+    compliance_boost = 0.3  # 30% compliers
+    p_treat = np.where(Z == 1, baseline_treatment + compliance_boost, baseline_treatment)
     D = (rng.uniform(0, 1, n) < p_treat).astype(float)
 
     # Outcome (local linear structure)
@@ -524,9 +534,7 @@ def dgp_fuzzy_rdd_low_compliance(
 
 
 def dgp_fuzzy_rdd_bandwidth_sensitivity(
-    n: int = 500,
-    true_late: float = 2.0,
-    random_state: int = None
+    n: int = 500, true_late: float = 2.0, random_state: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Fuzzy RDD DGP for bandwidth sensitivity analysis.
@@ -555,11 +563,9 @@ def dgp_fuzzy_rdd_bandwidth_sensitivity(
     Z = (X >= 0).astype(float)
 
     # Actual treatment (moderate-high compliance)
-    baseline_treatment = 0.1   # 10% always-takers
-    compliance_boost = 0.7     # 70% compliers
-    p_treat = np.where(Z == 1,
-                       baseline_treatment + compliance_boost,
-                       baseline_treatment)
+    baseline_treatment = 0.1  # 10% always-takers
+    compliance_boost = 0.7  # 70% compliers
+    p_treat = np.where(Z == 1, baseline_treatment + compliance_boost, baseline_treatment)
     D = (rng.uniform(0, 1, n) < p_treat).astype(float)
 
     # Outcome (local linear structure)

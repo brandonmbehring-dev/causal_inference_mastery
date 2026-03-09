@@ -24,9 +24,7 @@ def compute_monte_carlo_bias(estimates: List[float], true_value: float) -> float
 
 
 def compute_monte_carlo_coverage(
-    ci_lower: List[float],
-    ci_upper: List[float],
-    true_value: float
+    ci_lower: List[float], ci_upper: List[float], true_value: float
 ) -> float:
     """
     Compute coverage rate from confidence intervals.
@@ -51,10 +49,7 @@ def compute_monte_carlo_coverage(
     return np.mean(contains_true)
 
 
-def compute_se_accuracy(
-    estimates: List[float],
-    standard_errors: List[float]
-) -> float:
+def compute_se_accuracy(estimates: List[float], standard_errors: List[float]) -> float:
     """
     Compute SE accuracy: how close standard errors are to empirical SD.
 
@@ -81,7 +76,7 @@ def generate_dgp_simple_rct(
     sigma1: float = 1.0,
     sigma0: float = 1.0,
     balanced: bool = True,
-    random_state: int = None
+    random_state: int = None,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     Generate data from simple RCT data generating process.
@@ -141,7 +136,7 @@ def generate_dgp_stratified_rct(
     n_strata: int,
     true_ate: float,
     baseline_effects: List[float] = None,
-    random_state: int = None
+    random_state: int = None,
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Generate data from stratified RCT.
@@ -179,9 +174,11 @@ def generate_dgp_stratified_rct(
         t = np.array([1] * n1 + [0] * n0)
         rng.shuffle(t)
 
-        y = np.where(t == 1,
-                    rng.normal(baseline + true_ate, 1.0, n_per_stratum),
-                    rng.normal(baseline, 1.0, n_per_stratum))
+        y = np.where(
+            t == 1,
+            rng.normal(baseline + true_ate, 1.0, n_per_stratum),
+            rng.normal(baseline, 1.0, n_per_stratum),
+        )
 
         outcomes.extend(y)
         treatment.extend(t)
@@ -191,10 +188,7 @@ def generate_dgp_stratified_rct(
 
 
 def generate_dgp_regression_rct(
-    n: int,
-    true_ate: float,
-    covariate_effect: float = 3.0,
-    random_state: int = None
+    n: int, true_ate: float, covariate_effect: float = 3.0, random_state: int = None
 ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     Generate data from RCT with covariates.
@@ -242,7 +236,7 @@ def validate_monte_carlo_results(
     bias_threshold: float = 0.05,
     coverage_lower: float = 0.93,
     coverage_upper: float = 0.97,
-    se_accuracy_threshold: float = 0.10
+    se_accuracy_threshold: float = 0.10,
 ) -> Dict[str, Any]:
     """
     Validate Monte Carlo simulation results.
@@ -281,7 +275,7 @@ def validate_monte_carlo_results(
     se_acc = compute_se_accuracy(estimates, standard_errors)
 
     bias_ok = bias < bias_threshold
-    coverage_ok = (coverage_lower <= coverage <= coverage_upper)
+    coverage_ok = coverage_lower <= coverage <= coverage_upper
     se_accuracy_ok = se_acc < se_accuracy_threshold
 
     return {

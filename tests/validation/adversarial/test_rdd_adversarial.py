@@ -84,13 +84,15 @@ class TestRDDBoundaryViolations:
         """Observations far from cutoff - tests automatic bandwidth."""
         np.random.seed(789)
         n = 100
-        X = np.concatenate([
-            np.random.randn(50) - 10.0,  # Far left
-            np.random.randn(50) + 10.0,  # Far right
-        ])
+        X = np.concatenate(
+            [
+                np.random.randn(50) - 10.0,  # Far left
+                np.random.randn(50) + 10.0,  # Far right
+            ]
+        )
         Y = np.random.randn(n)
 
-        rdd = SharpRDD(cutoff=0.0, bandwidth='ik')
+        rdd = SharpRDD(cutoff=0.0, bandwidth="ik")
 
         # May work or fail with singular matrix due to data far from cutoff
         try:
@@ -291,7 +293,7 @@ class TestRDDBandwidthEdgeCases:
         X = np.random.randn(n)
         Y = X + 5.0 * (X >= 0) + np.random.randn(n)
 
-        rdd = SharpRDD(cutoff=0.0, bandwidth='ik')
+        rdd = SharpRDD(cutoff=0.0, bandwidth="ik")
         rdd.fit(Y, X)
 
         # Bandwidth should be reasonable (not 0, not inf)
@@ -477,10 +479,12 @@ class TestRDDCutoffEdgeCases:
         np.random.seed(2121)
         n_left = 180
         n_right = 20
-        X = np.concatenate([
-            np.random.randn(n_left) - 1.0,
-            np.random.randn(n_right) + 1.0,
-        ])
+        X = np.concatenate(
+            [
+                np.random.randn(n_left) - 1.0,
+                np.random.randn(n_right) + 1.0,
+            ]
+        )
         Y = X + 4.0 * (X >= 0) + np.random.randn(len(X))
 
         rdd = SharpRDD(cutoff=0.0)
@@ -506,7 +510,7 @@ class TestRDDKernelEdgeCases:
         X = np.random.randn(n)
         Y = X + 5.0 * (X >= 0) + np.random.randn(n)
 
-        rdd = SharpRDD(cutoff=0.0, kernel='triangular')
+        rdd = SharpRDD(cutoff=0.0, kernel="triangular")
         rdd.fit(Y, X)
         assert np.isfinite(rdd.coef_)
 
@@ -517,14 +521,14 @@ class TestRDDKernelEdgeCases:
         X = np.random.randn(n)
         Y = X + 5.0 * (X >= 0) + np.random.randn(n)
 
-        rdd = SharpRDD(cutoff=0.0, kernel='rectangular')
+        rdd = SharpRDD(cutoff=0.0, kernel="rectangular")
         rdd.fit(Y, X)
         assert np.isfinite(rdd.coef_)
 
     def test_invalid_kernel_raises(self):
         """Invalid kernel should raise error."""
         with pytest.raises((ValueError, TypeError)):
-            rdd = SharpRDD(cutoff=0.0, kernel='invalid_kernel')
+            rdd = SharpRDD(cutoff=0.0, kernel="invalid_kernel")
 
 
 # =============================================================================
@@ -542,7 +546,7 @@ class TestRDDInferenceOptions:
         X = np.random.randn(n)
         Y = X + 5.0 * (X >= 0) + np.random.randn(n)
 
-        rdd = SharpRDD(cutoff=0.0, inference='standard')
+        rdd = SharpRDD(cutoff=0.0, inference="standard")
         rdd.fit(Y, X)
 
         assert np.isfinite(rdd.se_)
@@ -555,7 +559,7 @@ class TestRDDInferenceOptions:
         X = np.random.randn(n)
         Y = X + 5.0 * (X >= 0) + np.random.randn(n) * (1 + np.abs(X))  # Heteroskedastic
 
-        rdd = SharpRDD(cutoff=0.0, inference='robust')
+        rdd = SharpRDD(cutoff=0.0, inference="robust")
         rdd.fit(Y, X)
 
         assert np.isfinite(rdd.se_)
@@ -564,7 +568,7 @@ class TestRDDInferenceOptions:
     def test_invalid_inference_raises(self):
         """Invalid inference option should raise error."""
         with pytest.raises((ValueError, TypeError)):
-            rdd = SharpRDD(cutoff=0.0, inference='invalid_inference')
+            rdd = SharpRDD(cutoff=0.0, inference="invalid_inference")
 
 
 # =============================================================================
@@ -621,7 +625,7 @@ class TestRDDIntegration:
         X = np.random.randn(n) * 0.5  # Narrow range
         X[0] = 0.0  # Exact tie
         Y = np.full(n, 10.0)  # Start constant
-        Y[n-1] = 100.0  # Add outlier
+        Y[n - 1] = 100.0  # Add outlier
         Y = Y + 3.0 * (X >= 0)  # Add small treatment effect
 
         rdd = SharpRDD(cutoff=0.0)

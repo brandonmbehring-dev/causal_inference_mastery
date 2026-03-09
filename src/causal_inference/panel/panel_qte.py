@@ -91,7 +91,7 @@ def _kernel_density_at_quantile(
     u = (y - q_tau) / h
 
     # Gaussian kernel
-    kernel_vals = np.exp(-0.5 * u ** 2) / np.sqrt(2 * np.pi)
+    kernel_vals = np.exp(-0.5 * u**2) / np.sqrt(2 * np.pi)
 
     # Density estimate
     f_hat = np.mean(kernel_vals) / h
@@ -180,7 +180,7 @@ def _panel_clustered_se(
     # Clustered variance
     # With finite-sample correction: (G / (G-1)) * (n-1) / (n-k)
     # Simplified: just use (1/n²) * sum of squared cluster sums
-    var_clustered = np.sum(cluster_sums ** 2) / (n ** 2)
+    var_clustered = np.sum(cluster_sums**2) / (n**2)
 
     # Small-sample correction (optional)
     # Adjust for number of clusters
@@ -377,6 +377,7 @@ def panel_rif_qte(
     # Confidence interval
     z_crit = 1.96  # For alpha=0.05 (could generalize with scipy.stats.norm.ppf)
     from scipy import stats
+
     z_crit = stats.norm.ppf(1 - alpha / 2)
     ci_lower = qte - z_crit * se
     ci_upper = qte + z_crit * se

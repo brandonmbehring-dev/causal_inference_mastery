@@ -38,19 +38,18 @@ def simple_did_data():
 
     # Combine
     outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-    treatment = np.concatenate([
-        np.zeros(n_control * 2),
-        np.ones(n_treated * 2)
-    ])
-    post = np.concatenate([
-        np.zeros(n_control), np.ones(n_control),
-        np.zeros(n_treated), np.ones(n_treated)
-    ])
-    unit_id = np.concatenate([
-        np.arange(n_control), np.arange(n_control),
-        np.arange(n_control, n_control + n_treated),
-        np.arange(n_control, n_control + n_treated)
-    ])
+    treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+    post = np.concatenate(
+        [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+    )
+    unit_id = np.concatenate(
+        [
+            np.arange(n_control),
+            np.arange(n_control),
+            np.arange(n_control, n_control + n_treated),
+            np.arange(n_control, n_control + n_treated),
+        ]
+    )
 
     return {
         "outcomes": outcomes,
@@ -152,19 +151,18 @@ def heterogeneous_baselines_data():
 
     # Combine
     outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-    treatment = np.concatenate([
-        np.zeros(n_control * 2),
-        np.ones(n_treated * 2)
-    ])
-    post = np.concatenate([
-        np.zeros(n_control), np.ones(n_control),
-        np.zeros(n_treated), np.ones(n_treated)
-    ])
-    unit_id = np.concatenate([
-        np.arange(n_control), np.arange(n_control),
-        np.arange(n_control, n_control + n_treated),
-        np.arange(n_control, n_control + n_treated)
-    ])
+    treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+    post = np.concatenate(
+        [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+    )
+    unit_id = np.concatenate(
+        [
+            np.arange(n_control),
+            np.arange(n_control),
+            np.arange(n_control, n_control + n_treated),
+            np.arange(n_control, n_control + n_treated),
+        ]
+    )
 
     return {
         "outcomes": outcomes,
@@ -201,19 +199,18 @@ def zero_effect_data():
 
     # Combine
     outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-    treatment = np.concatenate([
-        np.zeros(n_control * 2),
-        np.ones(n_treated * 2)
-    ])
-    post = np.concatenate([
-        np.zeros(n_control), np.ones(n_control),
-        np.zeros(n_treated), np.ones(n_treated)
-    ])
-    unit_id = np.concatenate([
-        np.arange(n_control), np.arange(n_control),
-        np.arange(n_control, n_control + n_treated),
-        np.arange(n_control, n_control + n_treated)
-    ])
+    treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+    post = np.concatenate(
+        [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+    )
+    unit_id = np.concatenate(
+        [
+            np.arange(n_control),
+            np.arange(n_control),
+            np.arange(n_control, n_control + n_treated),
+            np.arange(n_control, n_control + n_treated),
+        ]
+    )
 
     return {
         "outcomes": outcomes,
@@ -250,19 +247,18 @@ def negative_effect_data():
 
     # Combine
     outcomes = np.concatenate([control_pre, control_post, treated_pre, treated_post])
-    treatment = np.concatenate([
-        np.zeros(n_control * 2),
-        np.ones(n_treated * 2)
-    ])
-    post = np.concatenate([
-        np.zeros(n_control), np.ones(n_control),
-        np.zeros(n_treated), np.ones(n_treated)
-    ])
-    unit_id = np.concatenate([
-        np.arange(n_control), np.arange(n_control),
-        np.arange(n_control, n_control + n_treated),
-        np.arange(n_control, n_control + n_treated)
-    ])
+    treatment = np.concatenate([np.zeros(n_control * 2), np.ones(n_treated * 2)])
+    post = np.concatenate(
+        [np.zeros(n_control), np.ones(n_control), np.zeros(n_treated), np.ones(n_treated)]
+    )
+    unit_id = np.concatenate(
+        [
+            np.arange(n_control),
+            np.arange(n_control),
+            np.arange(n_control, n_control + n_treated),
+            np.arange(n_control, n_control + n_treated),
+        ]
+    )
 
     return {
         "outcomes": outcomes,
@@ -530,6 +526,7 @@ def event_study_many_periods_data():
         "n_lags": 10,
     }
 
+
 # ============================================================================
 # Staggered DiD Fixtures (for modern methods)
 # ============================================================================
@@ -564,11 +561,13 @@ def staggered_homogeneous_data():
     unit_fe = np.random.normal(0, 1, n_units)
 
     # Assign units to cohorts
-    treatment_time = np.concatenate([
-        np.full(units_per_cohort, 5),    # Cohort 5
-        np.full(units_per_cohort, 7),    # Cohort 7
-        np.full(units_per_cohort, np.inf)  # Never-treated
-    ])
+    treatment_time = np.concatenate(
+        [
+            np.full(units_per_cohort, 5),  # Cohort 5
+            np.full(units_per_cohort, 7),  # Cohort 7
+            np.full(units_per_cohort, np.inf),  # Never-treated
+        ]
+    )
 
     # Build panel
     outcomes = []
@@ -639,11 +638,13 @@ def staggered_heterogeneous_data():
     unit_fe = np.random.normal(0, 1, n_units)
 
     # Assign units to cohorts
-    treatment_time = np.concatenate([
-        np.full(units_per_cohort, 5),
-        np.full(units_per_cohort, 7),
-        np.full(units_per_cohort, np.inf)
-    ])
+    treatment_time = np.concatenate(
+        [
+            np.full(units_per_cohort, 5),
+            np.full(units_per_cohort, 7),
+            np.full(units_per_cohort, np.inf),
+        ]
+    )
 
     # Build panel
     outcomes = []
@@ -712,10 +713,9 @@ def staggered_dynamic_data():
 
     unit_fe = np.random.normal(0, 1, n_units)
 
-    treatment_time = np.concatenate([
-        np.full(n_treated, treatment_time_val),
-        np.full(n_control, np.inf)
-    ])
+    treatment_time = np.concatenate(
+        [np.full(n_treated, treatment_time_val), np.full(n_control, np.inf)]
+    )
 
     outcomes = []
     treatment = []

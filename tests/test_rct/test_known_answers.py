@@ -40,8 +40,7 @@ class TestSimpleATEKnownAnswers:
         result = simple_ate(outcomes=outcomes, treatment=treatment)
 
         # Check point estimate
-        assert np.isclose(result["estimate"], 4.0), \
-            f"Expected ATE=4.0, got {result['estimate']}"
+        assert np.isclose(result["estimate"], 4.0), f"Expected ATE=4.0, got {result['estimate']}"
 
         # Check sample sizes
         assert result["n_treated"] == 2
@@ -63,14 +62,14 @@ class TestSimpleATEKnownAnswers:
         - SE(ATE): sqrt(5/3) ≈ 1.291
         """
         result = simple_ate(
-            outcomes=balanced_rct_data["outcomes"],
-            treatment=balanced_rct_data["treatment"]
+            outcomes=balanced_rct_data["outcomes"], treatment=balanced_rct_data["treatment"]
         )
 
         expected_se = balanced_rct_data["expected_se"]
 
-        assert np.isclose(result["se"], expected_se, rtol=1e-6), \
+        assert np.isclose(result["se"], expected_se, rtol=1e-6), (
             f"Expected SE={expected_se:.6f}, got {result['se']:.6f}"
+        )
 
     def test_confidence_interval_construction(self, simple_rct_data, alpha_standard):
         """
@@ -89,7 +88,7 @@ class TestSimpleATEKnownAnswers:
         result = simple_ate(
             outcomes=simple_rct_data["outcomes"],
             treatment=simple_rct_data["treatment"],
-            alpha=alpha_standard
+            alpha=alpha_standard,
         )
 
         # CI should be symmetric around estimate
@@ -130,8 +129,9 @@ class TestSimpleATEKnownAnswers:
 
         result = simple_ate(outcomes=outcomes, treatment=treatment)
 
-        assert np.isclose(result["estimate"], 0.0, atol=1e-10), \
+        assert np.isclose(result["estimate"], 0.0, atol=1e-10), (
             f"Expected ATE=0.0 with no effect, got {result['estimate']}"
+        )
 
     def test_negative_effect_case(self):
         """
@@ -148,8 +148,7 @@ class TestSimpleATEKnownAnswers:
 
         result = simple_ate(outcomes=outcomes, treatment=treatment)
 
-        assert np.isclose(result["estimate"], -4.0), \
-            f"Expected ATE=-4.0, got {result['estimate']}"
+        assert np.isclose(result["estimate"], -4.0), f"Expected ATE=-4.0, got {result['estimate']}"
 
 
 class TestSimpleATEEdgeCases:
