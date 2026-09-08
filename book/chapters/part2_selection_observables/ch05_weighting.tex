@@ -271,7 +271,7 @@ The clever covariate $H$ plays a central role in TMLE. It is derived from the ef
 \text{EIF}(O) = \frac{T(Y - \mu_1(X))}{e(X)} - \frac{(1-T)(Y - \mu_0(X))}{1 - e(X)} + \mu_1(X) - \mu_0(X) - \tau
 \end{equation}
 
-The targeting step ensures that $\E[\text{EIF}] = 0$, which guarantees efficient estimation.
+The targeting step ensures that the empirical mean of the EIF is zero at the updated fit, $\E_n[\text{EIF}] = 0$. This is what makes TMLE \emph{locally} efficient: when the nuisance estimates $\hat\mu$ and $\hat e$ converge fast enough (the usual $n^{-1/4}$ product-rate condition) and the regularity conditions hold, the estimator attains the semiparametric efficiency bound. Solving the EIF equation is a property of the update; efficiency is a conclusion that depends on the nuisance estimation and regularity assumptions.
 
 \subsection{TMLE vs Standard DR}
 
@@ -281,7 +281,7 @@ The targeting step ensures that $\E[\text{EIF}] = 0$, which guarantees efficient
 Property & DR/AIPW & TMLE \\
 \midrule
 Double robustness & Yes & Yes \\
-Semiparametric efficient & Sometimes & Always \\
+Semiparametric efficient & Under conditions & Locally, under the same nuisance-rate and regularity conditions \\
 Finite-sample bias & May be larger & Typically smaller \\
 Computation & One-shot & Iterative \\
 Bounded predictions & No & Can enforce \\
