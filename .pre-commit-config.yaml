@@ -9,7 +9,7 @@ repos:
     hooks:
       - id: black
         args: [--line-length=100]
-        language_version: python3.9
+        language_version: python3
 
   # Ruff linter (replaces flake8, isort, etc.)
   - repo: https://github.com/charliermarsh/ruff-pre-commit
@@ -24,7 +24,6 @@ repos:
     hooks:
       - id: mypy
         additional_dependencies: [
-          types-all,
           numpy,
           pandas-stubs,
         ]
@@ -50,7 +49,8 @@ repos:
       # Warn on large commits (>500 lines)
       - id: large-commit-warning
         name: Warn on commits >500 lines
-        entry: bash -c 'lines=$(git diff --cached --stat | tail -1 | grep -oE "[0-9]+ insertion" | grep -oE "[0-9]+"); if [[ ! -z "$lines" ]] && [[ $lines -gt 500 ]]; then echo "WARNING: Large commit ($lines lines). Consider if this needs a plan document (docs/plans/active/)."; echo "See CLAUDE.md Large Task Protocol for commits >500 lines."; fi'
+        entry: >-
+          bash -c 'lines=$(git diff --cached --stat | tail -1 | grep -oE "[0-9]+ insertion" | grep -oE "[0-9]+"); if [[ ! -z "$lines" ]] && [[ $lines -gt 500 ]]; then echo "WARNING: Large commit ($lines lines). Consider if this needs a plan document (docs/plans/active/)."; echo "See CLAUDE.md Large Task Protocol for commits >500 lines."; fi'
         language: system
         pass_filenames: false
         always_run: true
@@ -58,14 +58,16 @@ repos:
       # Ensure tests exist for new Python modules
       - id: test-coverage-check
         name: Check tests exist for new modules
-        entry: bash -c 'for file in $(git diff --cached --name-only --diff-filter=A | grep "^src/.*\.py$"); do test_file="tests/test_$(basename $(dirname $file))/test_$(basename $file)"; if [[ ! -f "$test_file" ]]; then echo "WARNING: New module $file has no corresponding test file at $test_file"; fi; done'
+        entry: >-
+          bash -c 'for file in $(git diff --cached --name-only --diff-filter=A | grep "^src/.*\.py$"); do test_file="tests/test_$(basename $(dirname $file))/test_$(basename $file)"; if [[ ! -f "$test_file" ]]; then echo "WARNING: New module $file has no corresponding test file at $test_file"; fi; done'
         language: system
         pass_filenames: false
 
       # Session staleness check (Session 158)
       - id: session-staleness-check
         name: Check documentation session staleness
-        entry: bash -c 'cw_session=$(grep -oE "Session\s+[0-9]+" CURRENT_WORK.md 2>/dev/null | head -1 | grep -oE "[0-9]+"); claude_session=$(grep -oE "Session\s+[0-9]+" CLAUDE.md 2>/dev/null | grep -oE "[0-9]+" | head -1); if [[ ! -z "$cw_session" ]] && [[ ! -z "$claude_session" ]]; then diff=$((cw_session - claude_session)); if [[ $diff -gt 10 ]]; then echo "WARNING: CLAUDE.md session ($claude_session) is $diff sessions behind CURRENT_WORK.md ($cw_session)"; echo "Consider running: python scripts/update_metrics.py --output"; fi; fi'
+        entry: >-
+          bash -c 'cw_session=$(grep -oE "Session\s+[0-9]+" CURRENT_WORK.md 2>/dev/null | head -1 | grep -oE "[0-9]+"); claude_session=$(grep -oE "Session\s+[0-9]+" CLAUDE.md 2>/dev/null | grep -oE "[0-9]+" | head -1); if [[ ! -z "$cw_session" ]] && [[ ! -z "$claude_session" ]]; then diff=$((cw_session - claude_session)); if [[ $diff -gt 10 ]]; then echo "WARNING: CLAUDE.md session ($claude_session) is $diff sessions behind CURRENT_WORK.md ($cw_session)"; echo "Consider running: python scripts/update_metrics.py --output"; fi; fi'
         language: system
         pass_filenames: false
         always_run: true
